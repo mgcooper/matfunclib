@@ -28,14 +28,14 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
 
 setenv('TBDIRECTORYPATH',[MATLABPATH 'templates/']);
-setenv('TBJSONACTIVATEPATH',[MATLABPATH 'myFunctions/manager/activate/']);
-setenv('TBJSONDEACTIVATEPATH',[MATLABPATH 'myFunctions/manager/deactivate/']);
-setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexFunctions/']);
-setenv('FEXPACKAGEPATH',[MATLABPATH 'fexPackages/']);
-setenv('MATLABFUNCTIONPATH',[MATLABPATH 'myFunctions/']);
+setenv('TBJSONACTIVATEPATH',[MATLABPATH 'matfunclib/manager/activate/']);
+setenv('TBJSONDEACTIVATEPATH',[MATLABPATH 'matfunclib/manager/deactivate/']);
+setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
+setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
+setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
 setenv('PROJECTDIRECTORYPATH',[MATLABPATH 'templates/']);
-setenv('PRJJSONWORKONPATH',[MATLABPATH 'myFunctions/manager/workon/']);
-setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'myFunctions/manager/workoff/']);
+setenv('PRJJSONWORKONPATH',[MATLABPATH 'matfunclib/manager/workon/']);
+setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'matfunclib/manager/workoff/']);
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
 setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
 setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
