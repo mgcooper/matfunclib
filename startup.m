@@ -1,4 +1,3 @@
-% see notes at end about path
 % sep 2022: at the end of this script is a copyfile statement that copies
 % this to myFunctions/system so i can keep it synced with my other 
 
@@ -7,14 +6,11 @@
 
 % SET ENVIRONMENT VARIABLES
 
-% note that userpath is a matlab built-in function that returns the path
-% where matlab startup is located. an if/elseif statement like below could
-% be used to customize two setups, but the method below that first sets
-% HOMEPATH works just as well, as long as MATLABUSERPATH is in the same
-% location relative to HOMEPATH on both machines. 
-% if userpath == "/Users/coop558/Documents/MATLAB"
-% elseif userpath == "/Users/mattcooper/Documents/MATLAB"
-% end
+% userpath is a matlab built-in that returns the matlab startup path. the
+% method I use below first sets HOMEPATH, works better than using if/else
+% on userpath as long as MATLABUSERPATH is in the same location relative to
+% HOMEPATH on all machines. but i use the if/else method to set the python
+% path, see further down.
 
 HOMEPATH    = [getenv('HOME') '/'];          % system $HOME
 
@@ -58,7 +54,7 @@ rmpath(genpath([getenv('FEXFUNCTIONPATH'),'STATISTICS/OPTIMIZE/Mateda3-master/']
 rmpath(genpath([getenv('FEXFUNCTIONPATH'),'f2matlab/']));
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% defaults config
+% defaults config
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 set(groot                                                   , ...
     'defaultAxesFontName'       ,   'source sans pro'       , ...
@@ -89,16 +85,22 @@ set(groot                                                   , ...
     'defaultAxesMinorGridAlpha'    ,   0.075 );
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% Python configuration
+% Python configuration
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% % use python 3
-% pyenv('Version','/usr/bin/python3');
-pyenv('Version',[HOMEPATH '.pyenv/versions/3.8.5/bin/python3.8']);
-% pyenv('Version',[HOMEPATH '.pyenv/shims/python3.8.5']);
+
+if userpath == "/Users/coop558/Documents/MATLAB"
+   % % use python 3
+   % pyenv('Version','/usr/bin/python3');
+   pyenv('Version',[HOMEPATH '.pyenv/versions/3.8.5/bin/python3.8']);
+   % pyenv('Version',[HOMEPATH '.pyenv/shims/python3.8.5']);
+
+elseif userpath == "/Users/mattcooper/Documents/MATLAB"
+   % need to figure this out
+end
 
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% FINAL STEPS
+% FINAL STEPS
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % activate toolboxes that we want to always be available
