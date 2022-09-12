@@ -1,0 +1,12 @@
+{
+   "_schemaVersion": "1.0.0",
+   "workon":
+   {
+      "inputs":
+      [
+         {"name":"projectname",  "kind":"required",   "type":["char",
+         "choices={}"]},
+         {"name":"goto",      "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
+      ]
+   }
+}
