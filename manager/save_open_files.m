@@ -5,7 +5,8 @@ openfiles   = matlab.desktop.editor.getAll;
 filelist    = string({openfiles.Filename});
 filelist    = filelist(:);
 
-fsave       = setpath(['open_tabs/matlab_editor/open_' date '.mat']);
+tabspath    = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
+fsave       = [tabspath 'open_' date '.mat'];
 
 if exist(fsave,'file')
     n       = 1;
@@ -18,4 +19,4 @@ if exist(fsave,'file')
 
 end
 save(fsave,'filelist');
-cd(setpath('open_tabs/matlab_editor/'));
+cd(tabspath);
