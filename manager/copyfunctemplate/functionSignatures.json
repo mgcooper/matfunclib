@@ -1,0 +1,10 @@
+{
+   "_schemaVersion": "1.0.0",
+   "copyfunctemplate":
+   {
+      "inputs":
+      [
+         {"name":"newfuncpath",  "kind":"required",   "type":["char"]}
+      ]
+   }
+}

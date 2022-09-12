@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "struct2timetable":
+   {
+      "inputs":
+      [
+         {"name":"Struct", "kind":"required",   "type":["struct"]},
+         {"name":"Time",   "kind":"required",   "type":["numeric","column","datetime"]}
+      ]
+   }
+}

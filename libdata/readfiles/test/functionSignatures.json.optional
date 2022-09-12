@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "readfiles":
+   {
+      "inputs":
+      [
+         {"name":"filenameorlist",  "kind":"required",   "type":["struct","char","string"]},
+         {"name":"dataoutputtype",  "kind":"ordered",    "type":["char","choices={'table','timetable','struct'}"], "default":"'struct'"}
+      ]
+   }
+}

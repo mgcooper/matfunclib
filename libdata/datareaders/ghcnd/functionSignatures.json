@@ -1,0 +1,25 @@
+{
+   "_schemaVersion": "1.0.0",
+   "readGHCND":
+   {
+      "inputs":
+      [
+         {"name":"station",   "kind": "namevalue",
+                              "type": ["char","choices=ghcnd_stationlist"],"purpose":"Option"},
+         {"name":"name",      "kind": "namevalue",
+                              "type": ["char","choices=ghcnd_stationnames"],"purpose":"Option"},
+         {"name":"lat",       "kind": "namevalue",
+                              "type": ["numeric"]},
+         {"name":"lon",       "kind": "namevalue",
+                              "type": ["numeric"]},
+         {"name":"latbuffer", "kind": "namevalue",
+                              "type": ["numeric"]},
+         {"name":"lonbuffer", "kind": "namevalue",
+                              "type": ["numeric"]},
+         {"name":"t1",        "kind": "namevalue",
+                              "type": [["datetime","scalar"],["numeric","scalar"]]},
+         {"name":"t2",        "kind": "namevalue",
+                              "type": [["datetime","scalar"],["numeric","scalar"]]}
+      ]
+   }
+}

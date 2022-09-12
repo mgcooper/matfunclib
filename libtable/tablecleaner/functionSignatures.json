@@ -1,0 +1,14 @@
+{
+   "_schemaVersion": "1.0.0",
+   "tablecleaner":
+   {
+      "inputs":
+      [
+         {"name":"T",            "kind":"required",   "type":["timetable","table","numeric","column"]},
+         {"name":"regularize",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"newtime",      "kind":"namevalue",  "type":["datetime","duration"]},
+         {"name":"method",       "kind":"namevalue",  "type":["char","choices={'linear','spline','pchip','makima','sum','mean','prod','min','max','count','firstvalue','lastvalue'}"],"default":"'linear'"},
+         {"name":"whichrow",     "kind":"flag",       "type":["char","choices={'first','last','mean'}","scalar"], "default":"'first'","purpose":"Option"}
+      ]
+   }
+}

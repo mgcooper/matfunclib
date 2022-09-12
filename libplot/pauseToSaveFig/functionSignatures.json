@@ -1,0 +1,13 @@
+{
+  "_schemaVersion": "1.0.0",
+  "pauseSaveFig":
+  {
+     "inputs":
+     [
+        {"name":"savekey",    "kind":"required",   "type":["char","string"]},
+        {"name":"filename",   "kind":"required",   "type":["char","string"]},
+        {"name":"obj",        "kind":"ordered",    "type":["matlab.ui.Figure"]},
+        {"name":"Resolution", "kind":"namevalue",  "type":["numeric","scalar"]}
+     ]
+  }
+}

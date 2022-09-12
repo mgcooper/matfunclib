@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "powerSpectralDensity":
+   {
+      "inputs":
+      [
+         {"name":"x",   "kind":"required",   "type":["numeric"]},
+         {"name":"t",   "kind":"namevalue",  "type":["numeric"]}
+      ]
+   }
+}

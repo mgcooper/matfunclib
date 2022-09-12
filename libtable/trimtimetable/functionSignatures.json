@@ -1,0 +1,12 @@
+{
+   "_schemaVersion": "1.0.0",
+   "trimtimetable":
+   {
+      "inputs":
+      [
+         {"name":"T",   "kind":"required",   "type":["timetable","numeric","column"]},
+         {"name":"t1",  "kind":"required",   "type":["datetime","numeric","column"]},
+         {"name":"t2",  "kind":"required",   "type":["datetime","numeric","column"]}
+      ]
+   }
+}

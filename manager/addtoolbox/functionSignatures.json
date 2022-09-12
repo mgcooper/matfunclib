@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "addtoolbox":
+   {
+      "inputs":
+      [
+         {"name":"tbname",    "kind":"required",   "type":["char"]},
+         {"name":"tbactivate","kind":"flag",       "type":["char","choices={'activate'}"]}
+      ]
+   }
+}

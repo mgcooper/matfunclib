@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "rootmeansquare":
+   {
+      "inputs":
+      [
+         {"name":"x",   "kind":"required",   "type":["numeric"]},
+         {"name":"dim", "kind":"required",   "type":["numeric"]}
+      ]
+   }
+}

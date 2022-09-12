@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "mkfunction":
+   {
+      "inputs":
+      [
+         {"name":"name",      "kind":"required",   "type":["char"]},
+         {"name":"category",  "kind":"namevalue",  "type":["char","choices=functiondirectorylist"],"purpose":"Option"}
+      ]
+   }
+}

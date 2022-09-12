@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "settableunits":
+   {
+      "inputs":
+      [
+         {"name":"T",      "kind":"required",   "type":[["table"],["timetable"]]},
+         {"name":"units",  "kind":"required",   "type":[["char","scalar"],["cell"]]}
+      ]
+   }
+}

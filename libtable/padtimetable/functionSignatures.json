@@ -1,0 +1,13 @@
+{
+   "_schemaVersion": "1.0.0",
+   "padtimetable":
+   {
+      "inputs":
+      [
+         {"name":"T",   "kind":"required",   "type":["timetable","numeric","column"]},
+         {"name":"t1",  "kind":"ordered",    "type":["datetime","numeric","column"]},
+         {"name":"t2",  "kind":"ordered",    "type":["datetime","numeric","column"]},
+         {"name":"dt",  "kind":"ordered",    "type":["duration","numeric","column"]}
+      ]
+   }
+}

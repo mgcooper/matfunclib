@@ -1,0 +1,15 @@
+{
+   "_schemaVersion": "1.0.0",
+   "readfiles":
+   {
+      "inputs":
+      [
+         {"name":"filenameorlist",  "kind":"required",   "type":[["struct"],["char"],["string"]]},
+         {"name":"dataoutputtype",  "kind":"namevalue",  "type":["char","choices={'table','timetable','struct'}"], "default":"'struct'"},
+         {"name":"importopts",      "kind":"namevalue",  "type":["struct"]},
+         {"name":"retime",          "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"newtime",         "kind":"namevalue",  "type":[["datetime"],["duration"]]},
+         {"name":"ReadVariableNames","kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ]
+   }
+}

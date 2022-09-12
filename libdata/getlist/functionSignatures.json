@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "getlist":
+   {
+      "inputs":
+      [
+         {"name":"path",   "kind":"required",   "type":["char"]},
+         {"name":"pattern","kind":"required",   "type":["char"]}
+      ]
+   }
+}

@@ -1,0 +1,23 @@
+{
+   "_schemaVersion": "1.0.0",
+   "timetabletrends":
+   {
+      "inputs":
+      [
+         {"name":"T",            "kind":"required",
+                                 "type":["timetable"]},
+         {"name":"Time",         "kind":"namevalue",
+                                 "type":["datetime"]},
+         {"name":"timestep",     "kind":"namevalue",    
+                                 "type": ["char", "choices={'y','d','h','m','s'}"],"purpose":"Option"},
+         {"name":"varnames",     "kind":"namevalue",    
+                                 "type":[["char"],["cell"],["string"]]},
+         {"name":"method",       "kind":"namevalue",    
+                                 "type": ["char", "choices={'ols','ts','qtl','mean','median'}"],"default":"'ols'","purpose":"Option"},
+         {"name":"anomalies",    "kind":"namevalue",    
+                                 "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"quantile",     "kind":"namevalue",    
+                                 "type":["numeric","scalar"]}
+      ]
+   }
+}

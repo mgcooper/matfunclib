@@ -1,0 +1,40 @@
+*************** RESULTS *****************
+
+             Parameter and 95% confidence limits
+
+Line slope            = 1.217690e+00, 7.582835e-01 to 1.950123e+00
+Y-intercept           = -1.615210e+00, -6.792121e+00 to 1.565796e+00
+Linear correlation, r = 0.789, 0.317 to 0.948
+Weighted....       rw = 0.789, 0.317 to 0.948
+
+Mean Square of Weighted Deviates, MSWD = 9.115
+
+___________________________________________________
+
+
+Outlier test positive at the 95% level for ...
+
+Data point 3, x = 2.640000e+00, y = -4.762000e+00
+
+___________________________________________________
+
+
+Influence of Cases
+
+Influence parameter is the ratio of the change in model parameter
+caused by deleting a data point from the regression to the parameter
+standard error. Values larger than 1 are influential cases.
+
+Top 5 influential cases for slope
+Case # 3, Influence =  0.97
+Case # 1, Influence =  0.51
+Case # 8, Influence =  0.02
+Case # 9, Influence =  0.02
+Case # 2, Influence =  0.01
+
+Top 5 influential cases for intercept
+Case # 3, Influence =  1.00
+Case # 1, Influence =  0.56
+Case # 4, Influence =  0.01
+Case # 2, Influence =  0.01
+Case # 5, Influence =  0.00

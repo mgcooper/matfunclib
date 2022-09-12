@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "addproject":
+   {
+      "inputs":
+      [
+         {"name":"projectname",    "kind":"required",   "type":["char"]},
+         {"name":"workon","kind":"flag",       "type":["char","choices={'workon'}"]}
+      ]
+   }
+}
