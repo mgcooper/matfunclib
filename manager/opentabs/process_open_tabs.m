@@ -1,7 +1,7 @@
 clean
 
 
-pathin  = [getenv('HOME') '/Desktop/open_tabs/'];
+pathin  = [getenv('HOME') '/Desktop/opentabs/'];
 pathout = [pathin 'output/'];
 
 % go to the folder and find the file you want

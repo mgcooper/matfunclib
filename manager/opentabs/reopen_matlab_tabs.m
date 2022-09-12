@@ -1,5 +1,5 @@
 
-pathin  = [getenv('MATLABUSERPATH') 'open_tabs/matlab_editor/'];
+pathin  = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
 fname    = input('copy and paste the filename','s');
 fname   = [pathin fname '.mat'];
 
