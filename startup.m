@@ -27,15 +27,16 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 % I set this to make the setenv statements syntax more compact:
 MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
 
-setenv('TBDIRECTORYPATH',[MATLABPATH 'templates/']);
+setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
+setenv('MATLABTEMPLATEPATH',[MATLABPATH 'matfunclib/templates/']);
+setenv('TBDIRECTORYPATH',[MATLABPATH 'directory/']);
+setenv('PROJECTDIRECTORYPATH',[MATLABPATH 'directory/']);
 setenv('TBJSONACTIVATEPATH',[MATLABPATH 'matfunclib/manager/activate/']);
 setenv('TBJSONDEACTIVATEPATH',[MATLABPATH 'matfunclib/manager/deactivate/']);
-setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
-setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
-setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
-setenv('PROJECTDIRECTORYPATH',[MATLABPATH 'templates/']);
 setenv('PRJJSONWORKONPATH',[MATLABPATH 'matfunclib/manager/workon/']);
 setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'matfunclib/manager/workoff/']);
+setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
+setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
 setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
 setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
