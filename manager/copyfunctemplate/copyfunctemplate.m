@@ -1,6 +1,6 @@
 function copyfunctemplate(newfuncpath)
 
-   src = [getenv('MATLABUSERPATH') 'templates/functemplate.m'];
+   src = [getenv('MATLABTEMPLATEPATH') 'functemplate.m'];
    copyfile(src,newfuncpath);
    
 % note: unlike copyjsontemplate, this accepts the filename, which already
