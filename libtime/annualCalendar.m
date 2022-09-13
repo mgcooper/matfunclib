@@ -1,47 +1,54 @@
-function calendar = annualCalendar(year,varargin)
-    
-    % varargin is either dt as a datetime or a string describing dt
-    
-    dt  = varargin{1};
-    
-    if isduration(dt) % assume it's the timestep
-        
-        dt  = hours(dt);
-        
-        if dt==24
-            
-            t1  = datetime(year,1,1);
-            t2  = datetime(year,12,31);
-            dt  = caldays(1);
-            
-        else
-            
-            t1  = datetime(year,1,1,0,0,0);
-            t2  = datetime(year,12,31,24-dt,0,0);
-            
-            dt  = hours(dt);
-        end
-        
-    else
-       
-        
-        switch dt
+function calendar = annualCalendar(years,varargin)
+%ANNUALCALENDAR creates a datetime calendar for one or more years with
+%specified timestep
 
-            case {'daily','day'}
-                
-                t1  = datetime(year,1,1);
-                t2  = datetime(year,12,31);
-                dt  = caldays(1);
+p=MipInputParser;
+p.FunctionName='annualCalendar';
+p.addRequired('years',@(x)isnumeric(x)|isdatetime(years));
+p.addParameter('timestep',calyears(1),@(x)isduration(x)|ischar(x));
+p.parseMagically('caller');
+timestep=p.Results.timestep;
 
-            case {'hourly','hour'}
-                t1  = datetime(year,1,1,0,0,0);
-                t2  = datetime(year,12,31,23,0,0);
-                dt  = hours(1);
+% I never finished this, need to figure out how to determine if the
+% timestep is a year
 
-        end
-        
-    end
+if isduration(timestep) % assume it's the timestep
 
-    calendar = t1:dt:t2;
-    calendar = calendar(:);
-    
+  timestep  = hours(timestep);
+
+  if timestep==24
+
+      t1  = datetime(years,1,1);
+      t2  = datetime(years,12,31);
+      timestep  = caldays(1);
+
+  else
+
+      t1  = datetime(years,1,1,0,0,0);
+      t2  = datetime(years,12,31,24-timestep,0,0);
+
+      timestep  = hours(timestep);
+  end
+
+else
+
+
+  switch timestep
+
+      case {'daily','day'}
+
+          t1  = datetime(years,1,1);
+          t2  = datetime(years,12,31);
+          timestep  = caldays(1);
+
+      case {'hourly','hour'}
+          t1  = datetime(years,1,1,0,0,0);
+          t2  = datetime(years,12,31,23,0,0);
+          timestep  = hours(1);
+
+  end
+
+end
+
+calendar = t1:timestep:t2;
+calendar = calendar(:);
