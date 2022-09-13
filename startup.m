@@ -33,6 +33,7 @@ setenv('PRJJSONWORKONPATH',[MATLABPATH 'matfunclib/manager/workon/']);
 setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'matfunclib/manager/workoff/']);
 setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
 setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
+setenv('USERDATAPATH',[HOMEPATH 'mydata/']);
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
 setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
 setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
