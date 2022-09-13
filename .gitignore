@@ -1,3 +1,9 @@
+# need to ignore the .json files that track projects and toolboxes
+manager/workon/functionSignatures.json
+manager/workoff/functionSignatures.json
+manager/activate/functionSignatures.json
+manager/deactivate/functionSignatures.json
+
 *~
 
 # Mac stuff
