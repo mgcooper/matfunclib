@@ -1,0 +1,11 @@
+{
+  "_schemaVersion": "1.0.0",
+  "grid2R":
+  {
+     "inputs":
+     [
+        {"name":"X",  "kind":"required", "type":["numeric","2d"]},
+        {"name":"Y",  "kind":"required", "type":["numeric","2d"]}
+     ]
+  }
+}

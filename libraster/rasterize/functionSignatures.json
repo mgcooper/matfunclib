@@ -1,0 +1,16 @@
+{
+  "_schemaVersion": "1.0.0",
+  "rasterize":
+  {
+     "inputs":
+     [
+        {"name":"x",  "kind":"required", "type":["numeric"]},
+        {"name":"y",  "kind":"required", "type":["numeric"]},
+        {"name":"z",  "kind":"required", "type":["numeric"]},
+        {"name":"rasterSize",  "kind":"ordered", "type":["numeric"]},
+        {"name":"cellextentX",  "kind":"ordered", "type":["numeric"]},
+        {"name":"cellextentY",  "kind":"ordered", "type":["numeric"]},
+        {"name":"method", "kind":"flag", "type":["char", "choices={'natural','nearest','linear','cubic','v4'}"]}
+     ]
+  }
+}

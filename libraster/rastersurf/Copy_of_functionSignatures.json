@@ -1,0 +1,34 @@
+
+i kept this as an example of the basic structure for mutually exclusive but 
+what i did not realize is that the idea would be the first input is common to 
+each group, and then they differ in the others, so it doesn't make sense
+in this context because the common input is Z, but we want the syntax to be
+Z,R or X,Y,Z, so it is better in this case to have separate function inputs
+with the same function name as per the examples in the documentation, see
+the actual signature file
+
+{
+   "_schemaVersion": "1.0.0",
+   "rastersurf":
+   {
+      "inputs":
+      [
+         {"name":"Z",  "kind":"required", "type":["numeric"]},
+         {"name":"R", "kind":"required", "type":["map.rasterref.GeographicRasterReference","map.rasterref.MapRasterReference"]},
+         {"mutuallyExclusiveGroup":
+         [
+            [
+               {"name":"X",  "kind":"required", "type":["numeric"]},
+               {"name":"Y",  "kind":"required", "type":["numeric"]},
+               {"name":"Z",  "kind":"required", "type":["numeric"]}
+            ],
+            [
+               {"name":"LAT","kind":"required", "type":["numeric"]},
+               {"name":"LON","kind":"required", "type":["numeric"]},
+               {"name":"Z",  "kind":"required", "type":["numeric"]}
+            ]
+         ]
+         }
+     ]
+  }
+}

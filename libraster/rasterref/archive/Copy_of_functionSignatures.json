@@ -1,0 +1,15 @@
+
+i kept b/c it has the full list of interpretations but i don't think we want them
+
+{
+  "_schemaVersion": "1.0.0",
+  "rasterref":
+  {
+     "inputs":
+     [
+        {"name":"X",  "kind":"required", "type":["numeric"]},
+        {"name":"Y",  "kind":"required", "type":["numeric"]},
+        {"name":"rasterInterpretation",  "kind":"required", "type":["char", "choices={'posting','postings','Posting','Postings','cell','cells','Cell','Cells','centroid','centroids','Centroid','Centroids','edge','edges','Edge','Edges','model','modeled','Model','Modeled','image','Image'}"]}
+     ]
+  }
+}

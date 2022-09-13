@@ -1,0 +1,10 @@
+{
+  "_schemaVersion": "1.0.0",
+  "R2grat":
+  {
+     "inputs":
+     [
+        {"name":"R",  "kind":"required", "type":["scalar"]}
+     ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "_schemaVersion": "1.0.1",
+  "bbox2R":
+  {
+     "inputs":
+     [
+        {"name":"bbox",  "kind":"required", "type":["numeric"]},
+        {"name":"gridRes",  "kind":"required", "type":["numeric","scalar"]}
+     ]
+  }
+}

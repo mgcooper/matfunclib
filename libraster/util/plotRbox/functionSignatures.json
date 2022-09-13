@@ -1,0 +1,11 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotRbox":
+  {
+     "inputs":
+     [
+        {"name":"R",  "kind":"required", "type":["scalar"]},
+        {"name":"ax", "kind":"ordered", "type":["matlab.graphics.axis.Axes"], "purpose":"Input Value"}
+     ]
+  }
+}

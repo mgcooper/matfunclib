@@ -1,0 +1,11 @@
+/Volumes/GDRIVE/DATA/esa_grace/greenland_gravimetric_mass_balance_rl06_tudresden_v1_3/mass_trends/CCI_GMB_GIS_TUDR.nc
+/Volumes/GDRIVE/DATA/hyperion/EO1H0080122016080110K3/EO1H0080122016080110K3.hdr
+/Volumes/GDRIVE/DATA/gimp/asa/Classification_tiffs/SurfaceClassification.tif
+/Volumes/GDRIVE/DATA/inglefield/modis/MOD09A1.A2016209.h16v01.006.2016222124938.hdf
+/Volumes/GDRIVE/DATA/inglefield/worldview/A300/projected/WV02_20190903184638_103001009709A300_19SEP03184638-M1BS-011042095010_01_P010_u16rf3413_reprojected.tif
+/Volumes/GDRIVE/DATA/inglefield/worldview/A300/WV02_20190903184638_103001009709A300_19SEP03184638-M1BS-011042095010_01_P010_u16rf3413.tif
+/Volumes/GDRIVE/DATA/landsat8/20180707/LC080080122018070701T1-SC20190729190935/LC08_L1TP_008012_20180707_20180717_01_T1_sr_band1.tif
+/Volumes/GDRIVE/DATA/mar3.9/MARv3.9-monthly-ERA-INTERIM-1979.nc
+/Volumes/GDRIVE/DATA/merra2/evap_subset_M2TMNXGLC_V5.12.4_20190705_222550/MERRA2_100.tavgM_2d_glc_Nx.198001.nc4.nc
+/Volumes/GDRIVE/DATA/racmo_noel/Icemask_Topo_Iceclasses_lon_lat_average_1km_GrIS.nc
+/Volumes/GDRIVE/DATA/surface_melt/raw/GLSMD25E2_20120813_v01r01.nc

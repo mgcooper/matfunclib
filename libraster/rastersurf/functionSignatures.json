@@ -1,0 +1,29 @@
+{
+   "_schemaVersion": "1.0.0",
+   "rastersurf":
+   {
+      "inputs":
+      [
+         {"name":"Z",  "kind":"required", "type":["numeric"]},
+         {"name":"R", "kind":"required", "type":["map.rasterref.GeographicRasterReference","map.rasterref.MapRasterReference"]}
+      ]
+   },
+   "rastersurf":
+   {
+      "inputs":
+      [
+         {"name":"X",  "kind":"required", "type":["numeric"]},
+         {"name":"Y",  "kind":"required", "type":["numeric"]},
+         {"name":"Z",  "kind":"required", "type":["numeric"]}
+      ]
+   },
+   "rastersurf":
+   {
+      "inputs":
+      [
+         {"name":"LAT","kind":"required", "type":["numeric"]},
+         {"name":"LON","kind":"required", "type":["numeric"]},
+         {"name":"Z",  "kind":"required", "type":["numeric"]}
+      ]
+   }
+}

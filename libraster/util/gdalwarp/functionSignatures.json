@@ -1,0 +1,10 @@
+{
+  "_schemaVersion": "1.0.0",
+  "gdalwarp":
+  {
+     "inputs":
+     [
+        {"name":"opts",  "kind":"required", "type":["array"], "purpose":"structure of input options"}
+     ]
+  }
+}

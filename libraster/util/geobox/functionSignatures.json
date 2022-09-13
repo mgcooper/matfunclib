@@ -1,0 +1,11 @@
+{
+  "_schemaVersion": "1.0.0",
+  "geobox":
+  {
+     "inputs":
+     [
+        {"name":"latlims",  "kind":"required", "type":["numeric"]},
+        {"name":"lonlims",  "kind":"required", "type":["numeric"]}
+     ]
+  }
+}

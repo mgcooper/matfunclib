@@ -1,0 +1,81 @@
+march 2021 i went through all the test scripts in most folders here and pulled out all the various ways I plot rasters
+ at some point i need to consolidate all the scripts into a tutorial 
+ the thing i wanted to undeerstand was why it takes forever to plot rasters in matlab but not in qgis/arcgis
+ this led me to undestanding the concept of pyramids
+ 
+
+'DisplayType' options are 'image','surface','mesh','texturemap'
+texturemap all numeric types and double
+surface single and double
+
+
+meshm
+surfm
+surfacem
+pcolorm
+mapshow
+
+
+meshm(Z,R) will display the regular data grid Z warped to the default projection graticule. 
+
+surfm(lat,lon,Z) constructs a surface to represent the data grid Z in the current map axes. The surface lies flat in the horizontal plane with its CData property set to Z. The sizes and shapes of lat and lon affect their interpretation, and also determine whether the default FaceColor property of the surface is 'flat' or 'texturemap'. There are three options
+
+surfacem(lat,lon,Z) constructs a surface to represent the data grid Z in the current map axes. The surface lies flat in the horizontal plane with its CData property set to Z. The surface FaceColor property is 'texturemap'
+
+pcolorm(lat,lon,Z) constructs a surface to represent the data grid Z in the current map axes. The surface lies flat in the horizontal plane with its CData property set to Z. 
+
+'Face' properties:
+'FaceColor' can be 'flat','interp','texturemap'
+	'flat' maps CData values to each face 
+	'interp' interpolates the CData values 
+	'texturemap' Transform the color data in CData so that it conforms to the surface.
+	
+
+
+
+
+%%%%%%% here I am collecting various plotting methods in my raster project
+from test_rasterfromscatter:
+figure;
+worldmap('Greenland')
+pcolorm(data.LAT,data.LON,runoff);
+title('pcolorm, raw data');
+colorbar; [cmin, cmax] = caxis;
+
+
+figure;
+mapshow(Ztest3,ref3,'DisplayType','surface');
+title('geoloc2grid');
+colorbar; caxis([cmin cmax]);
+
+
+figure; 
+worldmap('Greenland')
+meshm(Z1,R1);
+
+figure;geoshow(Z2,R2,'DisplayType','texturemap')
+
+% from test_project_psn2ll
+figure
+mapshow(Zq,R,'DisplayType','texturemap','FaceAlpha','texturemap', ...
+    'AlphaData',double(~isnan(Zq))); hold on
+
+
+
+%%%%% rewritten with Z, R, lat, lon
+
+pcolor(lon,lat,Z)
+pcolorm(lat,lon,Z);
+mapshow(Z,R,'DisplayType','surface');
+meshm(Z,R);
+geoshow(Z,R,'DisplayType','texturemap')
+mapshow(Z,R,'DisplayType','texturemap','FaceAlpha','texturemap','AlphaData',double(~isnan(Z));
+geoshow(Z,R,'DisplayType','surface','ZData',zeros(size(Z)),'CData',Z);
+geoshow(Z,R,'DisplayType','image','ZData',zeros(size(Z)),'CData',Z); 
+scatterm(lat,lon,12,Zrs,'filled');
+geoshow(lat,lon,Z,'DisplayType','surface');
+grid2image(Z,R);
+imagesc(unique(lon),unique(lat),Z)
+geoshow(Z,R,'DisplayType','mesh','FaceColor','flat','EdgeColor','flat')
+
+

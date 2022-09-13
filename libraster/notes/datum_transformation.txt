@@ -1,0 +1,8 @@
+converting b/w nad83 and wgs84 is not a projection, it is a datum transformation
+datum transformations involve 'seven parameter' transformations
+there is a file on the exchange called 'Datum Transformation' function is dt
+it accepts these seven parameters
+there is a good answer here:
+https://gis.stackexchange.com/questions/133861/converting-between-wgs84-and-nad83
+which links to the noaa report saved here
+note also the geodetic toolsbox i downleded from the xchange does all of this
