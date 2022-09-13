@@ -1,17 +1,35 @@
-function path = setpath(path)
+function pathstr = setpath(pathstr,varargin)
 
-% nov 2021 learned about userpath, using this instead of old method
-    
-if isstruct(path)
-    fields = fieldnames(path);
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% input parsing
+p = MipInputParser;
+p.FunctionName='setpath';
+p.addRequired('path',@(x)ischar(x)|isstruct(x));
+p.addOptional('pathtype','matlab',@(x)ischar(x));
+p.parseMagically('caller');
+pathtype=p.Results.pathtype;
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% first determine what type of path (matlab, project, or data path)
+switch pathtype
+   case 'matlab'
+      pathroot = getenv('MATLABUSERPATH');
+   case 'project'
+      pathroot = getenv('MATLABPROJECTPATH');
+   case 'data'
+      pathroot = getenv('USERDATAPATH');
+end
+
+if isstruct(pathstr)
+    fields = fieldnames(pathstr);
 
     for n = 1:length(fields)
-        pathname = [getenv('MATLABUSERPATH') path.(fields{n})];
-        path.(fields{n}) = pathname;
+        pathname = [pathroot pathstr.(fields{n})];
+        pathstr.(fields{n}) = pathname;
     end
     
-elseif ischar(path)
-    path = [getenv('MATLABUSERPATH') path];
+elseif ischar(pathstr)
+    pathstr = [pathroot pathstr];
 end
 
     
