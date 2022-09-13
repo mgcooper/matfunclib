@@ -5,7 +5,7 @@
       "inputs":
       [
          {"name":"projectname",  "kind":"required",   "type":["char",
-         "choices={'icemodel','runoff'}"]},
+         "choices={'E3SM-MOSART-offline-mode','MOSART_Hexagon_CRB','bfra','bfra_backup','bfra_bad','bfra_test','evap','graceGapFill','icemodel','icemodel_archive','imcrt','imcrt_archive','interface','jigsaw-geo-matlab','jigsaw-matlab','raster','recession','runoff','skinmodel','snowmodel'}"]},
          {"name":"goto",      "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
       ]
    }
