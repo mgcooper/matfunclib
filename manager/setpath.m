@@ -18,6 +18,8 @@ switch pathtype
       pathroot = getenv('MATLABPROJECTPATH');
    case 'data'
       pathroot = getenv('USERDATAPATH');
+   otherwise
+      pathroot = pathtype; % assume the root is passed in
 end
 
 if isstruct(pathstr)
