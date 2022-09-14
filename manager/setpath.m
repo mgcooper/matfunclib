@@ -1,5 +1,5 @@
 function pathstr = setpath(pathstr,varargin)
-
+   
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % input parsing
 p = MipInputParser;
@@ -21,47 +21,56 @@ switch pathtype
 end
 
 if isstruct(pathstr)
-    fields = fieldnames(pathstr);
+   fields = fieldnames(pathstr);
 
-    for n = 1:length(fields)
-        pathname = [pathroot pathstr.(fields{n})];
-        pathstr.(fields{n}) = pathname;
-    end
-    
+   for n = 1:length(fields)
+      pathname = [pathroot pathstr.(fields{n})];
+      if pathname(end) ~= "/"
+         pathname = strcat(pathname,'/');
+      end
+      pathstr.(fields{n}) = pathname;
+   end
+
 elseif ischar(pathstr)
-    pathstr = [pathroot pathstr];
+   pathstr = [pathroot pathstr];
+
+   if pathstr(end) ~= "/"
+      pathstr = strcat(pathstr,'/');
+   end
 end
 
-    
+
+
+
 % the old way that required knowing which computer I was on:
-    
+
 % homepath = pwd;
-% 
+%
 % if isstruct(path)
 %     fields = fieldnames(path);
-% 
+%
 %     for n = 1:length(fields)
-% 
+%
 %         pathname = path.(fields{n});
-% 
+%
 %         if strcmp(homepath(8:14),'coop558')
 %             pathname = ['/Users/coop558/Dropbox/MATLAB/' pathname];
 %         elseif strcmp(homepath(8:17),'mattcooper')
 %             pathname = ['/Users/mattcooper/Dropbox/MATLAB/' pathname];
 %         end
-% 
+%
 %         path.(fields{n}) = pathname;
 %     end
-%     
+%
 % elseif ischar(path)
-%     
+%
 %     if strcmp(homepath(8:14),'coop558')
 %             path = ['/Users/coop558/Dropbox/MATLAB/' path];
-%     elseif strcmp(homepath(8:17),'mattcooper')        
+%     elseif strcmp(homepath(8:17),'mattcooper')
 %             path = ['/Users/mattcooper/Dropbox/MATLAB/' path];
 %     end
-%         
+%
 % end
-% 
-%     
-% 
+%
+%
+%
