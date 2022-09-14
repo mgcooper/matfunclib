@@ -147,7 +147,8 @@ f = figure;
 % 9. Write a shapefile
 
 
-% 10. Figure out if a vector of lat/lon points is inside or outside a shapefile - very slow for complex shapefiles
+% 10. Figure out if a vector of lat/lon points is inside or outside a
+% shapefile - very slow for complex shapefiles 
 
 [in,on] = inpolygon(xq,yq,xv,yv);
 
