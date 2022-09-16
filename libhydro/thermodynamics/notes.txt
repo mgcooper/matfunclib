@@ -1,0 +1,9 @@
+Note on order of things:
+
+Given T, RH, we can get everything else. 
+
+1. T --> sat vapor pressure
+2. RH --> vapor pressure
+3. RH --> specific humidity
+
+But, if we do not have RH we need Air Pressure to get vapor pressure
