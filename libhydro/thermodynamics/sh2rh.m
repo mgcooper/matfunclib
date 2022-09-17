@@ -21,11 +21,11 @@ function [ RH ] = sh2rh( q,P,T )
 load('physicalconstants','epsilon');
 
 % compute saturated vapor pressure from T
-e_s     =   t2satvp(T);
+e_s     =   t2satvp(T);                         % Pa
 
 % compute the vapor pressure 
 % e       =   (q.*P)./(epsilon+(1-epsilon).*q);
-e       =   sh2vp(q,P);
+e       =   sh2vp(q,P);                         % Pa
 
 % compute the relative humidity
 RH      =   100.*e./e_s;
