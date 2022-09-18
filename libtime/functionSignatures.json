@@ -1,0 +1,12 @@
+{
+   "_schemaVersion": "1.0.0",
+   "mkcalendar":
+   {
+      "inputs":
+      [
+         {"name":"t1",  "kind":"required",   "type":["datetime","numeric","column"]},
+         {"name":"t2",  "kind":"required",   "type":["datetime","numeric","column"]},
+         {"name":"dt",  "kind":"required",   "type":[["char", "choices={'y','mm','w','d','h','m','s'}"],["duration"]],"purpose":"Option"}
+      ]
+   }
+}
