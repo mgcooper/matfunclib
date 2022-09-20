@@ -1,212 +1,179 @@
+function data = standardizeData(data)
 
-function Data = standardizeData(Data)
+% % this implements my standard naming rules.
+% % for adding units:
 
+%    % this is another way to update units but not sure what happens if
+%    ismember is empty
+%    varsH                            = fieldnames(Met);
+%    Units(ismember(varsH,'modis'))   = {'-'};
+%    Units(ismember(varsH,'QQH'))     = {'kg/kg'};
+%    Units(ismember(varsH,'WSPD'))    = {'m/s'};      % wind speed
+%    Units(ismember(varsH,'WDIR'))    = {'degrees'};  % wind direction
+%    Units(ismember(varsH,'RH'))      = {'%'};        % rel hum
+%    Units(ismember(Units,'mmWE/h'))  = {'mWE/h'};
+%    Units(ismember(Units,'C'))       = {'K'};
+%    Units(ismember(Units,'hPa'))     = {'Pa'};
+%    Units(ismember(Units,'w/m2'))    = {'W/m2'}; % typo in the mar data?
+
+             
+   vars = fieldnames(data);
    
+   for n = 1:numel(vars)
+      
+      thisvar  = vars{n};
+      
+      % tair, tsfc
+      if any(strcmp(thisvar,{'TTH','T2M'}))
+         
+         data  = renameStructFields(data,thisvar,'tair');
+         
+      elseif any(strcmp(thisvar,{'ST'}))
+         
+         data  = renameStructFields(data,thisvar,'tsfc');
+         
+      % shortwave down
+      elseif any(strcmp(thisvar,{'SWDH','SWGDN'}))
+                              
+         data  = renameStructFields(data,thisvar,'swd');
+
+      % shortwave net
+      elseif any(strcmp(thisvar,{'SWGNT'}))
+                              
+         data  = renameStructFields(data,thisvar,'swn');
+         
+      % longwave down
+      elseif any(strcmp(thisvar,{'LWDH','LWGAB'}))
+                              
+         data  = renameStructFields(data,thisvar,'lwd');
+         
+      % longwave up
+      elseif any(strcmp(thisvar,{'LWGEM'}))
+                              
+         data  = renameStructFields(data,thisvar,'lwu');
+
+      % longwave net
+      elseif any(strcmp(thisvar,{'LWGNT'}))
+                              
+         data  = renameStructFields(data,thisvar,'lwn');
+         
+      % ground heat flux
+      elseif any(strcmp(thisvar,{'GHTSKIN'}))
+         
+         data  = renameStructFields(data,thisvar,'ghf');
+
+      % albedo
+      elseif any(strcmp(thisvar,{'ALH','SNICEALB'}))
+         
+         data  = renameStructFields(data,thisvar,'albedo');
+         
+     elseif any(strcmp(thisvar,{'MODIS'}))
+         
+         data  = renameStructFields(data,thisvar,'modis');
+         
+      % surface pressure
+      elseif any(strcmp(thisvar,{'SP','PS'}))
+         
+         data  = renameStructFields(data,thisvar,'psfc');
+      
+      % elevtion
+      elseif any(strcmp(thisvar,{'SH','HLML'}))
+         
+         data  = renameStructFields(data,thisvar,'elev');
+         
+      % wind speed
+      elseif any(strcmp(thisvar,{'WSPD','SPEED'}))
+         
+         data  = renameStructFields(data,thisvar,'wspd');
+         
+      % wind direction
+      elseif any(strcmp(thisvar,{'WDIR'}))
+         
+         data  = renameStructFields(data,thisvar,'wdir');
+         
+      % rel humidity
+      elseif any(strcmp(thisvar,{'RH','relh'}))
+         
+         data  = renameStructFields(data,thisvar,'rh');
+      
+      % specific humitidy (if used to compute relh, need 6 digits)
+      elseif any(strcmp(thisvar,{'QQH','shum','QV2M'}))
+         
+         data  = renameStructFields(data,thisvar,'sh');
+         
+      % melt, internal melt
+      elseif any(strcmp(thisvar,{'MEH','meltin'}))
+         
+         data  = renameStructFields(data,thisvar,'melt');
+
+      elseif any(strcmp(thisvar,{'refreeze'}))
+         
+         data  = renameStructFields(data,thisvar,'freeze');
+         
+      % snow divergence
+      elseif any(strcmp(thisvar,{'sndiv'}))
+         
+         %data  = renameStructFields(data,thisvar,'freeze');
+         
+      % snowfall
+      elseif any(strcmp(thisvar,{'SFH','PRECSNO'}))
+                              
+         data  = renameStructFields(data,thisvar,'snow');
+         
+      % rainfall
+      elseif any(strcmp(thisvar,{'RFH'}))
+                              
+         data  = renameStructFields(data,thisvar,'rain');
+
+      % total ppt
+      elseif any(strcmp(thisvar,{'PRECTOTCORR','precip'}))
+                              
+         data  = renameStructFields(data,thisvar,'ppt');
+         
+      % evaporation, sublimation, condenstation
+      elseif any(strcmp(thisvar,{'EVAP'}))
+         
+         data  = renameStructFields(data,thisvar,'evap');
+      
+      % runoff
+      elseif any(strcmp(thisvar,{'RUH','RUNOFF'}))
+         
+         data  = renameStructFields(data,thisvar,'runoff');
+         
+      % smb
+      elseif any(strcmp(thisvar,{'SMBH'}))
+         
+         data  = renameStructFields(data,thisvar,'smb');
+         
+      % sensible heat flux
+      elseif any(strcmp(thisvar,{'SHFH','HFLUX'}))
+         
+         data  = renameStructFields(data,thisvar,'shf');
+         
+      % latent heat flux
+      elseif any(strcmp(thisvar,{'LHFH','EFLUX'}))
+         
+         data  = renameStructFields(data,thisvar,'lhf');
+         
+      % snow depth
+      elseif any(strcmp(thisvar,{'SHSN2','SNOWDP_GL'}))
+         
+         data  = renameStructFields(data,thisvar,'snowd');
+         
+      % cloud frac
+      elseif any(strcmp(thisvar,{'CC'}))
+         
+         data  = renameStructFields(data,thisvar,'cfrac');
+
+      % wind components
+      elseif any(strcmp(thisvar,{'UUH','U2M'}))
+         
+         data  = renameStructFields(data,thisvar,'uwind');
+         
+      elseif any(strcmp(thisvar,{'VVH','V2M'}))
+         
+         data  = renameStructFields(data,thisvar,'vwind');
+         
+      end
+   end
    
-end
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% ADD DERIVED QUANTITIES
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-function [Data,Units] = computeDerivedValues(Data,Units,Time)
-
-% % % % % % % % % % % % % % % % % % % % % % % %    
-% % below is from mar
-% % % % % % % % % % % % % % % % % % % % % % % %    
-   
-   % compute wind speed/direction    
-  [wspd,wdir]  = windDirFromZonalComponents(Data.uwind,Data.vwind);
-
-% wind speed   
-   Data.wspd      =  round(wspd,2);
-   Units(end+1)   =  {'m/s'};
-
-% wind direction      
-   Data.wdir      =  round(wdir,1);
-   Units(end+1)   =  {'degrees'};
-
-% rel hum
-   Data.rh        =  round(sh2rh(Data.shum,Data.psfc,Data.tair),2);
-   Units(end+1)   =  {'%'};
-
-% shortwave up
-   Data.swu       =  Data.swd.*Data.albedo;
-   Units(end+1)   =  {'W/m2'};
-    
-% longwave up
-   Data.lwu       =  0.98 .* 5.6696e-08 .* Data.tsfc.^4;
-   Units(end+1)   =  {'W/m2'};
-   
-% net shortwave   
-   Data.swn       =  Data.swd - Data.swu;
-   Units(end+1)   =  {'W/m2'};
-    
-% longwave up
-   Data.lwn       =  Data.lwd - Data.lwu;
-   Units(end+1)   =  {'W/m2'};
-   
-% net turbulent heat flux
-   Data.thf       =   Data.shf + Data.lhf;
-   Units(end+1)   =   {'W/m2'};
-    
-% net radiation
-   Data.netr      =   Data.swn + Data.lwn;
-   Units(end+1)   =   {'W/m2'};
-
-% add a calendar of datenums
-	Data.date      = tocolumn(datenum(Time));
-   Units(end+1)   = {'datenum'};
-   
-   
-% % % % % % % % % % % % % % % % % % % % % % % %    
-% % below is from racmo:
-% % % % % % % % % % % % % % % % % % % % % % % % 
-
-    Data.swu    = Data.swsd - Data.swsn;    % shortwave up
-    Data.albedo = Data.swu ./ Data.swsd;    % albedo
-    Data.thf    = Data.senf + Data.latf;    % net turbulent heat flux
-    Data.netr   = Data.swsn + Data.lwsn;    % net radiation
-    Data.date   = datenum(Time);            % add a calendar of datenums
-
-% 14 hourly variables + 8 cumulative mass fluxes + MODIS + four computed
-% hourly variables + dates = 
-
-% add units for the derived variables
-    Units(end+1) = {'W/m2'};            % shortwave up
-    Units(end+1) = {'reflectivity'};    % racmo albedo
-    Units(end+1) = {'W/m2'};            % net turbulent heat flux
-    Units(end+1) = {'W/m2'};            % net radiation
-    Units(end+1) = {'datenum'};         % dates
-    
-% this is only possible with the 'surface' data I thnk    
-   %Data.rain   = Data.prec-Data.subl-Data.sdrift-      ...
-   %                Data.smb-Data.melt+Data.refreeze;   % rainfall
-   %Data.snow   = Data.prec + Data.rain;               % snowfall
-   
-%   Units(end+1) = {'m/h'};
-%   Units(end+1) = {'m/h'}; 
-    
-end
-
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% RENAME VARS AND ROUND DATA
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-function Data = renameAndRoundData(Data,Units,varNames)
-
-% % % % % % % % % % % % % % % % % % % % % % % %    
-% % below is from mar
-% % % % % % % % % % % % % % % % % % % % % % % % 
-
-% rename variables according to my naming conventions and round the data
-
-   oldVars     =  Data.Properties.VariableNames;
-   newVars     =  {  'tair','shum','uwind','vwind','swd','lwd','albedo', ...
-                     'snow','rain','melt','runoff','shf','lhf','smb', ...
-                     'snowd','cfrac','tsfc','psfc','modis'};
-                     
-    if numel(newVars) ~= numel(oldVars)
-        warning('the number of new vars is different than old vars');
-    end
- 
-% the loop ensures the order doesn't have to match the order of the table
-% (But the order of oldVars and newVars must match!)
-
-    for n = 1:numel(oldVars)
-        
-        Data = renamevars(Data,oldVars{n},newVars{n});
-        
-    end
-    
-% % % % % % % % % % % % % % % % % % % % % % % %    
-% % below is from racmo:
-% % % % % % % % % % % % % % % % % % % % % % % % 
-
-% rename variables according to my naming conventions and round the data
-
-% the reason this is done after computeDerivedVars is because renamevars
-% works on tables and i guess i wanted to wait to convert to table but i
-% think i can do it in the other order see saveMerraData
-
-% note - this is bad practice, should do a strcmp and only rename if the
-% old var I don't want matches the new one
-
-    newVars = {'lhf','lwd','lwn','meltin','precip','refreeze','runoff',...
-                'shf','smb','sndiv','melt','subl','swd','swn'};
-            
-    for m = 1:numel(newVars)
-        Data = renamevars(Data,varNames{m},newVars{m});
-    end
-                    
-    % round some of the data
-    for m = 1:length(Units)
-        var = Data.Properties.VariableNames{m};
-        if strcmp(Units{m},'W/m2')
-            Data.(var) = round(Data.(var),2);
-        elseif strcmp(Units{m},'-')
-            Data.(var) = round(Data.(var),3);
-        end
-    end
-    
-    
-% % % % % % % % % % % % % % % % % % % % % % % %    
-% % below is from merra:
-% % % % % % % % % % % % % % % % % % % % % % % % 
-    
-% rename variables according to my naming conventions and round the data
-
-% type them out to ensure the order of oldVars matches newVars
-    oldVars = 	{'SPEED','EVAP','PRECTOTCORR','HLML','GHTSKIN',      ...
-                 'PRECSNO','HFLUX','EFLUX',                          ...
-                 'RUNOFF','SNOMAS_GL','SNOWDP_GL','ASNOW_GL','SNICEALB',...
-                 'LWGAB','SWGNT','LWGNT','SWGDN','LWGEM',              ...
-                 'U2M','T2M','PS','V2M','QV2M','MODIS'};
-    
-    newVars = 	{'wspd','evap','ppt','elev','ghf','snow','shf','lhf', ...
-                'runoff','swe','snowd','fsca','albedo',             ...
-                'lwd','swn','lwn','swd','lwu',                      ...
-                'uwind','tair','psfc','vwind','shum',               ...
-                'modis'};
-                
-    if numel(newVars) ~= numel(oldVars)
-        warning('the number of new vars is different than old vars');
-    end
-    
-% the loop ensures the order doesn't have to match the order of the table
-    for n = 1:numel(oldVars)
-        
-        Data = renamevars(Data,oldVars{n},newVars{n});
-        
-    end
-    
-    
-end
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% ADD METADATA
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-function Data = addMetaData(Data,Units,sData,sUnits)
-    
-% add the x,y location, and elevation as metadata
-    Data    =   addprop(Data, { 'X','Y','Lat','Lon','Elev','Slope',   ...
-                                'ScalarUnits'},{'table','table',      ...
-                                'table','table','table','table','table'});
-                            
-% update the properties
-%   data.Properties.VariableNames                = newvars;
-    Data.Properties.VariableUnits                = Units;
-    Data.Properties.CustomProperties.X           = sData.X;
-    Data.Properties.CustomProperties.Y           = sData.Y;
-    Data.Properties.CustomProperties.Lat         = sData.LAT;
-    Data.Properties.CustomProperties.Lon         = sData.LON;
-    Data.Properties.CustomProperties.Elev        = sData.ELEV;
-    Data.Properties.CustomProperties.Slope       = nan;
-    Data.Properties.CustomProperties.ScalarUnits = sUnits; 
-    
-% finally, do some basic checks for out-of-bound or non-physical values
-    Data     = metchecks(Data,false);
-    
-    
-end
