@@ -1,0 +1,12 @@
+{
+   "_schemaVersion": "1.0.0",
+   "addcolumns":
+   {
+      "inputs":
+      [
+         {"name":"dataarray",    "kind":"required",   "type":["numeric"]},
+         {"name":"datacolumns",  "kind":"required",   "type":["numeric"]},
+         {"name":"index",        "kind":"ordered",    "type":["numeric"]}
+      ]
+   }
+}
