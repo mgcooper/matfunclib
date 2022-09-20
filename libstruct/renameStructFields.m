@@ -9,6 +9,15 @@ function struct = renameStructFields(struct, oldFieldNames, newFieldNames)
 
 %   mgc added the loop around multiple fieldnames
 
+if ischar(oldFieldNames)
+   oldFieldNames = cellstr(oldFieldNames);
+end
+
+if ischar(newFieldNames)
+   newFieldNames = cellstr(newFieldNames);
+end
+
+
 for n = 1:numel(oldFieldNames)
     oldFieldName = oldFieldNames{n};
     newFieldName = newFieldNames{n};
