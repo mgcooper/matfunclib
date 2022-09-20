@@ -8,7 +8,7 @@ function T = mkcalendar(t1,t2,dt,varargin)
 
    p.addRequired(   't1',                 @(x)isnumeric(x)|isdatetime(x));
    p.addRequired(   't2',                 @(x)isnumeric(x)|isdatetime(x));
-   p.addRequired(   'dt',                 @(x)ischar(x)|isduration(x));
+   p.addRequired(   'dt',                 @(x)ischar(x)|isduration(x)|iscalendarduration(x));
    p.addParameter(  'TimeZone',  'UTC',   @(x)ischar(x));
    p.addParameter(  'noleap',    false,   @(x)islogical(x));
    p.parseMagically('caller');
