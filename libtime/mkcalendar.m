@@ -1,5 +1,5 @@
 function T = mkcalendar(t1,t2,dt,varargin)
-%MKCALENDAR 
+%MKCALENDAR makes a calendar 
 %--------------------------------------------------------------------------
    p                 = MipInputParser;
    p.FunctionName    = 'mkcalendar';
