@@ -1,4 +1,12 @@
 
+% to clarify the comment below, the 'Metadata' field is not the attributes,
+% the Metadata field is for the entire shapefile, the attributes pertain to
+% each feature, and are referred to as 'vertex properties' by matlab. see
+% hexjson2shp for an example of how to build a shapefile from a structure
+% of attributes. a key issue figured out there is initializing the
+% geoshape by adding the 'Geometry' field to an attributes structure, usign
+% that structure and a set of lat/lon values to init the geoshpae, then
+% using append to add new features
 
 % when making a mapshape or geoshpae, if the structure passed in has
 % multiple fields, they will not be in the 'metadata' strcuture where
