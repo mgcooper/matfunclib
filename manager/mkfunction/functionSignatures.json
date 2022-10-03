@@ -1,11 +1,24 @@
 {
-   "_schemaVersion": "1.0.0",
+   "_schemaVersion": "1.1.0",
+   "_comment": "the two blocks demonstrate multiple signatures (not mutually exclusive)",
+   "_comment": "the command line behavior would be identical if 'library' and 'project' name-value inputs were in one block, but keep for demonstration.",
+
    "mkfunction":
    {
       "inputs":
       [
-         {"name":"name",      "kind":"required",   "type":["char"]},
-         {"name":"category",  "kind":"namevalue",  "type":["char","choices=functiondirectorylist"],"purpose":"Option"}
+         {"name":"funcname",  "kind":"required",   "type":["char"]},
+         {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"],"purpose":"Option"},
+         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MIP','IP'}"],"purpose":"Option"}
+      ]
+   },
+   "mkfunction":
+   {
+      "inputs":
+      [
+         {"name":"funcname",  "kind":"required",   "type":["char"]},
+         {"name":"project",   "kind":"namevalue",  "type":["char","choices=projectdirectorylist"],"purpose":"Option"},
+         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MIP','IP'}"],"purpose":"Option"}
       ]
    }
 }

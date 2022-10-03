@@ -3,9 +3,19 @@ function copyjsontemplate(destpath)
       destpath = pwd;
    end
 
+   % copy the bare template
+   src = [getenv('MATLABTEMPLATEPATH') 'functionSignatures.json.bare'];
+   dst = [destpath '/functionSignatures.json'];
+   if ~exist(dst,'file')
+      copyfile(src,dst);
+   else
+      dst = [destpath '/functionSignatures.json.bare'];
+      copyfile(src,dst);
+   end
    
+   % copy the detailed one
    src = [getenv('MATLABTEMPLATEPATH') 'functionSignatures.json.template'];
-   dst = [destpath '/functionSignatures_tmp.json'];
+   dst = [destpath '/functionSignatures_reference.json'];
    copyfile(src,dst);
    
    % replace the default function name with the actual one

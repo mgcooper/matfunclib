@@ -1,7 +1,19 @@
-function copyfunctemplate(newfuncpath)
+function copyfunctemplate(newfuncpath,parser)
 
-   src = [getenv('MATLABTEMPLATEPATH') 'functemplate.m'];
-   copyfile(src,newfuncpath);
+% use magic input parser or built in input parser (default: MIP)
+if nargin == 1
+   parser = 'MIP';
+end
+
+% set the function template filename
+switch parser
+   case 'MIP'
+      src = [getenv('MATLABTEMPLATEPATH') 'functemplateMIP.m'];
+   case 'IP'
+      src = [getenv('MATLABTEMPLATEPATH') 'functemplateIP.m'];
+end
+
+copyfile(src,newfuncpath);
    
 % note: unlike copyjsontemplate, this accepts the filename, which already
 % has _tmp appended in the case of an existing function, so there isn't any

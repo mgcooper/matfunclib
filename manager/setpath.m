@@ -1,6 +1,6 @@
-function pathstr = setpath(pathstr,varargin)
+function varargout = setpath(pathstr,varargin)
    
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 % input parsing
 p = MipInputParser;
 p.FunctionName='setpath';
@@ -8,7 +8,7 @@ p.addRequired('path',@(x)ischar(x)|isstruct(x));
 p.addOptional('pathtype','matlab',@(x)ischar(x));
 p.parseMagically('caller');
 pathtype=p.Results.pathtype;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 
 % first determine what type of path (matlab, project, or data path)
 switch pathtype
@@ -39,6 +39,16 @@ elseif ischar(pathstr)
    if pathstr(end) ~= "/"
       pathstr = strcat(pathstr,'/');
    end
+end
+
+% parse outputs
+switch nargout
+   case 1
+      % return the full path
+      varargout{1} = pathstr;
+   case 0
+      % add the path, don't return it
+      addpath(genpath(pathstr));
 end
 
 
