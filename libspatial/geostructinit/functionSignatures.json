@@ -1,0 +1,12 @@
+{
+   "_schemaVersion": "1.0.0",
+   "geostructinit":
+   {
+      "inputs":
+      [
+         {"name":"geometry",     "kind":"required",   "type":["char","choices={'Point','Line','Polygon','MulitPoint'}"]},
+         {"name":"numfeatures",  "kind":"required",   "type":["numeric","scalar"]},
+         {"name":"fieldnames",   "kind":"namevalue",  "type":[["char"],["cell"]]}
+      ]
+   }
+}
