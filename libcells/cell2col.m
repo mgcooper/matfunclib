@@ -5,6 +5,17 @@ function [ col_data ] = cell2col( celldata,colnum)
 %   data from the column of user choice, then puts all those columns into
 %   a matrix. 
 
+% % turns out it is this easy:
+% testhorz = {[1,3,1,4],[1,2],[1, 2,2,2,2,4,4,5]};
+% testvert = {[1;3;1;4],[1;2],[1;2;2;2;2;4;4;5]};
+% test = testvert;
+% if size(test{1},1) == 1
+%    test = horzcat(test{:});
+% elseif size(test{1},2) == 1
+%    test = vertcat(test{:});
+% end
+
+
 col_data = [];
 a = length(celldata);
 for n = 1:a
