@@ -10,6 +10,18 @@ end
 
 function [Data,Units] = computeDerivedValues(Data,Units,Time)
 
+
+% below are ntes i made when trying to derive stuff that wasn't provided.
+% need to double check before using. also see older preproc mar and merra
+% scripts for other derived quantities
+
+% 1. SMB = RF + SF - SU _SD - R
+% 2. R = RF + CO + M - F
+
+% subtract 2 from 1:
+% SMB = RF + SF - SU - SD - (RF + CO + M - F)
+%     =      SF - SU - SD       - CO - M + F
+
 % % % % % % % % % % % % % % % % % % % % % % % %    
 % % below is from mar
 % % % % % % % % % % % % % % % % % % % % % % % %    

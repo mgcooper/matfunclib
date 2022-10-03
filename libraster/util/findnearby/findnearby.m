@@ -1,15 +1,14 @@
 function [row,col,distance,idx] = findnearby(x,y,xq,yq,N)
-
-% function [row,col,dist] = findnearby(x,y,xq,yq,N)
-    
-    %FINDNEAREST finds N nearest points to xq,yq within X,Y. Equivalent to
-    %dsearchn for N=1. Locates a set of "nearby" points, rather than the
-    %"nearest" points, which is what dsearchn returns.
-    
-    % Usage: 
-    % [row,col] = findnearby(x,y,xq,yq,N)
-    % idx       = findnearby(x,y,xq,yq,N)
-    % [-,dist]  = findnearby(x,y,xq,yq,N) % use with any previous
+%function [row,col,dist] = findnearby(x,y,xq,yq,N)    
+% 
+%FINDNEARBY finds N nearest points to xq,yq within X,Y. Equivalent to
+%dsearchn for N=1. Locates a set of "nearby" points, rather than the
+%"nearest" points, which is what dsearchn returns.
+%
+% Usage: 
+% [row,col] = findnearby(x,y,xq,yq,N)
+% idx       = findnearby(x,y,xq,yq,N)
+% [-,dist]  = findnearby(x,y,xq,yq,N) % use with any previous
 
     row     = nan(N,1);
     col     = nan(N,1);

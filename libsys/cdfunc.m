@@ -21,7 +21,7 @@ addpath(genpath(mainfuncpath));
 %       funcname = string(funcname);
 %    end
 
-% if the function name is provided, this finds it's location
+% if the function name is provided, this finds it's location, including built-ins.
 if nargin==1
    if ~contains(funcname,'.m')
       funcname = [funcname '.m'];

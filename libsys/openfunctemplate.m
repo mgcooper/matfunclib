@@ -1,3 +1,3 @@
 function openfunctemplate
    
-   open([getenv('MATLABUSERPATH') 'templates/functemplate.m']);
+   open([getenv('MATLABTEMPLATEPATH') 'functemplate.m']);

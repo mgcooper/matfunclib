@@ -1,4 +1,16 @@
 
+% i think this would work for input parsing with multiple mutually
+% exclusive inputs:
+%    if ismember(p.UsingDefaults,{'library','project'})
+%       functionpath = [getenv('MATLABFUNCTIONPATH') library '/' funcname '/'];
+%    elseif ismember(p.UsingDefaults,'
+%       functionpath = [getenv('MATLABPROJECTPATH') project '/func/' funcname '/'];
+%    end
+
+% some matlab built-ins have a folder for the functionSignature support
+% functions e.g. my functiondirectorylist.m, see:
+% /Applications/MATLAB_R2020b.app/toolbox/matlab/datatypes/tabular/+matlab/+internal/+tabular
+
 
 % to use a function to generate choices, see mkfunction, the key was to not
 % put {} around the function name 

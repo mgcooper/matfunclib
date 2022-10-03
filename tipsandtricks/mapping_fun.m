@@ -1,4 +1,7 @@
 
+% pretty sure symbolspec only works when plotting a geo/mapstruct, not x,y
+% i.e. mapshow(x,y,'SymbolSpec',S) doesn't wokr
+
 % to clarify the comment below, the 'Metadata' field is not the attributes,
 % the Metadata field is for the entire shapefile, the attributes pertain to
 % each feature, and are referred to as 'vertex properties' by matlab. see

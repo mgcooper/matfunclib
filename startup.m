@@ -39,6 +39,11 @@ setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
 setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
 setenv('JIGSAWGEOPATH',[HOMEPATH 'myprojects/jigsaw-geo-matlab/']);
 
+% icemodel
+setenv('ICEMODELDATAPATH', [getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/eval/']);
+setenv('ICEMODELINPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/input/']);
+setenv('ICEMODELOUTPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/output/']);
+
 % Set paths - this should negate the need for the stuff below
 % addpath(genpath(getenv('MATLABSTARTUPPATH')))
 addpath(genpath(getenv('MATLABUSERPATH')))
@@ -54,9 +59,9 @@ rmpath(genpath([getenv('FEXFUNCTIONPATH'),'PHYSICS/precise-simulation-featool-mu
 rmpath(genpath([getenv('FEXFUNCTIONPATH'),'STATISTICS/OPTIMIZE/Mateda3-master/']));
 rmpath(genpath([getenv('FEXFUNCTIONPATH'),'f2matlab/']));
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 % defaults config
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 set(groot                                                   , ...
     'defaultAxesFontName'       ,   'source sans pro'       , ...
     'defaultTextFontName'       ,   'source sans pro'       , ...
@@ -85,9 +90,9 @@ set(groot                                                   , ...
     'defaultAxesMinorGridLineStyle','-'                     , ...
     'defaultAxesMinorGridAlpha'    ,   0.075 );
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 % Python configuration
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 
 if userpath == "/Users/coop558/Documents/MATLAB"
    % % use python 3
@@ -100,9 +105,9 @@ elseif userpath == "/Users/mattcooper/Documents/MATLAB"
 end
 
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 % FINAL STEPS
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 
 % activate toolboxes that we want to always be available
 activate MagicInputParser
@@ -127,7 +132,7 @@ clearvars
 disp('BE GRATEFUL')
 
 cd(getenv('MATLABUSERPATH'));
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 
 % % additional options I found I wasn't aware of:
 % set(groot, ...
