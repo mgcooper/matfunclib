@@ -14,16 +14,17 @@ function [Z,R] = functemplate(x,varargin)
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
-   p                 = MipInputParser;
+   p                 = inputParser;
    p.FunctionName    = 'funcname';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
-
-   p.addRequired(   'x',                     @(x)isnumeric(x)     );
-   p.addParameter(  'namevalue',    false,   @(x)islogical(x)     );
-   p.addOptional(   'option',       nan,     @(x)ischar(x)        );
    
-   p.parseMagically('caller');
+   addRequired(p,    'x',                    @(x)isnumeric(x)     );
+   addParameter(p,   'namevalue',   false,   @(x)islogical(x)     );
+   addOptional(p,    'option',      nan,     @(x)ischar(x)        );
+   
+   parse(p,x,varargin{:});
+   
+   namevalue = p.Results.namevalue;
+   option = p.Results.option;
    
 %------------------------------------------------------------------------------
 
