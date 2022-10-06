@@ -23,26 +23,44 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 % I set this to make the setenv statements syntax more compact:
 MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
 
+% matlab functions
 setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
 setenv('MATLABTEMPLATEPATH',[MATLABPATH 'matfunclib/templates/']);
+
+% manager
 setenv('TBDIRECTORYPATH',[MATLABPATH 'directory/']);
 setenv('PROJECTDIRECTORYPATH',[MATLABPATH 'directory/']);
 setenv('TBJSONACTIVATEPATH',[MATLABPATH 'matfunclib/manager/activate/']);
 setenv('TBJSONDEACTIVATEPATH',[MATLABPATH 'matfunclib/manager/deactivate/']);
 setenv('PRJJSONWORKONPATH',[MATLABPATH 'matfunclib/manager/workon/']);
 setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'matfunclib/manager/workoff/']);
+
+% file exchange
 setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
 setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
+
+% user data
 setenv('USERDATAPATH',[HOMEPATH 'mydata/']);
+
+% project and source code
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
 setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
+
+% jigsaw
 setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
 setenv('JIGSAWGEOPATH',[HOMEPATH 'myprojects/jigsaw-geo-matlab/']);
+
+% e3sm
+setenv('E3SMINPUTPATH', [getenv('USERDATAPATH') 'e3sm/input/']);
+setenv('E3SMOUTPUTPATH', [getenv('USERDATAPATH') 'e3sm/output/']);
+setenv('E3SMTEMPLATEPATH', [getenv('USERDATAPATH') 'e3sm/templates/']);
+
 
 % icemodel
 setenv('ICEMODELDATAPATH', [getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/eval/']);
 setenv('ICEMODELINPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/input/']);
 setenv('ICEMODELOUTPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/output/']);
+
 
 % Set paths - this should negate the need for the stuff below
 % addpath(genpath(getenv('MATLABSTARTUPPATH')))
