@@ -1,4 +1,15 @@
 
+% rather than this:
+imeshline   = [];
+for n = 1:numel(Line)
+   imeshline = [imeshline;Line(n).iMesh];
+end
+
+% can simply do this:
+imeshline = vertcat(Line(:).iMesh);
+
+% but mght need horzcat depending on the shape of whatever is in Line(n).X
+
 % when making a mapshape or geoshpae, if the structure passed in has
 % multiple fields, they will not be in the 'metadata' strcuture where
 % expected, but they can be accessed via dot notation, and when shapewrite
