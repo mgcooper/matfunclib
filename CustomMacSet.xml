@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CustomKeySet derivedfrom="Mac" modifieddefault="false">
+   <Context id="Global">
+      <Action id="evaluate-selection">
+         <Stroke code="VK_ENTER"/>
+      </Action>
+      <Action id="eval-cell">
+         <Stroke code="VK_F7" shift="on"/>
+      </Action>
+      <Action id="shift-insert-break">
+         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
+      </Action>
+      <Action id="drop-line">
+         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
+      </Action>
+   </Context>
+   <Context id="CommandWindow">
+      <Action follows="None" id="evaluate-selection">
+         <Stroke code="VK_ENTER" shift="on"/>
+      </Action>
+   </Context>
+   <Context id="Explorer">
+      <Action follows="None" id="evaluate-selection"/>
+   </Context>
+   <Context id="CommandHistory">
+      <Action id="evaluate-selection"/>
+   </Context>
+   <Context id="HTMLRenderer">
+      <Action follows="None" id="evaluate-selection"/>
+   </Context>
+   <Context id="MATLABEditor">
+      <Action follows="None" id="evaluate-selection">
+         <Stroke code="VK_ENTER" shift="on"/>
+      </Action>
+   </Context>
+</CustomKeySet>
