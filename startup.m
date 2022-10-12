@@ -40,7 +40,7 @@ setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
 setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
 
 % user data
-setenv('USERDATAPATH',[HOMEPATH 'mydata/']);
+setenv('USERDATAPATH',[HOMEPATH 'work/data/']);
 
 % project and source code
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
