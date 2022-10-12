@@ -69,6 +69,18 @@ p.parseMagically('caller');
    % allChildren    = findobj(allchild(gcf));
    % htext    = findobj(allChildren,'Type','Text') 
 
+% this was from answers, it converts open figures into a tiledlayout
+%    figlist=get(groot,'Children'); 
+%    newfig=figure;
+%    tcl=tiledlayout(newfig,'flow')
+%     
+%    for i = 1:numel(figlist)
+%        figure(figlist(i));
+%        ax=gca;
+%        ax.Parent=tcl;
+%        ax.Layout.Tile=i;
+%    end
+
    %~~~~~~~~~~~~~~~~~~~~
    % GENERAL PROPERTIES
    %~~~~~~~~~~~~~~~~~~~~
