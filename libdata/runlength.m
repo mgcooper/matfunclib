@@ -24,6 +24,7 @@ istop   = ijump(rem(ijump, nrow) ~= 1); % remove fake stops in first row
 rl      = istop - istart;
 assert(sum(rl) == numel(M));
 
+
 % make matrix of 'derivative' of runlength
 % don't need last row, but needs same size as jumps for indices to be valid
 dRL = zeros(size(jumps)); 
@@ -32,5 +33,5 @@ dRL(istop) = dRL(istop) - rl;
 
 % remove last row and 'integrate' to get runlength
 RL = cumsum(dRL(1:end-1,:));
-
+    
 end
