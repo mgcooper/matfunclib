@@ -3,23 +3,29 @@ function T = tablecleaner(T,varargin)
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    p           =  MipInputParser;
 
-   validtime   =  @(x)validateattributes(x,{'timetable','table'},       ...
-                  {'nonempty'},'tablecleaner','T',1);
-   validreg    =  @(x)validateattributes(x,{'logical'},                 ...
-                  {'nonempty'},'tablecleaner','regularize');
-   validnewt   =  @(x)validateattributes(x,{'datetime','duration'},     ...
-                  {'nonempty'},'tablecleaner','newtime');
-   validmethod =  @(x)validateattributes(x,{'char'},                    ...
-                  {'nonempty'},'tablecleaner','method');
-   validrow    =  @(x)validateattributes(x,{'char'},                    ...
-                  {'nonempty'},'tablecleaner','whichrow');
-   
+%    validtime   =  @(x)validateattributes(x,{'timetable','table','numeric'},       ...
+%                   {'nonempty'},'tablecleaner','T',1);
+%    validreg    =  @(x)validateattributes(x,{'logical'},                 ...
+%                   {'nonempty'},'tablecleaner','regularize');
+%    validnewt   =  @(x)validateattributes(x,{'datetime','duration'},     ...
+%                   {'nonempty'},'tablecleaner','newtime');
+%    validmethod =  @(x)validateattributes(x,{'char'},                    ...
+%                   {'nonempty'},'tablecleaner','method');
+%    validrow    =  @(x)validateattributes(x,{'char'},                    ...
+%                   {'nonempty'},'tablecleaner','whichrow');
+%    
+% 
+%    p.addRequired(    'T',                       validtime   );
+%    p.addParameter(   'regularize',  false,      validreg    );
+%    p.addParameter(   'newtime',     NaT,        validnewt   );
+%    p.addParameter(   'method',      'linear',   validmethod );
+%    p.addParameter(   'whichrow',    'first',    validrow    );
 
-   p.addRequired(    'T',                       validtime   );
-   p.addParameter(   'regularize',  false,      validreg    );
-   p.addParameter(   'newtime',     NaT,        validnewt   );
-   p.addParameter(   'method',      'linear',   validmethod );
-   p.addParameter(   'whichrow',    'first',    validrow    );
+   p.addRequired(    'T',                       @(x)istable(x)|istimetable(x));
+   p.addParameter(   'regularize',  false,      @(x)islogical(x));
+   p.addParameter(   'newtime',     NaT,        @(x)isdatetime(x)|isduration(x)|iscalendarduration(x));
+   p.addParameter(   'method',      'linear',   @(x)ischar(x));
+   p.addParameter(   'whichrow',    'first',    @(x)ischar(x));
 
    % use first row as default when replacing duplicates
 
@@ -39,7 +45,7 @@ function T = tablecleaner(T,varargin)
    
    % get some initial qa-qc informatoin
    if istimetable(T)
-      QA.isregular      = isregular(T);
+      QA.isregular = isregular(T);
    end
    QA.issorted       = issorted(T);
    QA.ismissing      = ismissing(T);
@@ -106,7 +112,7 @@ function [T,QA] = cleantable(QA,T,whichrow,regularize,newtime,method)
 
    if regularize == true
       
-      if isnat(newtime)
+      if ~isduration(newtime) && isnat(newtime)
          
          % no new time/step provided, use most frequent one
          T  = interptimetable(T,mostfrequentstep,method);
