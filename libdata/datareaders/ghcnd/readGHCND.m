@@ -30,7 +30,7 @@ function [Data,Atts] = readGHCND(varargin)
    
    % if station name is provided, use it
    if strcmp(station,'none') == false
-      idx   = find(ismember(Meta.STATION,station));
+      idx = find(ismember(Meta.STATION,station));
    end
    
    % build the url using the station name
@@ -61,9 +61,9 @@ function [Data,Atts] = readGHCND(varargin)
    Data.TMIN   = Data.TMIN./10;
    Data.TOBS   = Data.TOBS./10;
    
-   Data        = table2timetable(Data,'RowTimes','DATE');
-   Data        = renametimetabletimevar(Data);
-   Data        = settableunits(Data,{'mm','mm','mm','C','C','C'});
+   Data = table2timetable(Data,'RowTimes','DATE');
+   Data = renametimetabletimevar(Data);
+   Data = settableunits(Data,{'mm','mm','mm','C','C','C'});
   
    % add the metadata
    Data = addprop(Data,metavars,repmat({'table'},1,numel(metavars)));
