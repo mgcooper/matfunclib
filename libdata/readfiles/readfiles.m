@@ -1,4 +1,4 @@
-function data = readfiles(filenameorlist,varargin)
+function data = readfiles(filelist,varargin)
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % TODO:
@@ -18,9 +18,9 @@ p.KeepUnmatched   = true;
 p.StructExpand    = false;
 
 validfiles  = @(x)validateattributes(x,{'struct','char','string'},   ...
-               {'nonempty'},'readfiles','filenameorlist',1);
+               {'nonempty'},'readfiles','filelist',1);
 validoutput = @(x)validateattributes(x,{'char'},                     ...
-               {'nonempty'},'readfiles','dataoutputtype');
+               {'nonempty'},'readfiles','outputtype');
 validopts   = @(x)validateattributes(x,                              ...
                {'matlab.io.text.DelimitedTextImportOptions',      ...
                'matlab.io.spreadsheet.SpreadsheetImportOptions'}, ...
@@ -28,27 +28,27 @@ validopts   = @(x)validateattributes(x,                              ...
 validnewt   =  @(x)validateattributes(x,{'datetime','duration'},     ...
                {'nonempty'},'readfiles','newtime');
 
-defaultopts = defaultImportOpts(filenameorlist);
+defaultopts = defaultImportOpts(filelist);
 
-addRequired(   p,'filenameorlist',                 validfiles         );
-addParameter(  p,'dataoutputtype',  'struct',      validoutput        );
+addRequired(   p,'filelist',                       validfiles         );
+addParameter(  p,'outputtype',      'struct',      validoutput        );
 addParameter(  p,'importopts',      defaultopts,   validopts          );
 addParameter(  p,'retime',          false,         @(x)islogical(x)   );
 addParameter(  p,'newtime',         NaT,           validnewt          );
 addParameter(  p,'ReadVariableNames',true,         @(x)islogical(x)   );
 %  addParameter(  p,'replacewithnan', NaN,           @(x)isnumeric(x)   );
 
-% NOTE: I cahnged dataoutputtype to a parameter from optional, there are a
+% NOTE: I cahnged outputtype to a parameter from optional, there are a
 % bunch of alternatives in the other folders in this functin's dir i was
 % learnign how to use it, the note below this suggests i wanted to see
 % dataoutputtype at the command line to remind me but if not passed in, use
 % struct, but i think a better approach is to have it be naemvalue and by
 % default i basically always tab complete anwya so i'll see the option
    
-parse(p,filenameorlist,varargin{:});
+parse(p,filelist,varargin{:});
 
-filenameorlist = p.Results.filenameorlist;
-dataoutputtype = p.Results.dataoutputtype;
+filelist       = p.Results.filelist;
+outputtype     = p.Results.outputtype;
 importopts     = p.Results.importopts;
 retimeornot    = p.Results.retime;
 newtime        = p.Results.newtime;
@@ -58,16 +58,16 @@ readvarnames   = p.Results.ReadVariableNames;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    
    % either pass in a file list or a path to files
-   filelist    = makefilelist(filenameorlist);
+   filelist = makefilelist(filelist);
    
    % get the full path and file type
-   [filepath,filetype,numfiles]  = getListInfo(filelist);
+   [filepath,filetype,numfiles] = getListInfo(filelist);
    
    % add opts to default importopts
    %    importopts.VariableNamingRule = '
    
    % read the data
-   data = getRequest(filelist,filepath,filetype,numfiles,importopts,dataoutputtype);
+   data = getRequest(filelist,filepath,filetype,numfiles,importopts,outputtype);
    
    %    % replace nan val
    %    fields   = fieldnames(data);
@@ -84,7 +84,7 @@ readvarnames   = p.Results.ReadVariableNames;
    
    % clean and retime timetables if requested. each field is a table
    fields = fieldnames(data);
-   if strcmp(dataoutputtype,'timetable') && istimetable(data.(fields{1}))
+   if strcmp(outputtype,'timetable') && istimetable(data.(fields{1}))
       data = cleantimetable(data,retimeornot,newtime);
    else
       
