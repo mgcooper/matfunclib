@@ -103,6 +103,19 @@ geoshow(wq7lat,wq7lon,'Color','r','LineStyle','--')
 
 %% UPDATE 4/21/2020
 
+% UPDATE oct 2022: came across the same thing again - the fourth output of
+% mfwdtran and how it's used in surfacem. However, this time its more clear -
+% the fourth output 'savepts' is a structure that contains information relevant
+% to the plotting fucntions. HOWEVER, it may also contain a 'UserData' field
+% which is what holds the data being mapped and may be a way to get reprojected
+% data. Either way, i think i need to revisit the rasterproject_example, and
+% put that in a function b/c it clarifies how to get stuff on to a regular
+% grid. Other stuff I was missing beofre includes:
+% - for polygon clipping, first determine all the cells contained entirely in
+% the polygon, just use the cell area for those, then find the ones along the
+% border and build a polygon object ofr each one to get the area
+% - consrvative remapping
+
 % at some point, I think when I was making rasterfromscatter and digging
 % into the in-built functions surfm, I noticed an undocumented
 % feature of mfwdtran:
