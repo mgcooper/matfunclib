@@ -3,8 +3,8 @@ function intercept = reflineintercept(x,y,slope,refpoint,modeltype,xyref)
 % this finds the value of the y-data that is nearest to yrefpoint, then
 % finds the matching x-value, then forces the line to pass through that
 % point.
-   
-   if nargin == 5
+
+   if nargin < 6 
       xyref = 'y';
    end
    
@@ -16,13 +16,16 @@ function intercept = reflineintercept(x,y,slope,refpoint,modeltype,xyref)
 
          case 'power'
             intercept = refpoint/x(findmin(abs(y-refpoint),1,'first'))^slope;
-
-            % might be better to use this, but it doesn't work if mask
-            %intercept = yrefpoint/mean(x.^slope);
+            
+% % this finds all points within a neighborhood of refpoint
+%             ydiffs = abs(y-refpoint);
+%             ymean = mean(y,'omitnan');
+%             yref = mean(y(ydiffs./ymean<0.15),'omitnan');
+%             xref = mean(x(ydiffs./ymean<0.15),'omitnan');
+%             intercept = yref/xref^slope;
 
          case 'linear'
-            intercept = refpoint-x(findmin(abs(y-refpoint),1,'first'))*slope;
-           %intercept = yrefpoint/x(findmin(abs(y-yrefpoint),1,'first'))/slope;
+            intercept = refpoint-x(findmin(abs(y-refpoint),1000,'first'))*slope;
       end   
       
       case 'x'
