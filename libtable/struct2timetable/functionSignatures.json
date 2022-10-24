@@ -4,8 +4,16 @@
    {
       "inputs":
       [
-         {"name":"Struct", "kind":"required",   "type":["struct"]},
-         {"name":"Time",   "kind":"required",   "type":["numeric","column","datetime"]}
+         {"name":"Struct",          "kind":"required",   "type":"struct"},
+         {"name":"RowTimes",        "kind":"namevalue",  "type":[["datetime", "vector"], ["duration", "vector"], ["numeric", "vector"]]},
+         {"name":"VariableNames",   "kind":"namevalue",  "type":[["string"],["cellstr"]]},
+         {"name":"VariableUnits",   "kind":"namevalue",  "type":[["string"],["cellstr"]]},
+         {"name":"RowNames",        "kind":"namevalue",  "type":[["string"],["cellstr"]]},
+         {"name":"AsArray",         "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ],
+       "outputs": 
+      [
+         {"name":"TT", "type":"timetable"}
       ]
    }
 }
