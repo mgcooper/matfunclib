@@ -6,6 +6,11 @@
 
 % SET ENVIRONMENT VARIABLES
 
+% NOTE: the only system (shell) env var I get here is $HOME. I recently changed
+% my .bashrc variables to use _ between each word following best practices, but
+% I don't think I need to change any here, and therefore my matlab environment
+% should not be affected
+
 % userpath is a matlab built-in that returns the matlab startup path. the
 % method I use below first sets HOMEPATH, works better than using if/else
 % on userpath as long as MATLABUSERPATH is in the same location relative to
