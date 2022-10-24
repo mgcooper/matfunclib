@@ -7,7 +7,8 @@
          {"name":"flow",      "kind":"required",   "type":"numeric"},
          {"name":"units",     "kind":"namevalue",  "type":"char"},
          {"name":"refpoints", "kind":"namevalue",  "type":"numeric"},
-         {"name":"axscale",   "kind":"namevalue",  "type":["char","choices={'loglog','semilogx','semilogy','linear'}"],"default":"'semilogy'","purpose":"Option"}
+         {"name":"axscale",   "kind":"namevalue",  "type":["char","choices={'loglog','semilogx','semilogy','linear'}"],"default":"'semilogy'","purpose":"Option"},
+         {"name":"plotcurve", "kind": "namevalue", "type":["logical","scalar"],"purpose":"Option"}
       ]
    },
    "hyetograph":
