@@ -9,22 +9,23 @@ function [Z,R] = functemplate(x,varargin)
 %  [Z,R] = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
 %        The default method is 'flag1'. 
 % 
-% Author: Matt Cooper, MMM-DD-YYYY, https://github.com/mgcooper
+% Author: Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
 
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
-   p                 = MipInputParser;
-   p.FunctionName    = 'funcname';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
+p                 = MipInputParser;
+p.FunctionName    = 'funcname';
+p.CaseSensitive   = false;
+p.KeepUnmatched   = true;
 
-   p.addRequired(   'x',                     @(x)isnumeric(x)     );
-   p.addParameter(  'namevalue',    false,   @(x)islogical(x)     );
-   p.addOptional(   'option',       nan,     @(x)ischar(x)        );
-   
-   p.parseMagically('caller');
-   
+p.addRequired(   'x',                     @(x)isnumeric(x)     );
+p.addParameter(  'namevalue',    false,   @(x)islogical(x)     );
+p.addOptional(   'option',       nan,     @(x)ischar(x)        );
+
+p.parseMagically('caller');
+
+% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
 %------------------------------------------------------------------------------
 
 

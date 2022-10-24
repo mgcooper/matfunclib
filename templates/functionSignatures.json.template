@@ -25,6 +25,12 @@
    }
 }
 
+
+% various hard to find resources that document json formatting for matlab
+% https://www.mathworks.com/help/mps/restfuljson/matlab-function-signatures-in-json.html
+% https://www.mathworks.com/help/mps/restfuljson/matlab-function-signatures-in-json.html#mw_81133643-20fb-43f0-9643-11b1221ff8d0
+% https://www.mathworks.com/help/mps/restfuljson/restful-api-for-discovery-and-diagnostics.html#mw_d710d743-384a-434f-b4ab-2b5941e56ca8
+
 p.StructExpand = true;  % has to be true to use autocomplete fieldname, and probably should be false if passing in a struct that you don't want to expand
 see bfra_mapbasins for strucutre input field name autocomplete
 see bfra_getevents for multi-function signature

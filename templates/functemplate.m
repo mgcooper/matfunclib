@@ -11,19 +11,22 @@ function [Z,R] = functemplate(x,varargin)
 % 
 % Author: Matt Cooper, MMM-DD-YYYY, https://github.com/mgcooper
 
+% for parsing help, see:
+% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
+
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
-   p                 = MipInputParser;
-   p.FunctionName    = 'funcname';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
+p                 = MipInputParser;
+p.FunctionName    = 'funcname';
+p.CaseSensitive   = false;
+p.KeepUnmatched   = true;
 
-   p.addRequired(   'x',                     @(x)isnumeric(x)     );
-   p.addParameter(  'namevalue',    false,   @(x)islogical(x)     );
-   p.addOptional(   'option',       nan,     @(x)ischar(x)        );
-   
-   p.parseMagically('caller');
+p.addRequired(   'x',                  @(x)isnumeric(x));
+p.addOptional(   'option',    nan,     @(x)any(validatestring(x,validstrings)));
+p.addParameter(  'namevalue', false,   @(x)islogical(x)     );
+
+p.parseMagically('caller');
    
 %------------------------------------------------------------------------------
 
