@@ -9,6 +9,16 @@ function mkfunction(name,varargin)
    addParameter(  p,'project',   'unsorted', @(x)ischar(x)  );
    addParameter(  p,'parser',    'MIP',      @(x)ischar(x)  );
    
+%    % now that i understand addOptional, this may work:
+%    validlib    = @(x)any(validatestring(x,functiondirectorylist));
+%    validproj   = @(x)any(validatestring(x,projectdirectorylist));
+%    validparser = @(x)any(validatestring(x,{'MIP','IP','ArgList'}));
+%    
+%    addRequired(   p,'funcname',              @(x)ischar(x)  );
+%    addOptional(   p,'library',   'unsorted', validlib       );
+%    addOptional(   p,'project',   'unsorted', validproj      );
+%    addOptional(   p,'parser',    'MIP',      validparser    );
+   
    % i think inputs and outputs will need to be structures to distinguish
    % required, parameter, optional, etc. but don't have time to sort it out rn
    %addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
@@ -69,8 +79,15 @@ function [functionpath,filenamepath] = parseFunctionPath(funcname,library,projec
       if isfolder([projectpath '/functions/'])
          
          functionpath = [projectpath '/functions/' funcname '/'];
-      else
+         
+      elseif isfolder([projectpath '/func/'])
+         
          functionpath = [projectpath '/func/' funcname '/'];
+         
+      else
+         
+         functionpath = [projectpath '/' funcname '/'];
+         
       end
    end
    
