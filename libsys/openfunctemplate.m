@@ -1,3 +1,7 @@
-function openfunctemplate
+function openfunctemplate(template)
    
-   open([getenv('MATLABTEMPLATEPATH') 'functemplate.m']);
+   arguments
+      template (1,:) char {mustBeMember(template,{'IP','MIP','ArgList'})} = 'ArgList'
+   end
+
+   open([getenv('MATLABTEMPLATEPATH') 'functemplate' template '.m']);
