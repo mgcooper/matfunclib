@@ -11,6 +11,8 @@ switch parser
       src = [getenv('MATLABTEMPLATEPATH') 'functemplateMIP.m'];
    case 'IP'
       src = [getenv('MATLABTEMPLATEPATH') 'functemplateIP.m'];
+   case 'ArgList'
+      src = [getenv('MATLABTEMPLATEPATH') 'functemplateArgList.m'];
 end
 
 copyfile(src,newfuncpath);

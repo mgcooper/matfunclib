@@ -118,7 +118,11 @@ function mknewfunc(functionpath,filenamepath,funcname,parser)
    
    % copy the template 
    copyfunctemplate(filenamepath,parser);    % specify path w/file name
-   copyjsontemplate(functionpath);           % specify path
+   
+   % copy the json template for inputParser functions
+   if parser == "IP" || parser == "MIP"
+      copyjsontemplate(functionpath);           % specify path
+   end
    
    % replace 'funcname' with the actual function name in the function file
    
