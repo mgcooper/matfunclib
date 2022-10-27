@@ -1,6 +1,9 @@
 function [ax,tf,varargout] = isax(varargin)
 
 % see isaxis
+% UPDATE: see axescheck - undocumented function i copied here designed to do
+% what this does so I commented this out.
+
 % NOTE: this function seems problmeatic, its a 'is' funciton, meaning the
 % first output should be tf, but it's ax, and I now have 'isaxis' so need
 % to do a search for where this is called and consider changing
