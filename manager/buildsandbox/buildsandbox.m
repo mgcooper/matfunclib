@@ -1,6 +1,6 @@
-function info = buildsandbox(funcname,varargin)
+function Info = buildsandbox(funcname,varargin)
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+%-------------------------------------------------------------------------------
    p = MipInputParser;
    p.FunctionName='buildsandbox';
    p.addRequired('funcname',@(x)ischar(x));
@@ -9,7 +9,7 @@ function info = buildsandbox(funcname,varargin)
    p.addParameter('strexclude','',@(x)ischar(x));
    p.parseMagically('caller');
    pathsave = p.Results.pathsave;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%-------------------------------------------------------------------------------
 
    % initial checks   
    %~~~~~~~~~~~~~~~~
@@ -40,13 +40,13 @@ function info = buildsandbox(funcname,varargin)
    fList    = fList';   % file list
    pList    = pList';   % product list
    
-   info.filelist = fList;
-   info.productlist = pList;
+   Info.filelist = fList;
+   Info.productlist = pList;
    
    % init the new folders created and files copied
-   info.newfolders = {''};
-   info.filescopied = {''};
-   info.filesexcluded = {''};
+   Info.newfolders = {''};
+   Info.filescopied = {''};
+   Info.filesexcluded = {''};
    
    % use this to str match json files
    fjson = 'functionSignatures.json';
@@ -90,7 +90,7 @@ function info = buildsandbox(funcname,varargin)
 
          if ~exist(newDirPath,'dir')
             
-            info.newfolders = unique([info.newfolders;newDirPath]);
+            Info.newfolders = unique([Info.newfolders;newDirPath]);
             
             % make the new parent folder if it does not exist
             if dryrun == false
@@ -103,7 +103,7 @@ function info = buildsandbox(funcname,varargin)
 
             oldjson           = [srcDirPath fjson];
             newjson           = [newDirPath fjson];
-            info.filescopied  = unique([info.filescopied;newjson]);
+            Info.filescopied  = unique([Info.filescopied;newjson]);
         
             % copy the file if it's not a trial
             if dryrun == false
@@ -120,12 +120,12 @@ function info = buildsandbox(funcname,varargin)
       
          fexclude    = [newDirPath srcFileName];
          
-         info.filesexcluded = unique([info.filesexcluded;fexclude]);
+         Info.filesexcluded = unique([Info.filesexcluded;fexclude]);
       end
       
       oldfile           = [srcDirPath srcFileName];
       newfile           = [newDirPath srcFileName];
-      info.filescopied  = unique([info.filescopied;newfile]);
+      Info.filescopied  = unique([Info.filescopied;newfile]);
       
       if dryrun == false
          % copy the file
@@ -136,9 +136,9 @@ function info = buildsandbox(funcname,varargin)
    
    if ~isempty(strexclude)
       rmpath(genpath([pathsave 'exclude']));
-      info.msg = 'excluded files copied to /exclude, remove or rename if desired';
-      disp(info.msg);
+      Info.msg = 'excluded files copied to /exclude, remove or rename if desired';
+      disp(Info.msg);
    else
       % can update this if more info is worth adding
-      info.msg = 'success';
+      Info.msg = 'success';
    end

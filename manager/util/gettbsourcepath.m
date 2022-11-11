@@ -1,3 +1,7 @@
 function tbpath = gettbsourcepath(tbname)
-   tbpath = [getenv('MATLABSOURCEPATH') tbname '/'];
+   if nargin == 0
+      tbpath = getenv('MATLABSOURCEPATH');
+   else
+      tbpath = [getenv('MATLABSOURCEPATH') tbname '/'];
+   end
    

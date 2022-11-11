@@ -167,8 +167,8 @@ function mknewfunc(functionpath,filenamepath,funcname,parser)
    % existing one and if not, it will copy the template as
    % functionSignatures.json, so above check swhould always open it
    
-   doc JSON Representation of MATLAB Data Types
-   doc validateattributes
+   % doc JSON Representation of MATLAB Data Types
+   % doc validateattributes
    
    
 end

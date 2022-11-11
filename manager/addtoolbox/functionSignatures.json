@@ -5,6 +5,7 @@
       "inputs":
       [
          {"name":"tbname",    "kind":"required",   "type":["char"]},
+         {"name":"tblibrary", "kind":"positional", "type":["string","choices=gettbdirectorylist"]},
          {"name":"tbactivate","kind":"flag",       "type":["char","choices={'activate'}"]}
       ]
    }

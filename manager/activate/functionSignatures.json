@@ -5,7 +5,7 @@
       "inputs":
       [
          {"name":"tbname",    "kind":"required",   "type":["char",
-         "choices={'DMCA','ridgepack','CVPM','EntropyHub','fracpaq','ncc','CDT','ite','UQLab','neuroscience','waterloo','multifractal','timescales','cpplab','puppeteer','secondaryqualitycontrol','gce','nonstationarity','springindices','datagrabber','spatial','plotting','stats','numericalmethods','datareader','physics','innflux','datacleaner','imos','FSDA','econometrics','MagicInputParser','fractionalchaos','extremevalue','nonlinlib','bayeskalman','grangercausality','ChangeDetection','topotoolbox','uFVM','m_map','mstdlib','lightspeed'}"]},
+         "choices={'DMCA','ridgepack','CVPM','EntropyHub','fracpaq','ncc','CDT','ite','UQLab','neuroscience','waterloo','multifractal','timescales','cpplab','puppeteer','secondaryqualitycontrol','gce','nonstationarity','springindices','datagrabber','spatial','plotting','stats','numericalmethods','datareader','physics','innflux','datacleaner','imos','FSDA','econometrics','MagicInputParser','fractionalchaos','extremevalue','nonlinlib','bayeskalman','grangercausality','ChangeDetection','topotoolbox','uFVM','m_map','mstdlib','lightspeed','bayesFactor'}"]},
          {"name":"goto",      "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
       ]
    }

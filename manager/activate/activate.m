@@ -30,7 +30,10 @@ function activate(tbname,varargin)
       
    end
 
-   tbpath = gettbsourcepath(tbname);
+   % commented this out when I added support for sub-libs, since I can just use
+   % the path entry in the tbdirectory anyway
+   %tbpath = gettbsourcepath(tbname);
+   tbpath = toolboxes.source{tbidx};
    
    disp(['activating ' tbname]);
    addpath(genpath(tbpath));

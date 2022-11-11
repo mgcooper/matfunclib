@@ -1,13 +1,26 @@
 function varargout = setpath(pathstr,varargin)
-   
+%SETPATH return full path string or (if no output request) add the full path
+% 
+%  Syntax
+%  
+%     pathstr = setpath(pathstr,'project') returns the full path to input
+%     pathstr located in MATLABPROJECTPATH
+% 
+%  string (char) 
+
+
 %------------------------------------------------------------------------------
 % input parsing
+validpathtypes = @(x)any(validatestring(x,{'matlab','project','data'}));
+validpostset = @(x)any(validatestring(x,{'goto','none'}));
 p = MipInputParser;
 p.FunctionName='setpath';
 p.addRequired('path',@(x)ischar(x)|isstruct(x));
-p.addOptional('pathtype','matlab',@(x)ischar(x));
+p.addOptional('pathtype','matlab',validpathtypes);
+p.addOptional('postset','none',validpostset);
 p.parseMagically('caller');
 pathtype=p.Results.pathtype;
+postset=p.Results.postset;
 %------------------------------------------------------------------------------
 
 % first determine what type of path (matlab, project, or data path)
@@ -27,8 +40,10 @@ if isstruct(pathstr)
 
    for n = 1:length(fields)
       pathname = [pathroot pathstr.(fields{n})];
-      if pathname(end) ~= "/"
-         pathname = strcat(pathname,'/');
+      if ~contains(pathstr,'.')
+         if pathname(end) ~= "/"
+            pathname = strcat(pathname,'/');
+         end
       end
       pathstr.(fields{n}) = pathname;
    end
@@ -36,9 +51,16 @@ if isstruct(pathstr)
 elseif ischar(pathstr)
    pathstr = [pathroot pathstr];
 
-   if pathstr(end) ~= "/"
-      pathstr = strcat(pathstr,'/');
+   if ~contains(pathstr,'.')
+      if pathstr(end) ~= "/"
+         pathstr = strcat(pathstr,'/');
+      end
    end
+end
+
+% if postset = 'goto', cd to the path
+if strcmp(postset,'goto')
+   cd(pathstr)
 end
 
 % parse outputs
