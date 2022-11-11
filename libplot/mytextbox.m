@@ -1,31 +1,44 @@
 function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
+%MYTEXTBOX places textstr at location defined by x,y coordinates in percent
+%units relative to lower left corner of figure panel
+%   Usage
 
-% % check if an axis handle is provided (credit to Kelley Kearney, function
-% % 'boundedline', for this argument check)
-% isax = cellfun(@(x) isscalar(x) && ishandle(x) &&                       ...
-%             strcmp('axes', get(x,'type')), varargin);
-% if any(isax)
-%     ax = varargin{isax};
-%     varargin = varargin(~isax);
+% note: this function is ready to be converted to this notation where instead
+% of xpct,ypct, either pass in [xpct ypct] or a char 'best' for textbp or
+% eventually if possible 'sw','nw', etc.
+% function [ h,x,y ] = mytextbox( textstr,location,varargin)
+
+%-------------------------------------------------------------------------------
+p=MipInputParser;
+p.KeepUnmatched=true;
+p.FunctionName='mytextbox';
+p.addRequired('textstr',@(x)ischar(x));
+p.addRequired('xpct',@(x)isnumeric(x));
+p.addRequired('ypct',@(x)isnumeric(x));
+p.addOptional('location','user',@(x)isnumeric(x)||validatePosition(x));
+p.addParameter('ax',gca,@(x)isaxis(x));
+p.parseMagically('caller');
+unmatched = unmatched2varargin(p.Unmatched);
+location = p.Results.location;
+
+% could replace xpct,ypct with location then parse for either a 1x2 numeric
+% vector or a char, see prctile function for 
+% p.addOptional('location','best',@(x)isnumeric(x)||validatePosition(x));
+%-------------------------------------------------------------------------------
+
+% if 'best' is requested, use textbp function
+if strcmpi(location,'best')  && ischar(location) || isstring(location)
+   h = textbp(textstr,unmatched{:});
+   % [x,y] = textpos(h);
+   % for now just return empty x,y, but should be simple to get the x,y
+   % position from the h.Position property if they're ever needed
+   x = nan; y = nan;
+   return
+end
 % else
-%     % get handle for existing figure and/or create a new axis object
-%     ax = gca;
+%    xpct = location(1);
+%    ypct = location(2);
 % end
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   p=MipInputParser;
-   p.KeepUnmatched=true;
-   p.FunctionName='mytextbox';
-   p.addRequired('textstr',@(x)ischar(x));
-   p.addRequired('xpct',@(x)isnumeric(x));
-   p.addRequired('ypct',@(x)isnumeric(x));
-   p.addParameter('ax',gca,@(x)isaxis(x));
-   p.parseMagically('caller');
-   unmatched = unmatched2varargin(p.Unmatched);
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-
 
 xlims   =   get(ax,'xlim');
 ylims   =   get(ax,'ylim');
@@ -44,8 +57,10 @@ y       =   ylims(:,1) + yoffset;
 
 h       =   text(ax,x,y,textstr,unmatched{:});
 
-
-
-
-end
+% check this out! no 'end' works for subfunctions if the main one doesn't have
+% it either
+function tf = validatePosition(location)
+tf = ((ischar(location) && isrow(location)) || ...
+     (isstring(location) && isscalar(location) && (strlength(location) > 0))) && ...
+     strncmpi(location,'best',max(strlength(location), 1));
 
