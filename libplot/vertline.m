@@ -1,10 +1,12 @@
-function h = vline(x,varargin)
-%VLINE puts a vertical line on the plot at point x
+function h = vertline(x,varargin)
+%VERTLINE puts a vertical line on the plot at point x
 
+% renamed vline to vertline nov 2022 to avoid conflict with built-in
+% stats/private
 %--------------------------------------------------------------------------
 % parse inputs
 p = MipInputParser;
-p.FunctionName='vline';
+p.FunctionName='vertline';
 p.addRequired('x',@(x)isnumeric(x));
 p.addOptional('ax',gca,@(x)isaxis(x));
 p.parseMagically('caller');

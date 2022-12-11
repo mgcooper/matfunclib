@@ -6,5 +6,3 @@ function setcolors(p,colors)
 for n = 1:length(p)
     p(n).Color = colors(n,:);
 end
-end
-

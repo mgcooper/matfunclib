@@ -57,5 +57,3 @@ scatter(4,4,'MarkerFaceColor',colors(1,:),'MarkerEdgeColor',colors(1,:))
 scatter(5,4,'MarkerFaceColor',colors(2,:),'MarkerEdgeColor',colors(2,:))
 scatter(6,4,'MarkerFaceColor',colors(3,:),'MarkerEdgeColor',colors(3,:))
 
-end
-

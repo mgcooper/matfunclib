@@ -12,7 +12,7 @@ function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
 p=MipInputParser;
 p.KeepUnmatched=true;
 p.FunctionName='mytextbox';
-p.addRequired('textstr',@(x)ischar(x));
+p.addRequired('textstr',@(x)ischar(x)|iscell(x));
 p.addRequired('xpct',@(x)isnumeric(x));
 p.addRequired('ypct',@(x)isnumeric(x));
 p.addOptional('location','user',@(x)isnumeric(x)||validatePosition(x));
@@ -40,22 +40,15 @@ end
 %    ypct = location(2);
 % end
 
-xlims   =   get(ax,'xlim');
-ylims   =   get(ax,'ylim');
-
-xdif    =   xlims(:,2) - xlims(:,1);
-
-xoffset =   xpct/100 .* xdif;
-
-x       =   xlims(:,1) + xoffset;
-
-ydif    =   ylims(:,2) - ylims(:,1);
-
-yoffset =   ypct/100 .* ydif;
-
-y       =   ylims(:,1) + yoffset;
-
-h       =   text(ax,x,y,textstr,unmatched{:});
+xlims = xlim;
+ylims = ylim;
+xdif  = xlims(:,2) - xlims(:,1);
+xjit  = xpct/100 .* xdif;
+x     = xlims(:,1) + xjit;
+ydif  = ylims(:,2) - ylims(:,1);
+yjit  = ypct/100 .* ydif;
+y     = ylims(:,1) + yjit;
+h     = text(ax,x,y,textstr,unmatched{:});
 
 % check this out! no 'end' works for subfunctions if the main one doesn't have
 % it either

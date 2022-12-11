@@ -1,6 +1,29 @@
-function c = mycolorbar( width,height,location,title,label )
-%NARROWCOLORBAR adds a colorbar. adjusts width by delta percent
-%   Detailed explanation goes herec = colorbar;
+function c = setcolorbar( width,height,location,title,label )
+%SETCOLORBAR add a colorbar or set properties of a colorbar. adjust width by
+%delta percent 
+
+% % this was mycbar.m. It just called this function, which was previously
+% mycolorbar.m but I renamed it setcolorbar.m 
+% function c = mycbar( width,height,location,title,label )
+% narginchk(3,5)
+% switch nargin
+%   case 3
+%       c = mycolorbar( width,height,location);
+%   case 4
+%       c = mycolorbar( width,height,location,title);
+%   case 5
+%       c = mycolorbar( width,height,location,title,label);
+% end
+
+% % this was setcolorbar.m
+% function c = setcolorbar(c,varargin)
+% switch varargin{1}
+%    case 'Title'
+%       c.Title.String  = varargin{2};
+%    case 'Location'
+%       c.Location      = varargin{2};
+% end
+
 
 narginchk(3,5)
 
@@ -59,6 +82,4 @@ switch location
 end
 
 c.Label.String = label;
-
-end
 
