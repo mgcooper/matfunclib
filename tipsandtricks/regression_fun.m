@@ -9,6 +9,15 @@
 % https://www.mathworks.com/help/stats/fitting-an-orthogonal-regression-using-principal-components-analysis.html
 
 
+% % something i was following online, need to file away somewhere
+% x = data.x;
+% xones = ones(size(x));
+% X = [xones,x];
+% ab = X\y
+% ab = inv((X'*X))*X'*y
+% ab = inv((x'*x))*x'*y
+
+
 
 % I alwasy get confused by this so for reference:
 % this works:  [1 2] * [ones(1,10) ; rand(1,10)]

@@ -1,4 +1,45 @@
 
+%% reading polylinez
+
+% see baseflow map_region and cell_fun.m for how I used m_shaperead to read a
+% shapefile with polylinez and then collapse the spearate features intoo a nan
+% sep list for quick plotting with plotm
+
+%% different ways to load world borders
+
+% from bfra_mapbasins
+% TLDR: worldborders has the most detail
+
+% load coastlines.mat coastlat coastlon
+
+% % alaska has good detail but there isn't an equivalent for 
+% ak = loadstateshapefile('Alaska');
+% aklat = [ak.Lat];
+% aklon = [ak.Lon];
+
+% % these are not good detail
+% landarea = loadlandarea('North and South America');
+% coastlat = [landarea.Lat];
+% coastlon = [landarea.Lon];
+
+% % this merges the ak state with canada from world borders
+% load world_borders.mat borders
+% can = borders(contains({borders.NAME},'Canada'));
+% ak = loadstateshapefile('Alaska');
+% coastlat = [ [can.Y] [ak.Lat] ];
+% coastlon = [ [can.X] [ak.Lon] ];
+
+
+
+%%
+% lol ... i opened this to add the exact same information ...
+% geoshow(lat,lon,'DisplayType','point','SymbolSpec',spec) fails b/c SymbolSpec
+% only works with geoshow(S,...) syntax ... this comes up when tryign to plot
+% tables that have lat,lon columns ... so instead do:
+
+% geoshow(Dams.LATITUDE,Dams.LONGITUDE,'DisplayType','point','Marker','o',...
+%    'MarkerFaceColor','b','MarkerEdgeColor','none','MarkerSize',6)
+
 % pretty sure symbolspec only works when plotting a geo/mapstruct, not x,y
 % i.e. mapshow(x,y,'SymbolSpec',S) doesn't wokr
 

@@ -15,9 +15,9 @@ save_figs   = false;
 % nearly certain the mapping is not technically correct (but the chances
 % that anyone will notice is very low)
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %% set paths
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 path.data   = '/Users/coop558/myprojects/e3sm/sag/output/';
 path.slopes = setpath('INTERFACE/data/hillsloper/sag_basin/');
 path.gis    = '/Users/coop558/mydata/e3sm/sag/hillsloper/IFSAR_hillslopes/';
@@ -25,11 +25,11 @@ path.save   = '/Users/coop558/Dropbox/CODE/MATLAB/INTERFACE/figs/mosart/';
 run         = 'test.sag.54ef8b8.2021-04-15-103255';
 
 %% read in the hillsloper data
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 load([path.slopes 'mosart_hillslopes']);
 
 %% read in the mosart data
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 var     = 'RIVER_DISCHARGE_OVER_LAND_LIQ';
 f       = [path.data run '/mat/data']; load(f);
 nmonths = length(data);
@@ -37,14 +37,14 @@ ncells  = length(data(1).lon);
 IDout   = find(isnan([newlinks.ds_link_ID])); % 2334 = outlet
 
 %% pull out the discarge and add the outlet discharge
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 for i = 1:nmonths
     D(i,:)      = [data(i).(var)];
     D(i,IDout)  = data(i).RIVER_DISCHARGE_TO_OCEAN_LIQ(IDout);
 end
 
 %% take a single month
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 D       = D(8,:);
 logD    = log(D);
 for i = 1:length(newlinks)  % add the data to mstruct so symbolspec works

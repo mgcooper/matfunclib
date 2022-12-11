@@ -1,4 +1,7 @@
 
+% see deselectall or deselectfig to get rid of the annoying selection box on a
+% figure
+
 % investigate the 'NextPlot' add fucntionality:
 figure; 
 plot(lambda,halflengthsnow);
@@ -181,11 +184,11 @@ set(c,'Position',cpos);
 set(gca,'Position',axpos);
 
 % put a title on a colorbar
-c                   =   narrowcolorbar(.5);
+c = narrowcolorbar(.5);
 set(get(c,'title'),'string','km^3')
 					
 % move the colorbar title location. Unfortunately, there is no 'Location' property for the title, so must use 'Position'
-pos 				= 	c.Label.Position;
+pos = c.Label.Position;
 
 % pos(1) is left/right, pos(2) is up/down. 
 c.Label.Position 	= 	[pos(1)/ratio pos(2)+delta];
