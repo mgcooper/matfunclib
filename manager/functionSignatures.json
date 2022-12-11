@@ -1,0 +1,26 @@
+{
+   "_schemaVersion": "1.0.0",
+   "cduserpath":
+   {
+      "inputs":
+      [
+         {"name":"envname",  "kind":"required",   "type":["char","choices=getuserpaths"]}
+      ]
+   },
+   "reopentabs":
+   {
+      "inputs":
+      [
+         {"name":"pickfile",  "kind":"positional",   "type":["char","choices={'pickfile'}"]}
+      ]
+   },
+   "checkFunctionConflicts":
+   {
+      "inputs":
+      [
+         {"name":"funcpath",  "kind":"ordered",    "type":["char"]},
+         {"name":"funcname",  "kind":"namevalue",  "type":["char","choices=listallmfunctions"]},
+         {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"]}
+      ]
+   }
+}

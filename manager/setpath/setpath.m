@@ -11,19 +11,24 @@ function varargout = setpath(pathstr,varargin)
 
 %------------------------------------------------------------------------------
 % input parsing
-validpathtypes = @(x)any(validatestring(x,{'matlab','project','data'}));
-validpostset = @(x)any(validatestring(x,{'goto','none'}));
-p = MipInputParser;
-p.FunctionName='setpath';
-p.addRequired('path',@(x)ischar(x)|isstruct(x));
-p.addOptional('pathtype','matlab',validpathtypes);
-p.addOptional('postset','none',validpostset);
+validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
+validpostset   = @(x)any(validatestring(x,{'goto','none'}));
+p              = magicParser;
+p.FunctionName = 'setpath';
+
+p.addRequired( 'pathstr',              @(x)ischar(x)|isstruct(x)  );
+p.addOptional( 'pathtype', 'matlab',   validpathtypes             );
+p.addOptional( 'postset',  'none',     validpostset               );
+
 p.parseMagically('caller');
-pathtype=p.Results.pathtype;
-postset=p.Results.postset;
+
+pathtype = p.Results.pathtype;
+postset  = p.Results.postset;
 %------------------------------------------------------------------------------
 
-% first determine what type of path (matlab, project, or data path)
+% first determine what type of path (matlab, project, or data path). NOTE: the
+% 'otherwise' option was supposed to negate the need to pass 'user' for a full
+% path, but it doesn't work b/c default option is 'matlab' for convenience
 switch pathtype
    case 'matlab'
       pathroot = getenv('MATLABUSERPATH');
@@ -31,6 +36,8 @@ switch pathtype
       pathroot = getenv('MATLABPROJECTPATH');
    case 'data'
       pathroot = getenv('USERDATAPATH');
+   case 'user'
+      pathroot = '';       % assume the full path is passed in
    otherwise
       pathroot = pathtype; % assume the root is passed in
 end

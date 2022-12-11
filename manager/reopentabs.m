@@ -2,13 +2,21 @@ function reopentabs(varargin)
 %REOPENTABS reopens a list of files (tabs) of type 'matlab' or 'preview'.
 %default list option is the most recent saved list (created with 'savetabs')
 
-p = inputParser;
+% TODO: add options to showtabs to see the most recent list or the most N recent
+
+p              = inputParser;
 p.FunctionName = 'reopentabs';
-addOptional(p,'tabstype','matlab',@(x)ischar(x)|isstring(x));
-addOptional(p,'pickfile',false,@(x)ischar(x)|isstring(x));
+
+validopts      = {'pickfile','latest'};
+validtabs      = {'matlab','preview'};
+
+addOptional(p,'pickfile',  'latest',  @(x)any(validatestring(x,validopts)) );
+addOptional(p,'tabstype',  'matlab',  @(x)any(validatestring(x,validtabs)) );
+
 parse(p,varargin{:});
-tabstype = p.Results.tabstype;
+
 pickfile = p.Results.pickfile;
+tabstype = p.Results.tabstype;
 
 switch tabstype
    case 'matlab'
@@ -25,14 +33,16 @@ function reopen_matlab_tabs(pickfile)
 directory = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
 oldcwd = pwd;
 
-if pickfile
+if strcmp(pickfile,'pickfile')
    cd(directory)
    fname = uigetfile;
    
    % this is the old way but there's no reason to use it
    %fname = input('copy and paste the filename','s');
    %fname = [pathin fname '.mat'];
-else
+   
+elseif strcmp(pickfile,'latest')
+   
    % use the most recent file
    [fname,filedate] = getlatestfile(directory);
    

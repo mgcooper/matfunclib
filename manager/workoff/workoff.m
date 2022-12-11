@@ -1,7 +1,7 @@
 function workoff(projectname,varargin)
 %WORKOFF removes project 'projectname' from path and (optionally) goes to
 %the home directory (go home)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+%-------------------------------------------------------------------------------
    
    % NOTE: I defined tbname as addOptional, so it is flagged by matlab, but
    % this way it is still shown in the function hint. This is a backdoor
@@ -26,13 +26,13 @@ function workoff(projectname,varargin)
 %       projectname = defaultprjdir;
 %    end
    
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%-------------------------------------------------------------------------------
 
    dbpath      = getprjdirectorypath;
    projects    = readprjdirectory(dbpath);
    prjidx      = findprjentry(projects,projectname);
    
-   prjpath     = projects.folder{prjidx};
+   prjpath     = [projects.folder{prjidx} filesep projectname];
    
    % could put next three into a function rmtbpath(tbpath);
    disp(['deactivating ' projectname]);
