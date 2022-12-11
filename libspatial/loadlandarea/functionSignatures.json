@@ -1,0 +1,10 @@
+{
+   "_schemaVersion": "1.0.0",
+   "loadlandarea":
+   {
+      "inputs":
+      [
+         {"name":"landarea",   "kind":"required",   "type":"choices=landarealist"}
+      ]
+   }
+}

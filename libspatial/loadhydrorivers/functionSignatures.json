@@ -1,0 +1,16 @@
+{
+   "_schemaVersion": "1.0.0",
+   "loadhydrorivers":
+   {
+      "inputs":
+      [
+         {"name":"Region",       "kind":"ordered",    "type":"choices={'Global','Africa','Arctic','Asia','Australasia','Europe','Greenland','NorthAmerica','SouthAmerica','Siberia'}"},
+         {"name":"BoundingBox",  "kind":"namevalue",  "type":"double"},
+         {"name":"ClipGeometry", "kind":"namevalue",  "type":["struct","double"]},
+         {"name":"latlims",      "kind":"namevalue",  "type":"double"},
+         {"name":"lonlims",      "kind":"namevalue",  "type":"double"},
+         {"name":"ClipFile",     "kind":"namevalue",  "type":["char","cell","string"]},
+         {"name":"savefile",     "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ]
+   }
+}

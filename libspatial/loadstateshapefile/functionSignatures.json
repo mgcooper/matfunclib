@@ -1,0 +1,10 @@
+{
+   "_schemaVersion": "1.0.0",
+   "loadstateshapefile":
+   {
+      "inputs":
+      [
+         {"name":"statename",   "kind":"required",   "type":"choices=usastatelist"}
+      ]
+   }
+}

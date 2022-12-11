@@ -1,7 +1,7 @@
 function S = geostructinit(geometry,numfeatures,varargin);
 %geostructinit initializes a geostructure S with geometry
 % 
-% Usage:
+%  Syntax
 % 
 %  S = geostructinit(geometry,numfeatures); 
 %  Creates a geostruct S of size(1,numfeatures) and specified geometry
@@ -17,18 +17,18 @@ function S = geostructinit(geometry,numfeatures,varargin);
 %--------------------------------------------------------------------------
 % input parsing
 %--------------------------------------------------------------------------
-   p                 = MipInputParser;
-   p.FunctionName    = 'geostructinit';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
+p                 = MipInputParser;
+p.FunctionName    = 'geostructinit';
+p.CaseSensitive   = false;
+p.KeepUnmatched   = true;
 
-   p.addRequired(   'geometry',              @(x)ischar(x)           );
-   p.addRequired(   'numfeatures',           @(x)isnumeric(x)        );
-   p.addParameter(  'fieldnames',   '',      @(x)ischar(x)|iscell(x) );
-   
-   p.parseMagically('caller');
-   
-   fieldnames = p.Results.fieldnames;
+p.addRequired(   'geometry',              @(x)ischar(x)           );
+p.addRequired(   'numfeatures',           @(x)isnumeric(x)        );
+p.addParameter(  'fieldnames',   '',      @(x)ischar(x)|iscell(x) );
+
+p.parseMagically('caller');
+
+fieldnames = p.Results.fieldnames;
    
 %--------------------------------------------------------------------------
 
@@ -40,8 +40,8 @@ geometry(1) = upper(geometry(1));
 
 % init a geo struct
 [S(1:numfeatures).Geometry]  = deal(geometry);
-[S(1:numfeatures).Lat]       = deal(nan);
 [S(1:numfeatures).Lon]       = deal(nan);
+[S(1:numfeatures).Lat]       = deal(nan);
 
 for n = 1:numel(fieldnames)
    [S(1:numfeatures).(fieldnames{n})] = deal(nan);

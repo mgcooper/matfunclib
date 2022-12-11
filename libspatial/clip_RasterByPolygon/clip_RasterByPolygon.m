@@ -119,7 +119,3 @@ switch (lower(Operation))
   otherwise
     error('Requested Operation is not recognized.')
 end
-
-
-
-end
