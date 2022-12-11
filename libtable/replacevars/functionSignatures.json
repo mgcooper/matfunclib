@@ -1,0 +1,14 @@
+{
+   "_schemaVersion": "1.0.0",
+   "_comment": "this is an example of a comment",
+   "replacevars":
+   {
+      "inputs":
+      [
+         {"name":"T",            "kind":"required",   "type":["tabular"]},
+         {"name":"VarNames",     "kind":"required",   "type":["choices=gettablevarnames(T)"]},
+         {"name":"NewVars",      "kind":"required",   "type":["numeric"]},
+         {"name":"NewVarNames",  "kind":"namevalue",  "type":["cell"]}
+      ]
+   }
+}
