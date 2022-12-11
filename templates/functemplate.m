@@ -1,33 +1,36 @@
-function [Z,R] = functemplate(x,varargin)
+function Y = functemplate(X,varargin)
 %FUNCNAME general description of function
 % 
-% Syntax:
+% Syntax
 % 
-%  [Z,R] = FUNCNAME(x);
-%  [Z,R] = FUNCNAME(x,'name1',value1);
-%  [Z,R] = FUNCNAME(x,'name1',value1,'name2',value2);
-%  [Z,R] = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
+%  Y = FUNCNAME(X) description
+%  Y = FUNCNAME(X,'name1',value1) description
+%  Y = FUNCNAME(X,'name1',value1,'name2',value2) description
+%  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
 %        The default method is 'flag1'. 
 % 
-% Author: Matt Cooper, MMM-DD-YYYY, https://github.com/mgcooper
-
-% for parsing help, see:
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
+% Example
+% 
+% 
+% Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
+%
+% See also
 
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
-p                 = MipInputParser;
+p                 = magicParser;
 p.FunctionName    = 'funcname';
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 
-p.addRequired(   'x',                  @(x)isnumeric(x));
+p.addRequired(   'X',                  @(x)isnumeric(x));
 p.addOptional(   'option',    nan,     @(x)any(validatestring(x,validstrings)));
 p.addParameter(  'namevalue', false,   @(x)islogical(x)     );
 
 p.parseMagically('caller');
-   
+
+% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
 %------------------------------------------------------------------------------
 
 

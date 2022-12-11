@@ -31,6 +31,14 @@
 % https://www.mathworks.com/help/mps/restfuljson/matlab-function-signatures-in-json.html#mw_81133643-20fb-43f0-9643-11b1221ff8d0
 % https://www.mathworks.com/help/mps/restfuljson/restful-api-for-discovery-and-diagnostics.html#mw_d710d743-384a-434f-b4ab-2b5941e56ca8
 
+to wrap around built-in matlab functions, if we know the default optional input values, we can just mirror those in our input parser. 
+If not, see loadgis.m and its call to parser2varargin. Imagine we want a function that calls matlab built in function, so we want all the inputs to the built in as inputs to our function.
+We first open the built-in and the function signature file, copy it over to our file, but we need the defaults for our parser, otherwise we need
+complicated swithc or if/else statements to get the calling syntax to the built in correct. for general calls, we need the defaults. but some functiosn
+don't have documented defaults. parser2varargin figures out which ones were passed in to th ewrapper and only passes those to the built in. its an edge
+case but opens up the door to wrapping built ins with much simpler syntax within th ewrapper func
+
+
 p.StructExpand = true;  % has to be true to use autocomplete fieldname, and probably should be false if passing in a struct that you don't want to expand
 see bfra_mapbasins for strucutre input field name autocomplete
 see bfra_getevents for multi-function signature

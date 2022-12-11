@@ -1,0 +1,13 @@
+{
+   "_schemaVersion": "1.0.0",
+   "_comment": "this is an example of a comment",
+   "rowsum":
+   {
+      "inputs":
+      [
+         {"name":"A",         "kind":"required",   "type":["matrix"]},
+         {"name":"rowindex",  "kind":"ordered",    "type":["numeric"]},
+         {"name":"addcolumn", "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ]
+   }
+}

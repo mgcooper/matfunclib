@@ -8,5 +8,12 @@
          {"name":"t2",  "kind":"required",   "type":["datetime","numeric","column"]},
          {"name":"dt",  "kind":"required",   "type":[["char", "choices={'y','mm','w','d','h','m','s'}"],["duration"]],"purpose":"Option"}
       ]
+   },
+   "timespan":
+   {
+      "inputs":
+      [
+         {"name":"T",   "kind":"required",   "type":["datetime","timetable","duration"]}
+      ]
    }
 }

@@ -3,6 +3,7 @@
    "_comment": "this is an example of a comment",
    "funcname":
    {
+      "_comment": "this is an example of a comment",
       "inputs":
       [
          {"name":"A",   "kind":"required",   "type":["char"]},

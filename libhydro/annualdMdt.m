@@ -42,6 +42,7 @@ function [dMdt,Mt] = annualdMdt(Time,M)
       
    end
    
+   % annual differences on a monthly basis
    for n = 1:nmonths-12
       i        =  n;
       ii       =  n+12;
@@ -50,6 +51,8 @@ function [dMdt,Mt] = annualdMdt(Time,M)
       
       % dMdt(ii) = (M(ii)+M(ii+1))/2 - (M(i)+M(i+1))/2;
    end
+   
+   % reshape back to vectors of monthly data posted monthly
    
    % to build the new yearly time vector, if water year or anything other
    % than Jan-Dec, then datetime(years,1,1) won't work b/c we will have one

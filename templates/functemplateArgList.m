@@ -1,22 +1,27 @@
-function c = functemplate(a,b,flag1,flag2,options)
+function Y = functemplate(X,flag1,flag2,options)
 %FUNCNAME general description of function
 % 
-% Syntax:
+% Syntax
 % 
-%  C = FUNCNAME(a,b);
-%  C = FUNCNAME(a,b,'flag1');
-%  C = FUNCNAME(___,'options.name1',options.value1,'options.name2',options.value2);
+%  Y = FUNCNAME(X) description
+%  Y = FUNCNAME(X,'flag1') description
+%  Y = FUNCNAME(X,'flag2') description
+%  Y = FUNCNAME(___,'options.name1',options.value1,'options.name2',options.value2) description
 %        The default flag is 'plot'. 
 % 
-% Author: Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
+% Example
+% 
+% 
+% Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
+% 
+% See also
 
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
 
 arguments
-   a (:,1) double
-   b (:,1) double
+   X (:,1) double
    flag1 (1,1) string {mustBeMember(flag1,{'add','multiply'})} = 'add'
    flag2 (1,1) string {mustBeMember(flag2,{'plot','figure','none'})} = 'none'
    options.LineStyle (1,1) string = "-"

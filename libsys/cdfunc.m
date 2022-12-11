@@ -2,10 +2,17 @@ function cdfunc(funcname)
 %CDFUNC cd to foldor containing function funcname
 
 % parse inputs
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p=inputParser;
-p.FunctionName='cdfunc';
-p.PartialMatching=false;
+%------------------------------------------------------------------
+
+% converting funcname to string in case of accidentally passing in something
+% like cdfunc(getlist) will fail before getting here because you cannot pass a
+% function name into another function (maybe if it accepts no arguments it works)
+if ~ischar(funcname); funcname = inputname(funcname); end
+
+p                 = inputParser;
+p.FunctionName    = 'cdfunc';
+p.PartialMatching = false;
+
 addRequired(p,'funcname',@(x)ischar(x));
 parse(p,'funcname');
 

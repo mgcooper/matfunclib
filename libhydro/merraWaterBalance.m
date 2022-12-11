@@ -1,7 +1,22 @@
 function Merra = merraWaterBalance(basinname,varargin)
-%MERRAWATERBALANCE
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   p=MipInputParser;
+%MERRAWATERBALANCE compute MERRA2 water balance for basin.
+% 
+%  Merra = merraWaterBalance(basinname) returns timetable Merra with water
+%  balance components as columns and rows as timesteps for the entire period of
+%  record (1981-2020).
+% 
+%  Merra = merraWaterBalance(basinname,'t1',t1,'t2',t2) returns timetable Merra
+%  with water balance components as columns and rows as timesteps for the period
+%  of time bounded by t1 and t2.
+% 
+%  Merra = merraWaterBalance(___,) (placeholder for future options)
+%
+% Matt Cooper, 20-Feb-2022, mgcooper@github.com
+% 
+% See also annualdMdt graceSnowCorrect
+
+%-------------------------------------------------------------------------------
+   p=magicParser;
    p.FunctionName='merraWaterBalance';
    p.addRequired('basinname',@(x)ischar(x));
    p.addParameter('t1',NaT,@(x) isdatetime(x)|isnumeric(x));
@@ -12,7 +27,7 @@ function Merra = merraWaterBalance(basinname,varargin)
       t1 = datetime(t1,'ConvertFrom','datenum');
       t2 = datetime(t2,'ConvertFrom','datenum');
    end
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%-------------------------------------------------------------------------------
 
    % data are available from 1/1980 to 1/2022
    load('merrafilelist.mat','filelist');
@@ -35,9 +50,9 @@ function Merra = merraWaterBalance(basinname,varargin)
    end
    
    % load the basin polygon in equal-area projection to get area in m2
-   [~,~,poly]  =  bfra_loadbounds('basinname',basinname,'projection','ease'); 
+   [~,~,poly]  =  bfra.loadbounds(basinname,'current','projection','ease'); 
    aream2      =  poly.area;
-   [~,~,poly]  =  bfra_loadbounds('basinname',basinname,'projection','geo');
+   [~,~,poly]  =  bfra.loadbounds(basinname,'current','projection','geo');
    
    cf          =  24.*365.25.*100;           % to convert from m/h to cm/yr
    unit        =  'kg m-2 s-1';              % the native merra2 unit see info
@@ -83,7 +98,7 @@ function Merra = merraWaterBalance(basinname,varargin)
    end % data come out in units m/hr or m
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% 	clip the merra2 data to the basin
+% 	clip the merra2 data to the basin
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    % read in the kuparuk basin and find the points in the poly
@@ -118,11 +133,10 @@ function Merra = merraWaterBalance(basinname,varargin)
    clear Mask inpolyb data 
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%%    synchronize all the data
+%    synchronize all the data
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    % build a merra calendar and timetable, then synchronize all the data
-   Time     =  tocol(t1:calmonths(1):t2);
-   Merra    =  timetable(Rm3s,P,E,R,S,BF,SW,TW,'RowTimes',Time);
-   
-   Merra.Properties.VariableUnits   = {'m3/s','cm/y','cm/y','cm/y','cm/y','cm/y','cm','cm'};
+   Time  = tocol(t1:calmonths(1):t2);
+   Merra = timetable(Rm3s,P,E,R,S,BF,SW,TW,'RowTimes',Time);
+   Merra = settableunits(Merra,{'m3/s','cm/y','cm/y','cm/y','cm/y','cm/y','cm','cm'});

@@ -13,6 +13,9 @@
       <Action id="drop-line">
          <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
       </Action>
+      <Action id="go-until-cursor">
+         <Stroke code="VK_R" meta="on" shift="on" sysctrl="on"/>
+      </Action>
    </Context>
    <Context id="CommandWindow">
       <Action follows="None" id="evaluate-selection">

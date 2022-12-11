@@ -1,30 +1,52 @@
 function PER = computeWaterBalance(Data,varargin)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   p=MipInputParser;
+%computeWaterBalance compute water balance dS/dt = P-E-R and trends in each.
+% 
+%  PER = computeWaterBalance(Data) returns struct PER containing timetables of
+%  annual, monthly, and seasonal water balance components from the monthly
+%  components in Data.
+% 
+%  PER = computeWaterBalance(Data,'snowcorrect',true) optionally applies a snow
+%  bias correction to remove the influence of above-ground snowpack storage on
+%  computed dS/dt trends. There must be a column in Data named 'SW'.
+% 
+%  PER = computeWaterBalance(Data,'wateryear',true) optionally specifies that
+%  the data in Data are on a water year calendar. Assumes the first month is
+%  10/1 of the first year in the data record, and 9/1 is the last month.
+% 
+%  Inputs
+% 
+%     Data : timetable of water balance components in units cm/yr posted monthly
+% 
+%  Outputs
+% 
+%     PER.annual.PER : annual P-E-R i.e. for each year, sum P,E, and R over 12
+%     months, with 12-month periods beginning on each of the 12 calendar months,
+%     then compute P-E-R for each year 
+% 
+%     PER.annual.ab : the linear regression intercept (a) and slope (b) of the
+%     annual P-E-R values from the step above against time in years  
+% 
+%     PER.monthly.PER : as above, P-E-R for each month (not annual sums centered
+%     on each month, the actual monthly P-E-R) 
+% 
+%     PER.monthly.ab : the linear regression as above on the monthly P-E-R
+% 
+%     PER.seasonal ... analogous with monthly but for three-month averages
+% 
+% 
+% Matt Cooper, 20-Feb-2022, mgcooper@github.com
+% 
+% See also annualdMdt graceSnowCorrect merraWaterBalance
+
+%-------------------------------------------------------------------------------
+   p=magicParser;
    p.FunctionName='computeWaterBalance';
    p.PartialMatching=true;
    p.addRequired('Data',@(x)istimetable(x));
    p.addParameter('snowcorrect',false,@(x)islogical(x));
    p.addParameter('wateryear',false,@(x)islogical(x));
    p.parseMagically('caller');
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% Input:
-% - Data             =  timetable of water balance components with
-%                       units cm/yr posted monthly
-% 
-% Output:
-% - PER.annual.PER   =  annual P-E-R i.e. for each year, sum P,E, and R
-%                       over 12 months, with 12-month periods beginning on
-%                       each of the 12 calendar months, then compute P-E-R
-%                       for each year
-% - PER.annual.ab    =  the linear regression intercept (a) and slope (b)
-%                       of the annual P-E-R values from the step above
-%                       against time in years 
-% - PER.monthly.PER  =  as above, P-E-R for each month (not annual sums
-%                       centered on each month, the actual monthly P-E-R)
-% - PER.monthly.ab   =  the linear regression as above on the monthly P-E-R
-% - PER.seasonal ... analogous with monthly but for three-month averages
-
+%-------------------------------------------------------------------------------
 
 % the annual PER values are somewhat confusing because I compute them using
 % each month as a starting month. think of these like water years starting

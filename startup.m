@@ -28,6 +28,9 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 % I set this to make the setenv statements syntax more compact:
 MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
 
+% user project path
+setenv('USERPROJECTPATH',[HOMEPATH 'myprojects/']);
+
 % matlab functions
 setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
 setenv('MATLABTEMPLATEPATH',[MATLABPATH 'matfunclib/templates/']);
@@ -46,6 +49,8 @@ setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
 
 % user data
 setenv('USERDATAPATH',[HOMEPATH 'work/data/']);
+setenv('USERATSDATAPATH',[getenv('USERDATAPATH') 'interface/ATS/'])
+setenv('USERGISPATH',[HOMEPATH 'work/data/interface/GIS_data/']);
 
 % project and source code
 setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
