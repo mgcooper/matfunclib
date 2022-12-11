@@ -1,0 +1,57 @@
+{
+   "_schemaVersion": "1.0.0",
+   "addstructfields":
+   {
+      "inputs":
+      [
+         {"name":"S",      "kind":"required",   "type":["struct"]},
+         {"name":"fields", "kind":"required",   "type":["cell","char"]}
+      ]
+   },
+   "catstructfields":
+   {
+      "inputs":
+      [
+         {"name":"S",   "kind":"required",   "type":["struct"]}
+      ]
+   },
+   "catstructs":
+   {
+      "inputs":
+      [
+         {"name":"A",   "kind":"required",   "type":["struct"]},
+         {"name":"S",   "kind":"required",   "type":["struct"]}
+      ]
+   },
+   "flattenstruct":
+   {
+      "inputs":
+      [
+         {"name":"S",   "kind":"required",   "type":["struct"]}
+      ]
+   },
+   "mergestructs":
+   {
+      "inputs":
+      [
+         {"name":"S",   "kind":"required",   "type":["struct"]}
+      ]
+   },
+   "renamestructfields":
+   {
+      "inputs":
+      [
+         {"name":"S",         "kind":"required",   "type":["struct"]},
+         {"name":"fields",    "kind":"required",   "type":["cell","char"]},
+         {"name":"newfields", "kind":"required",   "type":["cell","char"]}
+      ]
+   },
+   "rmstructfields":
+   {
+      "inputs":
+      [
+         {"name":"S",         "kind":"required",   "type":["struct"]},
+         {"name":"fields",    "kind":"required",   "type":["cell","char"]}
+      ]
+   }
+}

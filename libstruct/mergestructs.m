@@ -10,7 +10,7 @@ function S = mergestructs(S, T)
 %   T.two = 2;
 %   mergestructs(S,T)
 %
-%   ans = 
+%   ans =
 %   struct with fields:
 %     one: 1
 %     two: 2
@@ -22,18 +22,17 @@ function S = mergestructs(S, T)
 %   Output:
 %   S       combination structure
 
-    arguments
-        S(1,1) struct
-        T(1,1) struct
-    end
+arguments
+   S(1,1) struct
+   T(1,1) struct
+end
 
-    f = fieldnames(T);
-    for i = 1:length(f)
-        if isfield(S, f{i})
-            warning("structtools:commonfield",...
-                "Field '%s' exists in both structures.", f{i});
-            continue
-        end
-        S.(f{i}) = T.(f{i});
-    end
+f = fieldnames(T);
+for i = 1:length(f)
+   if isfield(S, f{i})
+      warning("structtools:commonfield",...
+         "Field '%s' exists in both structures.", f{i});
+      continue
+   end
+   S.(f{i}) = T.(f{i});
 end

@@ -11,7 +11,7 @@ function S = flattenstruct(S, delim)
 %   S.substruct.subsubstruct.subsubfield1 = "grandchild";
 %   flattenstruct(S)
 %
-%   ans = 
+%   ans =
 %   struct with fields:
 %                                field1: "parent"
 %                   substruct_subfield1: "child1"
@@ -25,21 +25,20 @@ function S = flattenstruct(S, delim)
 %   Output:
 %   S       flattened structure
 
-    arguments
-        S(1,1) struct
-        delim(1,:) char = '_'
-    end
-    
-    f = fieldnames(S);
-    for i = 1:length(f)
-        if ~isstruct(S.(f{i}))
-            continue
-        end
-        B = flattenstruct(S.(f{i}));
-        fB = fieldnames(B);
-        for j = 1:length(fB)
-            S.([(f{i}) delim (fB{j})]) = B.(fB{j});
-        end
-        S = rmfield(S, f{i});
-    end
+arguments
+   S(1,1) struct
+   delim(1,:) char = '_'
+end
+
+f = fieldnames(S);
+for i = 1:length(f)
+   if ~isstruct(S.(f{i}))
+      continue
+   end
+   B = flattenstruct(S.(f{i}));
+   fB = fieldnames(B);
+   for j = 1:length(fB)
+      S.([(f{i}) delim (fB{j})]) = B.(fB{j});
+   end
+   S = rmfield(S, f{i});
 end

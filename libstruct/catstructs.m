@@ -18,9 +18,9 @@ function A = catstructs(A, S)
 %   struct2table(A)
 %
 %   ans =
-%        first           second          third    
+%        first           second          third
 %     ____________    ____________    ____________
-% 
+%
 %     {[       1]}    {["one"   ]}    {0×0 double}
 %     {[       2]}    {["two"   ]}    {0×0 double}
 %     {0×0 double}    {0×0 double}    {'third'   }
@@ -32,14 +32,24 @@ function A = catstructs(A, S)
 %   Output:
 %   A       concatenation of input structure array and structure
 
-    arguments
-        A(:,:) struct {isvector}
-        S(1,1) struct
-    end
-    
-    j = length(A) + 1;
-    f = fieldnames(S);
-    for i = 1:length(f)
-        A(j).(f{i}) = S.(f{i});
-    end
+arguments
+   A(:,:) struct {isvector}
+   S(1,1) struct
 end
+
+j = length(A) + 1;
+f = fieldnames(S);
+for i = 1:length(f)
+   A(j).(f{i}) = S.(f{i});
+end
+
+
+% % for reference, this is how two struct's would be catted
+% f = fieldnames(S1); % assume fieldnames are identical in S1 and S2
+% S = cell2struct(cellfun(@vertcat,struct2cell(S1),       ...
+%    struct2cell(S2),'uni',0),f);
+% % or like this:
+% for i = 1:numel(f)
+%    S.(f{i}) = [S1.(f{i});S2.(f{i})];
+% end
+
