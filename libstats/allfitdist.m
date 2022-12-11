@@ -103,7 +103,6 @@ function [D,PD,h] = allfitdist(data,sortby,varargin)
 %        [D2 PD2] = allfitdist(data,'DISCRETE','PDF');       %May be binomial
 %        PD1{1}, PD2{1}                             %Compare distributions
 %
-
 %    Mike Sheppard
 %    Last Modified: 17-Feb-2012
 

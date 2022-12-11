@@ -16,19 +16,18 @@ function [SE,CI,PM,mu,sig] = stderr(data,varargin)
 % the mean is reported as mu +/- 1.96*SE, but an actual t-value
 % is used here rather than 1.96 to adjust for small sample sizes
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   p=MipInputParser;
-   p.FunctionName='stderr';
-   p.addRequired('data',@(x)isnumeric(x));
-   p.addParameter('alpha',0.05,@(x)isnumeric(x));
-   p.addParameter('dim',2,@(x)isnumeric(x));
-   p.parseMagically('caller');
-   alpha=p.Results.alpha;
-   dim=p.Results.dim;
+%--------------------------------------------------------------------------
+p=MipInputParser;
+p.FunctionName='stderr';
+p.addRequired('data',@(x)isnumeric(x));
+p.addParameter('alpha',0.05,@(x)isnumeric(x));
+p.addParameter('dim',2,@(x)isnumeric(x));
+p.parseMagically('caller');
+alpha=p.Results.alpha;
+dim=p.Results.dim;
    
-   % assume data is oriented columnwise, and we want the mean +/- stderr of
-   % each row
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% assume data is oriented columnwise, and we want the mean +/- stderr of each row
+%--------------------------------------------------------------------------
    
    % check for vector vs matrix input
    [r,c,p]  = size(data);
@@ -70,7 +69,7 @@ function [SE,CI,PM,mu,sig] = stderr(data,varargin)
    PM    = t_c.*SE;                % CI half-width (error margin)
    
    % samples with N=1 will have SE=0, t_c=nan, CI=nan. this sets SE nan
-   SE    = setnan(SE,isnan(t_c));
+   SE    = setnan(SE,[],isnan(t_c));
    
    % for very small N (like 2-3), the stderr is meaningless, so replace
    % with twice the std error for 95%, and 1*stderr for 68%

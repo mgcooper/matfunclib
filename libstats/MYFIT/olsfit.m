@@ -19,6 +19,8 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
    
    [x,y] = prepareCurveData(x,y);
    
+   xfit = linspace(0.98*min(x),1.02.*max(x),100);
+   
    switch logopt
       case 'semilogy'
          y = log(y);
@@ -36,8 +38,6 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
    
    N = numel(x);
    ab = [ones(N,1),x]\y;
-   
-   xfit = linspace(0.98*min(x),1.02.*max(x),100);
    
    % the log functions assume models of the form:
    % log(y) = log(a) + b*log(x)     ->    y     = a*x^b
