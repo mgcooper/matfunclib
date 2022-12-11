@@ -10,23 +10,31 @@ function [data_out,dates_out] = padtimeseries(data,dates,padstart,padend,dt)
 %               dates_out   =   padded dates 
 
 % get the size of the data
-[m,n]                   =   size(data);
+[m,n] = size(data);
+
+wasdatetime = isdatetime(dates);
+if wasdatetime == true
+   dates = datenum(dates);
+end
 
 % make sure the padstart/padend are dates
-padstart                =   datenum(padstart);
-padend                  =   datenum(padend);
-dates                   =   datenum(dates);
+padstart = datenum(padstart);
+padend   = datenum(padend);
+dates    = datenum(dates);
 
 % get the missing dates 
-missing_datesi          =   padstart:dt:dates(1)-dt;
-missing_datesf          =   dates(end)+dt:dt:padend;
+missing_datesi = padstart:dt:dates(1)-dt;
+missing_datesf = dates(end)+dt:dt:padend;
 
 % make a nan vector same size
-numpadi                 =   length(missing_datesi);
-numpadf                 =   length(missing_datesf);
+numpadi = length(missing_datesi);
+numpadf = length(missing_datesf);
 
 % pad the data
-data_out                =   [nan(numpadi,n);data;nan(numpadf,n)];
-dates_out               =   [missing_datesi';dates;missing_datesf'];
+data_out  = [nan(numpadi,n);data;nan(numpadf,n)];
+dates_out = [missing_datesi';dates;missing_datesf'];
+
+if wasdatetime == true
+   dates_out = datetime(dates_out,'ConvertFrom','datenum');
 end
 

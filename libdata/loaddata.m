@@ -1,5 +1,11 @@
 function varargout = loaddata(datapath,filename,varargin)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+%LOADMATFILE loads a matfile into the workspace
+%
+%
+%
+% See also loadgis
+
+%-------------------------------------------------------------------------------
    p                 = inputParser;
    p.FunctionName    = 'loaddata';
    p.CaseSensitive   = false;
@@ -27,7 +33,7 @@ function varargout = loaddata(datapath,filename,varargin)
    newvarnames       = p.Results.newvarnames;
    unpackstructs     = p.Results.unpackstructs;
    
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%-------------------------------------------------------------------------------
 
    loadalldata    = string(varnames) == "all";
    renamevars     = string(newvarnames) == "false";
@@ -179,7 +185,7 @@ function varargout = loaddata(datapath,filename,varargin)
 % %          
 % %       end
 % %       
-% %       Data  = renameStructFields(Data,oldvarnames,newvarnames);
+% %       Data  = renamestructfields(Data,oldvarnames,newvarnames);
 % %    end
 %    
 %    % test structvars and assignin
@@ -256,7 +262,7 @@ end
 % %          
 % %          if iscell(newvarnames)
 % %             
-% %             data  = renameStructFields
+% %             data  = renamestructfields
 % %             for m = 1:numel(newvarnames)
 % %                
 % %                data.(newvarnames{m})  = 

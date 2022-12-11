@@ -1,17 +1,27 @@
 function dataarray = addcolumns(dataarray,datacolumns,varargin)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-   p                 = MipInputParser;
-   p.FunctionName    = 'addcolumns';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
-   
-   p.addRequired( 'dataarray',         @(x)isnumeric(x)|istable(x));
-   p.addRequired( 'datacolumns',       @(x)isnumeric(x)|istable(x));
-   p.addOptional( 'index',       nan,  @(x)isnumeric(x));
-   
-   p.parseMagically('caller');
+%ADDCOLUMNS add columns to data array
+% 
+% 
+% 
+% See also
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% NOTE: not sure why I don't use 'addvars' for type table. maybe I just spaced
+% it, or maybe I did not finish that part of the code and it was just added to
+% make the function more general, where dealing with arrays was the main goal
+
+%-------------------------------------------------------------------------------
+p                 = magicParser;
+p.FunctionName    = 'addcolumns';
+p.CaseSensitive   = false;
+p.KeepUnmatched   = true;
+
+p.addRequired( 'dataarray',         @(x)isnumeric(x)|istable(x));
+p.addRequired( 'datacolumns',       @(x)isnumeric(x)|istable(x));
+p.addOptional( 'index',       nan,  @(x)isnumeric(x));
+
+p.parseMagically('caller');
+
+%-------------------------------------------------------------------------------
 
 % use the variable inputname for the case of table data
 % on second thought, if datacolumns is a table and 

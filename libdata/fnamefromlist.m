@@ -1,9 +1,3 @@
-function [ fname ] = fnamefromlist( list,path,n )
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
-
-fname = [path list(n).name];
-
-
-end
-
+function [fname] = fnamefromlist(filelist,filepath,listindex)
+%FNAMEFROMLIST construct filename from filelist and index
+fname = fullfile(filepath,filelist(listindex).name);

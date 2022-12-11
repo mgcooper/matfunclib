@@ -1,5 +1,5 @@
-function [ mininds,minvals ] = findmin( indata,k,varargin )
-%FINDMAX Returns the k indici(s) of the min value and the value at those
+function [ mininds,minvals ] = findglobalmin( indata,k,varargin )
+%FINDGLOBALMIN Returns the k indici(s) of the min value and the value at those
 % indices. optional arguments follow those of 'min' e.g. 'first','last'
 %   Detailed explanation goes here
 

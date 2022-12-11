@@ -26,153 +26,153 @@ function data = standardizeData(data)
       % tair, tsfc
       if any(strcmp(thisvar,{'TTH','T2M'}))
          
-         data  = renameStructFields(data,thisvar,'tair');
+         data  = renamestructfields(data,thisvar,'tair');
          
       elseif any(strcmp(thisvar,{'ST'}))
          
-         data  = renameStructFields(data,thisvar,'tsfc');
+         data  = renamestructfields(data,thisvar,'tsfc');
          
       % shortwave down
       elseif any(strcmp(thisvar,{'SWDH','SWGDN'}))
                               
-         data  = renameStructFields(data,thisvar,'swd');
+         data  = renamestructfields(data,thisvar,'swd');
 
       % shortwave net
       elseif any(strcmp(thisvar,{'SWGNT'}))
                               
-         data  = renameStructFields(data,thisvar,'swn');
+         data  = renamestructfields(data,thisvar,'swn');
          
       % longwave down
       elseif any(strcmp(thisvar,{'LWDH','LWGAB'}))
                               
-         data  = renameStructFields(data,thisvar,'lwd');
+         data  = renamestructfields(data,thisvar,'lwd');
          
       % longwave up
       elseif any(strcmp(thisvar,{'LWGEM'}))
                               
-         data  = renameStructFields(data,thisvar,'lwu');
+         data  = renamestructfields(data,thisvar,'lwu');
 
       % longwave net
       elseif any(strcmp(thisvar,{'LWGNT'}))
                               
-         data  = renameStructFields(data,thisvar,'lwn');
+         data  = renamestructfields(data,thisvar,'lwn');
          
       % ground heat flux
       elseif any(strcmp(thisvar,{'GHTSKIN'}))
          
-         data  = renameStructFields(data,thisvar,'ghf');
+         data  = renamestructfields(data,thisvar,'ghf');
 
       % albedo
       elseif any(strcmp(thisvar,{'ALH','SNICEALB'}))
          
-         data  = renameStructFields(data,thisvar,'albedo');
+         data  = renamestructfields(data,thisvar,'albedo');
          
      elseif any(strcmp(thisvar,{'MODIS'}))
          
-         data  = renameStructFields(data,thisvar,'modis');
+         data  = renamestructfields(data,thisvar,'modis');
          
       % surface pressure
       elseif any(strcmp(thisvar,{'SP','PS'}))
          
-         data  = renameStructFields(data,thisvar,'psfc');
+         data  = renamestructfields(data,thisvar,'psfc');
       
       % elevtion
       elseif any(strcmp(thisvar,{'SH','HLML'}))
          
-         data  = renameStructFields(data,thisvar,'elev');
+         data  = renamestructfields(data,thisvar,'elev');
          
       % wind speed
       elseif any(strcmp(thisvar,{'WSPD','SPEED'}))
          
-         data  = renameStructFields(data,thisvar,'wspd');
+         data  = renamestructfields(data,thisvar,'wspd');
          
       % wind direction
       elseif any(strcmp(thisvar,{'WDIR'}))
          
-         data  = renameStructFields(data,thisvar,'wdir');
+         data  = renamestructfields(data,thisvar,'wdir');
          
       % rel humidity
       elseif any(strcmp(thisvar,{'RH','relh'}))
          
-         data  = renameStructFields(data,thisvar,'rh');
+         data  = renamestructfields(data,thisvar,'rh');
       
       % specific humitidy (if used to compute relh, need 6 digits)
       elseif any(strcmp(thisvar,{'QQH','shum','QV2M'}))
          
-         data  = renameStructFields(data,thisvar,'sh');
+         data  = renamestructfields(data,thisvar,'sh');
          
       % melt, internal melt
       elseif any(strcmp(thisvar,{'MEH','meltin'}))
          
-         data  = renameStructFields(data,thisvar,'melt');
+         data  = renamestructfields(data,thisvar,'melt');
 
       elseif any(strcmp(thisvar,{'refreeze'}))
          
-         data  = renameStructFields(data,thisvar,'freeze');
+         data  = renamestructfields(data,thisvar,'freeze');
          
       % snow divergence
       elseif any(strcmp(thisvar,{'sndiv'}))
          
-         %data  = renameStructFields(data,thisvar,'freeze');
+         %data  = renamestructfields(data,thisvar,'freeze');
          
       % snowfall
       elseif any(strcmp(thisvar,{'SFH','PRECSNO'}))
                               
-         data  = renameStructFields(data,thisvar,'snow');
+         data  = renamestructfields(data,thisvar,'snow');
          
       % rainfall
       elseif any(strcmp(thisvar,{'RFH'}))
                               
-         data  = renameStructFields(data,thisvar,'rain');
+         data  = renamestructfields(data,thisvar,'rain');
 
       % total ppt
       elseif any(strcmp(thisvar,{'PRECTOTCORR','precip'}))
                               
-         data  = renameStructFields(data,thisvar,'ppt');
+         data  = renamestructfields(data,thisvar,'ppt');
          
       % evaporation, sublimation, condenstation
       elseif any(strcmp(thisvar,{'EVAP'}))
          
-         data  = renameStructFields(data,thisvar,'evap');
+         data  = renamestructfields(data,thisvar,'evap');
       
       % runoff
       elseif any(strcmp(thisvar,{'RUH','RUNOFF'}))
          
-         data  = renameStructFields(data,thisvar,'runoff');
+         data  = renamestructfields(data,thisvar,'runoff');
          
       % smb
       elseif any(strcmp(thisvar,{'SMBH'}))
          
-         data  = renameStructFields(data,thisvar,'smb');
+         data  = renamestructfields(data,thisvar,'smb');
          
       % sensible heat flux
       elseif any(strcmp(thisvar,{'SHFH','HFLUX'}))
          
-         data  = renameStructFields(data,thisvar,'shf');
+         data  = renamestructfields(data,thisvar,'shf');
          
       % latent heat flux
       elseif any(strcmp(thisvar,{'LHFH','EFLUX'}))
          
-         data  = renameStructFields(data,thisvar,'lhf');
+         data  = renamestructfields(data,thisvar,'lhf');
          
       % snow depth
       elseif any(strcmp(thisvar,{'SHSN2','SNOWDP_GL'}))
          
-         data  = renameStructFields(data,thisvar,'snowd');
+         data  = renamestructfields(data,thisvar,'snowd');
          
       % cloud frac
       elseif any(strcmp(thisvar,{'CC'}))
          
-         data  = renameStructFields(data,thisvar,'cfrac');
+         data  = renamestructfields(data,thisvar,'cfrac');
 
       % wind components
       elseif any(strcmp(thisvar,{'UUH','U2M'}))
          
-         data  = renameStructFields(data,thisvar,'uwind');
+         data  = renamestructfields(data,thisvar,'uwind');
          
       elseif any(strcmp(thisvar,{'VVH','V2M'}))
          
-         data  = renameStructFields(data,thisvar,'vwind');
+         data  = renamestructfields(data,thisvar,'vwind');
          
       end
    end

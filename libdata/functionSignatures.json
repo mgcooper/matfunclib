@@ -1,11 +1,58 @@
 {
    "_schemaVersion": "1.0.0",
+   "_comment": "this is an example of a comment",
+   "addcolumns":
+   {
+      "inputs":
+      [
+         {"name":"dataarray",    "kind":"required",   "type":["numeric"]},
+         {"name":"datacolumns",  "kind":"required",   "type":["numeric"]},
+         {"name":"index",        "kind":"ordered",    "type":["numeric"]}
+      ]
+   },
    "getlist":
    {
       "inputs":
       [
-         {"name":"path",   "kind":"required",   "type":["char"]},
-         {"name":"pattern","kind":"required",   "type":["char"]}
+         {"name":"path",      "kind":"required",   "type":["char"]},
+         {"name":"pattern",   "kind":"required",   "type":["char"]},
+         {"name":"postget",   "kind":"ordered",    "type":["char"]},
+         {"name":"subdirs",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ]
+   },
+   "loaddata":
+   {
+      "inputs":
+      [
+         {"name":"datapath",   "kind":"required",   "type":["char"]},
+         {"name":"filename",   "kind":"required",   "type":["char"]},
+         {"name":"loadvars",   "kind":"namevalue",  "type":[["char"],["string"],["cell"]]},
+         {"name":"renamevars", "kind":"namevalue",  "type":[["char"],["string"],["cell"]]},
+         {"name":"unpackstructs","kind":"namevalue","type":["logical"],"purpose":"Option"}
+      ]
+   },
+   "loadgis":
+   {
+      "inputs":
+      [
+         {"name":"fname",           "kind":"required",  "type":"choices=getgisfilelist"},
+         {"name":"RecordNumbers",   "kind":"namevalue", "type":"double"},
+         {"name":"BoundingBox",     "kind":"namevalue", "type":"double"},
+         {"name":"Attributes",      "kind":"namevalue", "type":[["cellstr"],["string"]]},
+         {"name":"Selector",        "kind":"namevalue", "type":"cell"},
+         {"name":"UseGeoCoords",    "kind":"namevalue", "type":"logical"}
+      ]
+   },
+   "readfiles":
+   {
+      "inputs":
+      [
+         {"name":"filenameorlist",  "kind":"required",   "type":[["struct"],["char"],["string"]]},
+         {"name":"dataoutputtype",  "kind":"namevalue",  "type":["char","choices={'table','timetable','struct'}"], "default":"'struct'"},
+         {"name":"importopts",      "kind":"namevalue",  "type":["struct"]},
+         {"name":"retime",          "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"newtime",         "kind":"namevalue",  "type":[["datetime"],["duration"]]},
+         {"name":"ReadVariableNames","kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    }
 }
