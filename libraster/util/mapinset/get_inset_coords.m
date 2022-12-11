@@ -57,8 +57,5 @@ inset_xy.xUL    = [xlim_inset(1) x1];
 inset_xy.yUL    = [max(ylim_inset) y2];
 
 
-end
-
-
 
 
