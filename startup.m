@@ -17,7 +17,7 @@
 % HOMEPATH on all machines. but i use the if/else method to set the python
 % path, see further down.
 
-HOMEPATH    = [getenv('HOME') '/'];          % system $HOME
+HOMEPATH = [getenv('HOME') '/'];          % system $HOME
 
 setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 
@@ -26,7 +26,7 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 % setenv('MATLABSTARTUPPATH',[getenv('HOME'),'/Documents/MATLAB']);
 
 % I set this to make the setenv statements syntax more compact:
-MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
+MATLABPATH = getenv('MATLABUSERPATH');      % matlab home
 
 % user project path
 setenv('USERPROJECTPATH',[HOMEPATH 'myprojects/']);
