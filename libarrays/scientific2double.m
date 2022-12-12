@@ -1,5 +1,4 @@
 function [D,T] = scientific2double(C,ndigits)
-
 %SCIENTIFIC2DOUBLE converts numbers displayed as scientific notation within
 % a column, row, or table to regular notation with n digits
 
@@ -16,6 +15,4 @@ for n = 1:length(D)
 end
 % Convert to a table
 T = cell2table(D);
-
-end
 

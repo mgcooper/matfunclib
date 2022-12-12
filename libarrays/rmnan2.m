@@ -16,5 +16,3 @@ elseif nargin == 2
         data_out        =   data_in;
     end
 end
-end
-

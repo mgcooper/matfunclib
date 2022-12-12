@@ -24,6 +24,3 @@ elseif isscalar(val_or_idx_2set)
     data_out        =   data_in;
     data_out(validx)=   set_val;
 end
-
-end
-

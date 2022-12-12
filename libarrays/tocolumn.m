@@ -1,4 +1,3 @@
-function out = tocol(in)
+function out = tocolumn(in)
 out = in(:);
-end
 
