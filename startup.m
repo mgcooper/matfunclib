@@ -138,7 +138,7 @@ end
 %------------------------------------------------------------------------------
 
 % activate toolboxes that we want to always be available
-activate MagicInputParser
+activate magicParser
 
 % copy this file to myFunctions where it lives under source control
 startupFileNameSource   = [userpath '/startup.m'];
