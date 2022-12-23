@@ -1,5 +1,11 @@
 function dt = str2duration(dt,varargin)
-p = MipInputParser;
+% STR2DURATION convert time-format string to duration
+% 
+%  dt = str2duration(dt,varargin), dt = 'y','mm','w','d','h','m','s'
+% 
+% See also
+
+p = magicParser;
 p.FunctionName = 'str2duration';
 p.addRequired('dt',@(x)ischar(x));
 p.addParameter('caltime',false,@(x)islogical(x));

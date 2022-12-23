@@ -1,8 +1,4 @@
 function [D,PD,h] = myallfitdist(data,sortby,varargin)
-
-% i renamed myallfitdist for now b/c changing the input parsing got too
-% complicated but eventually rename allfitdist
-   
 %ALLFITDIST Fit all valid parametric probability distributions to data.
 %   [D PD] = ALLFITDIST(DATA) fits all valid parametric probability
 %   distributions to the data in vector DATA, and returns a struct D of
@@ -110,8 +106,12 @@ function [D,PD,h] = myallfitdist(data,sortby,varargin)
 
 %    Mike Sheppard
 %    Last Modified: 17-Feb-2012
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p                 = MipInputParser();
+%-------------------------------------------------------------------------------
+
+% i renamed myallfitdist for now b/c changing the input parsing got too
+% complicated but eventually rename allfitdist
+
+p                 = magicParser;
 p.FunctionName    = 'allfitdist';
 
 p.addRequired(    'data',                             @(x)isnumeric(x)     );

@@ -1,10 +1,12 @@
 function fdc = fdcurve(flow,varargin)
 %FDCURVE Flow duration curve
-% 
+%
 %     fdc = fdcurve(flow,varargin)
+%
+% See also
 
 %-------------------------------------------------------------------------------
-p = MipInputParser;
+p = magicParser;
 p.FunctionName='fdcurve';
 p.addRequired('flow',@(x)isnumeric(x));
 p.addParameter('axscale','semilogy',@(x)ischar(x));

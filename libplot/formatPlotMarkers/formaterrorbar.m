@@ -1,6 +1,11 @@
-function h = formaterrorbar(h,varargin);
+function h = formaterrorbar(h,varargin)
+%FORMATERRORBAR apply formatting to error bar
+%
+%  h = formaterrorbar(h,varargin);
+%
+% See also
 
-p = MipInputParser;
+p = magicParser;
 p.CaseSensitive=false;
 p.FunctionName='formaterrorbar';
 p.addParameter('linestyle','-',@(x)ischar(x));
@@ -26,14 +31,14 @@ end
 
 % apply the formatting
 set(h                                  , ...
-'LineStyle'         , linestyle        , ...
-'Color'             , color            , ...
-'LineWidth'         , linewidth        , ...
-'Marker'            , marker           , ...
-'MarkerSize'        , markersize       , ...
-'MarkerEdgeColor'   , edgecolor        , ...
-'MarkerFaceColor'   , facecolor        , ...
-'CapSize'           , capsize          );
+   'LineStyle'         , linestyle        , ...
+   'Color'             , color            , ...
+   'LineWidth'         , linewidth        , ...
+   'Marker'            , marker           , ...
+   'MarkerSize'        , markersize       , ...
+   'MarkerEdgeColor'   , edgecolor        , ...
+   'MarkerFaceColor'   , facecolor        , ...
+   'CapSize'           , capsize          );
 
 
 % note: in order to get the below to work, the line and the face color need
@@ -42,27 +47,26 @@ set(h                                  , ...
 % could add checks for the case where i pass in facecolor but not color
 
 % https://www.mathworks.com/matlabcentral/answers/473325-how-to-make-errorbar-transparent
- 
+
 % set transparency of the bars
 set([h.Bar, h.Line], 'ColorType', 'truecoloralpha',   ...
-            'ColorData', [h.Line.ColorData(1:3); 255*alpha])
+   'ColorData', [h.Line.ColorData(1:3); 255*alpha])
 
-% set transparency of marker faces         
+% set transparency of marker faces
 set(h.MarkerHandle, 'FaceColorType', 'truecoloralpha',   ...
-            'FaceColorData', [h.Line.ColorData(1:3); 255*alpha])
+   'FaceColorData', [h.Line.ColorData(1:3); 255*alpha])
 
 % set transparency of the caps (didn't confirm this
 set(h.CapH, 'EdgeColorType', 'truecoloralpha', ...
-            'EdgeColorData', [h.Cap.EdgeColorData(1:3); 255*0.5])
-         
+   'EdgeColorData', [h.Cap.EdgeColorData(1:3); 255*0.5])
+
 % the end caps on the errorbar were still solid, but I was able to make them
 % transparent with other undocumented properties in the errorbar object. In
-% case someone else may be trying to do the same thing:  
+% case someone else may be trying to do the same thing:
 % The hidden properties h.CapH and h.MarkerHandle can be adjusted the same
 % way as h.Line and h.Bar as above, but use FaceColorData & FaceColorType
 % and EdgeColorData & EdgeColorType properties in place of ColorData &
-% ColorType (or can be set to 'visible','off').             
+% ColorType (or can be set to 'visible','off').
 
-         
-         
-         
+
+

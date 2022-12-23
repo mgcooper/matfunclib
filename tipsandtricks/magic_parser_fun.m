@@ -28,7 +28,7 @@ s.input1 = 10;
 s.input2 = 20;
 default = 0;
 
-p = MipInputParser;
+p = magicParser;
 p.addParameter('input1',default);
 p.addParameter('input2',default);
 

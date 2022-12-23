@@ -1,7 +1,10 @@
 function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
 %MYTEXTBOX places textstr at location defined by x,y coordinates in percent
 %units relative to lower left corner of figure panel
-%   Usage
+%
+%  [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
+%
+% See also
 
 % note: this function is ready to be converted to this notation where instead
 % of xpct,ypct, either pass in [xpct ypct] or a char 'best' for textbp or
@@ -9,7 +12,7 @@ function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
 % function [ h,x,y ] = mytextbox( textstr,location,varargin)
 
 %-------------------------------------------------------------------------------
-p=MipInputParser;
+p=magicParser;
 p.KeepUnmatched=true;
 p.FunctionName='mytextbox';
 p.addRequired('textstr',@(x)ischar(x)|iscell(x));
@@ -22,7 +25,7 @@ unmatched = unmatched2varargin(p.Unmatched);
 location = p.Results.location;
 
 % could replace xpct,ypct with location then parse for either a 1x2 numeric
-% vector or a char, see prctile function for 
+% vector or a char, see prctile function for
 % p.addOptional('location','best',@(x)isnumeric(x)||validatePosition(x));
 %-------------------------------------------------------------------------------
 
@@ -54,6 +57,6 @@ h     = text(ax,x,y,textstr,unmatched{:});
 % it either
 function tf = validatePosition(location)
 tf = ((ischar(location) && isrow(location)) || ...
-     (isstring(location) && isscalar(location) && (strlength(location) > 0))) && ...
-     strncmpi(location,'best',max(strlength(location), 1));
+   (isstring(location) && isscalar(location) && (strlength(location) > 0))) && ...
+   strncmpi(location,'best',max(strlength(location), 1));
 

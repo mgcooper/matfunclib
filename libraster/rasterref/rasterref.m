@@ -90,7 +90,7 @@ projection = p.Results.projection;
 
 % % mip can't parse cellinterpretation for some reason, keeping it for
 % reference
-% p=MipInputParser;
+% p=magicParser;
 % p.FunctionName='rasterref';
 % p.addRequired('X',@(x)isnumeric(x));
 % p.addRequired('Y',@(x)isnumeric(x));

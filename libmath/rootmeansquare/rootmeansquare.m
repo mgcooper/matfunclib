@@ -22,7 +22,7 @@ function y = rootmeansquare(x, dim)
 %   x = [2 -2 2; 3 3 -3]; 
 %   y = rms(x, 2)
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-% p                 = MipInputParser;
+% p                 = magicParser;
 % p.FunctionName    = 'rootmeansquare';
 % p.CaseSensitive   = false;
 % p.KeepUnmatched   = true;

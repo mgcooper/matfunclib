@@ -1,18 +1,23 @@
 function coords = writeGeoShapefile(S,filename,varargin)
-%WRITEGEOSHAPEFILE
+%WRITEGEOSHAPEFILE write a shapefile in geographic coordinate format
+%
+%  coords = writeGeoShapefile(S,filename,varargin)
+%
+% See also
+
 %--------------------------------------------------------------------------
-p=MipInputParser;
+p=magicParser;
 p.FunctionName='writeGeoShapefile';
 p.CaseSensitive=false;
 p.PartialMatching=true;
 p.addRequired('S',@(x)isstruct(x)|istable(x)|ischar(x)|isa(x,'geopoint')|...
-                  isa(x,'mappoint')|isa(x,'geoshape')|isa(x,'mapshape'));
+   isa(x,'mappoint')|isa(x,'geoshape')|isa(x,'mapshape'));
 p.addRequired('filename',@(x)ischar(x));
 p.addParameter('Geometry','Point',@(x)ischar(x));
 p.addParameter('plotshp',false,@(x)islogical(x));
 p.addParameter('lat',nan,@(x)isnumeric(x));
 p.addParameter('lon',nan,@(x)isnumeric(x));
-p.parseMagically('caller');   
+p.parseMagically('caller');
 %--------------------------------------------------------------------------
 
 saveshp = true;
@@ -79,19 +84,19 @@ switch lower(Geometry)
    case 'line'
       coords = geoshape(coords); % default geometry is line
    case 'polygon'
-      coords = geoshape(coords); 
+      coords = geoshape(coords);
       coords.Geometry = 'polygon';
 end
 
-if plotshp 
+if plotshp
 
-   figure; 
+   figure;
 
    switch lower(geometry)
-      case 'point'   
+      case 'point'
          geoscatter(coords.Latitude,coords.Longitude,'filled')
       case {'line','polygon'}
-         geoshow(coords.Latitude,coords.Longitude); 
+         geoshow(coords.Latitude,coords.Longitude);
    end
 
 end
@@ -121,7 +126,7 @@ if sum(contains(fields,latfields)) > 0
 
 elseif sum(contains(fields,yfields)) > 0              % check for Y
 
-   ilat  = find(contains(fields,yfields)); useY = true; 
+   ilat  = find(contains(fields,yfields)); useY = true;
 
    warning('no lat coordinates found, using Y coordinates')
 
@@ -137,7 +142,7 @@ if sum(contains(fields,lonfields)) > 0
 
 elseif sum(contains(fields,xfields)) > 0
 
-   ilon  = find(contains(fields,xfields)); useX = true; 
+   ilon  = find(contains(fields,xfields)); useX = true;
 
    warning('no lon coordinates found, using X coordinates');
 
@@ -168,12 +173,12 @@ ilatkeep = nan;
 
 if numel(ilat) > 1
    for n = 1:numel(ilat)
-%          if strcmp(fields{ilat(n)},'Lat') || strcmp(fields{ilat(n)},'Latitude')
+      %          if strcmp(fields{ilat(n)},'Lat') || strcmp(fields{ilat(n)},'Latitude')
       if strcmp(fields{ilat(n)},pickLat) % exact match
          ilatkeep = ilat(n);
       end
    end
-   % having gone through all options, if 
+   % having gone through all options, if
    if isnan(ilatkeep)
       error('no latitude field found, or multiple fields found')
    else
@@ -199,7 +204,7 @@ if numel(ilon) > 1
          ilonkeep = ilon(n);
       end
    end
-   % having gone through all options, if 
+   % having gone through all options, if
    if isnan(ilonkeep)
       error('no longitude field found, or multiple fields found')
    else

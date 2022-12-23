@@ -1,14 +1,20 @@
 function psdx = powerSpectralDensity(x,varargin)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-   p                 = MipInputParser;
-   p.FunctionName    = 'powerSpectralDensity';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
+%POWERSPECTRALDENSITY compute the power spectral density
+%
+%  psdx = powerSpectralDensity(x,varargin)
+%
+% See also
 
-   p.addRequired(   'x',         @(x)isnumeric(x)     );
-   p.addParameter(  't',   1,    @(x)isnumeric(x)     );
-   p.parseMagically('caller');
-   t = p.Results.t;
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+p                 = magicParser;
+p.FunctionName    = 'powerSpectralDensity';
+p.CaseSensitive   = false;
+p.KeepUnmatched   = true;
+
+p.addRequired(   'x',         @(x)isnumeric(x)     );
+p.addParameter(  't',   1,    @(x)isnumeric(x)     );
+p.parseMagically('caller');
+t = p.Results.t;
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % % based on:
@@ -31,29 +37,29 @@ function psdx = powerSpectralDensity(x,varargin)
 % the recommended scaling
 
 % if t is not provided, create a vector from 1:numel(x)
-   if t==1
-      t = cumsum(ones(size(x)));
-   end
-   
+if t==1
+   t = cumsum(ones(size(x)));
+end
+
 % compute the sampling frequency
-   Fs    = 1./diff(t);
-   if any(Fs~=Fs(1))
-      error('irregular sampling frequency detected')
-   else
-      Fs = Fs(1);
-   end
+Fs    = 1./diff(t);
+if any(Fs~=Fs(1))
+   error('irregular sampling frequency detected')
+else
+   Fs = Fs(1);
+end
 
 % Obtain the periodogram using fft. The signal is real-valued and has even
 % length. Because the signal is real-valued, you only need power estimates
 % for the positive or negative frequencies. In order to conserve the total
 % power, multiply all frequencies that occur in both sets — the positive
 % and negative frequencies — by a factor of 2. Zero frequency (DC) and the
-% Nyquist frequency do not occur twice. Plot the result.      
-   N              = length(x);
-   xdft           = fft(x);
-   xdft           = xdft(1:N/2+1);
-   psdx           = (1/(Fs*N)) * abs(xdft).^2;
-   psdx(2:end-1)  = 2*psdx(2:end-1);
+% Nyquist frequency do not occur twice. Plot the result.
+N              = length(x);
+xdft           = fft(x);
+xdft           = xdft(1:N/2+1);
+psdx           = (1/(Fs*N)) * abs(xdft).^2;
+psdx(2:end-1)  = 2*psdx(2:end-1);
 
 % % this can be used to compare with the example
 %    freq           = 0:Fs/length(x):Fs/2;

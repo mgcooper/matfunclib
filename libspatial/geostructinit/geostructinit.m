@@ -1,8 +1,6 @@
 function S = geostructinit(geometry,numfeatures,varargin);
 %geostructinit initializes a geostructure S with geometry
 % 
-%  Syntax
-% 
 %  S = geostructinit(geometry,numfeatures); 
 %  Creates a geostruct S of size(1,numfeatures) and specified geometry
 %  'line','point', or 'polygon'.
@@ -13,11 +11,13 @@ function S = geostructinit(geometry,numfeatures,varargin);
 %  name-value input.
 % 
 %  Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
+% 
+%  See also
 
 %--------------------------------------------------------------------------
 % input parsing
 %--------------------------------------------------------------------------
-p                 = MipInputParser;
+p                 = magicParser;
 p.FunctionName    = 'geostructinit';
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;

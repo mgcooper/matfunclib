@@ -1,12 +1,19 @@
 function setlogticks(ax,varargin)
+%SETLOGTICKS set tick marks for log axis
+% 
+%  setlogticks(ax,varargin)
+% 
+% See also
 
-p=MipInputParser;
+%-------------------------------------------------------------------------------
+p=magicParser;
 p.FunctionName='setlogticks';
 p.addRequired('ax',@(x)isaxis(x));
 p.addParameter('axset','xy',@(x)ischar(x));
 p.addParameter('minxticks',2,@(x)isnumeric(x)); % minimum # of ticks
 p.addParameter('minyticks',2,@(x)isnumeric(x)); % minimum # of ticks
 p.parseMagically('caller');
+%-------------------------------------------------------------------------------
 
 xlims    = ax.XLim;
 ylims    = ax.YLim;
