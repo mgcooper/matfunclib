@@ -1,16 +1,18 @@
 function Gc = graceSnowCorrect(G,SW,varargin)
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p=MipInputParser;
-p.FunctionName='graceSnowCorrect';
-p.PartialMatching=true;
+%------------------------------------------------------------------------------
+p = magicParser;
+p.FunctionName = 'graceSnowCorrect';
+p.PartialMatching = true;
+
 % p.addRequired('T',@(x)isdatetime(x));
 p.addRequired('G',@(x)istimetable(x));
 p.addRequired('SW',@(x)istimetable(x));
 p.addParameter('bimonthly',false,@(x)islogical(x));
 p.addParameter('makeplot',false,@(x)islogical(x));
+
 p.parseMagically('caller');
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
    
 % this corrects on a month-by-month basis meaning the snow anomalies are
 % computed on a month-by-month basis and subtracted from the grace
@@ -101,11 +103,9 @@ Gc       =  setnan(Gc,inan);
 % do I want to return it back as a monthly table?
 
 if makeplot == true
-   
    % compare the og grace to snow-corrected grace
    trendplot(T,OG,'leg','no correction'); 
    trendplot(T,Gc.G,'use',gca,'leg','with correction');
-   
 end
    
 % % TEST - seems like the trend in each month should be removed ...
@@ -124,7 +124,6 @@ end
 % end   
 % % END TEST
 
-end
 
 % the problem with the snow correction is that the snow anomaly can be
 % larger than Grace ... which may be fine ... but for now ignore snow so i

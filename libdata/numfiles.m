@@ -1,6 +1,6 @@
 function [ numfiles ] = numfiles( varargin )
 %NUMFILES generates a list of files matching pattern in folder path
-%   Detailed explanation goes here
+%   [ numfiles ] = numfiles( varargin )
 
 if nargin == 0
     filepath = pwd;

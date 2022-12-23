@@ -35,8 +35,3 @@ for n = 1:numbins
 
 end
 
-
-
-
-end
-

@@ -10,24 +10,22 @@ function [ griddedData ] = columns2grid( columnData,numrows,numcols )
 %   longitude increases from right to left and latitude from bottom to top.
 
 % july 2022, started to fix this up, not even sure what numrows and numcols
-% represent, are they just size(columnData)? 
+% represent, are they just size(columnData)?
 % griddedData = nan(
 
 for m = 1:length(columnData)
-    for n = 1:numrows
-        starti = numcols*n - (numcols-1);
-        endi = numcols*n;
-        
-        temp = columnData(m,starti:endi);
-        griddedData(n,:,m) = temp;
-        
-    end 
+   for n = 1:numrows
+      starti = numcols*n - (numcols-1);
+      endi = numcols*n;
+
+      temp = columnData(m,starti:endi);
+      griddedData(n,:,m) = temp;
+
+   end
 end
 
 for n = 1:length(griddedData)
-    temp = griddedData(:,:,n);
-    temp = rot90(temp,2);
-    griddedData(:,:,n) = temp;
-end
-
+   temp = griddedData(:,:,n);
+   temp = rot90(temp,2);
+   griddedData(:,:,n) = temp;
 end

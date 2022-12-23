@@ -14,26 +14,24 @@ function [ clim_data ] = day2clim2( daily_data,t )
 
 [a,b,c] = size(daily_data);
 if mod(a/365,1) ~= 0;
-    disp('warning: no-leap calendar detected, removing all February 29 data');
-    daily_data = rmleapinds(daily_data,t);
+   disp('warning: no-leap calendar detected, removing all February 29 data');
+   daily_data = rmleapinds(daily_data,t);
 end
 [a,b,c] = size(daily_data);
 numyears = a/365;
 
 % if strcmp('option','daily') == 1
-    
+
 data = reshape(daily_data,365,numyears,b,c);
 
-clim_data = nanmean(data,2);
+clim_data = mean(data,2,'omitnan');
 
-if ndims(clim_data) > 2;
-    clim_data = squeeze(clim_data);
+if ndims(clim_data) > 2
+   clim_data = squeeze(clim_data);
 end
-    
-end
-    
+
 % elseif strcmp('option','monthly') == 1
-%     
+%
 %     jan = daily_data(1:31,:);
 %     feb = daily_data(32:59,:);
 %     mar = daily_data(60:90,:);
@@ -51,13 +49,13 @@ end
 % a = find(time_matrix(:,2) == 2 & time_matrix(:,3) == 29);
 % Tclim = T1;
 % Tclim(a,:) = [];
-% 
+%
 % if length(daily_data) == 366;
 %     daily_data = [daily_data(1:151);daily_data(153:end)];
 % end
-% 
-% 
-% 
+%
+%
+%
 % if strcmp(scale,'daily') == 1
 %     for n = 1:365;
 %         ind = find(time_matrix(:,6) == n);
@@ -73,12 +71,12 @@ end
 %         clim_data(n,1) = data;
 %     end
 % end
-% 
+%
 % if strcmp(option,'wy') == 1
 %     clim_data_temp(1:92,1) = clim_data(274:365,1);
 %     clim_data_temp(93:365,1) = clim_data(1:273,1);
 %     clim_data = clim_data_temp;
 % end
-% 
+%
 % end
 

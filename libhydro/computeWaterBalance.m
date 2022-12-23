@@ -39,13 +39,13 @@ function PER = computeWaterBalance(Data,varargin)
 % See also annualdMdt graceSnowCorrect merraWaterBalance
 
 %-------------------------------------------------------------------------------
-   p=magicParser;
-   p.FunctionName='computeWaterBalance';
-   p.PartialMatching=true;
-   p.addRequired('Data',@(x)istimetable(x));
-   p.addParameter('snowcorrect',false,@(x)islogical(x));
-   p.addParameter('wateryear',false,@(x)islogical(x));
-   p.parseMagically('caller');
+p=magicParser;
+p.FunctionName='computeWaterBalance';
+p.PartialMatching=true;
+p.addRequired('Data',@(x)istimetable(x));
+p.addParameter('snowcorrect',false,@(x)islogical(x));
+p.addParameter('wateryear',false,@(x)islogical(x));
+p.parseMagically('caller');
 %-------------------------------------------------------------------------------
 
 % the annual PER values are somewhat confusing because I compute them using

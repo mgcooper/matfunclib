@@ -7,19 +7,15 @@
       <Action id="eval-cell">
          <Stroke code="VK_F7" shift="on"/>
       </Action>
-      <Action id="shift-insert-break">
-         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
-      </Action>
-      <Action id="drop-line">
-         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
-      </Action>
+      <Action id="shift-insert-break"/>
+      <Action id="drop-line"/>
       <Action id="go-until-cursor">
          <Stroke code="VK_R" meta="on" shift="on" sysctrl="on"/>
       </Action>
    </Context>
    <Context id="CommandWindow">
       <Action follows="None" id="evaluate-selection">
-         <Stroke code="VK_ENTER" shift="on"/>
+         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
       </Action>
    </Context>
    <Context id="Explorer">
@@ -33,7 +29,7 @@
    </Context>
    <Context id="MATLABEditor">
       <Action follows="None" id="evaluate-selection">
-         <Stroke code="VK_ENTER" shift="on"/>
+         <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
       </Action>
    </Context>
 </CustomKeySet>

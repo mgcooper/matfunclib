@@ -1,9 +1,10 @@
 function [GL,GH,imin,imax] = graceMinMax(G,varargin)
    
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p=MipInputParser;
-p.FunctionName='graceMinMax';
-p.PartialMatching=true;
+%------------------------------------------------------------------------------
+p                 = magicParser;
+p.FunctionName    = 'graceMinMax';
+p.PartialMatching = true;
+
 p.addRequired('G',@(x)istimetable(x));
 p.addParameter('wateryear',false,@(x)islogical(x));
 p.addParameter('minaftermax',false,@(x)islogical(x));
@@ -11,8 +12,9 @@ p.addParameter('plotfig',false,@(x)islogical(x));
 p.addParameter('plotcheck',false,@(x)islogical(x));
 p.addParameter('validmonthsmin',1:12,@(x)isnumeric(x));
 p.addParameter('validmonthsmax',1:12,@(x)isnumeric(x));
+
 p.parseMagically('caller');
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%------------------------------------------------------------------------------
 
 
 % for min/max, use calendar year, or any method that doesn't break the year
@@ -80,7 +82,7 @@ if plotfig == true
    macfig('size','horizontal');
    
    subplot(1,3,1);
-   monthplot(nanmean(GraceMY,2),'wateryear',wateryear);
+   monthplot(mean(GraceMY,2,'omitnan'),'wateryear',wateryear);
    set(gca,'XTickLabelRotation',45)
    ylabel('S, annual average')
    

@@ -8,7 +8,7 @@ maxinds = find(islocalmax(indata));
 
 % if there is no local max, use the global max value
 if isempty(maxinds)
-    [maxinds,maxvals]  = findmax(indata,k,varargin{:});
+    [maxinds,maxvals] = findmax(indata,k,varargin{:});
     warning('no local maxima found, using global max, check edges');
     return;
 end
@@ -28,6 +28,4 @@ if isempty(maxinds); error('No local max found'); end
 %         return;
 %     end
 % end
-
-end
 

@@ -33,5 +33,3 @@ dRL(istop) = dRL(istop) - rl;
 
 % remove last row and 'integrate' to get runlength
 RL = cumsum(dRL(1:end-1,:));
-    
-end

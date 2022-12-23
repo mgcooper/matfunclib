@@ -50,5 +50,3 @@ binned.sdhigh       =   SDhigh;
 binned.members      =   members;
 binned.bins         =   bins;
 
-end
-

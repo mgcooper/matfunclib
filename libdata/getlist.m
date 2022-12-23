@@ -1,5 +1,9 @@
 function [ list ] = getlist( pathdata,pattern,varargin )
 %GETLIST generates a list of files matching pattern in folder path
+% 
+%     [ list ] = getlist( pathdata,pattern,varargin )
+% 
+% See also getgisfilelist, fnamefromlist
 
 %-------------------------------------------------------------------------------
 p                 = inputParser;

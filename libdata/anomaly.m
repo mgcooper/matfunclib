@@ -1,7 +1,9 @@
 function [ anoms,norms,pctdif,pctanom ] = anomaly( data, norms )
 %ANOMALY compute climatological anomalies and normals of column-wise data
-
-% also see climatology.m and season.m in CDT
+% 
+%  [anoms,norms,pctdif,pctanom] = anomaly(data,norms)
+% 
+% See also climatology.m, season.m, CDT
 
 % convert to columns and get the normals if not provided
 [r,c,p]  = size(data);
@@ -24,8 +26,5 @@ anoms    =   data - norms;
 ratio    =   anoms./norms;
 pctdif   =   100.*ratio;
 pctanom  =   100 + pctdif;
-
 % pctanom =   100.*data./normal;
-
-end
 

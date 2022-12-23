@@ -1,5 +1,10 @@
 function filelist = getgisfilelist
 % GETGISFILELIST get a list of all spatial data files in USERGISPATH
+% 
+%     filelist = getgisfilelist
+% 
+% See also
+
 exts = {'.shp','.tif','.tiff','.csv','.geojson','.json'};
 filelist = [];
 for n = 1:numel(exts)

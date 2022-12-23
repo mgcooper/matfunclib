@@ -1,6 +1,9 @@
 function [ clim_data ] = day2clim( daily_data, time_matrix, scale, option  )
 %DAY2CLIM converts timeseries of daily data to long term averages i.e.
 %climatology
+% 
+%  [ clim_data ] = day2clim( daily_data, time_matrix, scale, option)
+% 
 %   Inputs:
 %           'daily_data' a single column timeseries of daily data
 %

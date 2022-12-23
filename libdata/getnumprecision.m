@@ -1,4 +1,9 @@
 function prec = getnumprecision(x)
+%GETNUMPRECISION return precision of input number x
+% 
+%     prec = getnumprecision(x)
+% 
+% See also
 
 prec = ceil(log10(x));
 prec(prec>0) = 0;

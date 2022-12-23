@@ -24,5 +24,3 @@ for n = 1:a
     col_data = [col_data;b];
 end
 col_data = reshape(col_data,c,a);
-end
-

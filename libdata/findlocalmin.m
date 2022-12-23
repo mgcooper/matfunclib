@@ -8,19 +8,19 @@ mininds = find(islocalmin(indata));
 
 % if there is no local min, use the global min value
 if isempty(mininds)
-    [mininds,minvals]  = findmin(indata,k,varargin{:});
+    [mininds,minvals] = findmin(indata,k,varargin{:});
     warning('no local minima found, using global min, check edges');
     return;
 end
 
-[imin,minvals]  = findmin(indata(mininds),k,varargin{:});
-mininds         = mininds(imin);
+[imin,minvals] = findmin(indata(mininds),k,varargin{:});
+mininds = mininds(imin);
 
 % if no local min is found, issue error
 if isempty(mininds); error('No local min found'); end
 
 % if the global min is lower than the local min, use it
-globalmin   = findmin(indata,1);
+globalmin = findmin(indata,1);
 if all(indata(globalmin)<indata(mininds))
     if k==1
         mininds = globalmin;
@@ -45,5 +45,4 @@ end
 % figure; plot(1:numel(indata),indata); hold on;
 % scatter(mininds,indata(mininds),'r','filled');
 % scatter(mininds,indata(mininds),'g','filled');
-end
 

@@ -2,7 +2,9 @@ function stats = binStats( data2bin, bindata, binwidth)
 %BINSTATS Computs statistics from the values of data2bin in bins defined
 %by bindata and the binwidth. Binwidth must be an even divisor of it's
 %nearest power of 10.
-
+% 
+%     stats = binStats( data2bin, bindata, binwidth)
+% 
 %   INPUTS:
 %   data2bin        =       the data that you want to average 
 %   binData         =       the data that defines the bins
@@ -55,6 +57,4 @@ stats.sdlow         =   SDlow;
 stats.sdhigh        =   SDhigh;
 stats.members       =   members;
 stats.bins          =   bins;
-
-end
 

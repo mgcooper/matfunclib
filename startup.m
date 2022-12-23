@@ -6,18 +6,13 @@
 
 % SET ENVIRONMENT VARIABLES
 
-% NOTE: the only system (shell) env var I get here is $HOME. I recently changed
-% my .bashrc variables to use _ between each word following best practices, but
-% I don't think I need to change any here, and therefore my matlab environment
-% should not be affected
-
 % userpath is a matlab built-in that returns the matlab startup path. the
 % method I use below first sets HOMEPATH, works better than using if/else
 % on userpath as long as MATLABUSERPATH is in the same location relative to
 % HOMEPATH on all machines. but i use the if/else method to set the python
 % path, see further down.
 
-HOMEPATH = [getenv('HOME') '/'];          % system $HOME
+HOMEPATH    = [getenv('HOME') '/'];          % system $HOME
 
 setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 
@@ -26,10 +21,7 @@ setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
 % setenv('MATLABSTARTUPPATH',[getenv('HOME'),'/Documents/MATLAB']);
 
 % I set this to make the setenv statements syntax more compact:
-MATLABPATH = getenv('MATLABUSERPATH');      % matlab home
-
-% user project path
-setenv('USERPROJECTPATH',[HOMEPATH 'myprojects/']);
+MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
 
 % matlab functions
 setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);

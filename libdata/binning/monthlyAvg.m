@@ -1,6 +1,7 @@
 function [ mo_avg ] = monthlyAvg( daily_data, option1, option2 )
 %MONTHLYAVG takes a year of daily data and averages it to monthly
-%   Detailed explanation goes here
+% 
+%   [ mo_avg ] = monthlyAvg( daily_data, option1, option2 )
 
 
 [a,b,c] = size(daily_data);

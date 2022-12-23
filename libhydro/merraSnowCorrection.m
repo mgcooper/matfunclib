@@ -1,7 +1,18 @@
 function Mc = merraSnowCorrection(M,SW,varargin)
+%MERRASNOWCORRECTION bias-correct merra2 mass fields for snow water equivalent
+%anomalies.
+%
+%  Mc = merraSnowCorrection(M,SW) corrects M using anomalies in SW.
+%
+%  Mc = merraSnowCorrection(M,SW,'bimonthly',true) corrects M using anomalies
+%  in SW using bimonthly averages.
+%
+% Matt Cooper, 20-Feb-2022, mgcooper@github.com
+% 
+% See also merraWaterBalance
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-p=MipInputParser;
+%------------------------------------------------------------------------------
+p = magicParser;
 p.FunctionName='merraSnowCorrection';
 p.PartialMatching=true;
 % p.addRequired('T',@(x)isdatetime(x));
@@ -9,14 +20,14 @@ p.addRequired('M',@(x)istimetable(x));
 p.addRequired('SW',@(x)istimetable(x));
 p.addParameter('bimonthly',false,@(x)islogical(x));
 p.parseMagically('caller');
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   
+%------------------------------------------------------------------------------
+
 % right now, this subtracts the long-term snow trend from all months, but I
 % think we want to correct on a month-by-month basis
 
 
 if bimonthly == true
-   
+
    % the data have to be organized as timetables with each column a month
    % from Jan to Dec, and each row a year
 
@@ -31,12 +42,12 @@ if bimonthly == true
    idxG     =  isbetween(M.Time,tmin,tmax);
    SW       =  SW(idxS,:);
    M        =  M(idxG,:);
-   
+
    imonth   =  month(M.Time(1));
    iyear    =  year(M.Time(1));
    nyears   =  height(M);
    nmonths  =  nyears*12;
-   
+
    if month(M.Time(1)) == 1
       t1    =  datetime(iyear,imonth,1);
       t2    =  datetime(iyear+nyears-1,12,1);
@@ -44,7 +55,7 @@ if bimonthly == true
    elseif month(M.Time(1)) == 10 % assume water years
       T     =  tocol(M.Time(1):calmonths(1):M.Time(end));
    end
-   
+
    % need to reshape carefully
    M        =  reshape(transpose(table2array(M)),nmonths,1);
    SW       =  reshape(transpose(table2array(SW)),nmonths,1);
@@ -57,7 +68,7 @@ if bimonthly == true
    % figure; plot(SW); hold on; plot(MerraM.SW(242:457))
 
    % to do this, comment out the two lines above that replace G with Gc
-   % trendplot(GraceM.Time,GraceM.G); 
+   % trendplot(GraceM.Time,GraceM.G);
    % trendplot(GraceM.Time,GraceM.Gc,'use',gca)
 
 else
@@ -66,7 +77,7 @@ else
       error('no SW variable in provided table')
    end
 
-   % I did it both ways and there's ~no dif, so prob just use this method: 
+   % I did it both ways and there's ~no dif, so prob just use this method:
    tempM    =  synchronize(M,SW,M.Time);
    T        =  tempM.Time;
    P        =  tempM.P;
@@ -108,17 +119,16 @@ Mc       =  setnan(Mc,inan);
 %    trendplot(Tannual,G(:,n)-SW(:,n),'leg','G-SW','use',gca);
 %    trendplot(Tannual,Gc(:,n),'leg','Gc','use',gca);
 %    title(num2str(n)); pause; clf
-% end   
+% end
 % % END TEST
 
-end
 
 % the problem with the snow correction is that the snow anomaly can be
 % larger than Grace ... which may be fine ... but for now ignore snow so i
 % can move on, and check in with kurt or the group abou tit
 % si    = 13;
 % ei    = 24;
-% figure; 
+% figure;
 % plot(GraceM.Time(si:ei),SW(si:ei)); hold on;
-% plot(GraceM.Time(si:ei),G(si:ei)); 
+% plot(GraceM.Time(si:ei),G(si:ei));
 % plot(GraceM.Time(si:ei),Gc(si:ei)); legend('SWE','S','S-SWE');
