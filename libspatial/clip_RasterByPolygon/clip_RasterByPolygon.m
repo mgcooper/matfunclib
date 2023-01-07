@@ -1,4 +1,15 @@
 function [output, Opt]=clip_RasterByPolygon(RData,RLat,RLon,PLat,PLon,Operation,Opt)
+%clip_RasterByPolygon 
+% 
+% 
+% 
+% 
+
+% mgc: added above documentation. some important notes:
+% - RData needs to be a regular grid
+% - RLat/Lon need to be vectors 
+
+
 %% checking input
 validateattributes(RData,{'numeric'},{'3d'});
 validateattributes(RLon,{'numeric'},{'vector','increasing'});
@@ -80,7 +91,13 @@ if (~ismember(lower(Operation),{'aggregate','average','majority'}))
                          RLon(minColIDX+colID)]; %#ok<PFBNS>
 
         % overlapped area
-        [overlap_lon,overlap_lat] = polybool('intersection',PLon,PLat,cellPolygon_lon,cellPolygon_lat);
+        %[overlap_lon,overlap_lat] = polybool('intersection',PLon,PLat,cellPolygon_lon,cellPolygon_lat);
+
+        % mgc to fix polybool warning above:
+         A = polyshape(PLon,PLat,'Simplify',false); 
+         B = polyshape(cellPolygon_lon,cellPolygon_lat,'Simplify',false); 
+         C = intersect(A,B);
+         [overlap_lon,overlap_lat] = boundary(C);
 
         if (~isempty(overlap_lat) || ~isempty(overlap_lon))
           tmpAreaArray = areaint(overlap_lat,overlap_lon,ellips);
