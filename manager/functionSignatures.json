@@ -14,13 +14,31 @@
          {"name":"pickfile",  "kind":"positional",   "type":["char","choices={'pickfile'}"]}
       ]
    },
-   "checkFunctionConflicts":
+   "getFunctionConflicts":
    {
       "inputs":
       [
          {"name":"funcpath",  "kind":"ordered",    "type":["char"]},
          {"name":"funcname",  "kind":"namevalue",  "type":["char","choices=listallmfunctions"]},
          {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"]}
+      ]
+   },
+   "getFunctionDependencies":
+   {
+      "inputs":
+      [
+         {"name":"funcname",  "kind":"ordered",    "type":["char","choices=listallmfunctions"]},
+         {"name":"funcpath",  "kind":"namevalue",  "type":["char"]},
+         {"name":"libname",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"]},
+         {"name":"projname",  "kind":"namevalue",  "type":["char","choices=projectdirectorylist"]},
+         {"name":"refpath",   "kind":"namevalue",  "type":["char"]}
+      ]
+   },
+   "getuserenvs":
+   {
+      "inputs":
+      [
+         {"name":"envname",  "kind":"ordered",   "type":["char","choices=getuserpaths"]}
       ]
    }
 }

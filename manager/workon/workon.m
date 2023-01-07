@@ -7,6 +7,7 @@ function workon(projectname,varargin)
 %
 %
 %  Updates
+%  30 Dec 2022, if Config.m exists in project directory, source it on goto.
 %  23 Nov 2022, added support for projects in USERPROJECTPATH in addition to
 %  MATLABPROJECPATH by adding it to buildprojectdirectory and adding method from
 %  activate.m that reads the folder from projectdirectory to build the
@@ -50,9 +51,23 @@ prjpath = [projects.folder{prjidx} filesep projectname];
 disp(['activating ' projectname]);
 addpath(genpath(prjpath));
 
-if goto; cd(prjpath); end   % cd to the activated tb if requested
-
 % remove .git files from path
 if contains(genpath([prjpath '*.git']),'.git')
    warning off; rmpath(genpath([prjpath '*.git'])); warning on;
 end
+
+if exist(fullfile(prjpath,'Config.m'),'file') == 2
+   try
+      feval(fullfile(prjpath,'Config'),[]);
+   catch ME
+      if strcmp(ME.identifier,'MATLAB:feval:invalidFunctionName')
+         try
+            run(fullfile(prjpath,'Config'));
+         catch ME
+            rethrow(ME)
+         end
+      end
+   end
+end
+
+if goto; cd(prjpath); end   % cd to the activated tb if requested
