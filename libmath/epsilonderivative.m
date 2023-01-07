@@ -1,7 +1,13 @@
 function dfdx = epsilonderivative(f)
-
-% found this neat trick to compute a derivative on stack overflow
-% known as 'newton's difference quotient'
+%EPSILONDERIVATIVE compute df/dx using the epsilon method aka newton's
+%difference quotient. 
+% 
+%  dfdx = epsilonderivative(f) computes df/dx, the derivative of function f wrt
+%  x using the epsilon method aka newton's difference quotient.
+% 
+% Matt Cooper, 2021, https://github.com/mgcooper
+% 
+% See also: derivative, movingslope, sgolay
 
 epsilon = 1e-10;
 

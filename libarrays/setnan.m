@@ -62,7 +62,7 @@ useinds = false;
 if isscalar(naninds) && naninds == false && ~isnan(nanval)
    % assume naninds is the default scalar "false"
    useval = true;
-elseif isscalar(nanval) && isnan(nanval)
+elseif isempty(nanval) || isscalar(nanval) && isnan(nanval)
    % assume nanval is the default scalar "nan"
    useinds = true;
    nanval = naninds;

@@ -1,4 +1,38 @@
 
+% % % % % % % % % % % % % % % % % % 
+% % below was in the README in runoff project 
+
+%  also an opportunity to keep track of the simplest and best raster shows
+
+% this one shows up a lot
+figure; geoshow(lat,lon,swsd,'DisplayType','texturemap');
+figure; worldmap('Greenland'); scatterm(latrs,lonrs,60,swsdrs,'filled');
+
+% this was probably to get vector on top:
+figure;
+rastersurf(Zq,Rq,'ZData',zeros(size(Zq))); hold on;
+mapshow(xin,yin,'Marker','o','MarkerFaceColor','k','MarkerSize',10,'LineStyle','none');
+mapshow(x14,y14,'Marker','x','MarkerFaceColor','k','MarkerSize',20);
+% came from get_merra_bb, x/yin is the coordinates in teh poly, x/y14 the
+% coordinates of ben hills site in 2014
+
+% with textm:
+% figure;
+% worldmap(latlims,lonlims); hold on;
+% geoshow(latrb,lonrb);
+% scatterm(latin,lonin,250,swsdin,'filled');
+% textm(latin-0.02,lonin+0.06,labels);
+
+% say we make a subplot on a worldmap axis, get the clims:
+% clims =   caxis;
+% setm(m1,'MLabelLocation',0.3)
+% setm(m1,'FontSize',16)
+% 
+% % then make the next subplot, use clims:
+% caxis(clims);
+
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % nco suggestions:
 % https://nicojourdain.github.io/students_dir/students_netcdf_nco/
 
