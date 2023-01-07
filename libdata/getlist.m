@@ -3,6 +3,8 @@ function [ list ] = getlist( pathdata,pattern,varargin )
 % 
 %     [ list ] = getlist( pathdata,pattern,varargin )
 % 
+% Matt Cooper, 2022, https://github.com/mgcooper
+% 
 % See also getgisfilelist, fnamefromlist
 
 %-------------------------------------------------------------------------------

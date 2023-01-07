@@ -3,7 +3,9 @@ function [ anoms,norms,pctdif,pctanom ] = anomaly( data, norms )
 % 
 %  [anoms,norms,pctdif,pctanom] = anomaly(data,norms)
 % 
-% See also climatology.m, season.m, CDT
+% Matt Cooper, 2022, https://github.com/mgcooper
+% 
+% See also: climatology.m, season.m, CDT
 
 % convert to columns and get the normals if not provided
 [r,c,p]  = size(data);

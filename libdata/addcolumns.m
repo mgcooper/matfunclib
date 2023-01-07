@@ -1,9 +1,14 @@
-function dataarray = addcolumns(dataarray,datacolumns,varargin)
+function Data = addcolumns(Data,DataColumns,varargin)
 %ADDCOLUMNS add columns to data array
 % 
+%  Data = addcolumns(Data,DataColumns) inserts (adds) columns to the end of Data
 % 
+%  Data = addcolumns(Data,DataColumns,ColumnIndices) inserts columns into
+%  ColumnIndices
 % 
-% See also
+% Matt Cooper, 2022, https://github.com/mgcooper
+% 
+% See also: 
 
 % NOTE: not sure why I don't use 'addvars' for type table. maybe I just spaced
 % it, or maybe I did not finish that part of the code and it was just added to
@@ -32,26 +37,26 @@ p.parseMagically('caller');
 % unique variable and append _X where X is a number to the variable name,
 % and/or add an optional 'variablenames' input
 
-numcolumns  = size(datacolumns,2);
+numcolumns  = size(DataColumns,2);
 if ~isnan(index) && numel(index) ~= numcolumns
    error('numel(index) must match size(datacolumns,2)')
 end
 
-if ismatrix(dataarray)
+if ismatrix(Data)
    
    if isnan(index)
-      dataarray = cat(2,dataarray,datacolumns);
+      Data = cat(2,Data,DataColumns);
    else
-      dataarray(:,index) = datacolumns;
+      Data(:,index) = DataColumns;
    end
    
-elseif istable(dataarray)
+elseif istable(Data)
    
-   if istable(datacolumns)
+   if istable(DataColumns)
       
       % get the current variable names of each table
-      varnames1   = gettablevarnames(dataarray);
-      varnames2   = gettablevarnames(datacolumns);
+      varnames1   = gettablevarnames(Data);
+      varnames2   = gettablevarnames(DataColumns);
       
       % combine them and ensure they are unique
       newnames    = makeuniquevarnames([varnames1,varnames2]);
@@ -59,18 +64,18 @@ elseif istable(dataarray)
       newnames2   = newnames(numel(varnames1)+1:end);
       
       % reset the variable names of each table to the unique versions
-      dataarray   = settablevarnames(dataarray,newnames1);
-      datacolumns = settablevarnames(datacolumns,newnames2);
+      Data   = settablevarnames(Data,newnames1);
+      DataColumns = settablevarnames(DataColumns,newnames2);
       
       % combine them
-      dataarray   = [dataarray, datacolumns];
+      Data   = [Data, DataColumns];
 
    else
       
       % this adds the columns to the table and uses the datacolumns
       % inputname (variable name in calling space) as the new table
       % variable names
-      dataarray   = addvars(dataarray,datacolumns);
+      Data   = addvars(Data,DataColumns);
       
       % convert the table to an array
       % tabledata = table2array(dataarray);

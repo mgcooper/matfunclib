@@ -3,6 +3,8 @@ function [fname] = fnamefromlist(filelist,filepath,listindex)
 % 
 %  [fname] = fnamefromlist(filelist,filepath,listindex)
 % 
-% See also
+% Matt Cooper, 2022, https://github.com/mgcooper
+% 
+% See also: numfiles, list2path
 
 fname = fullfile(filepath,filelist(listindex).name);

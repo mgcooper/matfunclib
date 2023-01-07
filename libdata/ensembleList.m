@@ -1,11 +1,16 @@
 function ensemble = ensembleList(varargin)
 %ENSEMBLELIST create list of ensemble members with all unique combinations of
-%values in input cell arrays
+%values in input cell arrays. Note: all inputs must be assigned cellstr arrays.
 % 
 %  ensemble = ensembleList(varargin)
 % 
-% Input: any number of cell arrays containing character strings
+% Input: any number of cell arrays containing character strings, assigned to
+% variables in the calling workspace.
 % Output: all unique combinations of the strings without repeats
+% 
+% Matt Cooper, 2022, https://github.com/mgcooper
+% 
+% See also:
 
 numvars     = nargin;
 numvalues   = 0;
@@ -16,6 +21,17 @@ ensemble.numvars  = numvars;
 % the total # of combinations is the product of the # of unique values
 
 for n = 1:numvars
+
+% % this is here as a reminder. inputname only works if an assigned variable is
+% passed into the function, meaning I cannot pass something like:
+% ensembleList('mychar') or ensembleList(mystruct.mycellstr) because inputname
+% for both of those will be empty. Below I attempted to convert char inputs to
+% cellstrs thinking it was the reason above syntax failed.
+%    if ischarlike(varargin{n})
+%       thisvarlist = cellstr(varargin{n});
+%    else
+%       thisvarlist = varargin{n};
+%    end
 
    thisvarlist = varargin{n};
    thisvarName = inputname(n);

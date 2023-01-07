@@ -1,11 +1,11 @@
 function [S,A] = loadgis(fname,varargin)
 %LOADGIS loads gis data saved in USERGISPATH
 % 
-% Syntax
-% 
 %  Data = LOADGIS(fname);
 % 
-% Author: Matt Cooper, 07-Jul-2020, https://github.com/mgcooper
+% Matt Cooper, 07-Jul-2020, https://github.com/mgcooper
+% 
+% See also: gisfilelist, loaddata
 
 % NOTE: I probably need to have one function for loadshapefile and one for
 % loadraster to have [S,A] and [Z,R] outputs.
