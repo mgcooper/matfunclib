@@ -88,5 +88,3 @@ end
 if any(lon(:)<-180)
     tf = false; 
 end
-
-end

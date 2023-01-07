@@ -27,5 +27,3 @@ h.h2 = gb2;
 h.h3 = gb3;
 h.h4 = gb4;
 
-end
-
