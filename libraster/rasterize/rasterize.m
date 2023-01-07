@@ -58,171 +58,166 @@ narginchk(4,6)
 
 % confirm mapping toolbox is installed
 assert(license('test','map_toolbox')==1, ...
-                'rasterize requires Matlab''s Mapping Toolbox.')
+   'rasterize requires Matlab''s Mapping Toolbox.')
 
 % check if lat/lon or planar and validate attributes accordingly
-tf              =   islatlon(y,x);
+tf = islatlon(y,x);
 
 % confirm x, y, and z are 2d numeric arrays of equal size
 validateattributes(x,{'numeric'},{'real','2d','nonempty','size',size(y)}, ...
-                            'rasterize', 'x', 1)
+   'rasterize', 'x', 1)
 validateattributes(y,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-                            'rasterize', 'y', 2)
+   'rasterize', 'y', 2)
 validateattributes(z,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-                            'rasterize', 'z', 3)
+   'rasterize', 'z', 3)
 
 % convert to double for compatibility with scatteredInterpolant
-x               =   double(x);
-y               =   double(y);
-z               =   double(z);
+x = double(x);
+y = double(y);
+z = double(z);
 
 % initialize 'method' to natural and then override if passed in by user
-numarg          =   nargin-3; % three required arguments
-method          =   'natural';
-checkarg        =   varargin{numarg};
+numarg = nargin-3; % three required arguments
+method = 'natural';
+checkarg = varargin{numarg};
 if ischar(checkarg) || (isstring(checkarg) && isscalar(checkarg))
-    method      =   checkarg;
-    method      =   lower(method);
-    numarg      =   numarg-1;
+   method = checkarg;
+   method = lower(method);
+   numarg = numarg-1;
 end % else, varargin{numarg} is not method
 
 switch numarg
-    case 1 % user passed in rasterSize, validate it here
-        inrasterSize = true;
-        rasterSize = varargin{1};
-        if tf % x,y are geographic coordinates
-            validateattributes(rasterSize, {'numeric'}, ...
-                            {'real','2d','finite','positive'}, ...
-                            'rasterize','rasterSize', 4)
-        else % x,y are map coordinates (validation is identical)
-            validateattributes(rasterSize, {'numeric'}, ...
-                            {'real','2d','finite','positive'}, ...
-                            'rasterize','rasterSize', 4)
-        end
-    case 2 % user passed in cellextentX and cellextentY, validate them here
-        inrasterSize = false;
-        cellextentX = varargin{1};
-        cellextentY = varargin{2};
-        if tf % x,y are geographic coordinates
-            validateattributes(cellextentX, {'numeric'}, ...
-                    {'real','scalar','finite','positive','<=',360}, ...
-                    'rasterize','cellextentX', 4)
-            validateattributes(cellextentY, {'numeric'}, ...
-                    {'real','scalar','finite','positive','<=',180}, ...
-                    'rasterize','cellextentY', 5)
-        else % x,y are map coordinates (validation is identical)
-            validateattributes(cellextentX, {'numeric'}, ...
-                    {'real','scalar','finite','positive'}, ...
-                    'rasterize','cellextentX', 4)
-            validateattributes(cellextentY, {'numeric'}, ...
-                    {'real','scalar','finite','positive'}, ...
-                    'rasterize','cellextentY', 5)
-        end
+   case 1 % user passed in rasterSize, validate it here
+      inrasterSize = true;
+      rasterSize = varargin{1};
+      if tf % x,y are geographic coordinates
+         validateattributes(rasterSize, {'numeric'}, ...
+            {'real','2d','finite','positive'}, ...
+            'rasterize','rasterSize', 4)
+      else % x,y are map coordinates (validation is identical)
+         validateattributes(rasterSize, {'numeric'}, ...
+            {'real','2d','finite','positive'}, ...
+            'rasterize','rasterSize', 4)
+      end
+   case 2 % user passed in cellextentX and cellextentY, validate them here
+      inrasterSize = false;
+      cellextentX = varargin{1};
+      cellextentY = varargin{2};
+      if tf % x,y are geographic coordinates
+         validateattributes(cellextentX, {'numeric'}, ...
+            {'real','scalar','finite','positive','<=',360}, ...
+            'rasterize','cellextentX', 4)
+         validateattributes(cellextentY, {'numeric'}, ...
+            {'real','scalar','finite','positive','<=',180}, ...
+            'rasterize','cellextentY', 5)
+      else % x,y are map coordinates (validation is identical)
+         validateattributes(cellextentX, {'numeric'}, ...
+            {'real','scalar','finite','positive'}, ...
+            'rasterize','cellextentX', 4)
+         validateattributes(cellextentY, {'numeric'}, ...
+            {'real','scalar','finite','positive'}, ...
+            'rasterize','cellextentY', 5)
+      end
 end
 
 %% we now have 1) rasterSize or 2) cellextent, build the spatial reference object R
 
-% Check if the user passed in regularly-spaced data that isn't gridded 
-tfreg           =   isxyregular(x,y);
-
-if tfreg == 1 % if so, then simply grid it
-    xu          =   unique(x(:),'sorted');
-    yu          =   unique(y(:),'sorted');
-    [X,Y]       =   meshgrid(xu,flipud(yu));
-    Z           =   reshape(z,size(X,1),size(Y,2));
-    R           =   rasterref(x,y,'cell');
+% Check if the user passed in regularly-spaced data that isn't gridded
+tfreg = isxyregular(x,y);
+if tfreg == true % if so, then simply grid it
+   [X,Y] = meshgrid(unique(x(:),'sorted'),flipud(unique(y(:),'sorted')));
+   Z = reshape(z,size(X,1),size(Y,2));
+   R = rasterref(x,y,'cell');
 else % build a query grid and interpolate the scattered data onto it
-    % this method attempts to account for both very small and large domains
-    % it might not work all the time
-    xmindif     =   abs(min(diff(x(:))));
-    ymindif     =   abs(min(diff(y(:))));
-    xtol        =   floor(log10(xmindif))-1;
-    ytol        =   floor(log10(ymindif))-1;
-    xmin        =   roundn(min(x(:)),xtol);
-    xmax        =   roundn(max(x(:)),xtol); 
-    ymin        =   roundn(min(y(:)),ytol);
-    ymax        =   roundn(max(y(:)),ytol);
-    
-%     This can rectify some issues where rounding to x/ytol fails to
-%     encompass the entire extent, but extending by xmindif can also
-%     substantially increase the extent and therefore slow down the
-%     function because it increases the interpolation below
-%     ymin        =   roundn(min(y(:)),ytol)-ymindif;
-%     ymax        =   roundn(max(y(:)),ytol)+ymindif;
-%     xmin        =   roundn(min(x(:)),xtol)-xmindif;
-%     xmax        =   roundn(max(x(:)),xtol)+xmindif;
+   % this method attempts to account for both very small and large domains
+   % it might not work all the time
+   xmindif = abs(min(diff(x(:))));
+   ymindif = abs(min(diff(y(:))));
+   xtol = floor(log10(xmindif))-1;
+   ytol = floor(log10(ymindif))-1;
+   xmin = roundn(min(x(:)),xtol);
+   xmax = roundn(max(x(:)),xtol);
+   ymin = roundn(min(y(:)),ytol);
+   ymax = roundn(max(y(:)),ytol);
 
-    xlims       =   [xmin xmax];
-    ylims       =   [ymin ymax];
-    
-    % i could also push the extent outward by 1/10th of its value ...
-%     xoffset     =   (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
-%     yoffset     =   (max(y(:))-min(y(:)))/10;
-    
-    % determine if the data is planar or geographic and build the R object
+%    This can rectify some issues where rounding to x/ytol fails to
+%    encompass the entire extent, but extending by xmindif can also
+%    substantially increase the extent and therefore slow down the
+%    function because it increases the interpolation below
+%    ymin = roundn(min(y(:)),ytol)-ymindif;
+%    ymax = roundn(max(y(:)),ytol)+ymindif;
+%    xmin = roundn(min(x(:)),xtol)-xmindif;
+%    xmax = roundn(max(x(:)),xtol)+xmindif;
 
-    % NOTE: to allow either rasterSize or cellextent to be specified, I use
-    % inbuilt map/georefcells, but that means the lat/lon limits are not
-    % adjusted for 1/2 cell size as they would be with rasterref. 
-    % since the data are scattered, we cannot know the desired cell size
-    % unless the user provides it. If provided, we can adjust the x/y
-    % limits in the R structure by 1/2 cell size so the raster is correctly
-    % interpreted as an image. Below this tf block, I use R2grid to
-    % construct the X,Y query grid, but R2grid assumes the R structure was
-    % built correctly using rasterref and adjusts for 1/2 cell size INWARD
-    % i.e. it assumes the x,y limits in R are the image borders, not the
-    % outermost x,y cell centers.
-    
-    % to avoid all of this, I could build the grid myself and then use
-    % rasterref, which is basically the opposite of this approach. But then
-    % I would need to figure out how to deal with rasterSize vs cellExtent
-    % checking. For now I am leaving it alone. 
+   xlims = [xmin xmax];
+   ylims = [ymin ymax];
 
-    if tf
-        if inrasterSize
-            R       =   georefcells(ylims,xlims,rasterSize, ...
-                                    'ColumnsStartFrom', 'north', ...
-                                    'RowsStartFrom','west');
-        else
-            R       =   georefcells(ylims,xlims,cellextentY,cellextentX, ...
-                                    'ColumnsStartFrom', 'north', ...
-                                    'RowsStartFrom','west');
-        end
-    else % note: x,y positioning is reversed for maprefcells
-        if inrasterSize
-            R       =   maprefcells(xlims,ylims,rasterSize, ...
-                                    'ColumnsStartFrom', 'north', ...
-                                    'RowsStartFrom','west');
-        else
-            R       =   maprefcells(xlims,ylims,cellextentX,cellextentY, ...
-                                    'ColumnsStartFrom', 'north', ...
-                                    'RowsStartFrom','west');
-        end
-    end
+% i could also push the extent outward by 1/10th of its value ...
+%     xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
+%     yoffset = (max(y(:))-min(y(:)))/10;
 
-    % build a grid and reshape to arrays for interpolation
-    [X,Y]       =   R2grid(R);
-    xq          =   reshape(X,size(X,1)*size(X,2),1);
-    yq          =   reshape(Y,size(Y,1)*size(Y,2),1);
+   % determine if the data is planar or geographic and build the R object
 
-    % update April 10,2020 - convert from geographic/map coordinates to
-    % intrinsic to improve the speed and accuracy of the interpolation 
-    if tf % note order of output xq,yq vs input xq,yq 
-         [xq,yq] =   geographicToIntrinsic(R,yq,xq);
-         [x,y]   =   geographicToIntrinsic(R,y,x);
-    else
-        [xq,yq] =   worldToIntrinsic(R,xq,yq);
-        [x,y]   =   worldToIntrinsic(R,y,x);
-    end
+   % NOTE: to allow either rasterSize or cellextent to be specified, I use
+   % inbuilt map/georefcells, but that means the lat/lon limits are not
+   % adjusted for 1/2 cell size as they would be with rasterref.
+   % since the data are scattered, we cannot know the desired cell size
+   % unless the user provides it. If provided, we can adjust the x/y
+   % limits in the R structure by 1/2 cell size so the raster is correctly
+   % interpreted as an image. Below this tf block, I use R2grid to
+   % construct the X,Y query grid, but R2grid assumes the R structure was
+   % built correctly using rasterref and adjusts for 1/2 cell size INWARD
+   % i.e. it assumes the x,y limits in R are the image borders, not the
+   % outermost x,y cell centers.
 
-    % apply griddata and reshape to a grid
-    Z           =   griddata(x,y,z,xq,yq,method);
+   % to avoid all of this, I could build the grid myself and then use
+   % rasterref, which is basically the opposite of this approach. But then
+   % I would need to figure out how to deal with rasterSize vs cellExtent
+   % checking. For now I am leaving it alone.
 
-    assert(~isempty(Z), ['The interpolated surface, Z, is empty. You may not ' ...
-                        'have provided sufficient x,y values to fit a surface.']);
-    Z           =   reshape(Z,size(X,1),size(X,2));
+   if tf
+      if inrasterSize
+         R = georefcells(ylims,xlims,rasterSize, ...
+            'ColumnsStartFrom', 'north', ...
+            'RowsStartFrom','west');
+      else
+         R = georefcells(ylims,xlims,cellextentY,cellextentX, ...
+            'ColumnsStartFrom', 'north', ...
+            'RowsStartFrom','west');
+      end
+   else % note: x,y positioning is reversed for maprefcells
+      if inrasterSize
+         R = maprefcells(xlims,ylims,rasterSize, ...
+            'ColumnsStartFrom', 'north', ...
+            'RowsStartFrom','west');
+      else
+         R = maprefcells(xlims,ylims,cellextentX,cellextentY, ...
+            'ColumnsStartFrom', 'north', ...
+            'RowsStartFrom','west');
+      end
+   end
 
-end
+   % build a grid and reshape to arrays for interpolation
+   [X,Y] = R2grid(R);
+   xq = reshape(X,size(X,1)*size(X,2),1);
+   yq = reshape(Y,size(Y,1)*size(Y,2),1);
+
+   % update April 10,2020 - convert from geographic/map coordinates to
+   % intrinsic to improve the speed and accuracy of the interpolation
+   if tf % note order of output xq,yq vs input xq,yq
+      [xq,yq] = geographicToIntrinsic(R,yq,xq);
+      [x,y]   = geographicToIntrinsic(R,y,x);
+   else
+      [xq,yq] = worldToIntrinsic(R,xq,yq);
+      [x,y]   = worldToIntrinsic(R,y,x);
+   end
+
+   % apply griddata and reshape to a grid
+   Z = griddata(x,y,z,xq,yq,method);
+
+   assert(~isempty(Z), ['The interpolated surface, Z, is empty. You may not ' ...
+      'have provided sufficient x,y values to fit a surface.']);
+   Z = reshape(Z,size(X,1),size(X,2));
 
 end
 
@@ -273,7 +268,7 @@ end
 % support is the grid spacing. For point measurements, one must estimate
 % the support. The support can then be used to define the areas that should
 % acquire the value "zero" in the output interpolated surface. Dealing with
-% these issues is beyond the scope of this function. 
+% these issues is beyond the scope of this function.
 
 
 %% notes on determining the spatial extent
@@ -291,7 +286,7 @@ end
 %     ylims           =   [floor(min(y(:))) ceil(max(y(:)))];
 %     xlims           =   [floor(min(x(:))) ceil(max(x(:)))];
 % but for very small spatial extent it does not work e.g. limits of 67.02
-% to 67.08 would become 67 to 68. 
+% to 67.08 would become 67 to 68.
 
 % 2. Then I tried to determine a rounding tolerance based on the x/y extent
 %     xextent     =   max(x(:)) - min(x(:));
@@ -301,12 +296,12 @@ end
 %     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
 %     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
 
-% 
+%
 %     xdiffs = diff(x);
 %     xmindif = min(xdiffs)
 %     xmaxdif = max(xdiffs)
 %     xmeandif = mean(xdiffs)
-%     
+%
 % This did not work. Conceptually, at one extreme i could have a huge
 % domain with some points separated by a huge distance and some points very
 % close, in which case min/max/mean could give weird output
@@ -319,9 +314,9 @@ end
 %   if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
 %   if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
 %   xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%   ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];    
+%   ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
 
-% THis seems to work 
+% THis seems to work
 
 % NOTE: this simple approach might also work for the majority of cases
 %     if tf
@@ -351,4 +346,4 @@ end
 %     if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
 %     if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
 %     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];    
+%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];

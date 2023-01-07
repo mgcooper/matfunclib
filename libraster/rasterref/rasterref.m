@@ -1,11 +1,11 @@
-function R = rasterref(X,Y,varargin)
+function [R,X,Y] = rasterref(X,Y,varargin)
 
 % NOTE: it doesn't work if X,Y are irregular, so you can't do something
 % like:
 % [lt,ln] = projinv(proj,x,y);
 % [xnew,ynew] = projfwd(projnew,lt,ln);
 % Rnew = rasterref(xnew,ynew)
-   
+
 % Based on the results of my comparison, rasterref is correct. The issue is
 % with Matlab's interpretation of 'surface' vs 'texture' and 'cells' vs
 % 'postings'. But also check the latest results with
@@ -68,147 +68,41 @@ function R = rasterref(X,Y,varargin)
 %   imagery).
 
 %   See also rasterref, georefcells, maprefcells, meshgrid
-
+% 
 %   Examples - forthcoming
 
-%% Check inputs
+% Input parsing
+%-------------------------------------------------------------------------------
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % confirm mapping toolbox is installed
 assert(license('test','map_toolbox')==1, ...
    'rasterref requires Matlab''s Mapping Toolbox.')
 
-p = inputParser;
-p.FunctionName='rasterref';
-addRequired(p,'X',@(x)isnumeric(x));
-addRequired(p,'Y',@(x)isnumeric(x));
-addParameter(p,'cellInterpretation','cells',@(x)ischar(x));
-addParameter(p,'projection','unknown',@(x)isa(x,'projcrs')||ischar(x));
+p              = inputParser;
+p.FunctionName = 'rasterref';
+addRequired( p, 'X',                               @(x)isnumeric(x));
+addRequired( p, 'Y',                               @(x)isnumeric(x));
+addParameter(p, 'cellInterpretation',  'cells',    @(x)ischar(x));
+addParameter(p, 'projection',          'unknown',  @(x)isa(x,'projcrs')||ischar(x));
+
 parse(p,X,Y,varargin{:});
-cellInterpretation = p.Results.cellInterpretation;
+
+celltype   = p.Results.cellInterpretation;
 projection = p.Results.projection;
 
-% % mip can't parse cellinterpretation for some reason, keeping it for
-% reference
-% p=magicParser;
-% p.FunctionName='rasterref';
-% p.addRequired('X',@(x)isnumeric(x));
-% p.addRequired('Y',@(x)isnumeric(x));
-% p.addParameter('cellInterpretation','cells',@(x)ischar(x));
-% % p.addParameter('projection','unknown',@(x)isa(x,'projcrs')||ischar(x));
-% p.parseMagically('caller');
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% % if x,y are 1-d vectors, build a 2-d grid. E-W/N-S orientation is handled below
-% if isvector(X) && isvector(Y)
-%     X       =   unique(X,'sorted');
-%     Y       =   unique(Y,'sorted');
-%     [X,Y]   =   meshgrid(X,Y);
-% end
-%
 % % confirm X and Y are 2d numeric grids of equal size
 % validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'rasterref', 'X', 1)
 % validateattributes(Y, {'numeric'}, {'2d','size',size(X)}, 'rasterref', 'Y', 2)
-%
+%-------------------------------------------------------------------------------
 
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-% % sep 2022, commented out and implemented functionSignatures
-% % allow user to pass in the following cellInterpretation values
-% cellInterpretation = validatestring(cellInterpretation, ...
-%             {'posting','postings','Posting','Postings', ...
-%             'cell','cells','Cell','Cells', ...
-%             'centroid','centroids','Centroid','Centroids', ...
-%             'edge','edges','Edge','Edges', ...
-%             'model','modeled','Model','Modeled', ...
-%             'image','Image'}, ...
-%             'rasterref', 'cellInterpretation', 3);
-%
-% % set cellInterpretation to the required values 'postings' or 'cells'
-% switch cellInterpretation
-%     case {  'posting','postings','Posting','Postings',      ...
-%             'centroid','centroids','Centroid','Centroids',  ...
-%             'model','modeled','Model','Modeled'}
-%
-%         cellInterpretation = 'postings';
-%
-%     case {  'cell','cells','Cell','Cells',                  ...
-%             'edge','edges','Edge','Edges',                  ...
-%             'image','Image'}
-%
-%         cellInterpretation = 'cells';
-% end
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-% % This was in a duplicate version of rasterref saved in rasterize/util
-% which i deleted. I think we want this in the function but since i am not
-
-% 100% sure I commented it out for now:
-% % NEW Nov 2021, wrap to 360 to make it easier to check inputs
-% % determine if the data are planar or geographic (moved here from
-% tf      =   islatlon(Y(1,1),X(1,1));
-% if tf == true
-%     X =  wrapTo360(X); % this is used to check uniform gridding
-% end
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-
-
-% if X is oriented W-E, orient it E-W
-if X(1,1)~=min(X(:)) || X(1,2)<X(1,1)
-   X               =   fliplr(X);
-   disp(['Input argument 1, X, appears to be oriented E-W. It was ' ...
-      're-oriented W-E, and the output of this function, R, assumes the ' ...
-      'data referenced by R is oriented W-E.']);
-end
-
-% if Y is oriented S-N, orient it N-S
-if Y(1,1)~=max(Y(:)) || Y(1,1)<Y(2,1)
-   Y               =   flipud(Y);
-   disp(['Input argument 2, Y, appears to be oriented S-N. It was ' ...
-      're-oriented N-S, and the output of this function, R, assumes the ' ...
-      'data referenced by R is oriented N-S.']);
-end
-
-% the original method enforced input
-% assert(X(1,1)==min(X(:)) & X(1,2)>X(1,1), ...
-%                 'Input argument 1, X, must be oriented E-W');
-% assert(Y(1,1)==max(Y(:)) & Y(1,1)>Y(2,1), ...
-%                 'Input argument 2, Y, must be oriented N-S');
-
-% determine if the data are planar or geographic
-tf = islatlon(Y(1,1),X(1,1));
-
-%% TEST end
-
-% get an estimate of the grid resolution (i.e. the grid cell size)
-xres    =   diff(X(1,:));
-yres    =   diff(Y(:,1));
-
-% check that the gridding is uniform.
-if tf
-   tol =   -7; % approximately 1 cm in units of degrees
-else
-   %   tol =   -2; % nearest cm
-   tol =   0; % nearest m (changed for MAR)
-end
-
-% round to tol and take second derivative, should == 0 everywhere
-assert(all(roundn(diff(abs(xres),2),tol)==0), ...
-   ['Input argument 1, X, must have uniform grid spacing. ' ...
-   'You might need to round the X/Y or LON/LAT grids ' ...
-   'to a uniform precision']);
-assert(all(roundn(diff(abs(yres),2),tol)==0), ...
-   ['Input argument 2, Y, must have uniform grid spacing. ' ...
-   'You might need to round the X/Y or LON/LAT grids ' ...
-   'to a uniform precision']);
+% convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and N-S,
+% get an estimate of the grid resolution, and determine if the data is
+% geographic or planar  
+[X,Y,cellsizeX,cellsizeY,tf,tol] = prepareMapGrid(X,Y);
 
 % extend the lat/lon limits by 1/2 cell in both directions
-cellsizeX   =  abs(xres(1));
-cellsizeY   =  abs(yres(1));
-halfX       =  cellsizeX/2;
-halfY       =  cellsizeY/2;
+halfX = cellsizeX/2;
+halfY = cellsizeY/2;
 
 % this is the basic approach, does not deal with small errors
 % assert(all(xres(1) == xres), ...
@@ -216,11 +110,11 @@ halfY       =  cellsizeY/2;
 % assert(all(yres(1) == yres), ...
 %             'Input argument 2, Y, must have uniform grid spacing');
 
-% determine if R is planar or geographic and call the appropriate function
+% call the appropriate function depending on whether R is planar or geographic 
 if tf
-   R  =  rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol);
+   R = rasterrefgeo(X,Y,halfX,halfY,celltype,tol);
 else
-   R  =  rasterrefmap(X,Y,halfX,halfY,cellInterpretation,tol);
+   R = rasterrefmap(X,Y,halfX,halfY,celltype,tol);
 end
 
 % if provided, add the projection
@@ -234,97 +128,93 @@ end
 
 function R = rasterrefmap(X,Y,halfX,halfY,cellInterpretation,tol)
 
-   % NOTE: i convert to double because I have encountered X,Y grids
-   % provided by netcdf files that are stored as type uint, but it
-   % might be better to convert X and Y to single or double and
-   % confirm what is most compatible with the functions called
-   xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
-   xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
-   ymin        =  roundn(min(Y(:)),tol);
-   ymax        =  roundn(max(Y(:)),tol);
-   xlims       =  double([xmin-halfX xmax+halfX]);
-   ylims       =  double([ymin-halfY ymax+halfY]);
-   rasterSize  =  size(X);
-   
-   if strcmp(cellInterpretation,'cells')
-      R        =   maprefcells(xlims,ylims,rasterSize, ...
-                  'ColumnsStartFrom','north', ...
-                  'RowsStartFrom', 'west');
-   elseif strcmp(cellInterpretation,'postings')
-      R        =   maprefpostings(xlims,ylims,rasterSize, ...
-                  'ColumnsStartFrom','north', ...
-                  'RowsStartFrom', 'west');
-   end
-   
+% NOTE: i convert to double because I have encountered X,Y grids
+% provided by netcdf files that are stored as type uint, but it
+% might be better to convert X and Y to single or double and
+% confirm what is most compatible with the functions called
+xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
+xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
+ymin        =  roundn(min(Y(:)),tol);
+ymax        =  roundn(max(Y(:)),tol);
+xlims       =  double([xmin-halfX xmax+halfX]);
+ylims       =  double([ymin-halfY ymax+halfY]);
+rasterSize  =  size(X);
+
+if strcmp(cellInterpretation,'cells')
+   R = maprefcells(xlims,ylims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
+elseif strcmp(cellInterpretation,'postings')
+   R = maprefpostings(xlims,ylims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
 end
+
 
 function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
 
-   % 'columnstartfrom','south' is default and corresponds to S-N
-   % oriented grid as often provided by netcdf and h5 but I require
-   % this function accept N-S oriented grids i.e. index (1,1) is NW
-   % corner, consequently set 'columnstartfrom','north'
-   xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
-   xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
-   ymin        =  roundn(min(Y(:)),tol);
-   ymax        =  roundn(max(Y(:)),tol);
-   xlims       =  double([xmin-halfX xmax+halfX]);
-   ylims       =  double([ymin-halfY ymax+halfY]);
-   rasterSize  =  size(X);
+% 'columnstartfrom','south' is default and corresponds to S-N
+% oriented grid as often provided by netcdf and h5 but I require
+% this function accept N-S oriented grids i.e. index (1,1) is NW
+% corner, consequently set 'columnstartfrom','north'
+xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
+xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
+ymin        =  roundn(min(Y(:)),tol);
+ymax        =  roundn(max(Y(:)),tol);
+xlims       =  double([xmin-halfX xmax+halfX]);
+ylims       =  double([ymin-halfY ymax+halfY]);
+rasterSize  =  size(X);
 
-   if strcmp(cellInterpretation,'cells')
-      
-      R        =  georefcells(ylims,xlims,rasterSize, ...
-                  'ColumnsStartFrom','north', ...
-                  'RowsStartFrom', 'west');
+if strcmp(cellInterpretation,'cells')
 
-      % 'georefcells' gets the limits/size/spacing/extent correct in
-      % the structure, but I need to confirm its behavior with
-      % functions such as ll2val etc.
+   R = georefcells(ylims,xlims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
 
-      % Rcell1  =   georefcells(ylims,xlims,rasterSize, ...
-      %                'ColumnsStartFrom','north', ...
-      %                'RowsStartFrom', 'west');
-      % Rcell2  =   georefcells(ylims,xlims,2*halfY,2*halfX, ...
-      %                'ColumnsStartFrom','north', ...
-      %                'RowsStartFrom', 'west');
+   % 'georefcells' gets the limits/size/spacing/extent correct in
+   % the structure, but I need to confirm its behavior with
+   % functions such as ll2val etc.
 
-   elseif strcmp(cellInterpretation,'postings')
-      
-      R        =  georefpostings(ylims,xlims,rasterSize, ...
-                  'ColumnsStartFrom','north', ...
-                  'RowsStartFrom', 'west');
+   % Rcell1  =   georefcells(ylims,xlims,rasterSize, ...
+   %                'ColumnsStartFrom','north', ...
+   %                'RowsStartFrom', 'west');
+   % Rcell2  =   georefcells(ylims,xlims,2*halfY,2*halfX, ...
+   %                'ColumnsStartFrom','north', ...
+   %                'RowsStartFrom', 'west');
 
-      % 'georefcells' gets the limits/size/spacing/extent correct as
-      % saved in the structure, but I need to confirm its behavior
-      % with functions such as ll2val etc.
+elseif strcmp(cellInterpretation,'postings')
 
-      % Rpost1  =   georefpostings(ylims,xlims,rasterSize, ...
-      %                'ColumnsStartFrom','north', ...
-      %                'RowsStartFrom', 'west');
-      % Rpost2  =   georefpostings(ylims,xlims,2*halfY,2*halfX, ...
-      %                'ColumnsStartFrom','north', ...
-      %                'RowsStartFrom', 'west');
+   R = georefpostings(ylims,xlims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
 
-      % if you manually update it, matlab adjusts the limits incorrectly
+   % 'georefcells' gets the limits/size/spacing/extent correct as
+   % saved in the structure, but I need to confirm its behavior
+   % with functions such as ll2val etc.
 
-      % Rpost1.SampleSpacingInLatitude = 2*halfY;
-      % Rpost1.SampleSpacingInLongitude = 2*halfX;
+   % Rpost1  =   georefpostings(ylims,xlims,rasterSize, ...
+   %                'ColumnsStartFrom','north', ...
+   %                'RowsStartFrom', 'west');
+   % Rpost2  =   georefpostings(ylims,xlims,2*halfY,2*halfX, ...
+   %                'ColumnsStartFrom','north', ...
+   %                'RowsStartFrom', 'west');
 
-      % Matlab is interpreting these correctly - if the data are
-      % 'postings' then the halfX/halfY adjustment is incorrect. The
-      % problem is that my initial tests suggests other functions
-      % such as ll2val are incorrect if type 'cell' is specified
+   % if you manually update it, matlab adjusts the limits incorrectly
 
-      % note: R.CellExtentInLongitude (for type 'cell') and
-      % R.SampleSpacingInLatitude should equal:
-      % (R.LongitudeLimits(2)-R.LongitudeLimits(1))/R.RasterSize(2)
-      % but unless pre-processing is performed on standard netcdf or
-      % h5 grid to adjust for edge vs centroid, a 'cells'
-      % interpretation gets it wrong
+   % Rpost1.SampleSpacingInLatitude = 2*halfY;
+   % Rpost1.SampleSpacingInLongitude = 2*halfX;
 
-   end
-end
+   % Matlab is interpreting these correctly - if the data are
+   % 'postings' then the halfX/halfY adjustment is incorrect. The
+   % problem is that my initial tests suggests other functions
+   % such as ll2val are incorrect if type 'cell' is specified
+
+   % note: R.CellExtentInLongitude (for type 'cell') and
+   % R.SampleSpacingInLatitude should equal:
+   % (R.LongitudeLimits(2)-R.LongitudeLimits(1))/R.RasterSize(2)
+   % but unless pre-processing is performed on standard netcdf or
+   % h5 grid to adjust for edge vs centroid, a 'cells'
+   % interpretation gets it wrong
 
 end
 
@@ -363,3 +253,11 @@ end
 % if isvector(X2) && isvector(Y2)
 %     [X2,Y2] = meshgrid(X2,Y2)
 % end
+
+
+
+% the original method enforced input
+% assert(X(1,1)==min(X(:)) & X(1,2)>X(1,1), ...
+%                 'Input argument 1, X, must be oriented E-W');
+% assert(Y(1,1)==max(Y(:)) & Y(1,1)>Y(2,1), ...
+%                 'Input argument 2, Y, must be oriented N-S');
