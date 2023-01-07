@@ -3,23 +3,26 @@ function h = formaterrorbar(h,varargin)
 %
 %  h = formaterrorbar(h,varargin);
 %
-% See also
+% See also: formatplotmarkers, figformat
 
-p = magicParser;
-p.CaseSensitive=false;
+%-------------------------------------------------------------------------------
+p                 = magicParser;
+p.CaseSensitive   = false;
 p.FunctionName='formaterrorbar';
-p.addParameter('linestyle','-',@(x)ischar(x));
-p.addParameter('marker','o',@(x)ischar(x));
-p.addParameter('linewidth',1.5,@(x)ischar(x));
-p.addParameter('color',[.3 .3 .3],@(x)isnumeric(x)||ischar(x));
-p.addParameter('edgecolor',[.2 .2 .2],@(x)isnumeric(x)||ischar(x));
-p.addParameter('facecolor',[.7 .7 .7],@(x)isnumeric(x)||ischar(x));
-p.addParameter('capsize',0,@(x)isnumeric(x));
-p.addParameter('markersize',8,@(x)isnumeric(x));
-p.addParameter('alpha',0.5,@(x)isnumeric(x));
+
+p.addParameter('linestyle',   '-',        @(x)ischar(x)                 );
+p.addParameter('marker',      'o',        @(x)ischar(x)                 );
+p.addParameter('linewidth',   1.5,        @(x)ischar(x)                 );
+p.addParameter('color',       [.3 .3 .3], @(x)isnumeric(x)||ischar(x)   );
+p.addParameter('edgecolor',   [.2 .2 .2], @(x)isnumeric(x)||ischar(x)   );
+p.addParameter('facecolor',   [.7 .7 .7], @(x)isnumeric(x)||ischar(x)   );
+p.addParameter('capsize',     0,          @(x)isnumeric(x)              );
+p.addParameter('markersize',  8,          @(x)isnumeric(x)              );
+p.addParameter('alpha',       0.5,        @(x)isnumeric(x)              );
 p.parseMagically('caller');
 alpha = p.Results.alpha;
 color = p.Results.color;
+%-------------------------------------------------------------------------------
 
 if ischar(color)
    color = rgb(color);
@@ -42,7 +45,7 @@ set(h                                  , ...
 
 
 % note: in order to get the below to work, the line and the face color need
-% to be the same, but i think theres a way to conver tthe rbg triplet to
+% to be the same, but i think theres a way to convert the rbg triplet to
 % the color code used in h.Line.ColorData at the link below in which case i
 % could add checks for the case where i pass in facecolor but not color
 

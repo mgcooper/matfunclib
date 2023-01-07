@@ -1,7 +1,9 @@
-function [l] = scatterlegend(gca,s,C)
+function l = scatterlegend(gca,s,C)
 %SCATTERLEGEND Creates a legend for a 'filled' scatterplot from the
 %scatter handle s and grouping variable C used to define the color order
-%   Detailed explanation goes here
+% 
+%   l = scatterlegend(gca,s,C) creates a legend for axis gca 
+% 
 
 % get the axis limits
 hold on;

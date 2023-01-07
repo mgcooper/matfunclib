@@ -2,8 +2,15 @@ function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
 %MYTEXTBOX places textstr at location defined by x,y coordinates in percent
 %units relative to lower left corner of figure panel
 %
-%  [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
+%  [ h,x,y ] = mytextbox( textstr,xpct,ypct)
+% 
+%  [ h,x,y ] = mytextbox( __,location)
+% 
+%  [ h,x,y ] = mytextbox( __,'ax',ax)
 %
+% [ h,x,y ] = mytextbox( __,varargin) where varargin is any name-value pair
+% compatibile with text function
+% 
 % See also
 
 % note: this function is ready to be converted to this notation where instead

@@ -1,17 +1,16 @@
-function [ p ] = fillplot( x,y_low,y_high,fillC,dir,varargin )
+function [ h ] = fillplot( x,y_low,y_high,fillC,dir,varargin )
 %FILLPLOT Creates a fill plot, data must be columnwise
-%   Detailed explanation goes here
+% 
+%   h = fillplot(x,y_low,y_high,fillC,dir,varargin )
 
-X   =   [x,fliplr(x)];
-Y   =   [y_low,fliplr(y_high)];
+X = [x,fliplr(x)];
+Y = [y_low,fliplr(y_high)];
 
 if strcmp(dir,'x')
-    p   =   fill(X,Y,fillC,varargin{:});
+    h = fill(X,Y,fillC,varargin{:});
 elseif strcmp(dir,'y')
-    p   =   fill(Y,X,fillC,varargin{:});
+    h = fill(Y,X,fillC,varargin{:});
 end
-
-
 
 % first take care of nans
 

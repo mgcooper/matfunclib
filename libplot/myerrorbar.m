@@ -60,7 +60,7 @@ function h = myerrorbar(varargin)
 %    color = rgb(color);
 % end
 
-% also see formaterrorbar
+% See also: formaterrorbar
 
 % sep 2022: at some point i deleted the first argument which was a color
 % triplet, but a filesearrch turned up no examples of calling this using
@@ -74,12 +74,41 @@ else
    c  =  h.Color;
 end
 
-set(h,  ...
-      'Marker',           'o',        ...
-      'MarkerSize',       8,          ...
-      'LineWidth',        1.5,        ...
-      'LineStyle',        'none',     ...
-      'Color',            c,          ...
-      'MarkerFaceColor',  c,          ...
-      'MarkerEdgeColor',  'none'      );
+defaultkeys = {'Marker','MarkerSize','LineWidth','LineStyle','Color',...
+   'MarkerFaceColor','MarkerEdgeColor'};
+defaultvals = {'o',8,1.5,'none',c,c,'none'};
+ichar = cellfun(@ischarlike,varargin);
+userkeyvals = varargin(find(ichar,1,'first'):find(ichar,1,'last')+1);
+for n = 1:numel(userkeyvals)
+   if ischar(userkeyvals{n})
+      if ismember(userkeyvals{n},defaultkeys)
+         ifind = ismember(defaultkeys,userkeyvals{n});
+         defaultvals{ifind} = userkeyvals{n+1};
+      end
+   end
+end
+
+% defaultvals = matchinputs(userkeyvals,defaultkeys,defaultvals);
+
+for n = 1:numel(defaultkeys)
+   set(h,defaultkeys{n},defaultvals{n});
+end
+
+% not sure why this doesn't work
+% set(h,defaultkeys{:},defaultvals{:});
+
+% set(h,  ...
+%       'Marker',           'o',        ...
+%       'MarkerSize',       8,          ...
+%       'LineWidth',        1.5,        ...
+%       'LineStyle',        'none',     ...
+%       'Color',            c,          ...
+%       'MarkerFaceColor',  c,          ...
+%       'MarkerEdgeColor',  'none'      );
+
+function defaultvals = matchinputs(userkeyvals,defaultkeys,defaultvals)
+ichar = cellfun(@ischarlike,userkeyvals);
+userkeys = userkeyvals(ichar);
+uservals = userkeyvals(find(ichar)+1);
+defaultvals(ismember(defaultkeys,userkeys)) = uservals(ismember(userkeys,defaultkeys));
 
