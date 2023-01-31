@@ -5,7 +5,7 @@
       "inputs":
       [
          {"name":"station",   "kind": "namevalue",
-                              "type": ["char","choices=ghcnd_stationlist"],"purpose":"Option"},
+                              "type": [["char"], ["string"],["cellstr"],"choices=ghcnd_stationlist"],"purpose":"Option"},
          {"name":"name",      "kind": "namevalue",
                               "type": ["char","choices=ghcnd_stationnames"],"purpose":"Option"},
          {"name":"lat",       "kind": "namevalue",

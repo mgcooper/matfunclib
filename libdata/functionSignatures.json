@@ -10,16 +10,6 @@
          {"name":"index",        "kind":"ordered",    "type":["numeric"]}
       ]
    },
-   "getlist":
-   {
-      "inputs":
-      [
-         {"name":"path",      "kind":"required",   "type":["char"]},
-         {"name":"pattern",   "kind":"required",   "type":["char"]},
-         {"name":"postget",   "kind":"ordered",    "type":["char"]},
-         {"name":"subdirs",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
-      ]
-   },
    "loaddata":
    {
       "inputs":

@@ -1,12 +1,22 @@
 function data = ncreaddata(fname,varargin)
-%NCREADDATA reads all data in .nc file 'f', or all vars in optional list
-% Input: fname: full path to .nc file
-% Optional: cell array of characters that match the varialbe names in the
-% .nc file you want to read. Default behavior reads all variables.
-
-% warning - the data is converted to column major format
-
-%     Author: matt cooper (matt.cooper@pnnl.gov)
+%NCREADDATA reads all data in .nc file fname, or all vars in optional list
+% 
+%  data = ncreaddata(fname) reads all variables in fname
+% 
+%  data = ncreaddata(fname,vars) reads variables vars in fname
+% 
+% Required inputs
+% 
+%  fname: full path to .nc file
+% 
+% Optional inputs
+% 
+%  varnames: cellstr array of chars that match the variable names in the
+%  .nc file to read. Default behavior reads all variables.
+% 
+% Note: the data is converted to column major format
+% 
+% Author: matt cooper (matt.cooper@pnnl.gov)
 
 finfo = ncparse(fname);
 if nargin == 1

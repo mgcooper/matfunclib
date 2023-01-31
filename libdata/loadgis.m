@@ -17,8 +17,12 @@ p                 = magicParser;
 p.FunctionName    = 'loadgis';
 p.KeepUnmatched   = true;
 
-validstrings      = getgisfilelist;
-validfilename     = @(x)any(validatestring(x,validstrings));
+% if we do this, then only files returned by getgisfilelist will work, and since
+% fname is required, I don't think we need to be strict like we would with
+% addOptional
+% validstrings      = getgisfilelist;
+% validfilename     = @(x)any(validatestring(x,validstrings));
+validfilename = @(x)ischarlike(x);
 
 addRequired(p,    'fname',                   validfilename        );
 addParameter(p,   'UseGeoCoords',   true,    @(x) islogical(x)    ); 
@@ -29,7 +33,7 @@ addParameter(p,   'BoundingBox',    [],      @(x) isnumeric(x)    );
 p.parseMagically('caller');
 
 % this is how matlab validates filenames:
-% validateattributes(filename, {'char'},{'vector'},mfilename,'FILENAME',1);
+% validateattributes(filename,{'char'},{'vector'},mfilename,'FILENAME',1);
 
 % UPDATE: I think namedargs2cell is what I need
 % I thought I could pass arbitrary name-value pairs and use this to get them,
@@ -44,8 +48,11 @@ p.parseMagically('caller');
 
 namedargs = parser2varargin(p,'notusingdefaults',{'fname'});
 
-addpath(genpath(getenv('USERGISPATH')));
-fname = which(fname);
+% if fname is not already on the path and/or is not a full-path filename, try to
+% find the file in the USERGISPATH
+if ~isfile(fname)
+   fname = findgisfile(fname);
+end
 [~,~,ext] = fileparts(fname);
 
 switch ext
@@ -58,7 +65,7 @@ switch ext
       end
 end
 
-function [S,A] = tryshaperead(fname,namedargs);
+function [S,A] = tryshaperead(fname,namedargs)
 
 ok = false;
 try
