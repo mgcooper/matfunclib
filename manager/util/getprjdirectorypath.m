@@ -1,2 +1,3 @@
 function prjpath = getprjdirectorypath
-   prjpath = [getenv('PROJECTDIRECTORYPATH') 'projectdirectory.csv'];
+prjpath = fullfile(getenv('PROJECTDIRECTORYPATH'),'projectdirectory.mat');
+% prjpath = fullfile(getenv('PROJECTDIRECTORYPATH'),'projectdirectory.csv');

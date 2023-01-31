@@ -1,2 +1,2 @@
 function cdtb(tbname)
-   cd(gettbsourcepath(tbname));
+cd(gettbsourcepath(tbname));

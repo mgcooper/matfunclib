@@ -1,54 +1,54 @@
-function workoff(projectname,varargin)
+function workoff(varargin)
 %WORKOFF removes project 'projectname' from path and (optionally) goes to
 %the home directory (go home)
-%-------------------------------------------------------------------------------
-   
-   % NOTE: I defined tbname as addOptional, so it is flagged by matlab, but
-   % this way it is still shown in the function hint. This is a backdoor
-   % way to achieve what I haven't been able to figure out, which is
-   % showing optional inputs in the function hint without requiring
-   % name-value syntax.
-   
-   p                 = inputParser;
-   
-   p.FunctionName    = 'workoff';
- % p.UsingDefaults % this may be needed to solve the function hint issue
-   
-   addRequired(p,'projectname',@(x)ischar(x));
-   addOptional(p,'gohome','no',@(x)ischar(x));
-   parse(p,projectname,varargin{:});
-  
-   projectname = p.Results.projectname;
-   gohome      = p.Results.gohome;
-% input parsing may be overkill here ... I just want to deactivate
+% 
+%  workoff('myproject') removes paths and unsets env vars
+% 
+%  workoff('myproject','gohome') cd to the MATLABUSERPATH
+% 
+% See also: workon, manager, addproject
 
-%    if nargin == 0
-%       projectname = defaultprjdir;
-%    end
-   
+% TODO: save open help docs. couldn't find a built in or fex method but see
+% gethelpdoclink, it gets the active one, would 
+
+% parse inputs
+%-------------------------------------------------------------------------------
+p              = inputParser;
+p.FunctionName = 'workoff';
+
+validproject = @(x)any(validatestring(x,cellstr(projectdirectorylist)));
+validoption = @(x)any(validatestring(x,{'gohome','no'}));
+
+addOptional(p,'projectname',getactiveproject,validproject);
+addOptional(p,'gohome','gohome',validoption);
+parse(p,varargin{:});
+
+projname = p.Results.projectname;
+gohome = string(p.Results.gohome) == "gohome"; % transform to logical
+
+% % if no path was provided, this assumes the local directory is it
+% if nargin == 0
+%    [~,projectname] = fileparts(pwd);
+% end
 %-------------------------------------------------------------------------------
 
-   dbpath      = getprjdirectorypath;
-   projects    = readprjdirectory(dbpath);
-   prjidx      = findprjentry(projects,projectname);
-   
-   prjpath     = [projects.folder{prjidx} filesep projectname];
-   
-   % could put next three into a function rmtbpath(tbpath);
-   disp(['deactivating ' projectname]);
-   warning off; rmpath(genpath(prjpath)); warning on;
-   
-   if gohome == "gohome"
-      cd(getenv('MATLABUSERPATH'));
-   end
-   % warning off/on suppresses warnings issued when a new folder was
-   % created in the active toolbox directory and isn't on the path
-   
+% deactivate the project
+disp(['deactivating ' projname]);
+
+% full path to project folder
+projpath = getprojectfolder(projname); % use 'namespace' for old behavior
+
+% update the active file list
+setprojectfiles(projname);
+
+% remove project paths
+rmprojectpaths(projpath);
+
+% close all currently open files
+closeopenfiles();
+
+if gohome
+   cdhome();
 end
 
-function prjdir = defaultprjdir
-   
-   % if no path was provided, this assumes the local directory is it
-   [~,prjdir] = fileparts(pwd);
-   
-end
+

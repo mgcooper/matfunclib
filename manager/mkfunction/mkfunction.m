@@ -1,7 +1,16 @@
 function mkfunction(name,varargin)
-%MKFUNCTION make new function file from template
+%MKFUNCTION make new function file from function template
 %
+%  mkfunction('myfunc') creates a new function file
+%  matfunclib/libdata/myfunc/myfunc.m with default function template for 
+%  parser style IP which means inputParser.
 % 
+%  mkfunction('myfunc','library','libdata','parser','IP') creates a new function
+%  file matfunclib/libdata/myfunc/myfunc.m with default function template for
+%  parser style IP which means inputParser. Other IP options are 'MP' for
+%  magicParser, 'OP' for optionParser, and 'ArgList' for arguments-block.
+% 
+%  See also
 
 %------------------------------------------------------------------------------
 p              = inputParser;
@@ -101,10 +110,29 @@ wholefile   = strrep(wholefile,'DD-MMM-YYYY',date);
 % REPLACE the input varname with default library varnames
 switch parent
    
-   case {'libtable','libtime'}
-      wholefile = strrep(wholefile,'X','T');
-      wholefile = strrep(wholefile,'Y','T');
-      wholefile = strrep('@(x)isnumeric(x)','@(x)istable(x)|istimetable(x)');
+   case {'libarrays'}
+      wholefile = strrep(wholefile,'X','A'); % or M for matrix
+      wholefile = strrep(wholefile,'Y','A');
+      
+   case {'libcells'}
+      wholefile = strrep(wholefile,'X','C');
+      wholefile = strrep(wholefile,'Y','C');
+      
+   case {'liblogic'}
+
+      wholefile = strrep(wholefile,'Y','TF');
+      
+   case {'libplot'}
+      wholefile = strrep(wholefile,'X','H');
+      wholefile = strrep(wholefile,'Y','H'); % handle (graphics object array) 
+
+   case {'libraster'}
+      wholefile = strrep(wholefile,'X','[Z,R]');
+      wholefile = strrep(wholefile,'Y','[Z,R]');
+
+   case {'libspatial'}
+      wholefile = strrep(wholefile,'X','Geom');
+      wholefile = strrep(wholefile,'Y','S');     
       
    case {'libstruct'}
       wholefile = strrep(wholefile,'X','S');
@@ -113,14 +141,15 @@ switch parent
    case {'libstr'}
       wholefile = strrep(wholefile,'X','str');
       wholefile = strrep(wholefile,'Y','str');
-      
-   case {'libcells'}
-      wholefile = strrep(wholefile,'X','C');
-      wholefile = strrep(wholefile,'Y','C');
-      
-   case {'libraster'}
-      wholefile = strrep(wholefile,'X','[Z,R]');
-      wholefile = strrep(wholefile,'Y','[Z,R]');
+
+   case {'libtable','libtime'}
+      wholefile = strrep(wholefile,'X','T');
+      wholefile = strrep(wholefile,'Y','T');
+      wholefile = strrep(wholefile,'@(x)isnumeric(x)','@(x)istable(x)|istimetable(x)');
+
+   case {'manager','libsys'}
+      wholefile = strrep(wholefile,'X','cmd');
+      wholefile = strrep(wholefile,'Y','msg');
       
 end
 

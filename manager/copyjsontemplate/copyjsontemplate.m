@@ -1,16 +1,23 @@
 function copyjsontemplate(destpath)
+%COPYJSONTEMPLATE copy the json signature file template to destpath
+% 
+%  copyjsontemplate() copies the template to pwd()
+% 
+%  copyjsontemplate(destpath) copies the template to destpath
+% 
+% See also
 
 if nargin == 0
    destpath = pwd;
 end
 
 % copy the bare template
-src = [getenv('MATLABTEMPLATEPATH') 'functionSignatures.json.bare'];
-dst = [destpath '/functionSignatures.json'];
-if ~exist(dst,'file')
+src = fullfile(getenv('MATLABTEMPLATEPATH'),'functionSignatures.json.bare');
+dst = fullfile(destpath,'functionSignatures.json');
+if ~isfile(dst)
    copyfile(src,dst);
-else
-   dst = [destpath '/functionSignatures.json.bare'];
+else % the file exists already
+   dst = fullfile(destpath,'functionSignatures.json.bare');
    copyfile(src,dst);
 end
    

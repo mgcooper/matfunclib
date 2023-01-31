@@ -1,5 +1,8 @@
-function projects = readprjdirectory(prjpath)
+function projectlist = readprjdirectory(projectdirectorypath)
 if nargin == 0
-   prjpath = getprjdirectorypath;
+   projectdirectorypath = getprjdirectorypath; % path to projectdirectory.mat
 end
-projects = readtable(prjpath,'Delimiter',',','ReadVariableNames',true);
+load(projectdirectorypath,'projectlist');
+
+% % old method that saved the directory as a table
+% projects = readtable(prjpath,'Delimiter',',','ReadVariableNames',true);

@@ -26,8 +26,8 @@ switch tabstype
       reopen_preview_tabs(pickfile);
 end
 
-end
 
+%-------------------------------------------------------------------------------
 function reopen_matlab_tabs(pickfile)
 
 directory = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
@@ -36,21 +36,21 @@ oldcwd = pwd;
 if strcmp(pickfile,'pickfile')
    cd(directory)
    fname = uigetfile;
-   
+
    % this is the old way but there's no reason to use it
    %fname = input('copy and paste the filename','s');
    %fname = [pathin fname '.mat'];
-   
+
 elseif strcmp(pickfile,'latest')
-   
+
    % use the most recent file
    [fname,filedate] = getlatestfile(directory);
-   
+
    % check if the most recent file matches the file name
    if ~strcmp(filedate,strrep(strrep(fname,'open_',''),'.mat',''))
       warning('file date does not match file name, fyi');
    end
-   
+
 end
 
 load([directory fname],'filelist')
@@ -72,13 +72,10 @@ for n = 1:numel(filelist)
       end
    end
 end
-
 % go back to where we started
 cd(oldcwd)
 
-end
 
+%-------------------------------------------------------------------------------
 function reopen_preview_tabs
-
-end
 
