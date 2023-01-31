@@ -18,7 +18,7 @@ function msg = manager(cmd,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'manager';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;  
 
@@ -92,6 +92,9 @@ end
 % methods to handle sub-folders within toolboxes e.g. we have situations
 % with full blown toolboxes like ridgepack, and then basic utilities like
 % kearney's functions, many of which I put into 'plotting'
+
+
+% see smashToolbox install script for ideas.
 
 
 

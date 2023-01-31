@@ -10,7 +10,7 @@ function cdfunc(funcname)
 if ~ischar(funcname); funcname = inputname(funcname); end
 
 p                 = inputParser;
-p.FunctionName    = 'cdfunc';
+p.FunctionName    = mfilename;
 p.PartialMatching = false;
 
 addRequired(p,'funcname',@(x)ischar(x));

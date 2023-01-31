@@ -24,7 +24,7 @@ function Info = renamefiles(FileList,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'renamefiles';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

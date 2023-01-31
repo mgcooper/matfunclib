@@ -21,7 +21,7 @@ function Info = getFunctionDependencies(varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'getFunctionDependencies';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = true;
 p.KeepUnmatched   = true;
 

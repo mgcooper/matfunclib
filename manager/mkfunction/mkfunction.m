@@ -14,7 +14,7 @@ function mkfunction(name,varargin)
 
 %------------------------------------------------------------------------------
 p              = inputParser;
-p.FunctionName = 'mkfunction';
+p.FunctionName = mfilename;
 
 addRequired(   p,'funcname',              @(x)ischar(x)  );
 addParameter(  p,'library',   'unsorted', @(x)ischar(x)  );

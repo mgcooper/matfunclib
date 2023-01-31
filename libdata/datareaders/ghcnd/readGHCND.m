@@ -11,7 +11,7 @@ function [Data,Atts] = readGHCND(varargin)
 
 p = magicParser;
 p.CaseSensitive=false;
-p.FunctionName='readGHCND';
+p.FunctionName=mfilename;
 p.addParameter('station','USC00505136',@(x)ischarlike(x));
 p.addParameter('name','none',@(x)ischarlike(x));
 p.addParameter('lat',nan,@(x)isnumeric(x));

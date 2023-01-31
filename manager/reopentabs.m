@@ -5,7 +5,7 @@ function reopentabs(varargin)
 % TODO: add options to showtabs to see the most recent list or the most N recent
 
 p              = inputParser;
-p.FunctionName = 'reopentabs';
+p.FunctionName = mfilename;
 
 validopts      = {'pickfile','latest'};
 validtabs      = {'matlab','preview'};
@@ -30,7 +30,7 @@ end
 %-------------------------------------------------------------------------------
 function reopen_matlab_tabs(pickfile)
 
-directory = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
+directory = fullfile(getenv('MATLABUSERPATH'),'opentabs/matlab_editor');
 oldcwd = pwd;
 
 if strcmp(pickfile,'pickfile')

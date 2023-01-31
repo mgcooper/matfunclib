@@ -18,7 +18,7 @@ function S = geostructinit(geometry,numfeatures,varargin);
 % input parsing
 %--------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'geostructinit';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -7,7 +7,7 @@ function varargout = loaddata(datapath,filename,varargin)
 
 %-------------------------------------------------------------------------------
    p                 = inputParser;
-   p.FunctionName    = 'loaddata';
+   p.FunctionName    = mfilename;
    p.CaseSensitive   = false;
    p.KeepUnmatched   = true;
    

@@ -6,7 +6,7 @@ function dt = str2duration(dt,varargin)
 % See also
 
 p = magicParser;
-p.FunctionName = 'str2duration';
+p.FunctionName = mfilename;
 p.addRequired('dt',@(x)ischar(x));
 p.addParameter('caltime',false,@(x)islogical(x));
 p.parseMagically('caller');

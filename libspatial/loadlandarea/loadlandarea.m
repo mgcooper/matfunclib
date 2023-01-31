@@ -19,7 +19,7 @@ function S = loadlandarea(landarea,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'loadlandarea';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -44,7 +44,7 @@ function [varargout] = prepCurveData( varargin )
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'prepCurveData';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

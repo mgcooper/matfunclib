@@ -18,7 +18,7 @@ function borders = loadworldborders(bordername,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'loadworldborders';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -10,7 +10,7 @@ function h = figformat(varargin)
 
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'figformat';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -17,7 +17,7 @@ function T = padtimetable(T,varargin)
 
 %-------------------------------------------------------------------------------
 p              = magicParser;
-p.FunctionName = 'padtimetable';
+p.FunctionName = mfilename;
 
 validT  = @(x)validateattributes(x,{'timetable'},{'nonempty'},       ...
    'padtimetable','T',1);

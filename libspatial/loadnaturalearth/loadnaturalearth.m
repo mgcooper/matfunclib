@@ -20,7 +20,7 @@ function S = loadnaturalearth(river,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'loadnaturalearth';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

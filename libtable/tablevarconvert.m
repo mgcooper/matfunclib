@@ -7,7 +7,7 @@ function T = tablevarconvert(T,inputtype,outputtype,varargin)
 % i did not finish this, not sure the best approach
 
 p=magicParser;
-p.FunctionName='tablevarconvert';
+p.FunctionName=mfilename;
 p.addRequired('T',@(x)istable(x)||@(x)istimetable(x));
 p.addRequired('inputtype',@(x)ischar(x));
 p.addRequired('outputtype',@(x)ischar(x));

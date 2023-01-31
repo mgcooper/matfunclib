@@ -14,7 +14,7 @@ function Points = pointsInPoly(x,y,poly,varargin)
 %   and clips the points to the polygon.
 
 p                = inputParser;
-p.FunctionName   = 'pointsInPoly';
+p.FunctionName   = mfilename;
 
 addRequired(p,'x',@(x)isnumeric(x));
 addRequired(p,'y',@(x)isnumeric(x));

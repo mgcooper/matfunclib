@@ -14,7 +14,7 @@ function varargout = setpath(pathstr,varargin)
 validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
 validpostset   = @(x)any(validatestring(x,{'goto','none'}));
 p              = magicParser;
-p.FunctionName = 'setpath';
+p.FunctionName = mfilename;
 
 p.addRequired( 'pathstr',              @(x)ischar(x)|isstruct(x)  );
 p.addOptional( 'pathtype', 'matlab',   validpathtypes             );

@@ -10,7 +10,7 @@ function Fit = myfit(x,y,varargin)
 % inspired by: https://pundit.pratt.duke.edu/wiki/MATLAB:Fitting
 
 p                 = inputParser;
-p.FunctionName    = 'myfit';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -16,7 +16,7 @@ function Data = addcolumns(Data,DataColumns,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'addcolumns';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

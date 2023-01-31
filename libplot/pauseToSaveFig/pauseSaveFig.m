@@ -19,7 +19,7 @@ function pauseSaveFig(savekey,filename,obj,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'pauseSaveFig';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = true;
 
 addRequired(   p,'savekey',               @(x)ischar(x)     );

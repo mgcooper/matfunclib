@@ -4,7 +4,7 @@ function h = tailplot(data,varargin)
 % and make ccdf plot I added to loghist
 
 p = magicParser;
-p.FunctionName='tailplot';
+p.FunctionName=mfilename;
 p.addRequired('data',@(x)isnumeric(x));
 p.addParameter('dist','gp',@(x)ischar(x))
 %    p.addParameter('edges'

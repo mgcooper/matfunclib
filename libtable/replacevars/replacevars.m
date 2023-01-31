@@ -22,7 +22,7 @@ function T = replacevars(T,VarNames,NewVars,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'replacevars';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -6,7 +6,7 @@ function h = cumulplot(t,y,varargin)
 % See also
 
 p                 = magicParser;
-p.FunctionName    = 'cumulplot';
+p.FunctionName    = mfilename;
 p.PartialMatching = true;
 
 dpos  = [321 241 512 384]; % default figure size

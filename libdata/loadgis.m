@@ -14,7 +14,7 @@ function [S,A] = loadgis(fname,varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'loadgis';
+p.FunctionName    = mfilename;
 p.KeepUnmatched   = true;
 
 % if we do this, then only files returned by getgisfilelist will work, and since
@@ -157,7 +157,7 @@ function S = geostructinit(geometry,numfeatures,varargin);
 %  Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
 %--------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'geostructinit';
+p.FunctionName    = mfilename;
 p.addRequired(   'geometry',              @(x)ischar(x)           );
 p.addRequired(   'numfeatures',           @(x)isnumeric(x)        );
 p.addParameter(  'fieldnames',   '',      @(x)ischar(x)|iscell(x) );

@@ -20,7 +20,7 @@ function h = formatPlotMarkers(varargin)
 
 %-------------------------------------------------------------------------------
 p               = inputParser;
-p.FunctionName  = 'formatPlotMarkers';
+p.FunctionName  = mfilename;
 p.CaseSensitive = false;
 p.KeepUnmatched = true;
 

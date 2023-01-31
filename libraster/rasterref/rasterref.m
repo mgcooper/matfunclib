@@ -79,7 +79,7 @@ assert(license('test','map_toolbox')==1, ...
    'rasterref requires Matlab''s Mapping Toolbox.')
 
 p              = inputParser;
-p.FunctionName = 'rasterref';
+p.FunctionName = mfilename;
 addRequired( p, 'X',                               @(x)isnumeric(x));
 addRequired( p, 'Y',                               @(x)isnumeric(x));
 addParameter(p, 'cellInterpretation',  'cells',    @(x)ischar(x));

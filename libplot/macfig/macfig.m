@@ -1,7 +1,7 @@
 function varargout = macfig(varargin)
 
 p               = inputParser;
-p.FunctionName  = 'macfig';
+p.FunctionName  = mfilename;
 p.CaseSensitive = true;
 p.KeepUnmatched = true;
 

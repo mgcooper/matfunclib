@@ -7,7 +7,7 @@ function coords = writeGeoShapefile(S,filename,varargin)
 
 %--------------------------------------------------------------------------
 p=magicParser;
-p.FunctionName='writeGeoShapefile';
+p.FunctionName=mfilename;
 p.CaseSensitive=false;
 p.PartialMatching=true;
 p.addRequired('S',@(x)isstruct(x)|istable(x)|ischar(x)|isa(x,'geopoint')|...

@@ -14,7 +14,7 @@ function projlist = addproject(projectname,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'addproject';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

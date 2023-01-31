@@ -21,7 +21,7 @@ function msg = setproject(cmd,varargin)
 % input parsing
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'setproject';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;  
 

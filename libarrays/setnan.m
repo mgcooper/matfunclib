@@ -6,7 +6,7 @@ function [ DataOut ] = setnan(Data,varargin)
 
 %----------------------------------------------------------------------
 p              = magicParser;
-p.FunctionName = 'setnan';
+p.FunctionName = mfilename;
 
 p.addRequired( 'Data'                                 );
 p.addOptional( 'nanval',   nan,   @(x)isnumeric(x)    );

@@ -4,6 +4,8 @@ classdef ProjectManager
 
 %    https://stackoverflow.com/questions/27077642/matlab-classes-getter-and-setters
 
+   % don't forget to define the ManagerialClass
+
    properties
       ProjectList
    end

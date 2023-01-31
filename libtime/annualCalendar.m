@@ -7,7 +7,7 @@ function calendar = annualCalendar(years,varargin)
 % See also
 
 p=magicParser;
-p.FunctionName='annualCalendar';
+p.FunctionName=mfilename;
 p.addRequired('years',@(x)isnumeric(x)|isdatetime(years));
 p.addParameter('timestep',calyears(1),@(x)isduration(x)|ischar(x));
 p.parseMagically('caller');

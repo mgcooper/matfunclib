@@ -21,7 +21,7 @@ function workon(varargin)
 
 %-------------------------------------------------------------------------------
 p              = inputParser;
-p.FunctionName = 'workon';
+p.FunctionName = mfilename;
 
 projectnames   = cat(1,cellstr(projectdirectorylist),'default');
 validproject   = @(x)any(validatestring(x,projectnames));

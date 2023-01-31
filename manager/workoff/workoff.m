@@ -14,7 +14,7 @@ function workoff(varargin)
 % parse inputs
 %-------------------------------------------------------------------------------
 p              = inputParser;
-p.FunctionName = 'workoff';
+p.FunctionName = mfilename;
 
 validproject = @(x)any(validatestring(x,cellstr(projectdirectorylist)));
 validoption = @(x)any(validatestring(x,{'gohome','no'}));

@@ -3,7 +3,7 @@ function h = tileopenfigs(varargin)
 
 %------------------------------------------------------------------------------
 p=inputParser;
-p.FunctionName='tileopenfigs';
+p.FunctionName=mfilename;
 p.addOptional('figarray',get(groot,'Children'),@(x)isa(x,'matlab.ui.Figure'));
 p.addParameter('deletefigs',true,@(x)islogical(x));
 parse(p,varargin{:});

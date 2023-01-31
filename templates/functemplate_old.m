@@ -2,7 +2,7 @@ function z = functemplate(x,y,nameval,option,ax,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'myfunc';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

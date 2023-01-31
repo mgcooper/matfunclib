@@ -14,7 +14,7 @@ validstrings   = {'areasum','areaavg','aggregate','average','majority'};
 validoption    = @(x)any(validatestring(x,validstrings));
 
 p              = magicParser;
-p.FunctionName = 'clipRasterByPoly';
+p.FunctionName = mfilename;
 p.addRequired( 'Z',                                @(x)isnumeric(x)        );
 p.addRequired( 'X',                                @(x)isnumeric(x)        );
 p.addRequired( 'Y',                                @(x)isnumeric(x)        );

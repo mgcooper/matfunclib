@@ -11,7 +11,7 @@ function h = monthplot( data,varargin )
 
 %------------------------------------------------------------------------------- 
 p = magicParser;
-p.FunctionName='monthplot';
+p.FunctionName=mfilename;
 p.addRequired('data',@(x)isnumeric(x));
 p.addParameter('useax',nan,@(x)isaxis(x));
 p.addParameter('wateryear',false,@(x)islogical(x));

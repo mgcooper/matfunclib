@@ -7,7 +7,7 @@ function psdx = powerSpectralDensity(x,varargin)
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p                 = magicParser;
-p.FunctionName    = 'powerSpectralDensity';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

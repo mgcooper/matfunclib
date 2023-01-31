@@ -27,7 +27,7 @@ function toolboxes = addtoolbox(tbname,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'addtoolbox';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

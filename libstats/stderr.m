@@ -23,7 +23,7 @@ function [SE,CI,PM,mu,sig] = stderr(data,varargin)
 
 %--------------------------------------------------------------------------
 p=magicParser;
-p.FunctionName='stderr';
+p.FunctionName=mfilename;
 p.addRequired('data',@(x)isnumeric(x));
 p.addParameter('alpha',0.05,@(x)isnumeric(x));
 p.addParameter('dim',2,@(x)isnumeric(x));

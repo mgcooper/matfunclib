@@ -12,7 +12,7 @@ function S = makemapspec(geometry,varargin)
 % input parsing
 %--------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'makemapspec';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 p.addRequired(   'geometry',              @(x)ischar(x)        );

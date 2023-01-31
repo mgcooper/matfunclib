@@ -1,4 +1,8 @@
 function data = readfiles(filelist,varargin)
+%READFILES read data files
+% 
+% 
+
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % TODO:
@@ -12,7 +16,7 @@ function data = readfiles(filelist,varargin)
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 p                 = inputParser;
-p.FunctionName    = 'readfiles';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 p.StructExpand    = false;
