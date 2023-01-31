@@ -1,15 +1,20 @@
-function [ list ] = getlist( pathdata,pattern,varargin )
-%GETLIST generates a list of files matching pattern in folder path
+function [ list ] = getlist( dirpath,pattern,varargin )
+%GETLIST get a list of files matching pattern in the folder dirpath
 % 
-%     [ list ] = getlist( pathdata,pattern,varargin )
+%     [ list ] = getlist( dirpath,pattern,varargin )
 % 
 % Matt Cooper, 2022, https://github.com/mgcooper
 % 
-% See also getgisfilelist, fnamefromlist
+% See also getfilelist, getgisfilelist, fnamefromlist
+
+% NOTE: 'pattern' is a function designed to match text patterns ... not sure if
+% my use here conflicts with that but when I tried to call this function from
+% getfilelist which used 'pattern' as an optional input the input parser here
+% interpreted pattern as the output of the function 'pattern'
 
 %-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'getlist';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 
@@ -20,34 +25,44 @@ validpattern = ...
 validoptions = ...
    @(x)any(validatestring(x,{'show','none'}));
 
-addRequired(   p,'path',                     validpath            );
+addRequired(   p,'dirpath',                  validpath            );
 addRequired(   p,'pattern',                  validpattern         );
 addOptional(   p,'postget',      'none',     validoptions         );
 addParameter(  p,'subdirs',      false,      @(x)islogical(x)     );
+addParameter(  p,'asfiles',      false,      @(x)islogical(x)     );
 
-parse(p,pathdata,pattern,varargin{:});
+parse(p,dirpath,pattern,varargin{:});
 
-pathdata    = p.Results.path;
-pattern     = p.Results.pattern;
-postget     = p.Results.postget;
-subdirs     = p.Results.subdirs;
+dirpath  = p.Results.dirpath;
+pattern  = p.Results.pattern;
+postget  = p.Results.postget;
+subdirs  = p.Results.subdirs;
+asfiles  = p.Results.asfiles;
+
+% could use optionParser for subdirs, asfiles, asstring,etc, and change postget
+% to name-value or add it to optionParser as 'showlist'
 
 %-------------------------------------------------------------------------------
 
 % note: I think using fullfile(path,file) or fullfile(path,wildcard) negates the
 % need to ever deal with trailing filesep, and I've been using it wrong all this
 % time like fullfile([path file])
-if strcmp(pathdata(end),'/') == false; pathdata = [pathdata '/']; end
+if strcmp(dirpath(end),'/') == false; dirpath = [dirpath '/']; end
 
 [pattern,pflag] = fixpattern(pattern,subdirs);
 
-list = dir(fullfile(pathdata,pattern));
+list = dir(fullfile(dirpath,pattern));
 % list = list([list.isdir]); % activate if you only want folders
 list = rmdotfolders(list);
 
 % if the pattern is **, only return directories
 if pflag==true
    list = list([list.isdir]);
+end
+
+% if filenames is true, return a filename list
+if asfiles == true
+   list = fnamefromlist(list,'asstring');
 end
 
 if postget == "show"

@@ -17,10 +17,10 @@ addRequired(p,'funcname',@(x)ischar(x));
 parse(p,'funcname');
 
 % try adding the func path by assuming it's parent folder has same name
-mainfuncpath = getenv('MATLABFUNCTIONPATH');
+userfuncpath = getenv('MATLABFUNCTIONPATH');
 
 % add all subfolders to the path in case the function was just made
-addpath(genpath(mainfuncpath));
+addpath(genpath(userfuncpath));
 
 % % not sure if this is possible, keeping for reference   
 %    % in case of accidentally not passing in a char
@@ -36,7 +36,7 @@ if nargin==1
    funcpath = strrep(which(funcname),funcname,'');
 else
 % otherwise, go to the function directory
-   funcpath = mainfuncpath;
+   funcpath = userfuncpath;
 end
 
 cd(funcpath)
