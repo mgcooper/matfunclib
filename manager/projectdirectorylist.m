@@ -1,4 +1,9 @@
 function list = projectdirectorylist
+%PROJECTDIRECTORYLIST return a list of projects (folder names in
+%MATLABPROJECTPATH and USERPROJECTPATH). currently used for json file 
+%autocomplete, see buildprojectdirectory for building the directory.
+% 
+% See also: buildprojectdirectory
 
 projectpath = getenv('MATLABPROJECTPATH');
 list = mkprojectlist(projectpath);

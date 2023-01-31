@@ -1,29 +1,55 @@
 function [dataGrid,dataList,Unit] = readMerra2(fileName,varName,varargin)
-%READMERRA2 read merra2 .nc file
+%READMERRA2 read data from merra2 .nc file
 % 
-%  [dataGrid,dataList,Unit] = readMerra2(fileName,varName)
+% Syntax
+% 
+%  [dataGrid,dataList] = readMerra2(fileName,varName)
+%  [dataGrid,dataList] = readMerra2(fileName,varName,ncstart,nccount)
 %  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,Unit)
-%  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,ncstart,nccount)
-%  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,Unit,ncstart,nccount)
+%  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,ncstart,nccount,Unit)
 % 
+% Description
 % 
-% INPUTS
-%   fileName    = full path to .nc file
-%   varName     = string of varialbe name to read
-
+%  [dataGrid,dataList] = readMerra2(fileName,varName) reads the data from
+%  variable `varName` contained in the MERRA2 .nc file specified by `fileName`.
+%  `dataGrid` contains the data reshaped to column-major format as a data grid
+%  (matrix). `dataList` contains the data reshaped to list-format.
+% 
+%  [dataGrid,dataList] = readMerra2(fileName,varName,ncstart,nccount) reads
+%  data beginning at the location of each dimension specified in `start`. The
+%  `count` argument specifies the number of elements to read along each
+%  dimension. 
+% 
+%  [dataGrid,dataList,Unit] = readMerra2(___,Unit) uses the unit specified by
+%  input argument `Unit` to convert the variable to a pre-defined standard
+%  output `Unit`. For example, mass fluxes stored in Merra2 files in units
+%  kg/m2/s are converted to m/hr. Temperature data stored in units Celsius are
+%  converted to Kelvins. If the provided value for Unit is not recognized, the
+%  variable is not converted. Use with either of the two prior syntaxes.
+% 
+% REQUIRED INPUTS
+%     fileName = full path to .nc file
+%     varName  = character array or cellstr of variabe name to read
+%     
+% OPTIONAL INPUTS
+%     ncstart  = numeric vector of positive integers representing the starting
+%     location along each data dimension. 
+%     nccount  = numeric vector of positive integers representing the number of
+%     elements to read along each data dimension. 
+%     Unit     = character array specifying the unit of the variable to read
+% 
 % OUTPUTS
-%   dataGrid    =
+%   dataGrid   = the data stored as a spatial grid in column-major format
+%   dataList   = the data stored as a spatial list 
+%   Unit       = the unit of the data in dataGrid and/or dataList
+% 
+% NOTE: merra2 data is posted at 3-hour time intervals. Merra 2 variables that
+% represent mass fluxes (such as runoff) are converted by this function from
+% kg/m2/s to m/h, meaning they represent 3-hour averages. To accumulate fluxes,
+% multiply the 3-hourly data by 3 prior to calling cumsum. Alternatively,
+% interpolate the data returned by this function from 3-hour to 1-hour posting
+% prior to calling cumsum and omit the multiplication by 3.
 
-
-% NOTE: this assumes merra is interpolated to hourly, either before or
-% after this function. It multiplies the incoming kg/m2/s by 3600 s/hr and
-% divides by 1000 kg/m3 to get m/hr. If the data is interpolated to hourly,
-% then cumsum will yield the correct amount. If it is NOT interpolated to
-% hourly, then it would need to be multiplied by 3. but I interpolate
-% hourly to standardize across models. Also, the Racmo data provided has
-% units W/m2 or kg/m2/s, so the switch cases below are just for future
-% reference in case I can extend this, and come from teh readMar function
-% b/c MAR provided many more variables.
 
 % assume ncstart/count not provided
 partialRead = false;
@@ -38,11 +64,11 @@ elseif nargin == 4
    nccount     = varargin{2};
    partialRead = true;
 
-   % if 5 inputs, assume they are Unit,ncstart,nccount
+   % if 5 inputs, assume they are ncstart,nccount,Unit
 elseif nargin == 5
-   Unit        = varargin{1};
-   ncstart     = varargin{2};
-   nccount     = varargin{3};
+   ncstart     = varargin{1};
+   nccount     = varargin{2};
+   Unit        = varargin{3};
    partialRead = true;
 
 else

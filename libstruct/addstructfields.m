@@ -56,7 +56,7 @@ p.parseMagically('caller');
 
 % % % % % % % % % % % % % % % % % % % % 
 if isempty(newfieldnames)
-   newfieldnames = inputname(2);
+   newfieldnames = cellstr(inputname(2));
    
 elseif ischar(newfieldnames) || isstring(newfieldnames)
    newfieldnames = cellstr(newfieldnames);

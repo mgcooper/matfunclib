@@ -20,6 +20,8 @@ alpha = p.Results.alpha;
 %-------------------------------------------------------------------------------
 
 % NOTE: I don't recall finishing this function
+% NOTE: If it is finished, combine with aggannualdata function to allow return
+% of min, max in addition to the aggfunc's here
 
 Data  = renametimetabletimevar(Data);
 Time  = Data.Time;

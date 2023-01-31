@@ -4,9 +4,8 @@
    {
       "inputs":
       [
-         {"name":"projectname",  "kind":"required",   "type":["char",
-         "choices={'baseflow','icom-msd','E3SM-MOSART-offline-mode','MOSART_Hexagon_CRB','Setup-E3SM-Mac','bfra','bfra_backup','bfra_bad','bfra_test','evap','graceGapFill','icemodel','icemodel_archive','imcrt','imcrt_archive','interface','jigsaw-geo-matlab','jigsaw-matlab','raster','recession','runoff','skinmodel','skinmodel','snowmodel'}"]},
-         {"name":"goto",      "kind":"flag",       "type":["char","choices={'baseflow','icom-msd','goto'}"], "default":"'no'"}
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"},
+         {"name":"goto","kind":"flag","type":["char","choices={'goto'}"]}
       ]
    }
 }

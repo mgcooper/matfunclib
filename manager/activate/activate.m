@@ -13,8 +13,7 @@ tbname   = p.Results.tbname;
 goto     = string(p.Results.goto) == "goto"; % transform to logical
 
 %-------------------------------------------------------------------------------
-dbpath      = gettbdirectorypath;
-toolboxes   = readtbdirectory(dbpath);
+toolboxes   = readtbdirectory(gettbdirectorypath);
 tbidx       = findtbentry(toolboxes,tbname);
 
 if sum(tbidx) == 0

@@ -8,11 +8,11 @@ end
 % set the function template filename
 switch parser
    case 'MIP'
-      src = [getenv('MATLABTEMPLATEPATH') 'functemplateMIP.m'];
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateMIP.m');
    case 'IP'
-      src = [getenv('MATLABTEMPLATEPATH') 'functemplateIP.m'];
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateIP.m');
    case 'ArgList'
-      src = [getenv('MATLABTEMPLATEPATH') 'functemplateArgList.m'];
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateArgList.m');
 end
 
 copyfile(src,newfuncpath);

@@ -6,80 +6,74 @@
 
 % SET ENVIRONMENT VARIABLES
 
+% NOTE: the only system (shell) env var I get here is $HOME. I recently changed
+% my .bashrc variables to use _ between each word following best practices, but
+% I don't think I need to change any here, and therefore my matlab environment
+% should not be affected
+
 % userpath is a matlab built-in that returns the matlab startup path. the
 % method I use below first sets HOMEPATH, works better than using if/else
 % on userpath as long as MATLABUSERPATH is in the same location relative to
 % HOMEPATH on all machines. but i use the if/else method to set the python
 % path, see further down.
 
-HOMEPATH    = [getenv('HOME') '/'];          % system $HOME
+HOMEPATH = getenv('HOME'); % system $HOME
 
-setenv('MATLABUSERPATH',[HOMEPATH 'MATLAB/']);
+setenv('MATLABUSERPATH',fullfile(HOMEPATH,'MATLAB'));
 
 % this is not needed b/c it is equivalent to userpath, but in case I use it
 % somewhere else, I am keeping it for now, but delete eventually
-% setenv('MATLABSTARTUPPATH',[getenv('HOME'),'/Documents/MATLAB']);
+% setenv('MATLABSTARTUPPATH',fullfile(getenv('HOME'),'/Documents/MATLAB'));
 
 % I set this to make the setenv statements syntax more compact:
-MATLABPATH  = getenv('MATLABUSERPATH');      % matlab home
+MATLABPATH = getenv('MATLABUSERPATH');      % matlab home
+
+% user project path
+setenv('USERPROJECTPATH',fullfile(HOMEPATH,'myprojects'));
 
 % matlab functions
-setenv('MATLABFUNCTIONPATH',[MATLABPATH 'matfunclib/']);
-setenv('MATLABTEMPLATEPATH',[MATLABPATH 'matfunclib/templates/']);
+setenv('MATLABFUNCTIONPATH',fullfile(MATLABPATH,'matfunclib'));
+setenv('MATLABTEMPLATEPATH',fullfile(MATLABPATH,'matfunclib/templates'));
 
 % manager
-setenv('TBDIRECTORYPATH',[MATLABPATH 'directory/']);
-setenv('PROJECTDIRECTORYPATH',[MATLABPATH 'directory/']);
-setenv('TBJSONACTIVATEPATH',[MATLABPATH 'matfunclib/manager/activate/']);
-setenv('TBJSONDEACTIVATEPATH',[MATLABPATH 'matfunclib/manager/deactivate/']);
-setenv('PRJJSONWORKONPATH',[MATLABPATH 'matfunclib/manager/workon/']);
-setenv('PRJJSONWORKOFFPATH',[MATLABPATH 'matfunclib/manager/workoff/']);
+setenv('TBDIRECTORYPATH',fullfile(MATLABPATH,'directory'));
+setenv('PROJECTDIRECTORYPATH',fullfile(MATLABPATH,'directory'));
+setenv('TBJSONACTIVATEPATH',fullfile(MATLABPATH,'matfunclib/manager/activate'));
+setenv('TBJSONDEACTIVATEPATH',fullfile(MATLABPATH,'matfunclib/manager/deactivate'));
+setenv('PRJJSONWORKONPATH',fullfile(MATLABPATH,'matfunclib/manager/workon'));
+setenv('PRJJSONWORKOFFPATH',fullfile(MATLABPATH,'matfunclib/manager/workoff'));
 
 % file exchange
-setenv('FEXFUNCTIONPATH',[MATLABPATH 'fexfunclib/']);
-setenv('FEXPACKAGEPATH',[MATLABPATH 'fexpackages/']);
+setenv('FEXFUNCTIONPATH',fullfile(MATLABPATH,'fexfunclib'));
+setenv('FEXPACKAGEPATH',fullfile(MATLABPATH,'fexpackages'));
 
 % user data
-setenv('USERDATAPATH',[HOMEPATH 'work/data/']);
+setenv('USERDATAPATH',fullfile(HOMEPATH,'work/data'));
+setenv('USERGISPATH',fullfile(HOMEPATH,'work/data/interface/GIS_data'));
 
 % project and source code
-setenv('MATLABPROJECTPATH',[HOMEPATH 'myprojects/matlab/']);
-setenv('MATLABSOURCEPATH',[HOMEPATH 'mysource/matlab/']);
-
-% jigsaw
-setenv('JIGSAWPATH',[HOMEPATH 'myprojects/jigsaw-matlab/']);
-setenv('JIGSAWGEOPATH',[HOMEPATH 'myprojects/jigsaw-geo-matlab/']);
+setenv('MATLABPROJECTPATH',fullfile(HOMEPATH,'myprojects/matlab'));
+setenv('MATLABSOURCEPATH',fullfile(HOMEPATH,'mysource/matlab'));
 
 % e3sm
-setenv('E3SMINPUTPATH', [getenv('USERDATAPATH') 'e3sm/input/']);
-setenv('E3SMOUTPUTPATH', [getenv('USERDATAPATH') 'e3sm/output/']);
-setenv('E3SMTEMPLATEPATH', [getenv('USERDATAPATH') 'e3sm/templates/']);
-
-
-% icemodel
-setenv('ICEMODELDATAPATH', [getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/eval/']);
-setenv('ICEMODELINPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/input/']);
-setenv('ICEMODELOUTPUTPATH',[getenv('MATLABPROJECTPATH') 'runoff/data/icemodel/output/']);
-
+setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
+setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
+setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
 
 % Set paths - this should negate the need for the stuff below
-% addpath(genpath(getenv('MATLABSTARTUPPATH')))
 addpath(genpath(getenv('MATLABUSERPATH')))
 
 % these are interfering with in-built functions or recommended at install
-rmpath(genpath([getenv('FEXPACKAGEPATH'),'TEXTBOOKS/Environmental_Modeling/']));
-rmpath(genpath([getenv('FEXPACKAGEPATH'),'PHYSICS/matlab_sea_ice/']));
-rmpath(genpath([getenv('FEXPACKAGEPATH'),'PHYSICS/RT_Modest/']));
-rmpath(genpath([getenv('FEXPACKAGEPATH'),'waterloo/']));
-% rmpath(genpath([getenv('FEXPACKAGEPATH'),'topotoolbox/topotoolbox/.git']));
-rmpath(genpath([getenv('FEXPACKAGEPATH'),'PHYSICS/ResInv3D/'])); 
-rmpath(genpath([getenv('FEXFUNCTIONPATH'),'PHYSICS/precise-simulation-featool-multiphysics-f8f8b7e/']));
-rmpath(genpath([getenv('FEXFUNCTIONPATH'),'STATISTICS/OPTIMIZE/Mateda3-master/']));
-rmpath(genpath([getenv('FEXFUNCTIONPATH'),'f2matlab/']));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'TEXTBOOKS/Environmental_Modeling')));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/matlab_sea_ice')));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/RT_Modest')));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'waterloo')));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/ResInv3D')));
+% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'f2matlab')));
 
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 % defaults config
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 set(groot                                                   , ...
     'defaultAxesFontName'       ,   'source sans pro'       , ...
     'defaultTextFontName'       ,   'source sans pro'       , ...
@@ -115,8 +109,8 @@ set(groot                                                   , ...
 if userpath == "/Users/coop558/Documents/MATLAB"
    % % use python 3
    % pyenv('Version','/usr/bin/python3');
-   pyenv('Version',[HOMEPATH '.pyenv/versions/3.8.5/bin/python3.8']);
-   % pyenv('Version',[HOMEPATH '.pyenv/shims/python3.8.5']);
+   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.8.5/bin/python3.8'));
+   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/shims/python3.8.5'));
 
 elseif userpath == "/Users/mattcooper/Documents/MATLAB"
    % need to figure this out
@@ -128,11 +122,12 @@ end
 %------------------------------------------------------------------------------
 
 % activate toolboxes that we want to always be available
-activate MagicInputParser
+activate magicParser
+activate mpm
 
 % copy this file to myFunctions where it lives under source control
-startupFileNameSource   = [userpath '/startup.m'];
-startupFileNameDest     = [getenv('MATLABFUNCTIONPATH') 'startup.m'];
+startupFileNameSource   = fullfile(userpath,'startup.m');
+startupFileNameDest     = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
 
 copyfile(startupFileNameSource,startupFileNameDest);
 
@@ -141,7 +136,7 @@ beep off
 
 % set format for numbers printed to screen so they're readable:
 format shortG       % changed to shortG, doc format for examples
-%format compact    % use pi to see different formats: pi
+format compact    % use pi to see different formats: pi
 
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
@@ -149,8 +144,12 @@ clearvars
 % don't forget
 disp('BE GRATEFUL')
 
-cd(getenv('MATLABUSERPATH'));
-%------------------------------------------------------------------------------
+% open the active project
+workon(getactiveproject)
+
+% cd(getenv('MATLABUSERPATH'));
+
+%-------------------------------------------------------------------------------
 
 % % additional options I found I wasn't aware of:
 % set(groot, ...
@@ -159,12 +158,12 @@ cd(getenv('MATLABUSERPATH'));
 % 'DefaultAxesFontUnits', 'points', ...
 % 'DefaultTextFontUnits', 'Points', ...
 
-% other good fonts
+% default font is Monospaced but other good ones include:
 % fontName = 'Verdana';
 % fontName = 'avantgarde';
 % fontName = 'BitstreamSansVeraMono';
 % fontName = 'Helvetica';
-% source sans pro is nice and compact
+% fontName = 'Source Sans Pro' (nice and compact also if bold)
 
 % % reactivate to work on jigsaw, but better yet, use ToolboxToolbox
 % addpath(genpath(getenv('JIGSAWGEOPATH')));
@@ -174,18 +173,17 @@ cd(getenv('MATLABUSERPATH'));
 % properties, 'plot' is a high level function that puts on the box. setting
 % defaultAxesBox off above means that 'line' will not produce a box
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %% ToolboxToolbox config
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % 
-% toolboxToolboxDir = [getenv('SOURCEPATH'),'ToolboxToolbox/'];
+% toolboxToolboxDir =fullfile(getenv('SOURCEPATH'),'ToolboxToolbox/'];
 % setenv('TOOLBOXTOOLBOXDIR',toolboxToolboxDir);
 % try
 %     apiDir = fullfile(toolboxToolboxDir, 'api');
 %     cd(apiDir);
 %     tbResetMatlabPath('reset', 'full');
 % catch err
-%     warning(['Error setting ToolboxToolbox path during startup: %s', err.message]);
+%     warning(['Error setting ToolboxToolbox path during startup: %s', err.message));
 % end
 % 
 % cd(getenv('HOMEPATH'));
@@ -197,14 +195,14 @@ cd(getenv('MATLABUSERPATH'));
 % end
 % 
 % % add local paths to default PATH to see Homebrew installs etc.
-% setenv('PATH', [getenv('PATH') ':/usr/local/bin:/Users/coop558/.pyenv/']);
+% setenv('PATH',fullfile(getenv('PATH') ':/usr/local/bin:/Users/coop558/.pyenv'));
 % 
 % addpath(genpath(getenv('STARTUPPATH')))
 % addpath(genpath(getenv('HOMEPATH')))
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %% Python configuration
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% 
 % use python 3
 %pyenv('Version','/usr/bin/python3')
 %pyenv('Version','/Users/coop558/.pyenv/shims/python3.8')
@@ -223,7 +221,7 @@ cd(getenv('MATLABUSERPATH'));
 % clear result
 
 % instead, i could add this (and any others I would need):
-% setenv('PATH', [getenv('PATH') ':/usr/local/bin']);
+% setenv('PATH',fullfile(getenv('PATH') ':/usr/local/bin'));
 % I added this below
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -283,7 +281,7 @@ cd(getenv('MATLABUSERPATH'));
 % 
 % %% Put /usr/local/bin on path so we can see things installed by Homebrew.
 % if ismac()
-%     setenv('PATH', ['/usr/local/bin:' getenv('PATH')]);
+%     setenv('PATH', ['/usr/local/bin:' getenv('PATH')));
 % end
 % 
 % 

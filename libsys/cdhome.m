@@ -1,3 +1,3 @@
 function cdhome()
-   cd(getenv('MATLABUSERPATH'))
+cd(getenv('MATLABUSERPATH'))
 

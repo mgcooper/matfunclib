@@ -7,6 +7,20 @@
          {"name":"envname",  "kind":"required",   "type":["char","choices=getuserpaths"]}
       ]
    },
+   "renamefiles":
+   {
+      "inputs":
+      [
+         {"name":"FileList",     "kind":"required",   "type":["char","struct","string","cell"]},
+         {"name":"NewFileNames", "kind":"namevalue",  "type":["char","struct","string","cell"]},
+         {"name":"Prefix",       "kind":"namevalue",  "type":["char"]},
+         {"name":"Suffix",       "kind":"namevalue",  "type":["char"]},
+         {"name":"StrFind",      "kind":"namevalue",  "type":["char"]},
+         {"name":"StrRepl",      "kind":"namevalue",  "type":["char"]},
+         {"name":"dryrun",       "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"useGitMove",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+      ]
+   },
    "reopentabs":
    {
       "inputs":

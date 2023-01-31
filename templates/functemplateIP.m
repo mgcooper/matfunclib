@@ -1,8 +1,6 @@
 function Y = functemplate(X,varargin)
 %FUNCNAME general description of function
 % 
-% Syntax
-% 
 %  Y = FUNCNAME(X) description
 %  Y = FUNCNAME(X,'name1',value1) description
 %  Y = FUNCNAME(X,'name1',value1,'name2',value2) description
@@ -16,11 +14,11 @@ function Y = functemplate(X,varargin)
 % 
 % See also
 
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'funcname';
+p.FunctionName    = mfilename;
 
 validstrings      = {''}; % or [""]
 validoption       = @(x)any(validatestring(x,validstrings));
@@ -35,7 +33,7 @@ option      = p.Results.option;
 namevalue   = p.Results.namevalue;
    
 % https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 
 
 

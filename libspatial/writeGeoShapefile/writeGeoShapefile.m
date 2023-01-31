@@ -31,13 +31,12 @@ if isa(S,'geopoint') || isa(S,'mappoint') || isa(S,'geoshape') || ...
    return;
 end
 
-% NOTE: for a geostruct, size(S) = [1,numfeatures], but below I use
-% [npts,natts] = size(S) (npts is the same thing as numfeatures). it
-% doesn't seem to break anything b/c natts isn't used, and npts is only
-% used for the case where geometry is missing, which won't be the case
-% for geostructs. But it would be good to identify if the input is a
-% geostruct, just like above where I identify if it is a geoshape, and
-% write it straight to shapefile
+% NOTE: for a geostruct, size(S) = [1,numfeatures], but below I use [npts,natts]
+% = size(S) (npts is the same thing as numfeatures). it doesn't seem to break
+% anything b/c natts isn't used, and npts is only used for the case where
+% geometry is missing, which won't be the case for geostructs. But it would be
+% good to identify if the input is a geostruct, just like above where I identify
+% if it is a geoshape, and write it straight to shapefile
 
 if ischar(S) || isstring(S)
    % read in the data
@@ -50,8 +49,6 @@ else
    error('first input must be a filename to a table or a data table');
 end
 
-fields = fieldnames(coords);
-
 
 % make sure there are lat/lon fields of some sort
 if ~isnan(lat)
@@ -59,7 +56,10 @@ if ~isnan(lat)
    coords.Lat  = lat;
    coords.Lon  = lon;
 else
-   coords = preplatlon(fields,coords);
+   coords = preplatlon(coords);
+
+   % test the new function at some point
+   % coords = prepLatLonFields(coords,{'Lat','Lon'});
 end
 
 
@@ -109,14 +109,16 @@ end
 
 
 
-function coords = preplatlon(fields,coords)
+function coords = preplatlon(coords)
 
-latfields   = {'LATITUDE','Lat','latitude','lat','LAT','Latitude'};
-lonfields   = {'LONGITUDE','Lon','longitude','lon','LON','long','LONG','Longitude'};
-xfields     = {'X','x'};
-yfields     = {'Y','y'};
-
-useX = false; useY = false;
+% set defaults
+latfields = {'LATITUDE','Lat','latitude','lat','LAT','Latitude'};
+lonfields = {'LONGITUDE','Lon','longitude','lon','LON','long','LONG','Longitude'};
+xfields = {'X','x'};
+yfields = {'Y','y'};
+fields = fieldnames(coords);
+useX = false; 
+useY = false;
 
 % first get all lat/lon fields (in case there is more than one)
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

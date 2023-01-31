@@ -8,5 +8,71 @@
          "choices={'icom-msd','E3SM-MOSART-offline-mode','MOSART_Hexagon_CRB','Setup-E3SM-Mac','bfra','bfra_backup','bfra_bad','bfra_test','evap','graceGapFill','icemodel','icemodel_archive','imcrt','imcrt_archive','interface','jigsaw-geo-matlab','jigsaw-matlab','raster','recession','runoff','skinmodel','skinmodel','snowmodel'}"]},
          {"name":"goto",      "kind":"flag",       "type":["char","choices={'icom-msd','goto'}"], "default":"'no'"}
       ]
+   },
+   "cdtoolbox":
+   {
+      "inputs":
+      [
+         {"name":"tbname",  "kind":"required",   "type":["char",
+         "choices=tbdirectorylist"]},
+         {"name":"goto",      "kind":"flag",       "type":["char","choices={'icom-msd','goto'}"], "default":"'no'"}
+      ]
+   },
+   "addprojectpaths":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "getprojectfiles":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "getprjidx":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "openprojectfiles":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "setprojectactive":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "setprojectfiles":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },
+   "setprojectfolder":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":[["char","choices=projectdirectorylist"],["cell"]],"purpose":"Option"}
+      ]
+   },
+   "setprojectlinked":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"},
+         {"name":"linkedprojectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
    }
 }
