@@ -1,2 +1,2 @@
-function worldrivers = worldriverlist
-load worldriverlist.mat worldrivers
+function naturalearthrivers = naturalearthrivers
+load naturalearthrivers.mat naturalearthrivers
