@@ -1,6 +1,9 @@
 function [ data_out ] = setval( data_in,val_or_idx_2set,set_val )
 %SETNAN sets logical indices in data to nan
-%   Detailed explanation goes here
+%
+%  [ data_out ] = setval( data_in,val_or_idx_2set,set_val )
+% 
+% See also setnan
 
 if numel(data_in)==numel(val_or_idx_2set) && islogical(val_or_idx_2set)
 % assume nanval is a logical denoting where to set data_in to set_val

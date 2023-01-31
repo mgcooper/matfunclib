@@ -65,11 +65,11 @@ elseif isregular(T,'months')
 end
 
 % check for non-numeric data
-inotnum        =  tablevartypeindices(T,'notnumeric');
+inotnum = tablevartypeindices(T,'notnumeric');
 
 if any(inotnum)
 
-   varnames    =  T.Properties.VariableNames(inotnum);
+   varnames = T.Properties.VariableNames(inotnum);
 
    %       % here I was going to determine what type of data is in the
    %       % non-numeric cells and try to convert to double or categorical

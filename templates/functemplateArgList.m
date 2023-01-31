@@ -1,8 +1,6 @@
 function Y = functemplate(X,flag1,flag2,options)
 %FUNCNAME general description of function
 % 
-% Syntax
-% 
 %  Y = FUNCNAME(X) description
 %  Y = FUNCNAME(X,'flag1') description
 %  Y = FUNCNAME(X,'flag2') description
@@ -16,9 +14,9 @@ function Y = functemplate(X,flag1,flag2,options)
 % 
 % See also
 
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 
 arguments
    X (:,1) double
@@ -32,7 +30,7 @@ end
 % doc argument-validation-functions
 % see argumentsTest folder for ppowerful examples of accessing built-in
 % name-value options w/tab completion
-%------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------
 
 
 

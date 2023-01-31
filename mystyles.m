@@ -1,3 +1,32 @@
+
+% filenames
+% identifier_type_status_date.ext
+% example:
+% interface_baseflow_update_v1_19Jan2023.ppt
+% interface_baseflow_update_FINAL_19Jan2023.ppt
+% 
+% but if docs are already ordered in a directory such as:
+% projects/interface/baseflow
+% then the example above may be redundant and can be shortened to:
+% projects/interface/baseflow/updates/baseflow_FINAL_19Jan2023
+% or shorten paths in preference to filenames:
+% projects/interface/baseflow_update_FINAL_19Jan2023
+% 
+% https://finance.uw.edu/recmgt/resources/file-folder-naming-conventions
+basinlist
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+% TENTATIVE DEFAULT DIRECTORY STRUCTURE
+% workflow
+% scripts
+% functions
+% examples
+% figures
+% tests
+% data
+% docs
+% testbed
+
+
 % Style Guide notes:
 % - use i for iterator, like I normally do e.g. for iFile
 % - use n for number of, like I normally do e.g. for nFiles
