@@ -26,5 +26,19 @@
          {"name":"subdirs",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
          {"name":"asfiles",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
+   },
+   "varlist":
+   {
+      "inputs":
+      [
+         {"name":"workspace",  "kind":"ordered",   "type":"choices={'base','caller'}"}
+      ]
+   },
+   "varopen":
+   {
+      "inputs":
+      [
+         {"name":"varname",  "kind":"ordered",   "type":"choices=varlist"}
+      ]
    }
 }

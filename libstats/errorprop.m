@@ -7,7 +7,7 @@ function sig = errorprop(FofX,X,sigX,varargin)
 
 %-------------------------------------------------------------------------------
 p = magicParser;
-p.FunctionName = 'errorprop';
+p.FunctionName = mfilename;
 p.addRequired('FofX',@(x)isa(x,'function_handle'));
 p.addRequired('X',@(x)isnumeric(x));
 p.addRequired('sigX',@(x)isnumeric(x));

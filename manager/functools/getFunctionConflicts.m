@@ -22,7 +22,7 @@ function filelist = getFunctionConflicts(varargin)
 % input parsing
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'getFunctionConflicts';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = true;
 p.KeepUnmatched   = true;
 

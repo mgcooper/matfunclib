@@ -7,7 +7,7 @@ function T = mkcalendar(t1,t2,dt,varargin)
 
 %--------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'mkcalendar';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

@@ -2,7 +2,7 @@ function toolboxes = renametoolbox(oldtbname,newtbname,varargin)
 %RENAMETOOLBOX renames toolbox entry in toolboxdir and json files
 %-------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'renametoolbox';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 

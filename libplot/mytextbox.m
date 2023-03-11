@@ -21,7 +21,7 @@ function [ h,x,y ] = mytextbox( textstr,xpct,ypct,varargin)
 %-------------------------------------------------------------------------------
 p=magicParser;
 p.KeepUnmatched=true;
-p.FunctionName='mytextbox';
+p.FunctionName=mfilename;
 p.addRequired('textstr',@(x)ischar(x)|iscell(x));
 p.addRequired('xpct',@(x)isnumeric(x));
 p.addRequired('ypct',@(x)isnumeric(x));

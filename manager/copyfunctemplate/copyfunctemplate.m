@@ -1,17 +1,21 @@
 function copyfunctemplate(newfuncpath,parser)
 
-% use magic input parser or built in input parser (default: MIP)
+% use magic parser by default
 if nargin == 1
-   parser = 'MIP';
+   parser = 'MP';
 end
 
 % set the function template filename
 switch parser
-   case 'MIP'
-      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateMIP.m');
-   case 'IP'
+   case 'MP' % magicParser
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateMP.m');
+   case 'IP' % inputParser
       src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateIP.m');
-   case 'ArgList'
+   case 'OP' % optionParser
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateOP.m');
+   case 'NP' % no parser
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateNP.m');
+   case 'ArgList' % arguments block
       src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateArgList.m');
 end
 

@@ -1,5 +1,7 @@
 function data = standardizeData(data)
 
+% TODO use validatestring to validate units and variable names
+
 % % this implements my standard naming rules.
 % % currently, I think MAR and MERRA2 are implemented.
 

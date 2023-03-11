@@ -62,5 +62,8 @@ H.onetoone = addOnetoOne;
 xylabel('x data','ydata')
 legend('data','linear fit','1:1 line')
 
-
+% TODO face colors
+% If alphadata is a vector of size equal to the data then set face alpha to flat
+% to map face alpha onto each point. So I guess shading flat means each data
+% point maps directly to it's color and shading interp interpolates
 

@@ -53,7 +53,7 @@ clean
 
 %%
 uname           =   'mguycooper';
-pword           =   'Kaweah85';
+pword           =   '';
 options         =   weboptions('Username',uname,'Password',pword, ...
                         'Timeout',2000);
                     

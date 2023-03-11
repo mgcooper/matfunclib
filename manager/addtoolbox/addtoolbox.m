@@ -24,55 +24,50 @@ function toolboxes = addtoolbox(tbname,varargin)
 %     [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
 %
 %     See also activate deactivate
+% 
+% UPDATES
+% 7 Feb 2023, tbpath method updated to work for both top-level and sublib dirs,
+% but assumes args.library is empty by default. changed variable names from
+% 'tblibrary' and 'tbactivate' to 'library' and 'postadd'
 
 %-------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = 'addtoolbox';
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
-validlibs         = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
-validopts         = @(x)any(validatestring(x,{'activate'}));
+validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+validopts = @(x)any(validatestring(x,{'activate'}));
 
 addRequired(p,'tbname',@(x)ischar(x));
-addOptional(p,'tblibrary','',validlibs);
-addOptional(p,'tbactivate','',@(x)ischar(x));
+addOptional(p,'library','',validlibs);
+addOptional(p,'postadd','',validopts);
 
 parse(p,tbname,varargin{:});
-tbname      = p.Results.tbname;
-tblibrary   = p.Results.tblibrary;
-tbactivate  = p.Results.tbactivate;
-
-% test - can I just combine tbname w/ tblibrary and the rest works?
-uselib      = ~isempty(tblibrary);
-
+args = p.Results;
 %-------------------------------------------------------------------------------
 
-dbpath = gettbdirectorypath;      % get the tb database (directory) path
-toolboxes = readtbdirectory(dbpath); % read the directory into memory
+% read the toolbox directory into memory
+toolboxes = readtbdirectory(gettbdirectorypath());
 
-% set the path to the toolbox source code
-if uselib
-   tbpath = gettbsourcepath([tblibrary filesep tbname]);
-else
-   tbpath = gettbsourcepath(tbname);
-end
+% set the path to the toolbox source code (works if args.library is empty)
+tbpath = fullfile(gettbsourcepath,args.library,args.tbname);
 
 % add the toolbox to the end of directory
 tbidx = height(toolboxes)+1;
 
 % regardless of sub-libs, we still want to match this
-if any(ismember(toolboxes.name,tbname))
+if any(ismember(toolboxes.name,args.tbname))
    
    error('toolbox already in directory');
    
 else
    
-   toolboxes(tbidx,:) = {tbname,tbpath};
+   toolboxes(tbidx,:) = {args.tbname,tbpath};
    
-   disp(['adding ' tbname ' to toolbox directory']);
+   disp(['adding ' args.tbname ' to toolbox directory']);
    
-   writetbdirectory(toolboxes,dbpath);
+   writetbdirectory(toolboxes);
    
 end
 
@@ -83,8 +78,8 @@ addtojsondirectory(toolboxes,tbidx,'activate');
 addtojsondirectory(toolboxes,tbidx,'deactivate');
 
 % activate the toolbox if requested
-if string(tbactivate)=="activate"
-   activate(tbname,'goto');
+if string(args.postadd)=="activate"
+   activate(args.tbname,'goto');
 end
 
 
@@ -102,7 +97,17 @@ wholefile   = strrep(wholefile,tbfind,tbreplace);
 writetbjsonfile(jspath,wholefile)
 
 
+% % NOTE on tbpath method - gettbsourcepath with no input returns the matlab
+% source directory so if args.library is empty then the new method in the main
+% code works for both cases, sub-library or no sublibrary. This is the old
+% method that is slightly safer b/c gettbsourcepath loads the file and finds the
+% path in the table. 
 
+% if ~isempty(args.library)
+%    tbpath = fullfile(gettbsourcepath,args.library,args.tbname);
+% else
+%    tbpath = gettbsourcepath(args.tbname);
+% end
 
 
 

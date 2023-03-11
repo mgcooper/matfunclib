@@ -3,7 +3,7 @@ function [Trends,Tab] = timetabletrends(T,varargin)
 
 %--------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'timetabletrends';
+p.FunctionName    = mfilename;
 p.PartialMatching = true;
 
 p.addRequired('T',                        @(x)istimetable(x));

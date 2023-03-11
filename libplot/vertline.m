@@ -5,7 +5,7 @@ function h = vertline(x,varargin)
 % dec 2022 removed input parsing
 %------------------------------------------------------------------------------
 % p = magicParser;
-% p.FunctionName='vertline';
+% p.FunctionName=mfilename;
 % p.addRequired('x',@(x)isnumeric(x));
 % p.addOptional('ax',gca,@(x)isaxis(x));
 % p.parseMagically('caller');

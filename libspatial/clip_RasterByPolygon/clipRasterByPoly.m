@@ -1,4 +1,4 @@
-function Z = clipRasterByPoly(Z,X,Y,P,varargin)
+function [Z,I] = clipRasterByPoly(Z,X,Y,P,varargin)
 %CLIPRASTERBYPOLY clip raster Z with coordinates X,Y by poly P
 %
 %
@@ -14,7 +14,7 @@ validstrings   = {'areasum','areaavg','aggregate','average','majority'};
 validoption    = @(x)any(validatestring(x,validstrings));
 
 p              = magicParser;
-p.FunctionName = 'clipRasterByPoly';
+p.FunctionName = mfilename;
 p.addRequired( 'Z',                                @(x)isnumeric(x)        );
 p.addRequired( 'X',                                @(x)isnumeric(x)        );
 p.addRequired( 'Y',                                @(x)isnumeric(x)        );
@@ -30,7 +30,8 @@ p.parseMagically('caller');
 
 if aggfunc == "none"
    % set cells outside the polygon nan
-   Z(~inpolygon(X(:),Y(:),P.Vertices(:,1),P.Vertices(:,2))) = NaN;
+   I = inpolygon(X(:),Y(:),P.Vertices(:,1),P.Vertices(:,2));
+   Z(~I) = NaN;
    return
 end
 
@@ -50,7 +51,7 @@ if GridType == "unstructured"
    % Z = reshape(Z,size(X,1),size(X,2),size(Z,2));
    % Z = fillmissing(Z,'linear');
    
-   %I cannot get griddedINterpolant to fill the missing value. I am not sure if
+   %I cannot get griddedInterpolant to fill the missing value. I am not sure if
    %fillmissing is faster than looping with scatteredInterpolant
    %F = griddedInterpolant(X',Y',pagetranspose(Z),'spline','spline');
    %Z = F(X,Y);
@@ -78,14 +79,24 @@ end
 % polygon but not if the grid cells completely cover it (that is determined at
 % the end after all partial areas have been computed)
 % bboxcells = centroid2box(X,Y,cellsizeX,cellsizeY);
-% figure; plot(bboxcells); hold on; plot(X,Y,'o');
+% figure; plot(bboxcells); hold on; plot(X(:),Y(:),'o');
 
 % get the number of rows and columns and convert to a list
-if GridType == "structured" && ndims(Z)==3
-   [nrows,ncols,nsteps] = size(Z,1,2,3);
+if GridType == "structured" 
+   if ndims(Z)>3
+      error('only 3-d data currently supported')
+   else
+      [nrows,ncols,nsteps] = size(Z);
+   end
    Z = reshape(Z,nrows*ncols,nsteps);
+   X = reshape(X,nrows*ncols,1);
+   Y = reshape(Y,nrows*ncols,1);
 end
 ncells = size(Z,1);
+
+% find grid cells inside the polygon + a buffer large enough
+B = polybuffer(P,2*norm([cellsizeX,cellsizeY]));
+I = inpolygon(X,Y,B.Vertices(:,1),B.Vertices(:,2));
 
 % compute the polyshape or get the x,y vertices
 % P = polyshape(PX,PY,'Simplify',false);
@@ -108,8 +119,15 @@ if (~ismember(lower(aggfunc),{'aggregate','average','majority'}))
    
    overlapArea = nan(ncells,1);
 
+   hasplot = false;
+   
    % parfor n=1:nrows*ncols
    for n=1:ncells
+      
+      % if this grid cell is outside the polygon, continue
+      if ~I(n)
+         continue
+      end
 
       % compute a box around the grid centroid
       B = centroid2box(X(n),Y(n),cellsizeX,cellsizeY);
@@ -123,8 +141,9 @@ if (~ismember(lower(aggfunc),{'aggregate','average','majority'}))
 
       % test plot
       if testplot == true
-         if n==1
-            figure; plot(X,Y,'o'); hold on; plot(PX,PY);
+         if hasplot == false
+            hasplot = true;
+            figure; plot(X(I),Y(I),'o'); hold on; plot(PX,PY);
             % labelpoints(X(:),Y(:),1:numel(X));
          end
          if ~isempty(overlapX)
@@ -132,7 +151,9 @@ if (~ismember(lower(aggfunc),{'aggregate','average','majority'}))
          end
       end
 
-      if (~isempty(overlapY) || ~isempty(overlapX))
+      if isempty(overlapY) || isempty(overlapX)
+         overlapArea(n)=0;
+      else
          if islatlon(overlapY,overlapX)
             tmpAreaArray = areaint(overlapY,overlapX,ellips);
             isHole = ispolycw(overlapX,overlapY);
@@ -140,18 +161,16 @@ if (~ismember(lower(aggfunc),{'aggregate','average','majority'}))
             overlapArea(n)=sum(tmpAreaArray.*isHole(:));
          else
             overlapArea(n) = area(C);
-         end
-      else
-         overlapArea(n)=0;
+         end         
       end
    end
    %overlapArea=reshape(overlapArea,nrows,ncols);
 end
 
 % warn if areas don't match
-if abs(polyArea-sum(overlapArea(:))) > eps
-   warning('area of overlapping regions does not match total polygon area')
-   cfactor = (polyArea-sum(overlapArea(:)))/polyArea;
+dA = abs(polyArea-sum(overlapArea(:),'omitnan'))/polyArea;
+if dA > 1e-1
+   warning('area of overlapping regions differs from total polygon area by %s %%',100*dA)
 end
 
 % apply the agg func
@@ -170,7 +189,7 @@ switch (lower(aggfunc))
       error('Requested Operation is not recognized.')
 end
 Z = squeeze(Z);
-% Z = Z+cfactor.*Z;
+% Z = Z+dA.*Z;
 
 
 % figure; 

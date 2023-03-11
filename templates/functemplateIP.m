@@ -20,8 +20,8 @@ function Y = functemplate(X,varargin)
 p                 = inputParser;
 p.FunctionName    = mfilename;
 
-validstrings      = {''}; % or [""]
-validoption       = @(x)any(validatestring(x,validstrings));
+validstrings      = {''}; % if [""] is used, 
+validoption       = @(x)~isempty(validatestring(x,validstrings));
 
 p.addRequired(    'X',                       @(x)isnumeric(x)     );
 p.addOptional(    'option',      nan,        validoption          );

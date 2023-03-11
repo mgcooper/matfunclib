@@ -1,0 +1,2 @@
+function shortcuts
+edit shortcut_tricks.m

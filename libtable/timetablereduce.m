@@ -8,7 +8,7 @@ function NewData = timetablereduce(Data,varargin)
 
 %-------------------------------------------------------------------------------
 p              = magicParser;
-p.FunctionName = 'timetablereduce';
+p.FunctionName = mfilename;
 
 p.addRequired( 'Data',                    @(x)istimetable(x)   );
 p.addParameter('alpha',       0.32,       @(x)isnumeric(x)     );

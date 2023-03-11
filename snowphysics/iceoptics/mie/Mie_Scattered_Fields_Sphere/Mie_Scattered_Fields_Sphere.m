@@ -22,8 +22,8 @@
 % specific location of the map. In most cases the near-field spectrum at a
 % given location (Figure 3) is very different from the scattering
 % efficiency of the overall particle (Figure 1).
-clear all;
-close all;
+clear
+close all
 
 % MANUAL INPUT
 prompt = {'Sphere radius (nm)','Refractive index of the surrounding medium (air = 1, water = 1.333)'};

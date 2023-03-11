@@ -1,7 +1,8 @@
 function [X,Y,cellsizeX,cellsizeY,tfgeo,tfreg,tol] = prepareMapGrid(X,Y,varargin)
+%PREPAREMAPGRID prepare planar or geographic x,y grids for spatial analysis
 
 % determine if the input vectors (or grids) are regular and/or geographic/planar
-[tfreg,tfgeo,tol] = isxyregular(x,y,varargin);
+[tfreg,tfgeo,tol] = isxyregular(X,Y);
 if ~tfreg
    error('X,Y data are irregular')
 end
@@ -28,7 +29,7 @@ end
 [X,Y] = orientmapgrid(X,Y);
 
 % get the cell size in the x and y directions
-cellsize = mapgridcellsize(X,Y);
+[cellsizeX,cellsizeY] = mapgridcellsize(X,Y);
 
 % % determine if the data are planar or geographic
 % tf = islatlon(Y(1,1),X(1,1));

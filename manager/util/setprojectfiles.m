@@ -1,14 +1,33 @@
-function setprojectfiles(projectname)
+function setprojectfiles(projectname,filelist)
 %SETPROJECTFILES save the list of open project files
 % 
 % 
 % See also getprojectfiles
+narginchk(0,2);
 
+if nargin < 1
+   projectname = getactiveproject();
+end
+
+% read the project list
 projlist = readprjdirectory();
 projindx = getprjidx(projectname,projlist);
-projlist.activefiles{projindx} = getopenfiles();
+
+% if a file list is provided, use it, otherwise get all open files
+if nargin == 1
+   projlist.activefiles{projindx} = getopenfiles();
+elseif nargin == 2
+   projlist.activefiles{projindx} = filelist;
+end
+
 writeprjdirectory(projlist);
 
+% I had this note: Shouldn't need these with setprojectfolder but in case:
+% setprojectfiles
+% setactivefiles
+% not sure what I was thinking or if I missed something like maybe if
+% setprojectfolder is used then the projectfiles are just the ones in that path,
+% but activefiles could be antyhing
 
 % careful with passing projlist around. if we always read/write, then we know
 % its state is up to date, but if we pass it around, it can get out of sync. an

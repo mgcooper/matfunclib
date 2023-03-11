@@ -1,5 +1,14 @@
 
 % filenames
+% 
+% Placename_object_geomtype_proj_optionaldescription
+% 
+% vector example: kuparuk_basin_line_geo_simplified
+% raster example:
+% kuparuk_topo_100m_utm_filled. 
+% 
+% this was another way I had it:
+% 
 % identifier_type_status_date.ext
 % example:
 % interface_baseflow_update_v1_19Jan2023.ppt
@@ -13,7 +22,9 @@
 % projects/interface/baseflow_update_FINAL_19Jan2023
 % 
 % https://finance.uw.edu/recmgt/resources/file-folder-naming-conventions
-basinlist
+
+
+
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % TENTATIVE DEFAULT DIRECTORY STRUCTURE
 % workflow
@@ -25,6 +36,18 @@ basinlist
 % data
 % docs
 % testbed
+
+% regarding testbed/ Maybe usr/ is better than testbed but it might conflict
+% with git. Basically anything obvious is problematic for git
+% dev, devel, working is misleading, testing too similar to tests, user too
+% similar to Users/ , private conflicts with matlab, sandbox could work but it's
+% somewhat misleading although maybe not because testbed should be in another
+% branch so maybe sandbox is ideal because it represents stuff you want in every
+% branch but not pushed to remote.    
+% Maybe local/ is best since that's exactly what it is. But actually info
+% exclude might mean it's totally outside version control whereas git ignore
+% just doesn't push it so I might need to consider that for my own work. Maybe
+% ignore/ and local/ are two different things    
 
 
 % Style Guide notes:

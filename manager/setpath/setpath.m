@@ -14,7 +14,7 @@ function varargout = setpath(pathstr,varargin)
 validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
 validpostset   = @(x)any(validatestring(x,{'goto','none'}));
 p              = magicParser;
-p.FunctionName = 'setpath';
+p.FunctionName = mfilename;
 
 p.addRequired( 'pathstr',              @(x)ischar(x)|isstruct(x)  );
 p.addOptional( 'pathtype', 'matlab',   validpathtypes             );
@@ -46,7 +46,7 @@ if isstruct(pathstr)
    fields = fieldnames(pathstr);
 
    for n = 1:length(fields)
-      pathname = [pathroot pathstr.(fields{n})];
+      pathname = fullfile(pathroot,pathstr.(fields{n}));
       if ~contains(pathstr,'.')
          if pathname(end) ~= "/"
             pathname = strcat(pathname,'/');
@@ -56,7 +56,7 @@ if isstruct(pathstr)
    end
 
 elseif ischar(pathstr)
-   pathstr = [pathroot pathstr];
+   pathstr = fullfile(pathroot,pathstr);
 
    if ~contains(pathstr,'.')
       if pathstr(end) ~= "/"

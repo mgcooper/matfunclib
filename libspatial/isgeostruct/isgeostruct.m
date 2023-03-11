@@ -11,7 +11,7 @@ function tf = isgeostruct(S)
 % input parsing
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'isgeostruct';
+p.FunctionName    = mfilename;
 p.addRequired(   'S',                     @(x)isstruct(x)      );
 p.parseMagically('caller');
 

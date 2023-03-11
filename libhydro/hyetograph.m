@@ -10,7 +10,7 @@ function h = hyetograph(time,flow,ppt,varargin)
 
 %------------------------------------------------------------------------------
 p = magicParser;
-p.FunctionName = 'hyetograph';
+p.FunctionName = mfilename;
 p.addRequired('time',            @(x)isnumeric(x)|isdatetime(x)   );
 p.addRequired('flow',            @(x)isnumeric(x)                 );
 p.addRequired('ppt',             @(x)isnumeric(x)                 );

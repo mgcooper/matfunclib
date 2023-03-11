@@ -40,7 +40,7 @@ function PER = computeWaterBalance(Data,varargin)
 
 %-------------------------------------------------------------------------------
 p=magicParser;
-p.FunctionName='computeWaterBalance';
+p.FunctionName=mfilename;
 p.PartialMatching=true;
 p.addRequired('Data',@(x)istimetable(x));
 p.addParameter('snowcorrect',false,@(x)islogical(x));

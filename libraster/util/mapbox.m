@@ -1,28 +1,28 @@
-function varargout = mapbox(xspan,yspan,varargin)
-%MAPBOX draw a box of size xspan/yspan on the current plot 
+function varargout = mapbox(xlimits,ylimits,varargin)
+%MAPBOX draw a box of size xlimits/ylimits on the current plot 
 % 
-%  h = mapbox(xspan,yspan) plots a box and returns the handle h
+%  h = mapbox(xlimits,ylimits) plots a box and returns the handle h
 % 
-%  [xrect,yrect] = mapbox(xspan,yspan) returns the box coordinates
+%  [xrect,yrect] = mapbox(xlimits,ylimits) returns the box coordinates
 % 
-%  [h,xrect,yrect] = mapbox(xspan,yspan) plots a box and returns the handle h
+%  [h,xrect,yrect] = mapbox(xlimits,ylimits) plots a box and returns the handle h
 %  and the box coordinates 
 % 
-%  Note: Assumes min(xspan) == xspan(1), max(xspan) == xspan(2), etc.
+%  Note: Assumes min(xlimits) == xlimits(1), max(xlimits) == xlimits(2), etc.
 % 
 % See also: geobox
 
 hold on;
-xrect = [xspan(1) xspan(2) xspan(2) xspan(1) xspan(1)];
-yrect = [yspan(1) yspan(1) yspan(2) yspan(2) yspan(1)];
+xrect = [xlimits(1) xlimits(2) xlimits(2) xlimits(1) xlimits(1)];
+yrect = [ylimits(1) ylimits(1) ylimits(2) ylimits(2) ylimits(1)];
 
 % this could be used to allow arbitrary ordering, whereas above assumes
-% min(xspan) == xspan(1), max(xspan) == xspan(2), etc.
+% min(xlimits) == xlimits(1), max(xlimits) == xlimits(2), etc.
 
-% ymin = min(yspan);
-% ymax = max(yspan);
-% xmin = min(xspan);
-% ymax = max(xspan);
+% ymin = min(ylimits);
+% ymax = max(ylimits);
+% xmin = min(xlimits);
+% ymax = max(xlimits);
 
 switch nargout
    case 1

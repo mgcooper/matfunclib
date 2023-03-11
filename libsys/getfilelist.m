@@ -17,15 +17,28 @@ function filelist = getfilelist(dirpath,varargin)
 %-------------------------------------------------------------------------------
 % input parsing
 %-------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
+p = magicParser;
+p.FunctionName = mfilename;
+p.addRequired('dirpath',@(x)ischarlike(x));
 
-p.addRequired(    'dirpath',                 @(x)ischarlike(x)    );
-p.addOptional(    'pattern',     '*',        @(x)ischarlike(x)    );
+% validation
+validstyles = {'fullpath','filenames'};
+validoption = @(x)any(validatestring(x,validstyles));
+
+if nargin == 2 
+   if ismember(varargin{1},validstyles)
+      p.addOptional('liststyle','fullpath',validoption);
+      pattern = '*';
+   else
+      p.addOptional('pattern','*',@(x)ischarlike(x));
+      liststyle = 'fullpath';
+   end      
+else
+   p.addOptional(    'pattern',     '*',        @(x)ischarlike(x)    );
+   p.addOptional(    'liststyle',   'fullpath', validoption           );
+end
 
 p.parseMagically('caller');
-
-pattern = p.Results.pattern;
 %-------------------------------------------------------------------------------
 
 % NOTE: this works as-is but then I started adding the input parsing scheme from
@@ -33,8 +46,17 @@ pattern = p.Results.pattern;
 
 filelist = fnamefromlist(getlist(dirpath,pattern),'asstring');
 
+if liststyle == "filenames"
+   [~,filenames,fileexts] = fileparts(filelist);
+   filelist = strcat(filenames,fileexts);
+end
 
-
-
+% % prob don't need thi sbut just noting thsee two are equivlane
+% sites_v1_files = getfilelist(fullfile(p,'gages'),'filenames')
+% sites_v1_files = strrep(strrep(sites_v1_files,'usgs_',''),'.csv','');
+% 
+% sites_v1_files = fnamefromlist(getlist(fullfile(p,'gages')));
+% sites_v1_files = strrep(sites_v1_files,fullfile(p,'gages'),'');
+% sites_v1_files = string(strrep(strrep(sites_v1_files,'/usgs_',''),'.csv',''));
 
 

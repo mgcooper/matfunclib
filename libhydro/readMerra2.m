@@ -56,7 +56,7 @@ partialRead = false;
 
 % if 3 inputs, assume the third is the Unit, to avoid ncinfo every read
 if nargin == 3
-   Unit     = varargin{1};
+   Unit = varargin{1};
 
    % if 4 inputs, assume they are ncstart,nccount
 elseif nargin == 4
@@ -94,9 +94,9 @@ end
 % coordinates and t is time. For 4-d you also get [x,y,t], but it is
 % assumed that the original 3rd and 4th dimensions were both time, such as
 % hours and days, so you get a collapsed time dimensions.
-[r,c,h,d]   =   size(dataGrid);
-dataGrid    =   reshape(dataGrid,r,c,h*d);
-dataGrid    =   flipud(permute(dataGrid,[2 1 3]));
+[r,c,h,d] = size(dataGrid);
+dataGrid = reshape(dataGrid,r,c,h*d);
+dataGrid = flipud(permute(dataGrid,[2 1 3]));
 
 
 % NOTE: racmo and merra are kg/m2/s posted every three hours, but don't
@@ -139,7 +139,7 @@ elseif strcmp(Unit,'kg m-2')                    % convert to m (eg swe)
 end
 
 % doing this here avoids having to do the conversions twice
-dataList  =   reshape(dataGrid,r*c,h*d);
+dataList = reshape(dataGrid,r*c,h*d);
 
 
 % % this was what originally would have come after getting the Unit, so if

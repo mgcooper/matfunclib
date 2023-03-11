@@ -1,7 +1,29 @@
 function reopenfiles(filelist)
+%REOPENFILES reopen files in filelist
+%
+%
+% See also
+
+%UPDATES
+%10Mar2023 if filelist is a cell array use brace indexing, if filelist is a char
+%assume its one filename and break after the first iteration
+
+% this would work for versions with 'string' type
+% if iscell(filelist)
+%    filelist = string(filelist);
+% end
+waschar = false;
 
 for n = 1:numel(filelist)
-   thisfile = filelist(n);
+   
+   if iscell(filelist)
+      thisfile = filelist{n};
+   elseif ischar(filelist)
+      waschar = true;
+   else
+      thisfile = filelist(n);
+   end
+   
    try
       open(thisfile)
    catch
@@ -14,5 +36,10 @@ for n = 1:numel(filelist)
       catch
          % let it go
       end
+   end
+   
+   % if filelist was a char, assume it was one file and stop here
+   if waschar
+      break
    end
 end

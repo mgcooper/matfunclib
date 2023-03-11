@@ -17,7 +17,7 @@ function Merra = merraWaterBalance(basinname,varargin)
 
 %-------------------------------------------------------------------------------
 p=magicParser;
-p.FunctionName='merraWaterBalance';
+p.FunctionName=mfilename;
 p.addRequired('basinname',@(x)ischar(x));
 p.addParameter('t1',NaT,@(x) isdatetime(x)|isnumeric(x));
 p.addParameter('t2',NaT,@(x) isdatetime(x)|isnumeric(x));

@@ -2,7 +2,7 @@ function Gc = graceSnowCorrect(G,SW,varargin)
 
 %------------------------------------------------------------------------------
 p = magicParser;
-p.FunctionName = 'graceSnowCorrect';
+p.FunctionName = mfilename;
 p.PartialMatching = true;
 
 % p.addRequired('T',@(x)isdatetime(x));

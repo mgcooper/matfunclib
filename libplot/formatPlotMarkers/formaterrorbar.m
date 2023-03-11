@@ -8,7 +8,7 @@ function h = formaterrorbar(h,varargin)
 %-------------------------------------------------------------------------------
 p                 = magicParser;
 p.CaseSensitive   = false;
-p.FunctionName='formaterrorbar';
+p.FunctionName    = mfilename;
 
 p.addParameter('linestyle',   '-',        @(x)ischar(x)                 );
 p.addParameter('marker',      'o',        @(x)ischar(x)                 );

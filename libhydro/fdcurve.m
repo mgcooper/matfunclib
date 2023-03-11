@@ -7,7 +7,7 @@ function fdc = fdcurve(flow,varargin)
 
 %-------------------------------------------------------------------------------
 p = magicParser;
-p.FunctionName='fdcurve';
+p.FunctionName=mfilename;
 p.addRequired('flow',@(x)isnumeric(x));
 p.addParameter('axscale','semilogy',@(x)ischar(x));
 p.addParameter('units','',@(x)ischar(x));

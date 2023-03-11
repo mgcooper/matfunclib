@@ -17,7 +17,7 @@ function propval = getgcm(mapax,varargin)
 % input parsing
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'getgcm';
+p.FunctionName    = mfilename;
 p.KeepUnmatched   = true;
 
 p.addRequired( 'mapax',                   @(x)isaxis(x)     );

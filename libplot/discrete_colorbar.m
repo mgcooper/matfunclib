@@ -2,7 +2,7 @@ function [c,cmap] = discrete_colorbar(varargin)
 
 %-------------------------------------------------------------------------------
 p              = magicParser;
-p.FunctionName = 'discrete_colorbar';
+p.FunctionName = mfilename;
 
 p.addOptional( 'data',     nan,           @(x) isnumeric(x)    );
 p.addParameter('nvals',    nan,           @(x) isnumeric(x)    );

@@ -112,7 +112,7 @@ function [D,PD,h] = myallfitdist(data,sortby,varargin)
 % complicated but eventually rename allfitdist
 
 p                 = magicParser;
-p.FunctionName    = 'allfitdist';
+p.FunctionName    = mfilename;
 
 p.addRequired(    'data',                             @(x)isnumeric(x)     );
 p.addParameter(   'distname',       defaultdistname,  @(x)ischar(x)        );

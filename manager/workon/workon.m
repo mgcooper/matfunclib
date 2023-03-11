@@ -9,6 +9,7 @@ function workon(varargin)
 % See also: workoff, manager, addproject
 % 
 %  Updates
+%  30 Jan 2023, only call workoff when switching to a new project
 %  16 Jan 2023, save current project activefiles and close before opening new one
 %  11 Jan 2023, support for activefiles; added Setup, Install, and Startup to
 %  Config source on startup behavior.
@@ -20,15 +21,15 @@ function workon(varargin)
 %  environment variable
 
 %-------------------------------------------------------------------------------
-p              = inputParser;
-p.FunctionName = 'workon';
+p = inputParser;
+p.FunctionName = mfilename;
 
-projectnames   = cat(1,cellstr(projectdirectorylist),'default');
-validproject   = @(x)any(validatestring(x,projectnames));
-validpostopts  = @(x)any(validatestring(x,{'goto'}));
+projectnames = cat(1,cellstr(projectdirectorylist),'default');
+validproject = @(x)any(validatestring(x,projectnames));
+validoptions = @(x)any(validatestring(x,{'goto'}));
 
 addOptional(   p,'projectname',  getactiveproject, validproject);
-addOptional(   p,'postactivate', 'goto',           validpostopts);
+addOptional(   p,'postactivate', 'goto',           validoptions);
 addParameter(  p,'force',        false,            @(x)islogical(x));
 
 parse(p,varargin{:});
@@ -39,13 +40,13 @@ force = p.Results.force;
 
 % % thought this might permit syntax like workon -f interface but no
 % p.PartialMatching = true;
-% validpreopts   = @(x)any(validatestring(x,{'force',''}));
-% addOptional(   p,'preactivate',  'none',           validpreopts);
-% preopts  = p.Results.preactivate;
+% validpreopts = @(x)any(validatestring(x,{'force',''}));
+% addOptional(p, 'preactivate', 'none', validpreopts);
+% preopts = p.Results.preactivate;
 
 %-------------------------------------------------------------------------------
 
-% note: all setproject** fucntiosn write the directory, so each time one of
+% note: all setproject** fucntions write the directory, so each time one of
 % those is called, writeprjdirectory creates a temporary file. need to stop this
 
 % check if this is a new project (ie it doesn't exist in the project directory)
@@ -53,9 +54,12 @@ ok = verifyprojectexists(projname);
 
 if ok == false; return; end
 
-% close and save the current open project
+% Determine if we are switching to a new project, and if so, close and save the
+% current project first. If not, do nothing. 
 if strcmpi(projname,getactiveproject('name'))
+   % do nothing - the requested project is the active project (not switching)
    if force == true
+      % unless force is true (not implemented)
       % continue
    else
       % 30 Jan if workoff is in the else block, it should be fine to run workon
@@ -64,7 +68,10 @@ if strcmpi(projname,getactiveproject('name'))
       % warning('the requested project is already active')
       % return
    end
+   
 else
+   % close and save the current open project before opening the new one
+   
    % 30 Jan moved here so on startup the active project is loaded
    % WARNING: workoff sets the active files  - directory is updated
    workoff(getactiveproject('name'));

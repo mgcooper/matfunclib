@@ -23,7 +23,7 @@ function y = rootmeansquare(x, dim)
 %   y = rms(x, 2)
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
 % p                 = magicParser;
-% p.FunctionName    = 'rootmeansquare';
+% p.FunctionName    = mfilename;
 % p.CaseSensitive   = false;
 % p.KeepUnmatched   = true;
 % p.addRequired(   'x',                     @(x)isnumeric(x)     );

@@ -9,10 +9,15 @@ if ischar(fields) || isstring(fields)
 end
 
 if isscalar(S)
-   for n = 1:numel(fields)
-      S.(fields{n}) = [];
-   end
    
+   % UPDATE 10 Mar 2023, I think isscalar is the easy case, try this:
+   try
+      S = rmfield(S,fields);
+   catch
+      for n = 1:numel(fields)
+         S.(fields{n}) = [];
+      end
+   end
 else
    
    % I thought this might fail b/c of non-scalar fields but it works

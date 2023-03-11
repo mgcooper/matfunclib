@@ -21,7 +21,7 @@ function msg = getproject(cmd,varargin)
 % input parsing
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'getproject';
+p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;  
 

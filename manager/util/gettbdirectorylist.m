@@ -13,7 +13,6 @@ function [list,sublist] = gettbdirectorylist
 % spreadsheet-style directory ratehr than wha tI thought was the bettter method
 % in addproject
 
-
 tbpath = gettbsourcepath;
 list = gettblist(tbpath);
 

@@ -13,7 +13,7 @@ function Mc = merraSnowCorrection(M,SW,varargin)
 
 %------------------------------------------------------------------------------
 p = magicParser;
-p.FunctionName='merraSnowCorrection';
+p.FunctionName=mfilename;
 p.PartialMatching=true;
 % p.addRequired('T',@(x)isdatetime(x));
 p.addRequired('M',@(x)istimetable(x));

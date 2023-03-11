@@ -3,7 +3,7 @@ function h = trendplot(t,y,varargin)
 
 %-------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'trendplot';
+p.FunctionName    = mfilename;
 p.PartialMatching = true;
 
 dpos  = [321 241 512 384]; % default figure size

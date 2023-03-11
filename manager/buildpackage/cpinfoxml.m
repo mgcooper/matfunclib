@@ -1,5 +1,5 @@
 function cpinfoxml(dest)
-% CPINFOXML copies template info.xml file to dest
+%CPINFOXML copies template info.xml file to dest
 %  When publishing a toolbox, the info.xml file is required. It describes the
 %  custom documentation. See help Display Custom Documentation for more info.
 

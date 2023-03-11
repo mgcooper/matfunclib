@@ -7,13 +7,15 @@ function Info = buildsandbox(funcname,varargin)
 % See also
 
 %-------------------------------------------------------------------------------
-p = magicParser;
-p.FunctionName='buildsandbox';
-p.addRequired('funcname',@(x)ischar(x));
-p.addParameter('dryrun',false,@(x)islogical(x));
-p.addParameter('pathsave',[pwd '/sandbox/'],@(x)ischar(x));
-p.addParameter('strexclude','',@(x)ischar(x));
+p              = magicParser;
+p.FunctionName = mfilename;
+p.addRequired( 'funcname',                            @(x)ischar(x)     );
+p.addParameter('dryrun',      false,                  @(x)islogical(x)  );
+p.addParameter('pathsave',    fullfile(pwd,'sandbox'),@(x)ischar(x)     );
+p.addParameter('strexclude',  '',                     @(x)ischar(x)     );
+
 p.parseMagically('caller');
+
 pathsave = p.Results.pathsave;
 %-------------------------------------------------------------------------------
 
@@ -21,8 +23,8 @@ pathsave = p.Results.pathsave;
 %~~~~~~~~~~~~~~~~
 
 % append sandbox/ to the pathsave if it isn't already
-if ~contains(pathsave,'sandbox/')
-   pathsave = [pathsave 'sandbox/'];
+if ~contains(pathsave,'sandbox')
+   pathsave = fullfile(pathsave,'sandbox');
    if dryrun == false
       warning('appending sandbox/ to pathsave');
    else
@@ -43,8 +45,8 @@ end
 % get the list of required code
 [fList,pList] = matlab.codetools.requiredFilesAndProducts(funcname);
 
-fList    = fList';   % file list
-pList    = pList';   % product list
+fList = transpose(fList);   % file list
+pList = transpose(pList);   % product list
 
 Info.filelist = fList;
 Info.productlist = pList;
@@ -83,7 +85,8 @@ for n = 1:numel(fList)
    srcDirName  = srcDirPath(idx(end)+1:end);
 
    % append trailing / to the source directory paht
-   srcDirPath  = [srcDirPath '/'];
+   % srcDirPath  = [srcDirPath '/'];
+   % commented out 30 Jan 2023 when replacing trailing / with fullfile
 
    % assume we want to copy the dependencies to pathsave
    newDirPath   = pathsave;
@@ -92,7 +95,7 @@ for n = 1:numel(fList)
    if any(contains({srcDirList.name},fjson))
 
       % append the directory name to the new parent path
-      newDirPath = [pathsave srcDirName '/'];
+      newDirPath = fullfile(pathsave,srcDirName);
 
       if ~exist(newDirPath,'dir')
 
@@ -105,10 +108,10 @@ for n = 1:numel(fList)
       end
 
       % copy the json file if it hasn't already been copied
-      if ~exist([newDirPath fjson],'file')
+      if ~exist(fullfile(newDirPath,fjson),'file')
 
-         oldjson           = [srcDirPath fjson];
-         newjson           = [newDirPath fjson];
+         oldjson           = fullfile(srcDirPath,fjson);
+         newjson           = fullfile(newDirPath,fjson);
          Info.filescopied  = unique([Info.filescopied;newjson]);
 
          % copy the file if it's not a trial
@@ -118,19 +121,19 @@ for n = 1:numel(fList)
       end
 
       % or if the file is a requested exclude file, copy to 'exclude'
-   elseif contains([srcDirPath srcFileName],strexclude) && ~isempty(strexclude)
+   elseif contains(fullfile(srcDirPath,srcFileName),strexclude) && ~isempty(strexclude)
 
-      newDirPath   = [pathsave 'exclude/'];
+      newDirPath = fullfile(pathsave,'exclude');
 
       if ~exist(newDirPath,'dir'); mkdir(newDirPath); end
 
-      fexclude    = [newDirPath srcFileName];
+      fexclude = fullfile(newDirPath,srcFileName);
 
       Info.filesexcluded = unique([Info.filesexcluded;fexclude]);
    end
 
-   oldfile           = [srcDirPath srcFileName];
-   newfile           = [newDirPath srcFileName];
+   oldfile           = fullfile(srcDirPath,srcFileName);
+   newfile           = fullfile(newDirPath,srcFileName);
    Info.filescopied  = unique([Info.filescopied;newfile]);
 
    if dryrun == false
@@ -141,7 +144,7 @@ for n = 1:numel(fList)
 end
 
 if ~isempty(strexclude)
-   rmpath(genpath([pathsave 'exclude']));
+   rmpath(genpath(fullfile(pathsave,'exclude')));
    Info.msg = 'excluded files copied to /exclude, remove or rename if desired';
    disp(Info.msg);
 else

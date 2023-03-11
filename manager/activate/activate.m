@@ -2,7 +2,7 @@ function activate(tbname,varargin)
 %ACTIVATE adds toolbox 'tbname' to path and makes it the working directory
 %-------------------------------------------------------------------------------
 p                 = inputParser;
-p.FunctionName    = 'activate';
+p.FunctionName    = mfilename;
 
 addRequired(   p,'tbname',       @(x)ischar(x));
 addOptional(   p,'goto',   'no', @(x)ischar(x));
@@ -40,6 +40,6 @@ addpath(genpath(tbpath));
 if goto; cd(tbpath); end   % cd to the activated tb if requested
 
 % remove .git files from path
-if contains(genpath([tbpath '*.git']),'.git')
-   warning off; rmpath(genpath([tbpath '*.git'])); warning on;
+if contains(genpath(fullfile(tbpath,'.git')),'.git')
+   warning off; rmpath(genpath(fullfile(tbpath,'.git'))); warning on;
 end

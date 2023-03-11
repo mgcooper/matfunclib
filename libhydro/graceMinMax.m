@@ -2,7 +2,7 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
    
 %------------------------------------------------------------------------------
 p                 = magicParser;
-p.FunctionName    = 'graceMinMax';
+p.FunctionName    = mfilename;
 p.PartialMatching = true;
 
 p.addRequired('G',@(x)istimetable(x));

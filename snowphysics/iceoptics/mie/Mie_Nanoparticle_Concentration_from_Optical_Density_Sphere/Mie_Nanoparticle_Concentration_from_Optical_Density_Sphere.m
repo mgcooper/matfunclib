@@ -8,7 +8,7 @@
 % 
 % From the particle size, the script computes the particle concentration
 % for a solution with a specified optical density at resonance.
-clear all
+clear
 close all
 
 % MANUAL INPUT

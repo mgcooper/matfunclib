@@ -1,17 +1,22 @@
 function varargout = macfig(varargin)
 
 p               = inputParser;
-p.FunctionName  = 'macfig';
+p.FunctionName  = mfilename;
 p.CaseSensitive = true;
 p.KeepUnmatched = true;
 
-addParameter(p,'monitor','mac',@(x)ischar(x));
+validmonitor = @(x) any(validatestring(x,{'mac','main','external'}));
+addOptional(p,'monitor','mac',validmonitor);
 addParameter(p,'size','full',@(x)ischar(x));
 
 parse(p,varargin{:});
 monitor  = p.Results.monitor;
 size     = p.Results.size;
 varargs  = unmatched2varargin(p.Unmatched);
+
+% for compatibility:
+% mac, large: figure('Position',[1 1 658  576]);
+% mac, full: figure('Position',[1 1 1152 720]);
 
 % 'mac' and 'full' are identical - they fill the screen
 % 'half', 'large', and 'horizontal' fill the top half
@@ -39,6 +44,9 @@ end
 
 function f = makeMacFigure(pos,size,varargs)
 
+% note, pos(1) is set by the os, I think, so if I set my external monitor to be
+% the primary monitor in System Pref's, then this makes a figure on the external
+% pos = pos(2,:);
 pos = pos(1,:);
 
 switch size
@@ -110,7 +118,7 @@ switch size
       figpos = [pos(1) pos(2) pos(3) pos(4)];
 end
 
-f  = figure('Position',figpos,varargs{:});
+f = figure('Position',figpos,varargs{:});
 
 
 % function f = legacyFigure(nargin,argsin)

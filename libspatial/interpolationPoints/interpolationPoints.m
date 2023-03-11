@@ -13,7 +13,7 @@ function Points = interpolationPoints(poly,xgrid,ygrid,buffer,newRes,varargin)
 %     end
 
 p                = inputParser;
-p.FunctionName   = 'interpolationPoints';
+p.FunctionName   = mfilename;
 
 addRequired(p,'poly');
 addRequired(p,'xgrid');

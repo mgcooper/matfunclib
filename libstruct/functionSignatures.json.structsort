@@ -1,0 +1,50 @@
+{
+   "_schemaVersion": "1.0.0",
+   "_comment": "this is an example of a comment",
+   "structsort":
+   {
+       "inputs": // "type":["numeric"]}
+       [
+           {"name":"S", "kind":"required", "type":["struct"]},
+           {"name":"column", "kind":"ordered", "type":["numeric", "vector"]},
+           {"name":"direction", "kind":"ordered", "type":[["char", "choices={'ascend','descend'}"]], "default":"'ascend'"},
+           {"name":"MissingPlacement", "kind":"namevalue", "type":["char", "choices={'auto','last', 'first'}"], "default":"'auto'"},
+           {"name":"ComparisonMethod", "kind":"namevalue", "type":["char", "choices={'auto','real', 'abs'}"], "default":"'auto'"}
+       ],
+       "outputs": // {"name":"S", "type":["numeric"]},
+       [
+           {"name":"S", "type":["struct"]},
+           {"name":"Index", "type":[["numeric","integer",">=1"]]}
+       ]
+   },
+   "structsort":
+   {
+       "inputs": // {"name":"S", "kind":"required", "type":["char", "~string"]},
+       [
+           {"name":"S", "kind":"required", "type":["struct"]},
+           {"name":"column", "kind":"ordered", "type":[["numeric", "vector"], ["logical", "vector"]]},
+           {"name":"direction", "kind":"ordered", "type":["char", "choices={'ascend','descend'}"], "default":"'ascend'"},
+           {"name":"ComparisonMethod", "kind":"namevalue", "type":["char", "choices={'auto','real', 'abs'}"], "default":"'auto'"}
+       ],
+       "outputs": // {"name":"S", "type":["char"]},
+       [
+           {"name":"S", "type":["struct"]},
+           {"name":"Index", "type":[["numeric","integer",">=1"]]}
+       ]
+   },
+   "structsort":
+   {
+       "inputs": // {"name":"S", "kind":"required", "type":["string", "~char"]},
+       [
+           {"name":"S", "kind":"required", "type":["struct"]},
+           {"name":"column", "kind":"ordered", "type":["numeric", "vector"]},
+           {"name":"direction", "kind":"ordered", "type":[["char", "choices={'ascend','descend'}"]], "default":"'ascend'"},
+           {"name":"MissingPlacement", "kind":"namevalue", "type":["char", "choices={'auto','last', 'first'}"], "default":"'auto'"}
+       ],
+       "outputs": // {"name":"B", "type":["numeric"]},
+       [
+           {"name":"S", "type":["struct"]},
+           {"name":"Index", "type":[["numeric","integer",">=1"]]}
+       ]
+   }
+}
