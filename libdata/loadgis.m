@@ -23,13 +23,16 @@ p.KeepUnmatched   = true;
 % validstrings      = getgisfilelist;
 % validfilename     = @(x)any(validatestring(x,validstrings));
 validfilename = @(x)ischarlike(x);
+validreader = @(x)any(validatestring(x,{'shaperead','m_map'}));
 
-addRequired(p,    'fname',                   validfilename        );
-addParameter(p,   'UseGeoCoords',   true,    @(x) islogical(x)    ); 
-addParameter(p,   'Selector',       {},      @(x) iscell(x)       ); 
-addParameter(p,   'Attributes',     {},      @(x) iscell(x)       ); 
-addParameter(p,   'BoundingBox',    [],      @(x) isnumeric(x)    ); 
+addRequired(p,    'fname',                         validfilename     );
+addOptional(p,    'reader',         'shaperead',   validreader       );
+addParameter(p,   'UseGeoCoords',   true,          @(x) islogical(x)    ); 
+addParameter(p,   'Selector',       {},            @(x) iscell(x)       ); 
+addParameter(p,   'Attributes',     {},            @(x) iscell(x)       ); 
+addParameter(p,   'BoundingBox',    [],            @(x) isnumeric(x)    ); 
 
+% p.parse(fname,varargin{:});
 p.parseMagically('caller');
 
 % this is how matlab validates filenames:
@@ -57,7 +60,7 @@ end
 
 switch ext
    case '.shp'
-      [S,A] = tryshaperead(fname,namedargs);
+      [S,A] = tryshaperead(fname,namedargs,reader);
    case '.tif'
       try
          S = readgeoraster(fname,varargin{:});
@@ -65,29 +68,31 @@ switch ext
       end
 end
 
-function [S,A] = tryshaperead(fname,namedargs)
 
-ok = false;
-try
-   [S,A] = shaperead(fname,namedargs{:});
-catch ME
-   
-   if strcmp(ME.message,'Unsupported shape type PolyLineZ (type code = 13).')
+
+function [S,A] = tryshaperead(fname,namedargs,reader)
+
+if reader == "m_map"
+   S = m_map_shaperead(fname,namedargs);
+   ok = true;
+else
+   ok = false;
+   try
+      [S,A] = shaperead(fname,namedargs{:});
+   catch ME
       
-      % try m_map/m_shaperead. note: m_shaperead argument UBR (User Bounding
-      % Rectangle) assumes format [minX  minY  maxX maxY] whereas shaperead
-      % BoundingBox is [minX  minY ; maxX maxY]. do the conversion if needed.
-      warning('Requested shapefile is type PolyLineZ. Using m_shaperead.')
-      try
-         if ismember({'BoundingBox'},namedargs(1:2:end)) % elements 1:2:end are parameters
-            B = namedargs{find(ismember('BoundingBox',namedargs(1:2:end)))+1};
-            S = m_shaperead(strrep(fname,'.shp',''),[B(1,:),B(2,:)]);
-         else
-            S = m_shaperead(strrep(fname,'.shp',''));
+      if strcmp(ME.message,'Unsupported shape type PolyLineZ (type code = 13).')
+         
+         % try m_map/m_shaperead. note: m_shaperead argument UBR (User Bounding
+         % Rectangle) assumes format [minX  minY  maxX maxY] whereas shaperead
+         % BoundingBox is [minX  minY ; maxX maxY]. do the conversion if needed.
+         warning('Requested shapefile is type PolyLineZ. Using m_shaperead.')
+         try
+            S = m_map_shaperead(fname,namedargs);
+            ok = true;
+         catch ME2
+            rethrow(ME2) % throw the error (revisit)
          end
-         ok = true;
-      catch ME2
-         rethrow(ME2) % throw the error (revisit)
       end
    end
 end
@@ -116,28 +121,60 @@ if ok
       % [lat,lon] = polyjoin(lat,lon);
       
       switch S.ctype
-         case 'polylineZ'
+         
+         case {'polylineZ','polyline'}
             T = geostructinit('Line',numel(lat),'fieldnames',S.fieldnames);
-            [T(1:numel(lon)).Lon] = lon{:};
-            [T(1:numel(lat)).Lat] = lat{:};
-            T = updategeostruct(T); % get the bounding box of each element
-            T = struct2table(T); % for movevars
-
-            if Aok % we have an attribute table, join it with S
-               fields = S.fieldnames;
-               for n = 1:numel(fields)
-                  T.(fields{n}) = A.(fields{n});
-               end
-            end
-            
-            % back to geostruct
-            T = table2struct(movevars(T,'BoundingBox','After','Geometry'));
+         case {'polygon'}
+            T = geostructinit('Polygon',numel(lat),'fieldnames',S.fieldnames);
+         case {'point'}
+            T = geostructinit('Point',numel(lat),'fieldnames',S.fieldnames);
       end
-      S = T; % send back the geostruct (overwrite m_shapefile S)
+   
+      [T(1:numel(lon)).Lon] = lon{:};
+      [T(1:numel(lat)).Lat] = lat{:};
+
+      % for polygons/lines, get the bounding box of each element
+      if ismember(S.ctype,{'polylineZ','polyline','polygon'})
+         try 
+            T = updategeostruct(T);
+         catch ME3
+            if strcmp(ME3.identifier,'MATLAB:license:checkouterror')
+               T = updateBoundingBox(T);
+            end
+         end
+      end
+
+      T = struct2table(T); % for movevars, also simplifies field assignment 
+
+      if Aok % we have an attribute table, join it with S
+         fields = S.fieldnames;
+         for n = 1:numel(fields)
+            T.(fields{n}) = A.(fields{n});
+         end
+      end
+      
+      % might be able to remove this if updateBoundingBox is used
+      if contains('BoundingBox',T.Properties.VariableNames)
+         T = movevars(T,'BoundingBox','After','Geometry');
+      end
+
+      % send back the geostruct (overwrite m_shapefile S)
+      S = table2struct(T); 
+
    catch
    end
    
 end
+
+function S = m_map_shaperead(fname,namedargs)
+
+if ismember({'BoundingBox'},namedargs(1:2:end)) % elements 1:2:end are parameters
+   B = namedargs{find(ismember('BoundingBox',namedargs(1:2:end)))+1};
+   S = m_shaperead(strrep(fname,'.shp',''),[B(1,:),B(2,:)]);
+else
+   S = m_shaperead(strrep(fname,'.shp',''));
+end
+
 
 % copied this here for matlab answers and changed mip to ip so keeping for now
 function S = geostructinit(geometry,numfeatures,varargin);

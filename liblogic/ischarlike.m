@@ -14,15 +14,15 @@ function tf = ischarlike(x)
 
 %------------------------------------------------------------------------------
 
-tf = iscellstr(x) | ischar(x) | isstring(x) ;
+% handle layered cells 
+if iscell(x)
+   tf = all(cellfun(@(x)ischarlike(x),x),'all');
+else
+   tf = iscellstr(x) | ischar(x) | isstring(x) ;
+end
 
-
-
-
-
-
-
-
-
-
-
+% this was posted to fex, but I think containsOnlyText may just do exactly what
+% iscellstr does already
+% tf = ischar(x) || ...
+%    isstring(x) || ...
+%    iscell(x) && ( containsOnlyText( [x{:}] ) );

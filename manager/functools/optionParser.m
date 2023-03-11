@@ -50,9 +50,6 @@ function opts = optionParser(validopts,calleropts,varargin)
 %  
 % 
 
-% I think i broke something with the last update ... if i preset opts to contain
-% the default opts they get overriden as false
-
 narginchk(2,3);
 if nargin == 3
    opts = varargin{1};
@@ -61,6 +58,20 @@ end
 % convert to cell array if passed in as a char
 if ischar(validopts)
    validopts = cellstr(validopts);
+end
+
+% I think i broke something with the last update ... if i preset opts to contain
+% the default opts they get overriden as false
+% UPDATE 7 feb, this should fix it - replace any non-comparable calleropts with
+% an empty char
+for n = 1:numel(calleropts)
+   try
+      ismember(calleropts{n},validopts);
+   catch ME
+      if strcmp(ME.identifier,'MATLAB:ISMEMBER:InputClass')
+         calleropts{n} = '';
+      end
+   end
 end
 
 % set opts true if passed in via varargopts

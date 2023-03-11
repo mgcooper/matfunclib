@@ -15,7 +15,16 @@
       [
          {"name":"tbname",  "kind":"required",   "type":["char",
          "choices=tbdirectorylist"]},
-         {"name":"goto",      "kind":"flag",       "type":["char","choices={'icom-msd','goto'}"], "default":"'no'"}
+         {"name":"goto",      "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
+      ]
+   },
+   "cdtb":
+   {
+      "inputs":
+      [
+         {"name":"tbname",  "kind":"required",   "type":["char",
+         "choices=tbdirectorylist"]},
+         {"name":"goto",      "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
       ]
    },
    "addprojectpaths":

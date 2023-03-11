@@ -3,9 +3,10 @@ function S = addstructfields(S,fields,varargin)
 % 
 % Syntax
 % 
-%  S = ADDSTRUCTFIELDS(S,field) adds field to struct S
-%  S = ADDSTRUCTFIELDS(S,'name1',value1) description
-%  S = ADDSTRUCTFIELDS(S,'name1',value1,'name2',value2) description
+%  S = ADDSTRUCTFIELDS(S,fields) adds fields to struct S using inputname(fields)
+%  to name the new fields
+%  S = ADDSTRUCTFIELDS(S,fields,'newfieldnames',fieldnames) uses fieldnames to
+%  name the new fields
 % 
 % Example
 %  

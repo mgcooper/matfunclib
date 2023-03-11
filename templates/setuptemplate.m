@@ -22,8 +22,13 @@ rmpath(genpath(fullfile(thispath,'.git')));
 configureproject(thispath,{'startup.m','config.m'});
 
 % TODO
+% 
 % resolve dependencies
-% use preferences: addpref('toolboxname','version',toolboxversion);
+% 
+% set preferences
+% setpref('mytoolbox','version',toolboxversion)
+% addpref('mytoolbox','toolboxdir',thispath);
+
 
 % save the path
 % savepath(fullfile(thispath,'pathdef.m'));
@@ -31,4 +36,29 @@ configureproject(thispath,{'startup.m','config.m'});
 % turn warning back on
 warning on
 
-
+% helpful notes:
+% 
+% pathsep returns the platform-specific path separator (e.g. : on macos)
+% 
+% example:
+% p = genpath(pwd);
+% s = regexp(p, pathsep, 'split');
+% if any(contains(s,'git'))
+%    warning off; cellfun(@rmpath,s(contains(s,'git'))); warning on;
+% end
+% 
+% filesep returns the platform-specific file separator (e.g. : on macos)
+% 
+% fullfile builds a platform-specific full file from fileparts by inserting
+% filesep where necessary but not a trailing file separator
+% 
+% toolboxdir returns the full path to mathworks toolboxes, needed for compiler
+% 
+% tbxprefix returns the root folder for mathworks toolboxes (its a builtin func)
+% 
+% tempname, tempdir create temp folders and temp files
+% 
+% use dbstack to get the file that called a function. For Config, might add a
+% check that workon called it (or configurepackage) or it was called directly
+% which might require checking mfilename('fullpath') so as to rule out other
+% Config files. If called from the command window or terminal I'm not sure.     

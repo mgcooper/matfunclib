@@ -1,4 +1,5 @@
 function wholefile = readtbjsonfile(jspath)
-   jsfile      = [jspath 'functionSignatures.json'];
-   fid         = fopen(jsfile);
-   wholefile   = fscanf(fid,'%c');     fclose(fid);
+jsfile = fullfile(jspath,'functionSignatures.json');
+fid = fopen(jsfile);
+wholefile = fscanf(fid,'%c');     
+fclose(fid);

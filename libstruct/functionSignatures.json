@@ -53,5 +53,42 @@
          {"name":"S",         "kind":"required",   "type":["struct"]},
          {"name":"fields",    "kind":"required",   "type":["cell","char"]}
       ]
+   },
+   "structsort":
+   {
+      "_comment": "numeric",
+      "inputs":
+      [
+         {"name":"S", "kind":"required", "type":["struct"]},
+         {"name":"field", "kind":"required", "type":[["char"],["string"],["cell"]]},
+         {"name":"column", "kind":"ordered", "type":["numeric", "vector"]},
+         {"name":"direction", "kind":"ordered", "type":[["char", "choices={'ascend','descend'}"]], "default":"'ascend'"},
+         {"name":"MissingPlacement", "kind":"namevalue", "type":["char", "choices={'auto','last', 'first'}"], "default":"'auto'"},
+         {"name":"ComparisonMethod", "kind":"namevalue", "type":["char", "choices={'auto','real', 'abs'}"], "default":"'auto'"}
+      ]
+   },
+   "structsort":
+   {
+      "_comment": "char,~string",
+      "inputs":
+      [
+         {"name":"S", "kind":"required", "type":["struct"]},
+         {"name":"field", "kind":"required", "type":[["char"],["string"],["cell"]]},
+         {"name":"column", "kind":"ordered", "type":[["numeric", "vector"], ["logical", "vector"]]},
+         {"name":"direction", "kind":"ordered", "type":["char", "choices={'ascend','descend'}"], "default":"'ascend'"},
+         {"name":"ComparisonMethod", "kind":"namevalue", "type":["char", "choices={'auto','real', 'abs'}"], "default":"'auto'"}
+      ]
+   },
+   "structsort":
+   {
+      "_comment": "string,~char",
+      "inputs":
+      [
+         {"name":"S", "kind":"required", "type":["struct"]},
+         {"name":"field", "kind":"required", "type":[["char"],["string"],["cell"]]},
+         {"name":"column", "kind":"ordered", "type":["numeric", "vector"]},
+         {"name":"direction", "kind":"ordered", "type":[["char", "choices={'ascend','descend'}"]], "default":"'ascend'"},
+         {"name":"MissingPlacement", "kind":"namevalue", "type":["char", "choices={'auto','last', 'first'}"], "default":"'auto'"}
+      ]
    }
 }

@@ -28,21 +28,32 @@ function varargout = aggannualdata(Data,aggfunc,aggvars)
 %       
 % end
 
-allyears = unique(year(Data.Time));
+% NOTE: I did not realize how slow isbetween is and year(datetime), so I need a
+% faster way to index into the calendars for arbitrary timesteps
+
 allvars = Data.Properties.VariableNames;
+allyears = year(Data.Time);
+uniqueyears = unique(allyears);
 
 if nargin < 3
    aggvars = allvars;
 end
 
-ival = NaN(numel(allyears),numel(aggvars));
-tval = NaT(numel(allyears),numel(aggvars));
-val = NaN(numel(allyears),numel(aggvars));
+ival = NaN(numel(uniqueyears),numel(aggvars));
+tval = NaT(numel(uniqueyears),numel(aggvars));
+val = NaN(numel(uniqueyears),numel(aggvars));
 
-for n = 1:numel(allyears)
+% test for speeding up the indexing
+% Dates = datenum(Data.Time);
 
-   nyear = allyears(n);
-   idx = isbetween(Data.Time,datetime(nyear,1,1),datetime(nyear+1,1,1));
+
+for n = 1:numel(uniqueyears)
+
+   % don't do this - isbetween is very slow and inclusive of endpoints
+   %idx = isbetween(Data.Time,datetime(nyear,1,1),datetime(nyear+1,1,1));
+   
+   % this fixes the endpoint inclusive issue but is even slower
+   idx = allyears == uniqueyears(n);
 
    for m = 1:numel(aggvars)
       switch aggfunc
@@ -70,8 +81,9 @@ end
 
 % aggData = ival;
 
-% for reference, here are two slick ways to get the annual max value and indice,
-% but I was not able to get the date wihtout resorting to the loops here
+% for reference, here are two slick ways to get the annual max value and index,
+% but I was not able to get the date wihtout resorting to the loops here. note
+% that annualDates is actually the index of the annual max value, not the date
 
 % % method 1) here annualDates is actually the index of the max value 
 % annualPeaks = retime(Q,'regular',@(x)max(x),'TimeStep',calyears(1));

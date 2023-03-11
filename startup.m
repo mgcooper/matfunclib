@@ -17,6 +17,25 @@
 % HOMEPATH on all machines. but i use the if/else method to set the python
 % path, see further down.
 
+% putting this here so I don't forget it - this should fix the issue where
+% blanks are stripped which forces the cursor to the far left in indented code,
+% introduced in r2021b
+if ~verLessThan('matlab','9.11')
+   s = settings;
+   s.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
+end
+
+% this can be used to make the desktop display larger, but I usually want the
+% opposite, but it can't be set to a number less than 1 which is the default
+% s = settings;
+% s.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
+
+% % for reference, there is a smartIndentContents function (method of class
+% Document)
+% % docs = matlab.desktop.editor.getAll
+% % smartIndentContents(docs)
+% % save(docs)
+
 HOMEPATH = getenv('HOME'); % system $HOME
 
 setenv('MATLABUSERPATH',fullfile(HOMEPATH,'MATLAB'));
@@ -123,11 +142,12 @@ end
 
 % activate toolboxes that we want to always be available
 activate magicParser
-activate mpm
+warning off; activate mpm; warning on % in r2022b there is a built in mpm
+activate lightspeed
 
 % copy this file to myFunctions where it lives under source control
-startupFileNameSource   = fullfile(userpath,'startup.m');
-startupFileNameDest     = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
+startupFileNameSource = fullfile(userpath,'startup.m');
+startupFileNameDest = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
 
 copyfile(startupFileNameSource,startupFileNameDest);
 
@@ -141,13 +161,13 @@ format compact    % use pi to see different formats: pi
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
 
-% don't forget
-disp('BE GRATEFUL')
-
 % open the active project
-workon(getactiveproject)
+workon(getactiveproject('name'))
 
 % cd(getenv('MATLABUSERPATH'));
+
+% don't forget
+disp('BE GRATEFUL')
 
 %-------------------------------------------------------------------------------
 

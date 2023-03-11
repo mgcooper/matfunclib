@@ -21,12 +21,12 @@ coords.y    =   [uprighty uplefty lowlefty lowrighty uprighty];
 coords.x    =   [uprightx upleftx lowleftx lowrightx uprightx];
 
 if ismap(ax)==true
-    h       =   plotm(coords.y,coords.x,'Color','r'); % removed varargin
+    h = plotm(coords.y,coords.x,'Color','r'); % removed varargin
 else
     if ~isempty(varargin)
-        h   =   plot(coords.x,coords.y,varargin{:});
+        h = plot(coords.x,coords.y,varargin{:});
     else
-        h   =   plot(coords.x,coords.y,'Color','r'); % removed varargin
+        h = plot(coords.x,coords.y,'Color','r'); % removed varargin
     end
 end
 

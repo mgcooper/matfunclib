@@ -4,7 +4,7 @@
 % cross-sections for a spherical particle of that material embedded in a
 % lossless medium. The permittivity file has to be a tab-delimited text
 % file with three columns: energy (in eV), epsilon1, epsilon2
-clear all
+clear
 close all
 
 % MANUAL INPUT

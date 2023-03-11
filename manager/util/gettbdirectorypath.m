@@ -1,2 +1,2 @@
 function dbpath = gettbdirectorypath
-   dbpath = [getenv('TBDIRECTORYPATH') 'toolboxdirectory.csv'];
+dbpath = fullfile(getenv('TBDIRECTORYPATH'),'toolboxdirectory.csv');

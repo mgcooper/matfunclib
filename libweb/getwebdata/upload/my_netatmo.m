@@ -1,5 +1,5 @@
 clc
-clear all
+clear
 
 
 % all information is from https://dev.netatmo.com

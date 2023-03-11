@@ -1,23 +1,30 @@
 function toolboxes = rmtoolbox(tbname,varargin)
 %RMTOOLBOX removes toolbox from toolboxdir (optional: delete the toolbox)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+% See also
+
+% parse inputs
 p                 = inputParser;
 p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 
+validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+
 addRequired(p, 'tbname',@(x)ischar(x));
+addOptional(p, 'library','',validlibs);
 addParameter(p,'removesource',false,@(x)islogical(x));
 
 parse(p,tbname,varargin{:});
 tbname         = p.Results.tbname;
+sublib         = p.Results.library;
 removesource   = p.Results.removesource;
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+% function code
 
 % read in the toolbox directory and find the entry for this toolbox
-dbpath      = gettbdirectorypath;
-toolboxes   = readtbdirectory(dbpath);
+toolboxes   = readtbdirectory(gettbdirectorypath());
 tbidx       = findtbentry(toolboxes,tbname);
 tbpath      = gettbsourcepath(tbname);
 
@@ -31,7 +38,7 @@ else
 
    fprintf('\n toolbox %s removed from toolbox directory \n',tbname);
 
-   writetbdirectory(toolboxes,dbpath);
+   writetbdirectory(toolboxes);
 
 end
 

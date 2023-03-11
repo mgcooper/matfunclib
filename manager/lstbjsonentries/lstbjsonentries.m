@@ -1,10 +1,9 @@
 function lstbjsonentries()
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%LSTBJSONENTRIES list toolbox json entries
 p                 = inputParser;
 p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 displayjsonentries('activate');
 displayjsonentries('deactivate');
@@ -19,4 +18,4 @@ wholefile   = readtbjsonfile(jspath);
 istart      = strfind(wholefile,'choices={');
 istop       = strfind(wholefile,'}"]}');
 
-fprintf('\n activate: \n %s \n',wholefile(istart:istop));
+fprintf('\n %s: \n %s \n',directory,wholefile(istart:istop));

@@ -33,7 +33,10 @@ function [maxinds,maxvals,maxtimes] = findglobalmax(Data,k,position,iref,varargi
 % Jan 2023 replaced varargin and old input parsing with new one, added iref
 % NOV 2022 RENAMED TO AVOID CONFLICT WITH BUILT IN OPTIM/PRIVATE
 
-narginchk(2,5)
+% NOTE if I stick with varargin support for max, I need to know the max number
+% of varargs that max accepts. For now, narginchk(1,6) supports 2 optional
+% inputs to max or one name-value pair
+narginchk(1,6)
 if nargin < 4, iref = 1; end
 if nargin < 3, position = 'first'; end
 if nargin < 2, k = 1; end
@@ -45,8 +48,8 @@ if nargin < 2, k = 1; end
 % might want to use peakfinder ... also remember that this isn't a peak finding
 % algo it finds the global max 
 
-% maxinds = find(Data == max(Data,varargin{:}),k,position);
-maxinds = peakfinder(Data,(max(Data)-min(Data))/100,-Inf,1,false);
+maxinds = find(Data == max(Data,varargin{:}),k,position);
+% maxinds = peakfinder(Data,(max(Data)-min(Data))/100,-Inf,1,false);
 % maxinds = peakfinder(Data,[],-Inf,1,false);
 
 if isempty(maxinds); maxinds = nan; maxvals = nan; return; end

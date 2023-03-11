@@ -1,5 +1,13 @@
 function [ DataOut ] = setnan(Data,varargin)
 %SETNAN sets logical indices in Data to nan
+%
+%  [ DataOut ] = setnan(Data) sets all values in Data nan
+% 
+%  [ DataOut ] = setnan(Data,nanval) sets values in Data that equal nanval nan
+% 
+%  [ DataOut ] = setnan(Data,[],naninds) sets naninds indices of Data nan
+% 
+% See also rmnan
 
 % TODO: support for structs and cells, also I might be able to simplify the
 % table parts using replacevars like in the new set all nan section
@@ -8,9 +16,15 @@ function [ DataOut ] = setnan(Data,varargin)
 p              = magicParser;
 p.FunctionName = mfilename;
 
+% NOTE: to use the two optionals, when calling, must use [] for nanval if
+% naninds are passed in
 p.addRequired( 'Data'                                 );
 p.addOptional( 'nanval',   nan,   @(x)isnumeric(x)    );
 p.addOptional( 'naninds',  false, @(x)islogical(x)    );
+
+% p.addOptional( 'nanval',   nan,   @(x)isnumeric(x) | islogical(x)   );
+% p.addParameter( 'nanval',   nan,   @(x)isnumeric(x)    );
+% p.addParameter( 'naninds',  false, @(x)islogical(x)    );
 
 p.parseMagically('caller');
 
