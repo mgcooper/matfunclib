@@ -12,3 +12,7 @@ Rrb             =   bb2R(rbbb,grid_res);
 
 
 I need the 
+
+
+this was in a random text file
+FYI … if you are using Matlab’s built-in geospatial functions (e.g., ltln2val, or geointerp or mapinterp), you might not get the answer you expect, because Matlab may interpret the grid coordinates differently than various Python tools. I 

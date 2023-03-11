@@ -74,20 +74,41 @@ setenv('USERGISPATH',fullfile(HOMEPATH,'work/data/interface/GIS_data'));
 setenv('MATLABPROJECTPATH',fullfile(HOMEPATH,'myprojects/matlab'));
 setenv('MATLABSOURCEPATH',fullfile(HOMEPATH,'mysource/matlab'));
 
+% jigsaw
+% setenv('JIGSAWPATH',fullfile(HOMEPATH,'myprojects/jigsaw-matlab'));
+% setenv('JIGSAWGEOPATH',fullfile(HOMEPATH,'myprojects/jigsaw-geo-matlab'));
+
 % e3sm
-setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
-setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
-setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
+setenv('E3SMINPUTPATH', fullfile(getenv('USERDATAPATH'),'e3sm/input'));
+setenv('E3SMOUTPUTPATH', fullfile(getenv('USERDATAPATH'),'e3sm/output'));
+setenv('E3SMTEMPLATEPATH', fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
+
+
+% icemodel
+setenv('ICEMODELDATAPATH', fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/eval'));
+setenv('ICEMODELINPUTPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/input'));
+setenv('ICEMODELOUTPUTPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/output'));
+
 
 % Set paths - this should negate the need for the stuff below
 addpath(genpath(getenv('MATLABUSERPATH')))
+
+% remove unused stuff 
+rmpath(genpath(fullfile(getenv('MATLABUSERPATH'),'old_projects')))
+rmpath(genpath(fullfile(getenv('MATLABUSERPATH'),'myProjects')))
+
+% remove .git from matfunclib
+rmpath(genpath(fullfile(getenv('MATLABFUNCTIONPATH'),'.git')))
 
 % these are interfering with in-built functions or recommended at install
 % rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'TEXTBOOKS/Environmental_Modeling')));
 % rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/matlab_sea_ice')));
 % rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/RT_Modest')));
 % rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'waterloo')));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/ResInv3D')));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'topotoolbox/topotoolbox/.git']));
+% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/ResInv3D'))); 
+% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'PHYSICS/precise-simulation-featool-multiphysics-f8f8b7e')));
+% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'STATISTICS/OPTIMIZE/Mateda3-master')));
 % rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'f2matlab')));
 
 %-------------------------------------------------------------------------------
@@ -193,10 +214,9 @@ disp('BE GRATEFUL')
 % properties, 'plot' is a high level function that puts on the box. setting
 % defaultAxesBox off above means that 'line' will not produce a box
 
-
 %% ToolboxToolbox config
 % 
-% toolboxToolboxDir =fullfile(getenv('SOURCEPATH'),'ToolboxToolbox/'];
+% toolboxToolboxDir = fullfile(getenv('SOURCEPATH'),'ToolboxToolbox/'];
 % setenv('TOOLBOXTOOLBOXDIR',toolboxToolboxDir);
 % try
 %     apiDir = fullfile(toolboxToolboxDir, 'api');
@@ -220,9 +240,8 @@ disp('BE GRATEFUL')
 % addpath(genpath(getenv('STARTUPPATH')))
 % addpath(genpath(getenv('HOMEPATH')))
 
-
 %% Python configuration
-% 
+
 % use python 3
 %pyenv('Version','/usr/bin/python3')
 %pyenv('Version','/Users/coop558/.pyenv/shims/python3.8')
