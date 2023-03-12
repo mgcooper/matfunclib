@@ -1,4 +1,4 @@
-function setprojectfiles(projectname,filelist)
+function projlist = setprojectfiles(projectname,filelist)
 %SETPROJECTFILES save the list of open project files
 % 
 % 

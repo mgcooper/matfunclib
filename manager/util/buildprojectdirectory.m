@@ -1,12 +1,20 @@
 function varargout = buildprojectdirectory(varargin)
 %BUILDPROJECTDIRECTORY build project directory file
 % 
+%  projectlist = buildprojectdirectory('dryrun') builds a projectlist directory
+%  that would be saved in the `PROJECTDIRECTORYPATH` folder but does not save
+%  it. Use this to build the project directory from scratch using the folders in
+%  the directory set by the MATLABPROJECTPATH environment variable. If a
+%  USERPROJECTPATH environemnt variable exists, folders in that directory will
+%  also be added to the project list. Internal note: the .csv file is not used,
+%  modified, saved, deleted, in any way. 
+% 
 %  buildprojectdirectory without any input or output arguments builds a project
 %  directory file named `projectdirectory.mat` and saves it in the
 %  `PROJECTDIRECTORYPATH` folder
 % 
 %  projectlist = buildprojectdirectory returns the project list saved in
-%  projectdirectory.csv 
+%  projectdirectory.mat
 % 
 %  projectlist = buildprojectdirectory('rebuild') rebuilds the project directory
 %  from scratch, retaining the `activefiles` property of the current directory
@@ -117,9 +125,13 @@ end
 function projectlist = appendprojects(oldprojectlist)
 
 projectpath = getenv('USERPROJECTPATH');
-projectlist = getlist(projectpath,'*');
-projectlist = struct2table(projectlist);
-projectlist = [oldprojectlist; projectlist];
+if ~isempty(projectpath)
+   projectlist = getlist(projectpath,'*');
+   projectlist = struct2table(projectlist);
+   projectlist = [oldprojectlist; projectlist];
+else
+   projectlist = oldprojectlist;
+end
 
 
 %-------------------------------------------------------------------------------
