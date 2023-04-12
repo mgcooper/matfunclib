@@ -11,20 +11,24 @@ function [tf,tflatlon,tol] = isxyregular(x,y,varargin)
 %
 %  See also 
 
-if ~isreal(x) || ~isreal(y)
-   error(message('MATLAB:isxyregular:MustBeReal'));
-end
-
-if isscalar(x) || isempty(x) || isscalar(y) || isempty(y)
-   tf = false;
-   return
-end
-
-if ~isvector(x) || ~isvector(y)
-   error(message('MATLAB:isxyregular:MustBeVector'));
-end
-
-step = NaN('like',x);
+% % input checks not implemented yet
+% if ~isreal(x) || ~isreal(y)
+%    error(message('LIBRASTER:isxyregular:MustBeReal'));
+% end
+% 
+% if isscalar(x) || isempty(x) || isscalar(y) || isempty(y)
+%    tf = false;
+%    return
+% end
+% 
+% Note: I don't want this check because this function must work with grids, but
+% it shows an example of how it is done for vectors.
+%
+% if ~isvector(x) || ~isvector(y)
+%    error(message('LIBRASTER:isxyregular:MustBeVector'));
+% end
+% 
+%step = NaN('like',x);
 
 % check if the coordinates are lat lon or planar
 tflatlon = islatlon(y,x);

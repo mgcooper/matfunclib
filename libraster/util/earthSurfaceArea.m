@@ -1,7 +1,7 @@
-function a = myareaint(lat,lon,in3,in4)
-%AREAINT Surface area of polygon on sphere or ellipsoid
+function a = earthSurfaceArea(lat,lon,in3,in4)
+%EARTHSURFACEAREA Surface area of polygon on earth sphere or ellipsoid
 %
-%   A = AREAINT(LAT,LON) calculates the spherical surface area of the
+%   A = EARTHSURFACEAREA(LAT,LON) calculates the spherical surface area of the
 %   polygon specified by the input vectors LAT, LON.  LAT and LON are in
 %   degrees.  The calculation uses a line integral approach.  The output,
 %   A, is the surface area fraction covered by the polygon on a unit
@@ -10,8 +10,8 @@ function a = myareaint(lat,lon,in3,in4)
 %   method is inversely proportional to the distance between polygon
 %   vertices.
 %
-%   A = AREAINT(LAT,LON,ELLIPSOID) uses the input ELLIPSOID to describe the
-%   sphere or ellipsoid.  ELLIPSOID is a reference ellipsoid (oblate
+%   A = EARTHSURFACEAREA(LAT,LON,ELLIPSOID) uses the input ELLIPSOID to describe
+%   the sphere or ellipsoid.  ELLIPSOID is a reference ellipsoid (oblate
 %   spheroid) object, a reference sphere object, or a vector of the form
 %   [semimajor_axis, eccentricity].  The output, A, is in square units
 %   corresponding to the length units of the semimajor axis.
@@ -21,7 +21,8 @@ function a = myareaint(lat,lon,in3,in4)
 %
 %   See also AREAMAT, AREAQUAD.
 
-% Copyright 1996-2017 The MathWorks, Inc.
+% NOTE: see geoarea, sub this in for the call to areaint then geoarea becomes a
+% standalone functions
 
 narginchk(2,4)
 switch(nargin)
@@ -59,6 +60,7 @@ end
 
 % Validate LAT and LON
 % checklatlon(lat,lon,mfilename,'LAT','LON',1,2);
+% replace with prepareGeoCoords(lat,lon)
 
 % Ensure that lat and lon are column vectors
 lat = lat(:);

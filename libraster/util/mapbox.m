@@ -12,7 +12,6 @@ function varargout = mapbox(xlimits,ylimits,varargin)
 % 
 % See also: geobox
 
-hold on;
 xrect = [xlimits(1) xlimits(2) xlimits(2) xlimits(1) xlimits(1)];
 yrect = [ylimits(1) ylimits(1) ylimits(2) ylimits(2) ylimits(1)];
 
@@ -26,6 +25,7 @@ yrect = [ylimits(1) ylimits(1) ylimits(2) ylimits(2) ylimits(1)];
 
 switch nargout
    case 1
+      hold on;
       h = plot(xrect,yrect,varargin{:});
       varargout{1} = h;
    case 2

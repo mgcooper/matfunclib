@@ -97,8 +97,10 @@ projection = p.Results.projection;
 
 % convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and N-S,
 % get an estimate of the grid resolution, and determine if the data is
-% geographic or planar  
-[X,Y,cellsizeX,cellsizeY,tf,tol] = prepareMapGrid(X,Y);
+% geographic or planar
+% 9 April 2023: "tol" no longer returned by prepareMapGrid due to change from
+% isxyregular to structuredGridType, need a better method
+[X,Y,cellsizeX,cellsizeY,gridType,tfgeo] = prepareMapGrid(X,Y);
 
 % extend the lat/lon limits by 1/2 cell in both directions
 halfX = cellsizeX/2;
@@ -111,7 +113,7 @@ halfY = cellsizeY/2;
 %             'Input argument 2, Y, must have uniform grid spacing');
 
 % call the appropriate function depending on whether R is planar or geographic 
-if tf
+if tfgeo
    R = rasterrefgeo(X,Y,halfX,halfY,celltype,tol);
 else
    R = rasterrefmap(X,Y,halfX,halfY,celltype,tol);
@@ -132,13 +134,13 @@ function R = rasterrefmap(X,Y,halfX,halfY,cellInterpretation,tol)
 % provided by netcdf files that are stored as type uint, but it
 % might be better to convert X and Y to single or double and
 % confirm what is most compatible with the functions called
-xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
-xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
-ymin        =  roundn(min(Y(:)),tol);
-ymax        =  roundn(max(Y(:)),tol);
-xlims       =  double([xmin-halfX xmax+halfX]);
-ylims       =  double([ymin-halfY ymax+halfY]);
-rasterSize  =  size(X);
+xmin = round(min(X(:)),tol); % changed from floor(min(X(:)))
+xmax = round(max(X(:)),tol); % changed from ceil(max(X(:)))
+ymin = round(min(Y(:)),tol);
+ymax = round(max(Y(:)),tol);
+xlims = double([xmin-halfX xmax+halfX]);
+ylims = double([ymin-halfY ymax+halfY]);
+rasterSize = size(X);
 
 if strcmp(cellInterpretation,'cells')
    R = maprefcells(xlims,ylims,rasterSize, ...
@@ -157,13 +159,13 @@ function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
 % oriented grid as often provided by netcdf and h5 but I require
 % this function accept N-S oriented grids i.e. index (1,1) is NW
 % corner, consequently set 'columnstartfrom','north'
-xmin        =  roundn(min(X(:)),tol); % changed from floor(min(X(:)))
-xmax        =  roundn(max(X(:)),tol); % changed from ceil(max(X(:)))
-ymin        =  roundn(min(Y(:)),tol);
-ymax        =  roundn(max(Y(:)),tol);
-xlims       =  double([xmin-halfX xmax+halfX]);
-ylims       =  double([ymin-halfY ymax+halfY]);
-rasterSize  =  size(X);
+xmin = round(min(X(:)),tol); % changed from floor(min(X(:)))
+xmax = round(max(X(:)),tol); % changed from ceil(max(X(:)))
+ymin = round(min(Y(:)),tol);
+ymax = round(max(Y(:)),tol);
+xlims = double([xmin-halfX xmax+halfX]);
+ylims = double([ymin-halfY ymax+halfY]);
+rasterSize = size(X);
 
 if strcmp(cellInterpretation,'cells')
 
@@ -175,12 +177,12 @@ if strcmp(cellInterpretation,'cells')
    % the structure, but I need to confirm its behavior with
    % functions such as ll2val etc.
 
-   % Rcell1  =   georefcells(ylims,xlims,rasterSize, ...
-   %                'ColumnsStartFrom','north', ...
-   %                'RowsStartFrom', 'west');
-   % Rcell2  =   georefcells(ylims,xlims,2*halfY,2*halfX, ...
-   %                'ColumnsStartFrom','north', ...
-   %                'RowsStartFrom', 'west');
+   % Rcell1 = georefcells(ylims,xlims,rasterSize, ...
+   %  'ColumnsStartFrom','north', ...
+   %  'RowsStartFrom', 'west');
+   % Rcell2 = georefcells(ylims,xlims,2*halfY,2*halfX, ...
+   %  'ColumnsStartFrom','north', ...
+   %  'RowsStartFrom', 'west');
 
 elseif strcmp(cellInterpretation,'postings')
 
@@ -192,12 +194,12 @@ elseif strcmp(cellInterpretation,'postings')
    % saved in the structure, but I need to confirm its behavior
    % with functions such as ll2val etc.
 
-   % Rpost1  =   georefpostings(ylims,xlims,rasterSize, ...
-   %                'ColumnsStartFrom','north', ...
-   %                'RowsStartFrom', 'west');
-   % Rpost2  =   georefpostings(ylims,xlims,2*halfY,2*halfX, ...
-   %                'ColumnsStartFrom','north', ...
-   %                'RowsStartFrom', 'west');
+   % Rpost1 = georefpostings(ylims,xlims,rasterSize, ...
+   %          'ColumnsStartFrom','north', ...
+   %          'RowsStartFrom', 'west');
+   % Rpost2 = georefpostings(ylims,xlims,2*halfY,2*halfX, ...
+   %          'ColumnsStartFrom','north', ...
+   %          'RowsStartFrom', 'west');
 
    % if you manually update it, matlab adjusts the limits incorrectly
 
@@ -231,29 +233,52 @@ end
 % validateattributes(Y(1,:),  {'numeric'}, ...
 %                             {'2d','size',size(X(1,:)),'decreasing'}, ...
 %                             'R2grid', 'Y', 2)
-
-% Dealing with unique lat-lon values vs coordinate pairs
-% if a vector of non-unique lat/lon values is passed in, e.g. a list of
-% coordinate pairs, meshgrid will build a redundant matrix e.g.:
-
+% 
+% % Dealing with unique lat-lon values vs coordinate pairs
+% % if a vector of non-unique lat/lon values is passed in, e.g. a list of
+% % coordinate pairs, meshgrid will build a redundant matrix e.g.:
+% 
 % X1 = [-49.375 -49.375 -48.75 -48.75];
 % Y1 = [67.5 67 67.5 67];
-
+% 
 % if isvector(X1) && isvector(Y1)
-%     [X1,Y1] = meshgrid(X1,Y1)
+%     [X2,Y2] = meshgrid(X1,Y1)
 % end
-
-% rasterref is designed to build a grid of unique lat/lon pairs, so I use
-% the unique function to deal with this but the overall behavior of this
-% approach is unknown
-
-% X2 = unique(X);
-% Y2 = unique(Y);
-
-% if isvector(X2) && isvector(Y2)
-%     [X2,Y2] = meshgrid(X2,Y2)
+% 
+% % rasterref is designed to build a grid of unique lat/lon pairs, so I use
+% % the unique function to deal with this but the overall behavior of this
+% % approach is unknown - UPDATE below - I think unique fixes it, it will reduce
+% % the coordinate pairs to grid vectors
+% 
+% uX1 = unique(X1);
+% uY1 = unique(Y1);
+% 
+% if isvector(uX1) && isvector(uY1)
+%     [uX2,uY2] = meshgrid(uX1,uY1)
 % end
-
+% 
+% numel(uX1) * numel(uY1) == numel(uX2)
+% 
+% % UPDATE april 2023 - some variant of the check below may work for
+% % distinguishing coordine pairs from grid vecors
+% 
+%    % Convert input formats to grid vectors
+%    if ismatrix(x) && ismatrix(y) && numel(x) == numel(y)
+%       % grids (i.e. 2-d matrices aka arrays)
+%       x = unique(x(:),'sorted');
+%       y = unique(y(:),'sorted');
+%    else
+%       unique_x = unique(x,'sorted');
+%       unique_y = unique(y,'sorted');
+%       
+%       if numel(unique_x) * numel(unique_y) == numel(x)
+%           % grid vectors or coordinate-pair lists that correspond to grid cell coordinates
+%           x = unique_x;
+%           y = unique_y;
+%       else
+%           error('The input x, y data do not represent the coordinates of a regular or uniform grid.');
+%       end
+%    end
 
 
 % the original method enforced input

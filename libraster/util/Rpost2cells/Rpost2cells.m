@@ -18,16 +18,16 @@ function Rcells = Rpost2cells(Rpost)
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY.
 
-% 
-refmat              =   worldFileMatrixToRefmat(Rpost.worldFileMatrix);
-Zsize               =   Rpost.RasterSize;
+%
+refmat = worldFileMatrixToRefmat(Rpost.worldFileMatrix);
+Zsize = Rpost.RasterSize;
 
 % determine if the data are planar or geographic and call the appropriate
 % function
 if strcmp(Rpost.CoordinateSystemType,'geographic')
-    Rcells          =   refmatToGeoRasterReference(refmat,Zsize,'cells');
-%     sabatoge
+   Rcells = refmatToGeoRasterReference(refmat,Zsize,'cells');
+   %     sabatoge
 elseif strcmp(Rpost.CoordinateSystemType,'planar')
-    Rcells          =   refmatToMapRasterReference(refmat,Zsize,'cells');
+   Rcells = refmatToMapRasterReference(refmat,Zsize,'cells');
 end
 

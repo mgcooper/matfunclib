@@ -1,49 +1,85 @@
-function [X,Y,cellsizeX,cellsizeY,tfgeo,tfreg,tol] = prepareMapGrid(X,Y,varargin)
-%PREPAREMAPGRID prepare planar or geographic x,y grids for spatial analysis
+function [X,Y,cellSizeX,cellSizeY,gridType,tfGeoCoords] = prepareMapGrid(X,Y,gridOption)
+%PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis
+%
+% [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y)
+% takes the input X,Y coordinate arrays or vectors that represent a regular or
+% uniform grid and returns the following outputs:
+%
+%   - X, Y: The input coordinate arrays or vectors, reoriented and gridded if 
+%           necessary, to ensure they are 2-d arrays oriented West-East and
+%           North-South. 
+%   - cellSizeX, cellSizeY: The cell size in the X and Y directions.
+%   - gridType: The type of the grid ('uniform', 'regular', 'irregular').
+%   - tfGeoCoords: A boolean flag to indicate if the coordinates are geographic.
+%
+% The function supports three types of input:
+%   1) Grid arrays of coordinate pairs.
+%   2) Grid vectors (e.g., x = 120:5:160, y = 40:5:60).
+%   3) Lists of coordinate pairs (e.g., X(:), Y(:), where X and Y are grid arrays).
+%
+% This function is intended for use with regular or uniform grids. If the input
+% grid is irregular, the function will raise an error.
+%
+%
+% Example 1: uniform grid, x = lon, y = lat (tfLatLonOrder = false)
+%   x = 0:5:100;
+%   y = 0:5:50;
+%   [X, Y] = meshgrid(x, y);
+%   [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y);
+% 
+% Example 2: regular, non-uniform grid, x = lon, y = lat
+%   x = 0:10:100;
+%   y = 0:5:50;
+%   [X, Y] = meshgrid(x, y);
+%   [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y);
+% 
+% Example 3: regular, non-uniform grid, x = lon, y = lat, lon in range 0:360
+%   x = 0:10:360;
+%   y = 0:5:50;
+%   [X, Y] = meshgrid(x, y);
+%   [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y);
+%   [minLon, maxLon] = bounds(X(:))
+%     ans: minLon = -170, maxLon = 180
+% 
+% See also: mapGridInfo, orientMapGrid, mapGridCellSize
 
-% determine if the input vectors (or grids) are regular and/or geographic/planar
-[tfreg,tfgeo,tol] = isxyregular(X,Y);
-if ~tfreg
-   error('X,Y data are irregular')
+% parse gridOption 
+if nargin < 3
+   gridOption = "fullgrids";
+end   
+
+% Determine the grid type, cell size in the X and Y direction, and if the coordinates are geographic
+[gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y);
+
+% If longitude is wrapped from 0-360, unwrap to -180:180
+if tfGeoCoords == true
+%     X = wrapTo180(X);
 end
 
-% set the regular or unstructured grid type
-GridType = "regular";
-if nargin > 2
-   GridType = varargin{1};
+% Return the requested gridOption
+switch gridOption 
+   
+   case "gridvectors"
+      
+      X = reshape(sort(unique(X(:)),'ascend'),1,[]);
+      Y = reshape(sort(unique(Y(:)),'descend'),[],1);
+
+      % X = unique(X(:),'sorted');
+      % Y = unique(Y(:),'sorted');
+      
+   case "fullgrids"
+
+      % Convert grid vectors or coordinate pairs to 2-d arrays
+      [X, Y] = meshgrid(unique(X(:), 'sorted'), unique(Y(:), 'sorted'));
+      
+      % Ensure the X,Y arrays are oriented W-E and N-S
+      [X, Y] = orientMapGrid(X, Y);
+      
+   case "gridframes"
+      
+      [X, Y] = gridNodesToEdges(X, Y);
+      
 end
 
-% if unstructured, we just need the cellsize
-if GridType == "unstructured"
-   cellsizeX = abs(X(2)-X(1));
-   cellsizeY = abs(Y(2)-Y(1));
-   return
+
 end
-
-% if x,y are 1-d vectors, build a 2-d grid. E-W/N-S orientation is handled below
-if isvector(X) && isvector(Y)
-   [X,Y] = meshgrid(unique(X,'sorted'),unique(Y,'sorted'));
-end
-
-% ensure the X,Y arrays are oriented W-E and N-S
-[X,Y] = orientmapgrid(X,Y);
-
-% get the cell size in the x and y directions
-[cellsizeX,cellsizeY] = mapgridcellsize(X,Y);
-
-% % determine if the data are planar or geographic
-% tf = islatlon(Y(1,1),X(1,1));
-
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-% this was after the mesh grid part
-% % This was in a duplicate version of rasterref saved in rasterize/util
-% which i deleted. I think we want this in the function but since i am not
-% 100% sure I commented it out for now:
-% % NEW Nov 2021, wrap to 360 to make it easier to check inputs
-% % determine if the data are planar or geographic (moved here from
-% tf = islatlon(Y(1,1),X(1,1));
-% if tf == true
-%     X =  wrapTo360(X); % this is used to check uniform gridding
-% end
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
