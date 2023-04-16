@@ -31,20 +31,29 @@ debug = false;
 
 
 % Get the cell sizes
-[CellSizeX, CellSizeY, gridType] = mapGridCellSize(unique(X), unique(Y));
+[CellSizeX, CellSizeY, gridType] = mapGridCellSize(X, Y);
+% [CellSizeX, CellSizeY, gridType] = mapGridCellSize(unique(X), unique(Y));
 
 
 if gridType == "irregular"
    % decide how to handle this
+   % CellSizeX = max(CellSizeX);
+   % CellSizeY = max(CellSizeY);
 end
 
 
 % Reduce the cell-search space by finding cells inside a minimum bounding box
 IB = ...
-   (X >= min(PX)-CellSizeX/2) & ...
-   (X <= max(PX)+CellSizeX/2) & ...
-   (Y >= min(PY)-CellSizeY/2) & ...
-   (Y <= max(PY)+CellSizeY/2) ;
+   (X >= min(PX)-median(abs(CellSizeX))/2) & ...
+   (X <= max(PX)+median(abs(CellSizeX))/2) & ...
+   (Y >= min(PY)-median(abs(CellSizeY))/2) & ...
+   (Y <= max(PY)+median(abs(CellSizeY))/2) ;
+
+% For unstructured grids, need to subset cellsize again
+if numel(CellSizeX) > 1
+   CellSizeX = CellSizeX(IB);
+   CellSizeY = CellSizeY(IB);
+end
 
 
 % Get fully and partially enclosed cells
@@ -61,7 +70,7 @@ ON(IB) = on(:);
 
 % Plot the result
 if debug == true
-
+   % plotMapGrid(X(IB),Y(IB)); hold on; plot(PX,PY)
    figure;
    plotMapGrid(X(ON),Y(ON)); hold on; plot(PX,PY)
    plot(X(ON), Y(ON), 'o', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'none');
@@ -148,7 +157,7 @@ function filled = floodFillExterior(binaryImage, startX, startY)
 paddedImage = padarray(binaryImage, [1 1], false, 'both');
 filled = paddedImage;
 [rows, cols] = size(paddedImage);
-totalElements = rows * cols;
+N = rows * cols;
 
 if startX < 1 || startX > rows || startY < 1 || startY > cols
    return;
@@ -159,7 +168,7 @@ if paddedImage(startIdx) == true
    return;
 end
 
-deque = zeros(1, totalElements, 'uint32');
+deque = zeros(1, N, 'uint32');
 deque(1) = startIdx;
 dequeIdx = 1;
 dequeEnd = 1;
@@ -175,7 +184,7 @@ while dequeIdx <= dequeEnd
 
       for neighborOffset = neighbors
          neighborIdx = idx + neighborOffset;
-         if neighborIdx > 0 && neighborIdx <= totalElements
+         if neighborIdx > 0 && neighborIdx <= N
             dequeEnd = dequeEnd + 1;
             deque(dequeEnd) = neighborIdx;
          end

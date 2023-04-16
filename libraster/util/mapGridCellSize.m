@@ -16,12 +16,23 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
 % 
 % See also mapGridInfo, prepareMapGrid, orientMapGrid
 
+% NOTE: X,Y can be vectors or matrices, but if vectors, no check is made for
+% grid vectors vs coordinate pairs which means structured grids need to come in
+% unique otherwise cellsize = 0 will occur, whereas irregular / unstructured
+% grids will be treated the same i.e. as pairs of coordinates.
+
+% UPDATE: I think the key is for the uniformity check, pass in unique(X(:)), and
+% elsewhere, do or don't depending on whether arrays, vectors, lists etc are
+% expected. For example, a coordinate pair list will have non-unique values but
+% could still be regular / uniform. And for uniformity, we don't need the
+% unique([X Y],'rows') check we would need for coordinate lists elsewhere.
+
    if verLessThan('matlab', '9.13')
-      [xIsUniform, cellSizeX] = customIsUniform(X);
-      [yIsUniform, cellSizeY] = customIsUniform(Y);
+      [xIsUniform, cellSizeX] = customIsUniform(unique(X(:)));
+      [yIsUniform, cellSizeY] = customIsUniform(unique(Y(:)));
    else
-      [xIsUniform, cellSizeX] = isuniform(X);
-      [yIsUniform, cellSizeY] = isuniform(Y);
+      [xIsUniform, cellSizeX] = isuniform(unique(X(:)));
+      [yIsUniform, cellSizeY] = isuniform(unique(Y(:)));
    end
    
    % Determine grid type and cell size
@@ -33,17 +44,33 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
       end
    else
       gridType = 'irregular';
-      cellSizeX = diff(X, 1, 2);
-      cellSizeY = diff(Y, 1, 1);
       
-      if nnz(diff(cellSizeX,1))==0 % allrowsequal
-         cellSizeX = cellSizeX(1,:);
+      % Moved the simple case here to ismatrix to support irregular
+      if ~isvector(X) && ~isvector(Y)
+         
+         % Might simplify this by converting to grid vectors
+         cellSizeX = diff(X, 1, 2);
+         cellSizeY = diff(Y, 1, 1);
+         
+         if nnz(diff(cellSizeX,1))==0 % allrowsequal
+            cellSizeX = cellSizeX(1,:);
+         end
+         
+         if nnz(diff(cellSizeY,2))==0 % allcolsequal
+            cellSizeY = cellSizeY(:,1);
+         end
+         
+      else
+         
+         % Here and next isn't really right, to know te actual grid size I need
+         % ot know the vertices or the edges of the first or last
+         cellSizeX = diff(X);
+         cellSizeY = diff(Y);
       end
-      
-      if nnz(diff(cellSizeY,2))==0 % allcolsequal
-         cellSizeY = cellSizeY(:,1);
-      end
-      
+         
+      cellSizeX = [cellSizeX(1); cellSizeX];
+      cellSizeY = [cellSizeY(1); cellSizeY];
+
       % cellSizeX = NaN;
       % cellSizeY = NaN;
    end

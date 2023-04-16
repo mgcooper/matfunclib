@@ -13,9 +13,23 @@ function [gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y)
 % 
 % See also prepareMapGrid, orientMapGrid, mapGridCellSize, isGeoGrid
 
-   % Convert input formats to grid vectors
-   X = unique(X(:),'sorted');
-   Y = unique(Y(:),'sorted');
+   % Convert input formats to grid vectors. Don't alter coordinate lists.
+   if (ismatrix(X) && ~isvector(X) && size(X) == size(Y)) || ...  % grid arrays
+      (isvector(X) &&  isvector(Y) && size(X) ~= size(Y))         % grid vectors
+      
+      X = unique(X(:),'sorted');
+      Y = unique(Y(:),'sorted');
+      
+   elseif (isvector(X) &&  isvector(Y)) % coordinate lists (or equal sized grid vectors)
+      
+      % Remove duplicate coordinate pairs
+      ok = unique([X(:),Y(:)],'rows');
+      X = X(ok);
+      Y = Y(ok);
+      
+   else % one must be a scalar or some other unsupported type
+      % error message
+   end
    
    % Determine the cell size in the X and Y direction and the grid type
    [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y);

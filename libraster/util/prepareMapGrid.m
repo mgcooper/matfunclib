@@ -48,7 +48,8 @@ if nargin < 3
    gridOption = "fullgrids";
 end   
 
-% Determine the grid type, cell size in the X and Y direction, and if the coordinates are geographic
+% Determine the grid type, cell size in the X and Y direction, and if the
+% coordinates are geographic
 [gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y);
 
 % If longitude is wrapped from 0-360, unwrap to -180:180
@@ -56,7 +57,10 @@ if tfGeoCoords == true
 %     X = wrapTo180(X);
 end
 
-% Return the requested gridOption
+% Return the requested gridOption. gridType has no effect as of this time. If
+% gridOption is "unstructured", nothing is done. If gridType is used,
+% "irregular" should be treated the same way, meaning lists of coordinate pairs
+% are provided, and they are assumed to be correct. 
 switch gridOption 
    
    case "gridvectors"
@@ -78,6 +82,13 @@ switch gridOption
    case "gridframes"
       
       [X, Y] = gridNodesToEdges(X, Y);
+      
+   case "unstructured" % inclusive of "irregular"
+      
+      % Probably do nothing, but if anything, remove / check for redundant pairs
+      % ok = unique([X(:),Y(:)],'rows');
+      % X = X(ok);
+      % Y = Y(ok);
       
 end
 
