@@ -14,6 +14,9 @@ thispath = fileparts(mfilename('fullpath'));
 % character (class folders), folders that begin with the + character (package
 % folders), folders named resources, or subfolders within any of these.
 
+% UPDATE might use V = filesep() and [thispath V subpath] method b/c right now I
+% remove .git but there are other folders that could be problematic e.g. codegen
+
 % add all paths then remove git paths
 addpath(genpath(thispath));
 rmpath(genpath(fullfile(thispath,'.git')));
