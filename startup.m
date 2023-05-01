@@ -79,13 +79,13 @@ setenv('MATLABSOURCEPATH',fullfile(HOMEPATH,'mysource/matlab'));
 % setenv('JIGSAWGEOPATH',fullfile(HOMEPATH,'myprojects/jigsaw-geo-matlab'));
 
 % e3sm
-setenv('E3SMINPUTPATH', fullfile(getenv('USERDATAPATH'),'e3sm/input'));
-setenv('E3SMOUTPUTPATH', fullfile(getenv('USERDATAPATH'),'e3sm/output'));
-setenv('E3SMTEMPLATEPATH', fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
+setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
+setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
+setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
 
 
 % icemodel
-setenv('ICEMODELDATAPATH', fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/eval'));
+setenv('ICEMODELDATAPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/eval'));
 setenv('ICEMODELINPUTPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/input'));
 setenv('ICEMODELOUTPUTPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/icemodel/output'));
 
