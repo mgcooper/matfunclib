@@ -23,7 +23,7 @@ function H = getopenfigs(H,flag)
 
 arguments
    H (:,1) matlab.ui.Figure
-   flag (1,1) string {mustBeMember(flag,{'match'})} = 'match'
+   flag (1,1) string {mustBeMember(flag,{'match','count'})} = 'match'
 end
 
 %------------------------------------------------------------------------------
@@ -33,6 +33,8 @@ if isempty(H)
    H = allfigs;
 elseif flag == "match"
    H = allfigs(allfigs == H);
+elseif flag == "count"
+   H = numel(allfigs);
 else
    % H = allfigs; shouldn't ever get here
 end

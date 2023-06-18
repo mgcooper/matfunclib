@@ -1,4 +1,7 @@
 function varargout = macfig(varargin)
+%MACFIG make figure on mac
+
+% see maxfig and maximize for setting the max figure size
 
 p               = inputParser;
 p.FunctionName  = mfilename;
@@ -56,6 +59,8 @@ switch size
       figpos = [pos(1) pos(3)/2 pos(3) pos(4)/2];
    case 'vertical'
       figpos = [pos(1) pos(2) pos(3)/2 pos(4)];
+   case 'wide'
+      figpos = [pos(1)*200 pos(2)*200 pos(3)/1.3 pos(4)/2];
    case 'large'
       figpos = [pos(3)/4 pos(4)/4 pos(3)/1.75 pos(4)/1.25];
    case 'medium'

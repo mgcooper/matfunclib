@@ -9,21 +9,20 @@ else
 end
 
 % for early and late, we use the early-time form to get the y position
-ylims    = ylim;
-xlims    = xlim;
+ylims = ylim;
+xlims = xlim;
 
 % use the number of decades to place the labels
-ndecsy   = log10(ylims(2))-log10(ylims(1));
-ndecsx   = log10(xlims(2))-log10(xlims(1));
+ndecsy = log10(ylims(2))-log10(ylims(1));
+ndecsx = log10(xlims(2))-log10(xlims(1));
 
 % place the label 1/2 way b/w the first and second decade
-ya       = 10^(log10(ylims(1))+ypct*ndecsy);
-xa       = (ya/a)^(1/b);
+ya = 10^(log10(ylims(1))+ypct*ndecsy);
+xa = (ya/a)^(1/b);
 
 % make the arrow span 1/10th or so of the total number of decades
-xa       = [xa 10^(log10(xa)+xpct*ndecsx)];
-ya       = [ya ya];
-
+xa = [xa 10^(log10(xa)+xpct*ndecsx)];
+ya = [ya ya];
 
 % ta = sprintf('$b=%.2f$ ($\\hat{b}$)',b);
 

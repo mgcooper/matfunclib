@@ -7,7 +7,7 @@
         {"name":"monitor","kind":"namevalue",
          "type":["char", "choices={'main','mac','external'}"]},
         {"name":"size","kind":"namevalue",
-         "type":["char", "choices={'full','half','large','horizontal','vertical','medium','quarter','small'}"]}
+         "type":["char", "choices={'full','half','large','horizontal','wide','vertical','medium','quarter','small'}"]}
      ]
   }
 }

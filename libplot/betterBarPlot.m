@@ -12,7 +12,7 @@ function betterBarPlot(dataArray,showPairedDiffs)
     load('distinguishablecolors.mat','dc'); colors = dc;
 
  
-    macfig('vertical')
+    macfig('monitor','mac','size','vertical');
     hold on;
     % if we want each bar to have a different color, loop
     for b = 1:size(dataArray, 2)

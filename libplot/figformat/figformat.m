@@ -8,6 +8,11 @@ function h = figformat(varargin)
 % the problem with the current add second axis function is that i can't add
 % new plots to the figure, they are hidden behind the data.
 
+% NOTE see export_fig function copyfig, should fix the issues where not all
+% figure props are copied over with copyobj
+
+% see xlim('tickaligned') method
+
 %-------------------------------------------------------------------------------
 p                 = magicParser;
 p.FunctionName    = mfilename;
