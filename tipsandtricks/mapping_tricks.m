@@ -12,6 +12,15 @@ narginchk(0,0)
 % cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libspatial'));
 % doc mapping
 
+%% resources to revist
+
+% https://github.com/wme7/Aero-matlab
+% https://github.com/Alexander-Barth/GeoMapping.jl
+% https://github.com/kunlz/mapplot/blob/master/plotmap.m
+% https://github.com/kkyyhh96/MapProjectionMatlab
+% https://github.com/IPGP
+% https://github.com/IPGP/a-simple-spatial-database
+
 %% reading polylinez
 
 % see baseflow map_region and cell_fun.m for how I used m_shaperead to read a
