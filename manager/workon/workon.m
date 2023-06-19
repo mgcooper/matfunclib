@@ -2,9 +2,12 @@ function workon(varargin)
 %WORKON adds project `projectname` to path and makes it the working directory
 % 
 %  workon('myproject') adds paths to myproject, updates the project directory,
-%  sets env vars, and cd's to the active project directory
+%  sets env vars, and cd's to the active project directory. The current active
+%  project is deactivated by calling WORKOFF prior to activating MYPROJECT.
 % 
-%  workoff('myproject','goto') cd to the MATLABACTIVEPROJECT path
+%  workon('myproject', 'updatefiles', false) does not update the activefiles
+%  list associated with MYPROJECT to the current open files. Default is true,
+%  the current open files are saved to the activefiles property for MYPROJECT.
 % 
 % See also: workoff, manager, addproject
 % 
@@ -20,46 +23,23 @@ function workon(varargin)
 %  projectpath instead of appending projectname to the MATLABPROJECTPATH
 %  environment variable
 
-%-------------------------------------------------------------------------------
-p = inputParser;
-p.FunctionName = mfilename;
-
-projectnames = cat(1,cellstr(projectdirectorylist),'default');
-validproject = @(x)any(validatestring(x,projectnames));
-validoptions = @(x)any(validatestring(x,{'goto'}));
-
-addOptional(   p,'projectname',  getactiveproject, validproject);
-addOptional(   p,'postactivate', 'goto',           validoptions);
-addParameter(  p,'force',        false,            @(x)islogical(x));
-
-parse(p,varargin{:});
-
-projname = p.Results.projectname;
-postopts = string(p.Results.postactivate) == "goto"; % transform to logical
-force = p.Results.force;
-
-% % thought this might permit syntax like workon -f interface but no
-% p.PartialMatching = true;
-% validpreopts = @(x)any(validatestring(x,{'force',''}));
-% addOptional(p, 'preactivate', 'none', validpreopts);
-% preopts = p.Results.preactivate;
-
-%-------------------------------------------------------------------------------
+% TODO add if usejava('desktop') methods to not open or save editor files
 
 % note: all setproject** fucntions write the directory, so each time one of
 % those is called, writeprjdirectory creates a temporary file. need to stop this
+
+% parse inputs
+[projname, updatefiles, force] = parseinputs(mfilename, varargin{:});
 
 % check if this is a new project (ie it doesn't exist in the project directory)
 ok = verifyprojectexists(projname);
 
 if ok == false; return; end
 
-% Determine if we are switching to a new project, and if so, close and save the
-% current project first. If not, do nothing. 
+% If switching projects, close and save the current project. If not, do nothing. 
 if strcmpi(projname,getactiveproject('name'))
    % do nothing - the requested project is the active project (not switching)
-   if force == true
-      % unless force is true (not implemented)
+   if force == true % unless force is true (not implemented)
       % continue
    else
       % 30 Jan if workoff is in the else block, it should be fine to run workon
@@ -74,7 +54,7 @@ else
    
    % 30 Jan moved here so on startup the active project is loaded
    % WARNING: workoff sets the active files  - directory is updated
-   workoff(getactiveproject('name'));
+   workoff(getactiveproject(), 'updatefiles', updatefiles);
 end
 
 % ---------------- to not use workoff to prevent resetting the active file list
@@ -107,9 +87,6 @@ end
 
 % full path to the project activefolder
 projpath = getprojectfolder(projname);
-% projpath = getprojectfolder(projname,'activefolder');
-% old method: (to replicate, use: getprojectfolder(projname,'namespace') )
-% projpath = fullfile(projlist.folder{projindx},projname);
 
 % activate 
 disp(['activating ' projname]);
@@ -121,7 +98,9 @@ setprojectactive(projname);
 addprojectpaths(projname);
 
 % cd to the activated tb if requested
-if postopts; cd(projpath); end
+try
+   cd(projpath)
+end
 
 % open project files
 openprojectfiles(projname);
@@ -163,10 +142,29 @@ else
    end
 end
 
-%-------------------------------------------------------------------------------
+function [projname, updatefiles, force] = parseinputs(funcname, varargin)
+
+p = inputParser;
+p.FunctionName = funcname;
+
+projectnames = cat(1,cellstr(projectdirectorylist),'default');
+validproject = @(x)any(validatestring(x,projectnames));
+
+addOptional(p, 'projectname', getactiveproject, validproject);
+addParameter(p, 'updatefiles', true, @(x)islogical(x));
+addParameter(p, 'force', false, @(x)islogical(x));
+
+parse(p,varargin{:});
+
+projname = p.Results.projectname;
+updatefiles = p.Results.updatefiles;
+force = p.Results.force;
+
+
+function onCleanupFun(projectlist)
 
 % this is how I would do it if i always passed projectlist around between
 % functions and never allowed it to be written during a function call, only
 % written here on cleanup:
-function onCleanupFun(projectlist)
+
 writeprjdirectory(projectlist)
