@@ -4,9 +4,9 @@ function [ h,ax,c ] = rastersurf( Z,R,varargin )
 % mapshow/geoshow. this is because i realized today that that syntax
 % permits irregularly spaced data. on the other hand, since this is
 % rastershow, maybe i should require they grid it first, and suggest
-% rasterfromscatter when I make that function. 
+% rasterfromscatter when I make that function.
 
-% secondly, 
+% secondly,
 
 %RASTERSURF rastersurf(Z,R,varargin) project and display spatially
 %referenced raster Z associated with map/geographic raster reference object
@@ -61,12 +61,12 @@ function [ h,ax,c ] = rastersurf( Z,R,varargin )
 %
 %   If R is a referencing matrix, it must be 3-by-2 and transform raster
 %   row and column indices to/from geographic coordinates according to:
-% 
+%
 %                     [lon lat] = [row col 1] * R.
 %
 %   If R is a referencing matrix, it must define a (non-rotational,
 %   non-skewed) relationship in which each column of the data grid falls
-%   along a meridian and each row falls along a parallel. 
+%   along a meridian and each row falls along a parallel.
 %
 %   H = RASTERSURF(...) returns a handle to a MATLAB graphics object
 %
@@ -94,8 +94,8 @@ function [ h,ax,c ] = rastersurf( Z,R,varargin )
 
 % confirm mapping toolbox is installed
 assert( license('test','map_toolbox')==1, ...
-                        'rastersurf requires Matlab''s Mapping Toolbox.')               
-                    
+   'rastersurf requires Matlab''s Mapping Toolbox.')
+
 % If varargin{2} is not a MapCells/Postings or GeographicCells/Postings
 % Reference, first try converting using refvecToGeoRasterReference, which
 % will fail if R is not a vector. Then try refmatToGeoRasterReference,
@@ -103,66 +103,66 @@ assert( license('test','map_toolbox')==1, ...
 % values that are inconsistent. Finally try refmatToMapRasterReference
 
 if (~isa(R,'map.rasterref.MapCellsReference')) && ...
-        (~isa(R,'map.rasterref.GeographicCellsReference') || ...
-        ~isa(R,'map.rasterref.MapPostingsReference')) && ...
-        (~isa(R,'map.rasterref.GeographicPostingsReference'))
-    try 
-        R = refvecToGeoRasterReference(R,size(Z));
-    catch
-        try
-            R = refmatToGeoRasterReference(R,size(Z));
-        catch
-            try 
-                R = refmatToMapRasterReference(R,size(Z));
-            catch
-                error(['Expected input argument 2, R, to be a referencing ' ...
-                    'matrix or a map raster reference object that relates ' ...
-                    'the subscripts of Z to map coordinates. If Z is a ' ...
-                    'geographic data grid, R can be a geographic raster ' ...
-                    'reference object, a referencing vector, or a ' ...
-                    'referencing matrix.']);
-            end
-        end
-    end
-end     
+      (~isa(R,'map.rasterref.GeographicCellsReference') || ...
+      ~isa(R,'map.rasterref.MapPostingsReference')) && ...
+      (~isa(R,'map.rasterref.GeographicPostingsReference'))
+   try
+      R = refvecToGeoRasterReference(R,size(Z));
+   catch
+      try
+         R = refmatToGeoRasterReference(R,size(Z));
+      catch
+         try
+            R = refmatToMapRasterReference(R,size(Z));
+         catch
+            error(['Expected input argument 2, R, to be a referencing ' ...
+               'matrix or a map raster reference object that relates ' ...
+               'the subscripts of Z to map coordinates. If Z is a ' ...
+               'geographic data grid, R can be a geographic raster ' ...
+               'reference object, a referencing vector, or a ' ...
+               'referencing matrix.']);
+         end
+      end
+   end
+end
 
 % confirm Z is a numeric or logical grid of size R.RasterSize
-validateattributes(Z,   {'numeric', 'logical'}, ...
-                        {'size', R.RasterSize}, 'rastersurf', 'Z', 1)
+validateattributes(Z, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
+   'rastersurf', 'Z', 1)
 
 % confirm R is either a MapCells or GeographicCellsReference objects. Note,
 % this is redundant with try catch block above, but keeping just in case
 % validateattributes(R, ...
-%                         {'map.rasterref.MapCellsReference', ...
-%                         'map.rasterref.GeographicCellsReference'}, ...
-%                         {'scalar'}, 'rastersurf', 'R', 2)
+%    {'map.rasterref.MapCellsReference', ...
+%    'map.rasterref.GeographicCellsReference'}, ...
+%    {'scalar'}, 'rastersurf', 'R', 2)
 
 validateattributes(R, ...
-                        {'map.rasterref.MapCellsReference', ...
-                        'map.rasterref.GeographicCellsReference', ...
-                        'map.rasterref.MapPostingsReference', ...
-                        'map.rasterref.GeographicPostingsReference'}, ...
-                        {'scalar'}, 'rastersurf', 'R', 2)
+   {'map.rasterref.MapCellsReference', ...
+   'map.rasterref.GeographicCellsReference', ...
+   'map.rasterref.MapPostingsReference', ...
+   'map.rasterref.GeographicPostingsReference'}, ...
+   {'scalar'}, 'rastersurf', 'R', 2)
 
-%% convert to double if 
-if strcmp(class(Z),'double') ~= 1
-    Z               =   double(Z);
+%% convert to double if
+if isa(Z,'double') ~= 1
+   Z = double(Z);
 end
 
-%% apply the function 
+%% apply the function
 
 % NOTE: Need to make it so if cmap is passed in, it detects it, since cmap
 % is mapshow(Z,cmap,R) which is confusing, see notes in image_tricks
 
 % make a surface of zeros (jun 2022, added this and changed plotting call)
-Z0    = zeros(size(Z));
+Z0 = zeros(size(Z));
 
 if strcmp(R.CoordinateSystemType,'planar')
-   %h    =  mapshow(Z,R,'DisplayType','surface',varargin{:});
-    h    =  mapshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
+   %h = mapshow(Z,R,'DisplayType','surface',varargin{:});
+   h = mapshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
 elseif strcmp(R.CoordinateSystemType,'geographic')
-   %h    =  geoshow(Z,R,'DisplayType','surface',varargin{:});
-    h    =  geoshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
+   %h = geoshow(Z,R,'DisplayType','surface',varargin{:});
+   h = geoshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
 end
 
 shading flat
@@ -172,45 +172,46 @@ hold on
 % set nan transparant - not sure when this is needed
 % set(h,'FaceAlpha','texturemap','AlphaData',double(~isnan(Z)));
 
-ax                  =   gca; 
-ax.Box              =   'on';
-ax.TickDir          =   'out';
-ax.LineWidth        =   1.5;
-% ax.DataAspectRatio  =   [diff(ax.XLim) diff(ax.XLim) diff(ax.ZLim)];
+ax = gca;
+ax.Box = 'on';
+ax.TickDir = 'out';
+ax.LineWidth = 1.5;
+% ax.DataAspectRatio = [diff(ax.XLim) diff(ax.XLim) diff(ax.ZLim)];
 
 % add colorbar using default location
-c                   =   colorbar;
+c = colorbar;
+
 % uncomment for narrow colorbar
-% axpos               =   ax.Position;
-% cpos                =   c.Position;
-% cpos(3)             =   0.5*cpos(3); % make colorbar half width
-% c.Position          =   cpos;
-% ax.Position         =   axpos;
+% axpos = ax.Position;
+% cpos = c.Position;
+% cpos(3) = 0.5*cpos(3); % make colorbar half width
+% c.Position = cpos;
+% ax.Position = axpos;
 
 %% arrange the outputs
 
 switch nargout
-    case 0
-    case 1
-        varargout{1} = h; 
-    
-    case 2
-        varargout{1} = h; 
-        varargout{2} = ax; 
-        
-    case 3         
-        varargout{1} = h; 
-        varargout{2} = ax; 
-        varargout{3} = c; 
-        
-    otherwise
-        error('Unrecognized number of outputs.') 
+   case 0
+   case 1
+      varargout{1} = h;
+
+   case 2
+      varargout{1} = h;
+      varargout{2} = ax;
+
+   case 3
+      varargout{1} = h;
+      varargout{2} = ax;
+      varargout{3} = c;
+
+   otherwise
+      error('Unrecognized number of outputs.')
 end
 
 %% clean up
 
 if nargout==0
-    clear h ax c
+   clear h ax c
 end
 
 end
@@ -221,4 +222,4 @@ end
 % assert(~strcmp(R.RasterInterpretation,'postings') , ...
 %         ['Input argument 2, R, and input argument 3, Rq, must be of type ' ...
 %         '''cells'' rasterInterpretation. Use RPost2Cells.m to convert. ' ...
-%         'Support for type ''postings'' will be provided in a future release']);     
+%         'Support for type ''postings'' will be provided in a future release']);

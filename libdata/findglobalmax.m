@@ -60,7 +60,7 @@ maxinds = find(Data == maxvals,k,position);
 maxvals = Data(maxinds(:));
 
 % figure; plot(1:numel(Data),Data,'o'); hold on;
-% plot(maxinds,Data(maxinds),'o'); 
+% plot(maxinds,maxvals,'o'); 
 
 % add iref to maxinds. this supports cases where the data are passed in as
 % subsets of a larger dataset and we want to add iref to maxinds so maxinds are

@@ -1,3 +1,4 @@
+% function clean % clearvars seems to not work if this is a function
 clearvars
 close all hidden 
 clc

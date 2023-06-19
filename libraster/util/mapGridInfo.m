@@ -14,8 +14,11 @@ function [gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y)
 % See also prepareMapGrid, orientMapGrid, mapGridCellSize, isGeoGrid
 
    % Convert input formats to grid vectors. Don't alter coordinate lists.
-   if (ismatrix(X) && ~isvector(X) && size(X) == size(Y)) || ...  % grid arrays
-      (isvector(X) &&  isvector(Y) && size(X) ~= size(Y))         % grid vectors
+   % NOTE: this cannot distinguish an unstructured grid form a grid array, since
+   % both will be matrices with the same number of elements. I need a dedicated
+   % gridtype function
+   if (ismatrix(X) && ~isvector(X) && numel(X) == numel(Y)) || ... % grid arrays
+      (isvector(X) &&  isvector(Y) && numel(X) ~= numel(Y))  % grid vectors
       
       X = unique(X(:),'sorted');
       Y = unique(Y(:),'sorted');
@@ -23,7 +26,7 @@ function [gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y)
    elseif (isvector(X) &&  isvector(Y)) % coordinate lists (or equal sized grid vectors)
       
       % Remove duplicate coordinate pairs
-      ok = unique([X(:),Y(:)],'rows');
+      [~,ok] = unique([X(:),Y(:)],'rows');
       X = X(ok);
       Y = Y(ok);
       

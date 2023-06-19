@@ -4,6 +4,8 @@ if nargin == 4
    Orientation = 'cw';
 end
 
+% to support gridvecs, would need to check then create the grid with fastgrid
+
 switch Orientation
       
    case 'cw'

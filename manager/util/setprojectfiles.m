@@ -2,7 +2,28 @@ function projlist = setprojectfiles(projectname,filelist)
 %SETPROJECTFILES save the list of open project files
 % 
 % 
+% Example
+% 
+% I want to update the paths in the activefiles list of a project:
+% 
+% oldstr = 'E3SM-MOSART-offline-mode';
+% newstr = 'interface-e3sm';
+% projectlist = openprojectdirectory;  
+% files = projectlist.activefiles{48,1};
+% files = strrepl(files, oldstr, newstr);
+% setprojectfiles("interface-e3sm", files)
+% 
 % See also getprojectfiles
+
+% Bit more detail on the example. I wanted to rename e3sm-interface to
+% interface-e3sm, but I don't think there is a 'renameproject' function, so I
+% first removed it, b/c it had no activefiles, then changed the actual dirname
+% to interface-e3sm, then used addproject, but the active files were the ones
+% associated with 'interface' which were all in E3SM-MOSART-offline-mode dir, so
+% I needed to replace those paths with interface-e3sm, below did it, I made it a
+% general purpose function strrepl, but it is useful for resetting project paths
+
+
 narginchk(0,2);
 
 if nargin < 1
@@ -14,7 +35,7 @@ projlist = readprjdirectory();
 projindx = getprjidx(projectname,projlist);
 
 % if a file list is provided, use it, otherwise get all open files
-if nargin == 1
+if nargin <= 1
    projlist.activefiles{projindx} = getopenfiles();
 elseif nargin == 2
    projlist.activefiles{projindx} = filelist;

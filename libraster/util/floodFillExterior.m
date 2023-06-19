@@ -30,6 +30,10 @@ function filled = floodFillExterior(binaryImage, startX, startY)
 %    1 0 0 1;
 %    1 0 0 1;
 %    1 1 1 1]
+% 
+%   binaryImage = [0 0 0 0; 0 1 1 0; 0 1 1 0; 0 0 0 0];
+%   filled = floodFillExterior(binaryImage, startX, startY);
+
 
 % Pad the input binary image with a false border.
 paddedImage = padarray(binaryImage, [1 1], false, 'both');
@@ -37,7 +41,7 @@ paddedImage = padarray(binaryImage, [1 1], false, 'both');
 % Initialize variables and preallocate the deque.
 filled = paddedImage;
 [rows, cols] = size(paddedImage);
-totalElements = rows * cols;
+N = rows * cols;
 
 % Validate the starting point and check if it is inside the region.
 if startX < 1 || startX > rows || startY < 1 || startY > cols
@@ -50,7 +54,7 @@ if paddedImage(startIdx) == true
 end
 
 % Initialize the deque and indices.
-deque = zeros(1, totalElements, 'uint32');
+deque = zeros(1, N, 'uint32');
 deque(1) = startIdx;
 dequeIdx = 1;
 dequeEnd = 1;
@@ -68,7 +72,7 @@ while dequeIdx <= dequeEnd
 
       for neighborOffset = neighbors
          neighborIdx = idx + neighborOffset;
-         if neighborIdx > 0 && neighborIdx <= totalElements
+         if neighborIdx > 0 && neighborIdx <= N
             dequeEnd = dequeEnd + 1;
             deque(dequeEnd) = neighborIdx;
          end

@@ -26,6 +26,9 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
 % expected. For example, a coordinate pair list will have non-unique values but
 % could still be regular / uniform. And for uniformity, we don't need the
 % unique([X Y],'rows') check we would need for coordinate lists elsewhere.
+% BUT note that unique(X(:)) returns sorted order, so it wont work fo
+% unstructured grids, for that would need unique(X(:),'stable') ... need to
+% revisit
 
    if verLessThan('matlab', '9.13')
       [xIsUniform, cellSizeX] = customIsUniform(unique(X(:)));

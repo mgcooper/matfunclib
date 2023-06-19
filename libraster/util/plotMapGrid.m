@@ -88,8 +88,17 @@ end
 
 if strcmp(opt, 'centroids') || strcmp(opt, 'both')
    % Plot the grid centroids
-   p2 = scatter(ax, X(:), Y(:), 'ro', 'filled');
-   H(4) = p2;
+   [x,y] = fastgrid(X,Y);
+   p2 = scatter(ax, x(:), y(:), 'ro', 'filled');
+   H(4) = p2;   
+   
+   % this produces a graphics handle with one element per column (so does
+   % scatter(x,y)), so its easier to create the grid and use scatter(x(:),y(:))
+   % which creates a single graphics handle
+   % reason 
+   %    p2 = scatter(ax, Xedges(1:end-1,1:end-1) + diff(Xedges(1,:),1,2)./2, ...
+   %       Yedges(1:end-1,1:end-1) + diff(Yedges(:,1),1,1)./2, 'ro', 'filled');
+   
 end
 
 xlabel(ax, 'X');

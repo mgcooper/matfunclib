@@ -22,7 +22,7 @@ function a = earthSurfaceArea(lat,lon,in3,in4)
 %   See also AREAMAT, AREAQUAD.
 
 % NOTE: see geoarea, sub this in for the call to areaint then geoarea becomes a
-% standalone functions
+% standalone functions, also see nanpolyarea at bottom of geoarea
 
 narginchk(2,4)
 switch(nargin)
