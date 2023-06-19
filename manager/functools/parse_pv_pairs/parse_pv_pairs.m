@@ -57,13 +57,15 @@ function params=parse_pv_pairs(params,pv_pairs)
 npv = length(pv_pairs);
 n = npv/2;
 
-if n~=floor(n)
-  error 'Property/value pairs must come in PAIRS.'
-end
-if n<=0
+if n<=0 || isempty(pv_pairs{:})
   % just return the defaults
   return
+else
+   if n~=floor(n)
+      error 'Property/value pairs must come in PAIRS.'
+   end
 end
+
 
 if ~isstruct(params)
   error 'No structure for defaults was supplied'
