@@ -140,6 +140,17 @@ function projectlist = rebuildprojectlist(projectlist)
 % read the current project directory
 oldlist = readprjdirectory(getprjdirectorypath);
 
+% % Use rmproject instead, if this happens again
+% % check for duplicate project entries
+% oldnames = oldlist.name;
+% newnames = projectlist.name;
+% if numel(oldnames) ~= numel(newnames)
+% elseif numel(unique(oldnames)) ~= numel(oldnames)
+%    warning('duplicate projects found in current directory')
+% elseif numel(unique(newnames)) ~= numel(newnames)
+%    warning('duplicate projects found in current directory')
+% end
+
 % find projects in both the old and new directories
 keepatts = {'activefiles','activeproject','activefolder','linkedproject'};
 for n = 1:numel(keepatts)
@@ -148,9 +159,30 @@ for n = 1:numel(keepatts)
 
    for m = 1:size(projectlist,1)
 
+      % checking the name and the folder should take care of udplicats
       if ismember(projectlist.name(m),oldlist.name)
-         idx = ismember(oldlist.name,projectlist.name(m));
-         projectlist.(thisatt)(m) = oldlist.(thisatt)(idx);
+         idx = find(ismember(oldlist.name,projectlist.name(m)) & ...
+            ismember(oldlist.folder,projectlist.folder(m)));
+         if numel(idx)>1
+            error('duplicate projects found')
+         else
+            projectlist.(thisatt)(m) = oldlist.(thisatt)(idx);
+         end
+         
+%          % new 21 march 2023, not sure how to handle this, it came up when I had
+%          % two entries for 'test' - not sure how they both got in there
+%          idx = ismember(oldlist.name,projectlist.name(m));  
+%          if sum(idx) > 1 % more than one entry in old list for this prject name
+%             % check if the new list also has more than one
+%             if sum(ismember(projectlist.name,projectlist.name(m)))==sum(idx)
+%                for mm = 1:numel(idx)
+%                   projectlist.(thisatt)(m) = oldlist.(thisatt)(idx);
+%                end
+%             else
+%             end
+%          else
+%             projectlist.(thisatt)(m) = oldlist.(thisatt)(idx);
+%          end
       end
 
    end
