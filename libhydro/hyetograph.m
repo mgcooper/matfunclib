@@ -1,75 +1,101 @@
-function h = hyetograph(time,flow,ppt,varargin)
+function H = hyetograph(time,flow,prec,varargin)
 %HYETOGRAPH Plots a discharge rainfall hyetograph
 %
-%  h = hyetograph(time,flow,ppt) plots hyetograph using data in flow and ppt
+%  H = hyetograph(time,flow,ppt) plots hyetograph using data in flow and ppt
 %
-%  h = hyetograph(time,flow,ppt,t1,t2) plots hyetograph using data in flow and
+%  H = hyetograph(time,flow,ppt,t1,t2) plots hyetograph using data in flow and
 %  ppt for time period bounded by datetimes t1 and t2
+%
+% Example, how to later access the plot objects
+%  H = hyetograph(...);
+%
+% Find specific handles using 'Tag' or 'Name'
+%
+% fig = findobj(H, 'Name', 'Hyetograph');
+% ax_streamflow = findobj(H, 'Tag', 'StreamflowAxis');
+% ax_precipitation = findobj(H, 'Tag', 'PrecipitationAxis');
 %
 % See also
 
 %------------------------------------------------------------------------------
-p = magicParser;
+p = magicParser; %#ok<*NODEF,*USENS>
 p.FunctionName = mfilename;
-p.addRequired('time',            @(x)isnumeric(x)|isdatetime(x)   );
-p.addRequired('flow',            @(x)isnumeric(x)                 );
-p.addRequired('ppt',             @(x)isnumeric(x)                 );
-p.addOptional('t1',     nan,     @(x)isnumeric(x)|isdatetime(x)   );
-p.addOptional('t2',     nan,     @(x)isnumeric(x)|isdatetime(x)   );
+p.addRequired('time',                     @(x)isnumeric(x)|isdatetime(x)   );
+p.addRequired('flow',                     @(x)isnumeric(x)                 );
+p.addRequired('prec',                     @(x)isnumeric(x)                 );
+p.addOptional('t1',     min(time),        @(x)isnumeric(x)|isdatetime(x)   );
+p.addOptional('t2',     max(time),        @(x)isnumeric(x)|isdatetime(x)   );
+p.addParameter('units', {'mm','cm d-1'},  @(x)ischarlike(x)                );
+% p.addParameter('ax',    gca,              @(x)isaxis(x)                    );
 p.parseMagically('caller');
 %------------------------------------------------------------------------------
 
-%    "display":"t1",
-time  = time(:);
-ppt   = ppt(:);
-flow  = flow(:);
+% initialize container for output handles
+H = gobjects(4,1); % figure, ax1, plot1, plot2
 
-if ~isdatetime(time)
-   time = datetime(time,'ConvertFrom','datenum');
-end
+% % get the figure handle
+fig = gcf; 
+fig.Name = 'Hyetograph';
+fig.Tag = 'HyetographFigure';
+% fig.Position = [10,10,400,300];
+% fig.Renderer = 'painters';
 
-trim = true;
-if nargin == 3
-   trim  = false;
-end
+% k = fig.Parent;
+% k.Parent.Position = [360 198 400 300];
 
-if trim == true
-   if ~isdatetime(t1); t1 = datetime(t1,'ConvertFrom','datenum'); end
-   if ~isdatetime(t2); t2 = datetime(t2,'ConvertFrom','datenum'); end
-   idx   = isbetween(time,t1,t2);
-   ppt   = ppt(idx);
-   flow  = flow(idx);
-   time  = time(idx);
-end
+% convert to columns
+time = time(:);
+prec = prec(:);
+flow = flow(:);
 
-% Create figure
-f   = macfig;
+% convert to datetime
+if ~isdatetime(time); time = datetime(time,'ConvertFrom','datenum'); end
+if ~isdatetime(t1); t1 = datetime(t1,'ConvertFrom','datenum'); end
+if ~isdatetime(t2); t2 = datetime(t2,'ConvertFrom','datenum'); end
+
+% trim to t1,t2 timespan
+prec = prec(isbetween(time,t1,t2));
+flow = flow(isbetween(time,t1,t2));
+time = time(isbetween(time,t1,t2));
+
+% process units
+units = siUnitsToTex(units);
+
+% get default colors
+colors = get(0,'defaultaxescolororder');
 
 % Create plot
 yyaxis left;
-h1  = plot(time,flow); % datetick
-ax  = gca;
+h1 = plot(time,flow,'-o','MarkerSize',4,'MarkerFaceColor',colors(1,:), ...
+   'MarkerEdgeColor','none','Tag','StreamflowPlot');
+ax = gca;
+ax.Tag = 'HyetographAxis';
+
+% % With yyaxis, there is only one axis, so I don't track them separately
+% ax1 = gca;
+% ax1.Tag = 'StreamflowAxis';
 
 % Set the remaining axes properties
 set(ax,'XMinorGrid','on','YMinorGrid','on');
 grid(ax,'on');
 
-% Keep current ylims to reset the labels after making space for ppt
-%     ylims = ylim
-% pick up on this , idea is to get the lims and labels then after
-% setting them *1.5, reset the ticks to the og ones
-
-ylim([ax.YLim(1),1.5*ax.YLim(2)]);
+% hacky way to make space so the precip bars do not obscure the streamflow
+% ylim([ax.YLim(1),1.5*ax.YLim(2)]);
 
 % Create ylabel
-ylabel('Streamflow (mm)','Color',[0 0.447 0.741]);
+ylabel(['Streamflow (' units{1} ')'],'Color',colors(1,:),'Interpreter','tex');
 
 % Create second plot
 yyaxis right; % varargin{:} goes on bar if needed
-h2  = bar(time,ppt,'FaceColor',[0.85 0.325 0.098],'EdgeColor','none');
+h2 = bar(time,prec,'FaceColor',colors(2,:),'EdgeColor','none',...
+   'Tag','PrecipitationPlot');
+
+% % With yyaxis, there is only one axis, so I don't track them separately
+% ax2 = gca;
+% ax2.Tag = 'PrecipitationAxis';
 
 % Create ylabel
-ylabel('Precipitation (cm d$^{-1}$)','Color',[0.85 0.325 0.098]);
+ylabel(['Precipitation (' units{2} ')'],'Color',colors(2,:),'Interpreter','tex');
 axis(ax,'ij');
 
 % return control to left axis
@@ -77,25 +103,56 @@ yyaxis left
 
 % Set the remaining axes properties
 % set(ax,'Color','none','XAxisLocation','top','XTickLabel','');
-%     ylim([0,1.5*ax.YLim(2)]);
+% ylim([0,1.5*ax.YLim(2)]);
 
 % this should make the hyetograph and hydrograph not overlap
 
 % this shouldn't be needed with yyaxis functionality
-%   ax2.XTick = ax1.XTick;
+% ax2.XTick = ax1.XTick;
 
 % Package output
-h.f     = f;
-h.ax1   = ax;
-h.ax2   = ax;
-h.h1    = h1;
-h.h2    = h2;
+H(1) = fig;
+H(2) = ax;
+H(3) = h1;
+H(4) = h2;
 
+%% create space between discharge and precip bars
 
-% % this stuff was in the original version, shouldn't be needed with yyaxis
+% % method 1
+
+% Calculate the ratio of the precipitation maximum to the streamflow maximum
+% precip_flow_ratio = max(prec) / max(flow);
+
+% Add extra space above the streamflow line based on the precip_flow_ratio
+% ylim(ax, [ax.YLim(1), (1 + precip_flow_ratio) * ax.YLim(2)]);
+
+% % method 2
+% % I don't think this takes into consideration the axes in figure units
+% % Loop through each time point and get overlap between precip bars and flow line
+% max_overlap = 0;
+% for n = 1:length(time)
+%    overlap = prec(n) / ax.YLim(2) * flow(n);
+%    if overlap > max_overlap
+%       max_overlap = overlap;
+%    end
+% end
+% % Add extra space above the streamflow line based on the max_overlap
+% ylim(ax, [ax.YLim(1), (1 + max_overlap) * ax.YLim(2)]);
+
+% % method 3
+
+% Keep current ylims to reset the labels after making space for the precip bars
+% ylims = ylim
+% pick up on this, idea is to get the ylims and labels here, then after setting
+% ylim([0,1.5*ax.YLim(2)]), reset the ticks to the original ones.
+
+% ylim([ax.YLim(1),1.5*ax.YLim(2)]);
+
+%% this stuff was in the original version, shouldn't be needed with yyaxis
+
 % % make sure the top/bottom x-axes are linked
 %     linkaxes([ax1 ax2],'x');
-%     myaxistight([ax1 ax2],'x');
+%     tightaxis([ax1 ax2],'x');
 
 % move the y lables
 % ypos1                   =   AX(1).YLabel.Position;
@@ -105,9 +162,7 @@ h.h2    = h2;
 % AX(1).YLabel.Position   =   ypos1;
 % AX(2).YLabel.Position   =   ypos2;
 
-
-
-% % % below here is the original function
+%% below here is the original function
 
 % [AX,H1,H2] = plotyy(dates,flow,dates,ppt,'plot','bar',varargin{:});
 %
@@ -150,7 +205,7 @@ h.h2    = h2;
 % datetick('x','mmm-yyyy');
 % % make sure the top/bottom x-axes are linked
 % linkaxes([AX(2) AX(1)],'x');
-% myaxistight(AX,'x');
+% tightaxis(AX,'x');
 % %
 % grid on
 % grid minor
