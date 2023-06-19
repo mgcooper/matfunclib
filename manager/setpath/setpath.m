@@ -9,22 +9,10 @@ function pathstr = setpath(pathstr,varargin)
 %  string (char) 
 
 
-%------------------------------------------------------------------------------
-% input parsing
-validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
-validpostset   = @(x)any(validatestring(x,{'goto','none','add'}));
-p              = magicParser;
-p.FunctionName = mfilename;
+% parse inputs
+[pathstr, pathtype, postset] = parseinputs(mfilename, pathstr, varargin{:});
 
-p.addRequired( 'pathstr',              @(x)ischar(x)|isstruct(x)  );
-p.addOptional( 'pathtype', 'matlab',   validpathtypes             );
-p.addOptional( 'postset',  'none',     validpostset               );
-
-p.parseMagically('caller');
-
-pathtype = p.Results.pathtype;
-postset  = p.Results.postset;
-%------------------------------------------------------------------------------
+% main function
 
 % first determine what type of path (matlab, project, or data path). NOTE: the
 % 'otherwise' option was supposed to negate the need to pass 'user' for a full
@@ -43,34 +31,43 @@ switch pathtype
 end
 
 if isstruct(pathstr)
-   fields = fieldnames(pathstr);
+   
+   pathstruct = pathstr;
+   fields = fieldnames(pathstruct);
+   pathstr = cell(numel(fields), 1);
 
    for n = 1:length(fields)
-      pathname = fullfile(pathroot,pathstr.(fields{n}));
-      if ~contains(pathstr,'.')
-         if pathname(end) ~= "/"
-            pathname = strcat(pathname,'/');
-         end
-      end
-      pathstr.(fields{n}) = pathname;
+      pathstr{n} = fullfile(pathroot, pathstruct.(fields{n}));
    end
 
 elseif ischar(pathstr)
    pathstr = fullfile(pathroot,pathstr);
-
-   if ~contains(pathstr,'.')
-      if pathstr(end) ~= "/"
-         pathstr = strcat(pathstr,'/');
-      end
-   end
 end
 
 % if postset = 'goto', cd to the path
 if strcmp(postset,'goto')
    cd(pathstr)
 elseif strcmp(postset,'add')
-   addpath(genpath(pathstr));
+   pathadd(pathstr);
 end
+
+
+function [pathstr, pathtype, postset] = parseinputs(funcname, pathstr, varargin)
+
+validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
+validpostset = @(x)any(validatestring(x,{'goto','none','add'}));
+
+p = inputParser;
+p.FunctionName = funcname;
+
+p.addRequired( 'pathstr', @(x)ischar(x)|isstruct(x));
+p.addOptional( 'pathtype', 'matlab', validpathtypes);
+p.addOptional( 'postset',  'none', validpostset);
+
+p.parse(pathstr, varargin{:});
+
+pathtype = p.Results.pathtype;
+postset  = p.Results.postset;
 
 % March 2023, I decided to always pass back the path that way I can use it in
 % file building statements like fullpath(setpath('/path/to/data','data'))

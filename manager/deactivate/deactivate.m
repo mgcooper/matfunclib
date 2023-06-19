@@ -7,19 +7,21 @@ p.FunctionName = mfilename;
 
 if nargin == 0
    tbname = defaulttbdir;
+elseif nargin == 1
+   tbname = char(tbname);
 end
 
 % alert 
 disp(['deactivating ' tbname]);
 
 % main code
-toolboxes   = readtbdirectory(gettbdirectorypath());
-tbidx       = findtbentry(toolboxes,tbname);
-tbpath      = toolboxes.source{tbidx};
+toolboxes = readtbdirectory(gettbdirectorypath());
+tbidx = findtbentry(toolboxes,tbname);
+tbpath = toolboxes.source{tbidx};
 
 % warning off/on suppresses warnings issued when a new folder was
 % created in the active toolbox directory and isn't on the path
-w = withwarnoff('MATLAB:rmpath:DirNotFound');
+w = withwarnoff('MATLAB:rmpath:DirNotFound'); %#ok<*NASGU> 
 rmpath(genpath(tbpath));
 
 % set the active state
