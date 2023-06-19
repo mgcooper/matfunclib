@@ -4,7 +4,8 @@
    {
       "inputs":
       [
-         {"name":"newfuncpath",  "kind":"required",   "type":["char"]}
+         {"name":"newfuncpath", "kind":"required", "type":["char"]},
+         {"name":"parser", "kind":"flag", "type":["char","choices={'MP','IP','OP','NP','AP'}"]}
       ]
    }
 }

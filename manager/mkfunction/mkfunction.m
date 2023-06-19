@@ -32,7 +32,7 @@ addParameter(  p,'parser',    'MP',       @(x)ischar(x)  );
 % % now that i understand addOptional, this may work:
 % validlib    = @(x)any(validatestring(x,functiondirectorylist));
 % validproj   = @(x)any(validatestring(x,projectdirectorylist));
-% validparser = @(x)any(validatestring(x,{'MP','IP','ArgList','OP','NP'}));
+% validparser = @(x)any(validatestring(x,{'MP','IP','AP','OP','NP'}));
 % 
 % addRequired(   p,'funcname',              @(x)ischar(x)  );
 % addOptional(   p,'library',   'unsorted', validlib       );
@@ -123,8 +123,12 @@ wholefile = strrep(wholefile,'FUNCNAME',upper(funcname));
 wholefile = strrep(wholefile,'funcname',funcname);
 wholefile = strrep(wholefile,'functemplate',funcname);
 
-% REPLACE DD-MMM-YYYY with the data
-wholefile = strrep(wholefile,'DD-MMM-YYYY',date);
+% REPLACE DD-MMM-YYYY on AUTHOR line with the current date
+wholefile = strrep(wholefile,'DD-MMM-YYYY',char(datetime("today")));
+
+% REPLACE YYYY on COPYRIGHT line with the current YEAR
+wholefile = strrep(wholefile,'Copyright (c) YYYY', ...
+   ['Copyright (c) ' num2str(year(datetime('today')))]);
 
 % REPLACE the input varname with default library varnames
 switch parent
