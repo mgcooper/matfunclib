@@ -27,5 +27,5 @@ projattr = projattr{:};
 
 
 % % if i go this route:
-% projname = getenv('MATLABACTIVEPROJECT');
+% projname = getenv('MATLAB_ACTIVE_PROJECT');
 
