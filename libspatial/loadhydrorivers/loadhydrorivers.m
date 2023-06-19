@@ -1,28 +1,28 @@
 function varargout = loadhydrorivers(varargin)
 %LOADHYDRORIVERS general description of function
-% 
+%
 % Syntax
-% 
+%
 %  S = LOADHYDRORIVERS(X) description
 %  S = LOADHYDRORIVERS(X,'name1',value1) description
 %  S = LOADHYDRORIVERS(X,'name1',value1,'name2',value2) description
 %  S = LOADHYDRORIVERS(___,method). Options: 'flag1','flag2','flag3'.
-%        The default method is 'flag1'. 
-% 
+%        The default method is 'flag1'.
+%
 % Example
-%  
-% 
+%
+%
 % Matt Cooper, 08-Dec-2022, https://github.com/mgcooper
-% 
+%
 % See also
 
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;  
+p = magicParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
 % for backdoor default matlab options, use:
 % varargs = namedargs2cell(p.Unmatched);
@@ -70,7 +70,13 @@ if ~isscalarnan(ClipGeometry) %#ok<*NODEF>
       latlims = [min(ClipGeometry(:,2)) max(ClipGeometry(:,2))];
       lonlims = [min(ClipGeometry(:,1)) max(ClipGeometry(:,1))];
    elseif ismatrix(ClipGeometry) && size(ClipGeometry,2) == 2
-      poly = polyshape(ClipGeometry(:,1),ClipGeometry(:,2));
+      
+      % Not sure why I had poly = polyshape(...) here ...
+      % poly = polyshape(ClipGeometry(:,1),ClipGeometry(:,2));
+      
+      % But this assumes the input poly is (X,Y)
+      latlims = [min(ClipGeometry(:,2)) max(ClipGeometry(:,2))];
+      lonlims = [min(ClipGeometry(:,1)) max(ClipGeometry(:,1))];
    end
 end
 
@@ -81,19 +87,20 @@ fname = gethydroshedsfname(Region,validregions,'mat');
 load(fname,'latc','lonc');
 
 %% below works for latlims/lonlims
-fnc1 = @(x,y) transpose(ingeoquad(x.',y.',latlims,lonlims));
+% fnc1 = @(x,y) transpose(ingeoquad(x.',y.',latlims,lonlims));
+fnc1 = @(x,y) transpose(ingeobox(x.',y.',latlims,lonlims));
 fnc2 = @(x,y) vertcat(x(y));
 
 keep = cellfun(fnc1,latc,lonc,'Uni',0);
-latc = latc(~cellfun(@isempty,cellfun(fnc2,latc,keep,'Uni',0)));
-lonc = lonc(~cellfun(@isempty,cellfun(fnc2,lonc,keep,'Uni',0)));
+latc = latc(~cellfun('isempty',cellfun(fnc2,latc,keep,'Uni',0)));
+lonc = lonc(~cellfun('isempty',cellfun(fnc2,lonc,keep,'Uni',0)));
 
 % if ClipGeometry is provided, apply it here
 if ~isscalarnan(ClipGeometry)
    fnc1 = @(x,y) transpose(inpoly([x.',y.'],ClipGeometry));
    keep = cellfun(fnc1,lonc,latc,'Uni',0);
-   latc = latc(~cellfun(@isempty,cellfun(fnc2,latc,keep,'Uni',0)));
-   lonc = lonc(~cellfun(@isempty,cellfun(fnc2,lonc,keep,'Uni',0)));
+   latc = latc(~cellfun('isempty',cellfun(fnc2,latc,keep,'Uni',0)));
+   lonc = lonc(~cellfun('isempty',cellfun(fnc2,lonc,keep,'Uni',0)));
 end
 
 % check it:
@@ -107,6 +114,7 @@ end
 % output as geostruct if requested
 switch nargout
    case 1
+
       S = geostructinit('Line',numel(latc));
       [S(1:numel(lonc)).Lon] = lonc{:};
       [S(1:numel(latc)).Lat] = latc{:};
@@ -114,21 +122,19 @@ switch nargout
       S = orderfields(S,{'Geometry','BoundingBox','Lon','Lat'});
       varargout{1} = S;
    case 2
-      
-%       [lat,lon] = polyjoin( ...
-%          latc(~cellfun(@isempty, ...
-%          cellfun(fnc2,latc, ...
-%          cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))), ...
-%          lonc(~cellfun(@isempty, ...
-%          cellfun(fnc2,lonc, ...
-%          cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))));
 
-      [lat,lon] = polyjoin(latc,lonc);
+      [lat,lon] = polyvec(latc,lonc);
       varargout{1} = lat;
       varargout{2} = lon;
+
+      % [lat,lon] = polyvec( ...
+      %    latc(~cellfun('isempty', ...
+      %    cellfun(fnc2,latc, ...
+      %    cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))), ...
+      %    lonc(~cellfun('isempty', ...
+      %    cellfun(fnc2,lonc, ...
+      %    cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))));
 end
-
-
 
 
 function fname = gethydroshedsfname(Region,validregions,ftype)
@@ -151,27 +157,18 @@ fname = fullfile(getenv('USERDATAPATH'),['hydrosheds/' fname]);
 
 
 
-
-
 % %% this is a test that uses inpoly in place of ingeoquad
 
 % % the test seemed to fail but maybe i did something wrong, moving on because I
 % % think it makes more sense to first clip to the bbox then the geometry
-% 
+%
 % % notice the order of lat,lon is switched
 % fnc1 = @(x,y) transpose(inpoly([x.',y.'],[lonlims(:),latlims(:)]));
 % fnc2 = @(x,y) vertcat(x(y));
 % keep = cellfun(fnc1,lonc,latc,'Uni',0);
-% latc = latc(~cellfun(@isempty,cellfun(fnc2,latc,keep,'Uni',0)));
-% lonc = lonc(~cellfun(@isempty,cellfun(fnc2,lonc,keep,'Uni',0)));
+% latc = latc(~cellfun('isempty',cellfun(fnc2,latc,keep,'Uni',0)));
+% lonc = lonc(~cellfun('isempty',cellfun(fnc2,lonc,keep,'Uni',0)));
 % [lat,lon] = polyjoin(latc,lonc);
 % figure; worldmap([min(lat) max(lat)],[min(lon),max(lon)]);
 % plotm(lat,lon);
-
-
-
-
-
-
-
 
