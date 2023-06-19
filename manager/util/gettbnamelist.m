@@ -1,3 +1,3 @@
-function directorylist = tbdirectorylist
+function namelist = gettbnamelist
 tbdirectory = readtbdirectory;
-directorylist = tbdirectory.name;
+namelist = tbdirectory.name;

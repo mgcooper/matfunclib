@@ -1,6 +1,9 @@
-function [list,sublist] = gettbdirectorylist
+function list = gettbdirectorylist(varargin)
+%
+% See also readtbdirectory tbdirectorylist
 
-% Also see readtbdirectory
+% UPDATE 11 april 2023, not sure if i overlooked the tbdirectorylist function
+% but that one returns the toolbox names only, can be used in functionsignatures
 
 % NOTE: sub-toolboxes are supported. the key thing is that all I need is the
 % top level list in mysource/ and addtoolbox has the option to nest inside those
@@ -13,45 +16,30 @@ function [list,sublist] = gettbdirectorylist
 % spreadsheet-style directory ratehr than wha tI thought was the bettter method
 % in addproject
 
-tbpath = gettbsourcepath;
-list = gettblist(tbpath);
+if nargin < 1 % return all top-level toolboxes
 
-% % % % % % % % % % % % 
-% sublist loop was here
-% % % % % % % % % % % % 
+   list = rmdotfolders(dir(gettbsourcepath)); % getenv('MATLABSOURCEPATH')
+   list = string({list([list.isdir]).name}');
 
-list = string({list([list.isdir]).name}');
+   % this could replace above, but getlist,getfilelist are fragile and need work
+   % list = getfilelist(gettbsourcepath,'folders')
 
-function list = gettblist(tbpath)
-list = dir(fullfile(tbpath));
-list = list([list.isdir]);
-list(strncmp({list.name}, '.', 1)) = []; 
-   
-   
-   
-   
-   
-% note: I abandoned the sublist concept b/c some (perhaps most) toolboxes will
-% have subfolders, so there isn't an obvious way to determine if the sub-folders
-% are actually sub-libraries. the idea was to have a folder like stats/ that has
-% several toolboxes underneath. Ahh ... I could rename them 'libXXX' and use
-% that ... but for now, i just have to activate one entire toolbox at a time
+else
+   library = validatetoolbox(varargin{1},mfilename,'library',1);
 
-% % update: here I am defining some folders:
-% validlibs = {'stats','hydro','climate','plotting','physics','numericalmethods',...
-%    'manager','spatial','data'};
-% % will need to update anything that uses this to deal with subfolders
+   % this creates a tbdirectory for the sublib:
+   tblist = rmdotfolders(dir(fullfile(gettbsourcepath,library)));
+   
+   % and this would complete the conversion to tbname
+   list = string({tblist([tblist.isdir]).name}');
+   
+   % and like above, this could replace two above
+   % list = getfilelist(fullfile(gettbsourcepath,library),'filenames');
 
-% for n = 1:numel(list)
-%    subpath  = [tbpath list(n).name];
-%    sub_n    = gettblist(subpath);
-%    
-%    % if there is more than one subfolder, assume these are sub-libraries
-%    if numel(sub_n)>1
-%    end
-%    
-% % %    this does what gettblist does but is here for testing
-% %    sub_n = dir(fullfile(subpath));
-% %    sub_n = sub_n([sub_n.isdir]);
-% %    sub_n(strncmp({sub_n.name}, '.', 1)) = []; 
-% end
+   % and this is another method that uses tbdirectory.source:
+   %    sublibs = strrep(fileparts(tbdirectory.source), ...
+   %       strcat(getenv('MATLABSOURCEPATH'),filesep),'');
+   %    validatestring(varargin{1},sublibs,funcname,'sublib',1);
+   %    requestedlib = ismember(varargin{1},sublibs);
+
+end
