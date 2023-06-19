@@ -1,4 +1,4 @@
-function varargout = setpath(pathstr,varargin)
+function pathstr = setpath(pathstr,varargin)
 %SETPATH return full path string or (if no output request) add the full path
 % 
 %  Syntax
@@ -12,7 +12,7 @@ function varargout = setpath(pathstr,varargin)
 %------------------------------------------------------------------------------
 % input parsing
 validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
-validpostset   = @(x)any(validatestring(x,{'goto','none'}));
+validpostset   = @(x)any(validatestring(x,{'goto','none','add'}));
 p              = magicParser;
 p.FunctionName = mfilename;
 
@@ -68,17 +68,23 @@ end
 % if postset = 'goto', cd to the path
 if strcmp(postset,'goto')
    cd(pathstr)
+elseif strcmp(postset,'add')
+   addpath(genpath(pathstr));
 end
 
-% parse outputs
-switch nargout
-   case 1
-      % return the full path
-      varargout{1} = pathstr;
-   case 0
-      % add the path, don't return it
-      addpath(genpath(pathstr));
-end
+% March 2023, I decided to always pass back the path that way I can use it in
+% file building statements like fullpath(setpath('/path/to/data','data'))
+% and instead, addpath is an option
+
+% % parse outputs
+% switch nargout
+%    case 1
+%       % return the full path
+%       varargout{1} = pathstr;
+%    case 0
+%       % add the path, don't return it
+%       addpath(genpath(pathstr));
+% end
 
 
 

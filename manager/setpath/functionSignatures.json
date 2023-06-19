@@ -6,7 +6,7 @@
       [
          {"name":"pathstr",   "kind":"required",   "type":["char"]},
          {"name":"pathtype",  "kind":"ordered",    "type":["char","choices={'matlab','project','data'}"],"purpose":"Option"},
-         {"name":"postset",   "kind":"ordered",    "type":["char","choices={'goto','none'}"],"purpose":"Option"}
+         {"name":"postset",   "kind":"ordered",    "type":["char","choices={'goto','add','none'}"],"purpose":"Option"}
       ]
    }
 }
