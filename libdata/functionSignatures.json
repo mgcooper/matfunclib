@@ -1,13 +1,14 @@
 {
    "_schemaVersion": "1.0.0",
    "_comment": "this is an example of a comment",
-   "addcolumns":
+   "insertcolumns":
    {
       "inputs":
       [
-         {"name":"dataarray",    "kind":"required",   "type":["numeric"]},
-         {"name":"datacolumns",  "kind":"required",   "type":["numeric"]},
-         {"name":"index",        "kind":"ordered",    "type":["numeric"]}
+         {"name":"Data",         "kind":"required",   "type":["numeric"]},
+         {"name":"DataColumns",  "kind":"required",   "type":[["numeric"],["categorical"],["string"],["char"]]},
+         {"name":"ColumnIndices","kind":"ordered",    "type":["numeric"]},
+         {"name":"ColumnVarNames","kind":"namevalue", "type":[["char"],["string"],["cell"]]}
       ]
    },
    "loaddata":
@@ -30,7 +31,7 @@
          {"name":"BoundingBox",     "kind":"namevalue", "type":"double"},
          {"name":"Attributes",      "kind":"namevalue", "type":[["cellstr"],["string"]]},
          {"name":"Selector",        "kind":"namevalue", "type":"cell"},
-         {"name":"UseGeoCoords",    "kind":"namevalue", "type":"logical"}
+         {"name":"UseGeoCoords",    "kind":"namevalue", "type":["logical"],"purpose":"Option"}
       ]
    },
    "readfiles":
