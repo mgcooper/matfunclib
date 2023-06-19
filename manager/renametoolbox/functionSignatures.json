@@ -4,9 +4,12 @@
    {
       "inputs":
       [
-         {"name":"oldtbname",    "kind":"required",   "type":["char"]},
+         {"name":"oldtbname",    "kind":"required",   "type":["char","choices=gettbnamelist"]},
          {"name":"newtbname",    "kind":"required",   "type":["char"]},
-         {"name":"renamesource", "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+         {"name":"library",      "kind":"positional", "type":["string","choices=gettbdirectorylist"]},
+         {"name":"renamesource", "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"movesource",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"force",        "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    }
 }
