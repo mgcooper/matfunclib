@@ -12,7 +12,11 @@ projlist.activeproject(getprjidx(projectname)) = true;
 writeprjdirectory(projlist);
 
 % not sure if i want to go this route or not:
-setenv('MATLABACTIVEPROJECT',projectname);
+setenv('MATLAB_ACTIVE_PROJECT',projectname);
+setenv('MATLAB_ACTIVE_PROJECT_PATH',fullfile(getprojectfolder(projectname)));
+setenv('MATLAB_ACTIVE_PROJECT_DATA_PATH',fullfile(getprojectfolder(projectname),'data'));
+setenv('MATLAB_ACTIVE_PROJECT_TESTBED_PATH',fullfile(getprojectfolder(projectname),'testbed'));
+
 
 % % commented out, see setprojectfiles.
 % if nargin == 1
