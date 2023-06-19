@@ -4,7 +4,7 @@ function Setup()
 % See also Config
 
 % temporarily turn off warnings about paths not already being on the path
-warning off
+withwarnoff('MATLAB:rmpath:DirNotFound')
 
 % Get the path to this file, in case Setup is run from some other folder. More
 % robust than pwd(), but assumes the directory structure has not been modified.
@@ -16,6 +16,13 @@ thispath = fileparts(mfilename('fullpath'));
 
 % UPDATE might use V = filesep() and [thispath V subpath] method b/c right now I
 % remove .git but there are other folders that could be problematic e.g. codegen
+
+% This is true if running in desktop. Use it to suppress interactions with
+% editor such as opening or closing project files
+if usejava('desktop')
+   
+   
+end
 
 % add all paths then remove git paths
 addpath(genpath(thispath));
@@ -36,8 +43,6 @@ configureproject(thispath,{'startup.m','config.m'});
 % save the path
 % savepath(fullfile(thispath,'pathdef.m'));
 
-% turn warning back on
-warning on
 
 % helpful notes:
 % 

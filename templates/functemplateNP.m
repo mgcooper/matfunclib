@@ -50,6 +50,11 @@ function Y = functemplate(X,varargin)
 % input checks
 narginchk(0,1)
 
+% simplest input parsing
+% if (nargin<2) % set default ; end
+% if (nargin<3) % set default ; end
+% if (nargin<4) % set default ; end
+
 % ... main code
 
 end

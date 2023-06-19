@@ -53,7 +53,8 @@ arguments
    opts.LineStyle (1,1) string = "-"
    opts.LineWidth (1,1) {mustBeNumeric} = 1
 
-   % access the built in options for autocomplete
+   % access the built in options for autocomplete. For unknown class names,
+   % create the object e.g. h = line(1,1), mc = metaclass(h), name = mc.Name
    opts.?matlab.graphics.chart.primitive.Line
 
    % restrict the available options
@@ -79,12 +80,15 @@ end
 % see argumentsTest folder for ppowerful examples of accessing built-in
 % name-value options w/tab completion
 
+% Return to this:
+% https://www.mathworks.com/matlabcentral/answers/760546-function-argument-validation-from-class-properties-ignores-defaults
+
 % use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
 varargs = namedargs2cell(opts);
 
 %% main code
 
-
+end
 
 %% local functions
 
@@ -104,4 +108,41 @@ varargs = namedargs2cell(opts);
 %         end
 %     end
 %     s = join(s,",");
+% end
+
+% But this might work too:
+
+% function nameval = struct2nameval(value)
+% % Collapses a name-value struct into comma and colon markup.
+% %
+% %   str = map2str(value)
+% %
+% % STRUCT2NAMEVAL examples:
+% %   s = struct()        ->  ""
+% %   s.Name1 = "Value1"  ->  "Name1=Value1"
+% %   s.Name2 = "Value2"  ->  "Name1=Value1,Name2=Value2"
+% 
+% arguments
+%    value (1, 1) struct
+% end
+% 
+% fcn = @(f) compose("%s=%s", f, format(value.(f)));
+% nameval = strjoin(cellfun(fcn, fieldnames(value)), ",");
+% 
+% function s = format(v)
+%    if isnumeric(v)
+%       s = string(num2str(v));
+%    elseif not(isscalar(v))
+%       s = arrayfun(@format, v);
+%    elseif ismissing(v)
+%       s = "<missing>";
+%    else
+%       s = string(v);
+%    end
+% 
+%    if not(isscalar(v))
+%       s = "[" + s + "]";
+%    end
+% end
+% 
 % end

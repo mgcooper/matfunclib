@@ -1,7 +1,12 @@
 function filenames = getopenfiles
 %GETOPENFILES get a list of files currently open in the editor
-openfiles = transpose(matlab.desktop.editor.getAll);
-filenames = transpose({openfiles.Filename});
+
+if usejava('desktop')
+   openfiles = transpose(matlab.desktop.editor.getAll);
+   filenames = transpose({openfiles.Filename});
+else
+   warning("getopenfiles: editor is not open")
+end
 
 % to see all available methods:
 % open matlab.desktop.editor.Contents 

@@ -1,48 +1,29 @@
-% sep 2022: at the end of this script is a copyfile statement that copies
-% this to myFunctions/system so i can keep it synced with my other 
+% Matlab startup configuration
 
-% NOTE: MATLABUSERPATH / MATLABHOMEPATH are used in a lot of my new
-% functions so don't change the variable name (the values can change)
+mSettings = settings;
 
-% SET ENVIRONMENT VARIABLES
-
-% NOTE: the only system (shell) env var I get here is $HOME. I recently changed
-% my .bashrc variables to use _ between each word following best practices, but
-% I don't think I need to change any here, and therefore my matlab environment
-% should not be affected
-
-% userpath is a matlab built-in that returns the matlab startup path. the
-% method I use below first sets HOMEPATH, works better than using if/else
-% on userpath as long as MATLABUSERPATH is in the same location relative to
-% HOMEPATH on all machines. but i use the if/else method to set the python
-% path, see further down.
-
-% putting this here so I don't forget it - this should fix the issue where
-% blanks are stripped which forces the cursor to the far left in indented code,
-% introduced in r2021b
+% Prevent autoformatter from stripping blanks to prevent the cursor from being
+% forced to the first position in indented code blocks (introduced in r2021b)
 if ~verLessThan('matlab','9.11')
-   s = settings;
-   s.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
+   mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
 end
 
-% this can be used to make the desktop display larger, but I usually want the
-% opposite, but it can't be set to a number less than 1 which is the default
-% s = settings;
-% s.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
+% Make the desktop display larger.
+mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
 
-% % for reference, there is a smartIndentContents function (method of class
-% Document)
-% % docs = matlab.desktop.editor.getAll
-% % smartIndentContents(docs)
-% % save(docs)
+% smartIndentContents (method of class Document) programmatically formats
+% docs = matlab.desktop.editor.getAll
+% smartIndentContents(docs)
+% save(docs)
+
+%% set paths
 
 HOMEPATH = getenv('HOME'); % system $HOME
 
+% This path can change, but changing MATLABUSERPATH will break many functions.
+% Unfortunately, I should have used MATLABHOMEPATH for this variable, and
+% MATLABUSERPATH should point to the same path returned by 'userpath'.
 setenv('MATLABUSERPATH',fullfile(HOMEPATH,'MATLAB'));
-
-% this is not needed b/c it is equivalent to userpath, but in case I use it
-% somewhere else, I am keeping it for now, but delete eventually
-% setenv('MATLABSTARTUPPATH',fullfile(getenv('HOME'),'/Documents/MATLAB'));
 
 % I set this to make the setenv statements syntax more compact:
 MATLABPATH = getenv('MATLABUSERPATH');      % matlab home
@@ -93,30 +74,10 @@ setenv('ICEMODELOUTPUTPATH',fullfile(getenv('MATLABPROJECTPATH'),'runoff/data/ic
 % Set paths - this should negate the need for the stuff below
 addpath(genpath(getenv('MATLABUSERPATH')))
 
-% remove unused stuff 
-rmpath(genpath(fullfile(getenv('MATLABUSERPATH'),'old_projects')))
-rmpath(genpath(fullfile(getenv('MATLABUSERPATH'),'myProjects')))
-
-% remove .git from matfunclib
-rmpath(genpath(fullfile(getenv('MATLABFUNCTIONPATH'),'.git')))
-
-% these are interfering with in-built functions or recommended at install
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'TEXTBOOKS/Environmental_Modeling')));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/matlab_sea_ice')));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/RT_Modest')));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'waterloo')));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'topotoolbox/topotoolbox/.git']));
-% rmpath(genpath(fullfile(getenv('FEXPACKAGEPATH'),'PHYSICS/ResInv3D'))); 
-% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'PHYSICS/precise-simulation-featool-multiphysics-f8f8b7e')));
-% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'STATISTICS/OPTIMIZE/Mateda3-master')));
-% rmpath(genpath(fullfile(getenv('FEXFUNCTIONPATH'),'f2matlab')));
-
-%-------------------------------------------------------------------------------
-% defaults config
-%-------------------------------------------------------------------------------
+%% Figure defaults
 set(groot                                                   , ...
-    'defaultAxesFontName'       ,   'source sans pro'       , ...
-    'defaultTextFontName'       ,   'source sans pro'       , ...
+    'defaultAxesFontName'       ,   'SF Pro Text'           , ...
+    'defaultTextFontName'       ,   'SF Pro Text'           , ...
     'defaultTextInterpreter'    ,   'Latex'                 , ...
     'defaultAxesFontSize'       ,   16                      , ...
     'defaultTextFontSize'       ,   16                      , ...
@@ -125,9 +86,9 @@ set(groot                                                   , ...
     'defaultPatchLineWidth'     ,   1                       , ...
     'defaultAxesColor'          ,   'w'                     , ...
     'defaultFigureColor'        ,   'w'                     , ...
-    'defaultAxesBox'            ,   'off'                    , ...
+    'defaultAxesBox'            ,   'off'                   , ...
     'DefaultAxesTickLength'     ,   [0.015 0.02]            , ...
-    'defaultAxesTickDir'        ,   'out'                    , ...
+    'defaultAxesTickDir'        ,   'out'                   , ...
     'defaultAxesXGrid'          ,   'on'                    , ...
     'defaultAxesYGrid'          ,   'on'                    , ...
     'defaultAxesXMinorGrid'     ,   'off'                   , ...
@@ -142,55 +103,73 @@ set(groot                                                   , ...
     'defaultAxesMinorGridLineStyle','-'                     , ...
     'defaultAxesMinorGridAlpha'    ,   0.075 );
 
-%------------------------------------------------------------------------------
-% Python configuration
-%------------------------------------------------------------------------------
-
-if userpath == "/Users/coop558/Documents/MATLAB"
-   % % use python 3
-   % pyenv('Version','/usr/bin/python3');
-   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.8.5/bin/python3.8'));
-   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/shims/python3.8.5'));
-
-elseif userpath == "/Users/mattcooper/Documents/MATLAB"
-   % need to figure this out
-end
-
-
-%------------------------------------------------------------------------------
-% FINAL STEPS
-%------------------------------------------------------------------------------
-
-% activate toolboxes that we want to always be available
-activate magicParser
-warning off; activate mpm; warning on % in r2022b there is a built in mpm
-activate lightspeed
-
-% copy this file to myFunctions where it lives under source control
-startupFileNameSource = fullfile(userpath,'startup.m');
-startupFileNameDest = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
-
-copyfile(startupFileNameSource,startupFileNameDest);
+%% Environment configuration 
 
 % turn off the annoying error beep
 beep off
 
 % set format for numbers printed to screen so they're readable:
-format shortG       % changed to shortG, doc format for examples
-format compact    % use pi to see different formats: pi
+format shortG % try 'doc format' for examples
+format compact % use pi to see different formats: pi
+
+%% Python configuration
+
+if verLessThan('matlab','9.11') % <r2021b use 3.8
+
+   % dont think I want to use system pythong
+   % pyenv('Version','/usr/bin/python3');
+
+   % these both point to the first one, but not sure if the pyenv 'tools385'
+   % one will also use the installed environment packages
+   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.8.5/bin/python'));
+   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/tools385/bin/python'));
+else
+   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.9.0/bin/python'));
+   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/tools3/bin/python'));
+end
+
+%% copy this file to myFunctions where it lives under source control
+
+% % 18 June 2023 - commented this out. I think I added this assuming that edits
+% to this file would be made on the one in the startup folder, so this would
+% copy it to matfunclib where it gets committed to source control, but 'open
+% startup' opens the matfunclib one, so this is more likely to do the opposite -
+% erase updates in that version before committing them. Keeping it for now in
+% case I can update my path so 'open startup' always opens the startup folder
+% version.
+
+% startupFileNameSource = fullfile(userpath,'startup.m');
+% startupFileNameDest = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
+% copyfile(startupFileNameSource,startupFileNameDest);
+
+%% activate toolboxes and projects
+
+% activate toolboxes that we want to always be available
+withwarnoff("MATLAB:dispatcher:nameConflict"); % for mpm
+activate magicParser
+activate BrewerMap
+activate CubeHelix
+activate mpm
+activate CDT
+activate antarctic-mapping-tools
+activate arctic-mapping-tools
+activate gridbin
+% activate lightspeed
+
+% open the active project
+if usejava('desktop')
+   workon(getactiveproject())
+end
+
+%% FINAL STEPS
 
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
 
-% open the active project
-workon(getactiveproject('name'))
-
-% cd(getenv('MATLABUSERPATH'));
-
 % don't forget
 disp('BE GRATEFUL')
 
-%-------------------------------------------------------------------------------
+%% Notes
 
 % % additional options I found I wasn't aware of:
 % set(groot, ...
