@@ -56,8 +56,8 @@ end
 % % this finds the common fieldnames, then discards any with zero, and use the
 % % remaining one with the least number of common filed
 % f = cellfun(@(x) intersect(x,F{1}),F,'uni',0);
-% f = f(~cellfun(@isempty,f));
-% f = f(argmin(cellfun(@numel,f)));
+% f = f(~cellfun('isempty',f));
+% f = f(argmin(cellfun('prodofsize',f)));
 % 
 % % from here I could use the common fields
 
