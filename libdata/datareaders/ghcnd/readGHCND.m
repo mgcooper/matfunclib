@@ -46,32 +46,32 @@ if strcmp(station,'none') == false
 end
 
 % build the url using the station name
-url   = 'https://www.ncei.noaa.gov/data/daily-summaries/access/';
-url   = [url station '.csv'];
+url = 'https://www.ncei.noaa.gov/data/daily-summaries/access/';
+url = [url station '.csv'];
 
 % this should work to get around the ssl certificate failure
-opts  = weboptions; opts.CertificateFilename=('');
+opts = weboptions; opts.CertificateFilename=('');
 
-Data  = webread(url,opts);
+Data = webread(url,opts);
 
 % subset the data, metadata, and attributes
-attvars  = {'PRCP_ATTRIBUTES','SNOW_ATTRIBUTES','SNWD_ATTRIBUTES', ...
+attvars = {'PRCP_ATTRIBUTES','SNOW_ATTRIBUTES','SNWD_ATTRIBUTES', ...
    'TMAX_ATTRIBUTES','TMIN_ATTRIBUTES','TOBS_ATTRIBUTES'};
 metavars = {'NAME','STATION','LATITUDE','LONGITUDE','ELEVATION'};
 datavars = {'DATE','PRCP','SNOW','SNWD','TMAX','TMIN','TOBS'};
-Atts     = Data(:,attvars);
-Meta     = Data(1,metavars);
-Data     = Data(:,datavars);
+Atts = Data(:,attvars);
+Meta = Data(1,metavars);
+Data = Data(:,datavars);
 
 % the PRCP data is in tenths of milimeters, divide by 10 to get mm
-Data.PRCP   = Data.PRCP./10;
-Data.SNOW   = Data.SNOW./10;
-Data.SNWD   = Data.SNWD./10;
+Data.PRCP = Data.PRCP./10;
+Data.SNOW = Data.SNOW./10;
+Data.SNWD = Data.SNWD./10;
 
 % the Temp data is in tenths of celsius, divide by 10 to get celsius
-Data.TMAX   = Data.TMAX./10;
-Data.TMIN   = Data.TMIN./10;
-Data.TOBS   = Data.TOBS./10;
+Data.TMAX = Data.TMAX./10;
+Data.TMIN = Data.TMIN./10;
+Data.TOBS = Data.TOBS./10;
 
 Data = table2timetable(Data,'RowTimes','DATE');
 Data = renametimetabletimevar(Data);

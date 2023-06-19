@@ -68,7 +68,16 @@ elseif length(hit)==1
   % the requested key was found
   val = vals{hit};
 else
-  ft_error('multiple input arguments with the same name');
+   % ft_error('multiple input arguments with the same name');
+   % mgc commented out above and added below to allow passing in multiple keys
+   % in a cellstr. Need to check this project b/c this functio is probably
+   % called by another one that builds the opts.params struct and my edit would
+   % be unneccesary in that case.
+   if unique(string(key))==1
+      ft_error('multiple input arguments with the same name');
+   else
+      val = vals(hit);
+   end
 end
 
 if nargout>1

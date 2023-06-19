@@ -5,14 +5,14 @@ function T = tablecategorical2char(T)
 %    bikeData = table2timetable(bikeTbl);
 %    counts   =  bikeData{:,vartype('numeric')};
 %    mean(counts,'omitnan')
-   
-   idx         =  vartype('categorical');
-   newvars     =  T(:,idx);
-   varnames    =  newvars.Properties.VariableNames;
-   newvars     =  cellstr(table2array(newvars));
 
-   for n = 1:numel(varnames)
-      T.(varnames{n})   = newvars(:,n);
-   end
-   
+idx = vartype('categorical');
+newvars = T(:,idx);
+varnames = newvars.Properties.VariableNames;
+newvars = cellstr(table2array(newvars));
+
+for n = 1:numel(varnames)
+   T.(varnames{n}) = newvars(:,n);
+end
+
 end
