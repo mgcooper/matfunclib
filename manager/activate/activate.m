@@ -2,7 +2,7 @@ function activate(tbname,varargin)
 %ACTIVATE adds toolbox 'tbname' to path and makes it the working directory
 
 % parse inputs
-[tbname, except, goto] = parseinputs(tbname, mfilename, varargin{:});
+[tbname, except, postset] = parseinputs(tbname, mfilename, varargin{:});
 
 % main function
 toolboxes = readtbdirectory(gettbdirectorypath);
@@ -26,10 +26,10 @@ if sum(tbidx) == 0
 end
 
 % alert
-if isempty(except{:})
+if isempty(except)
    disp(['activating ' tbname]);
 else
-   disp(strjoin(['activating',tbname,'except',except{:}]));
+   disp(strjoin(['activating',tbname,'except',except]));
 end
 
 % set the active state
@@ -42,7 +42,7 @@ tbpath = toolboxes.source{tbidx};
 pathadd(tbpath, true, '-end', except);
 
 % cd to the activated tb if requested
-if strcmp(goto, 'goto')
+if postset == "goto"
    cd(tbpath); 
 end
 
@@ -63,5 +63,5 @@ p.addParameter('except', string.empty(), @(x) ischarlike(x));
 p.parse(tbname, varargin{:});
 
 tbname = char(p.Results.tbname);
-except = {p.Results.except};
-postset = p.Results.postset;
+except = string(p.Results.except);
+postset = string(p.Results.postset);
