@@ -592,11 +592,13 @@ else % assume a structured grid
    % Get the grid info and confirm the provided CellSize matches the inferred ones
    if isnan(CellSizeX) || isnan(CellSizeY)
    
-      [X,Y,CellSizeX,CellSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y,"gridvectors");
+      %[X,Y,CellSizeX,CellSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y,"gridvectors");
+      [X,Y,CellSizeX,CellSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y);
    
    else
    
-      [X,Y,CheckSizeX,CheckSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y,"gridvectors");
+      %[X,Y,CheckSizeX,CheckSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y,"gridvectors");
+      [X,Y,CheckSizeX,CheckSizeY,GridType,tfGeoCoords] = prepareMapGrid(X,Y);
    
       assert(CellSizeY == CheckSizeY);
       assert(CellSizeX == CheckSizeX);
