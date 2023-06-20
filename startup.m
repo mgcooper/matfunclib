@@ -20,10 +20,10 @@ mSettings = settings;
 % forced to the first position in indented code blocks (introduced in r2021b)
 if ~verLessThan('matlab','9.11')
    mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
+elseif verLessThan('matlab','9.14')
+   % Make the desktop display larger. A warning is issued on r2023a.
+   mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
 end
-
-% Make the desktop display larger.
-% mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
 
 % smartIndentContents (method of class Document) programmatically formats
 % docs = matlab.desktop.editor.getAll
@@ -93,94 +93,95 @@ end
 % Rebuild the path string
 subpaths = strcat(subpaths, pathsep);
 subpaths = horzcat(subpaths{:});
-   
+
 % Add the paths to the path
 addpath(subpaths);
 
 %% Figure defaults
-set(groot                                                   , ...
-    'defaultAxesFontName'       ,   'SF Pro Text'           , ...
-    'defaultTextFontName'       ,   'SF Pro Text'           , ...
-    'defaultTextInterpreter'    ,   'Latex'                 , ...
-    'defaultAxesFontSize'       ,   16                      , ...
-    'defaultTextFontSize'       ,   16                      , ...
-    'defaultLineLineWidth'      ,   2                       , ...
-    'defaultAxesLineWidth'      ,   1                       , ...
-    'defaultPatchLineWidth'     ,   1                       , ...
-    'defaultAxesColor'          ,   'w'                     , ...
-    'defaultFigureColor'        ,   'w'                     , ...
-    'defaultAxesBox'            ,   'off'                   , ...
-    'DefaultAxesTickLength'     ,   [0.015 0.02]            , ...
-    'defaultAxesTickDir'        ,   'out'                   , ...
-    'defaultAxesXGrid'          ,   'on'                    , ...
-    'defaultAxesYGrid'          ,   'on'                    , ...
-    'defaultAxesXMinorGrid'     ,   'off'                   , ...
-    'defaultAxesXMinorTick'     ,   'on'                   , ...
-    'defaultAxesYMinorGrid'     ,   'off'                   , ...
-    'defaultAxesYMinorTick'     ,   'on'                   , ...
-    'defaultAxesTickDirMode'    ,   'manual'                , ...
-    'defaultAxesXMinorGridMode' ,   'manual'                , ...
-    'defaultAxesXMinorTickMode' ,   'manual'                , ...
-    'defaultAxesYMinorGridMode' ,   'manual'                , ...
-    'defaultAxesYMinorTickMode' ,   'manual'                , ...
-    'defaultAxesMinorGridLineStyle','-'                     , ...
-    'defaultAxesMinorGridAlpha'    ,   0.075 );
 
-%% Environment configuration 
+% groot settings apply to low-level properties and therefore low-level functions
+% such as 'line', but may not apply to high-level functions such as 'plot'
+% (e.g., defaultAxesBox off). However, if 'hold on' is used prior to plot, these
+% properties apply. So, in custom plotting functions, begin with 'hold on'.
+set(groot                                                      , ...
+   'defaultAxesFontName'            ,  'SF Pro Text'           , ...
+   'defaultTextFontName'            ,  'SF Pro Text'           , ...
+   'defaultTextInterpreter'         ,  'Tex'                   , ...
+   'defaultAxesFontSize'            ,  16                      , ...
+   'defaultTextFontSize'            ,  16                      , ...
+   'DefaultAxesFontUnits'           ,  'points'                , ...
+   'DefaultTextFontUnits'           ,  'points'                , ...
+   'defaultLineLineWidth'           ,  2                       , ...
+   'defaultAxesLineWidth'           ,  1                       , ...
+   'defaultPatchLineWidth'          ,  1                       , ...
+   'defaultAxesColor'               ,  'w'                     , ...
+   'DefaultAxesXColor'              ,  [0.15 0.15 0.15]        , ...
+   'DefaultAxesYColor'              ,  [0.15 0.15 0.15]        , ...
+   'defaultFigureColor'             ,  'w'                     , ...
+   'defaultAxesBox'                 ,  'off'                   , ...
+   'DefaultAxesTickLength'          ,  [0.015 0.02]            , ...
+   'defaultAxesTickDir'             ,  'out'                   , ...
+   'defaultAxesXGrid'               ,  'on'                    , ...
+   'defaultAxesYGrid'               ,  'on'                    , ...
+   'defaultAxesXMinorGrid'          ,  'off'                   , ...
+   'defaultAxesXMinorTick'          ,  'on'                    , ...
+   'defaultAxesYMinorGrid'          ,  'off'                   , ...
+   'defaultAxesYMinorTick'          ,  'on'                    , ...
+   'defaultAxesTickDirMode'         ,  'manual'                , ...
+   'defaultAxesXMinorGridMode'      ,  'manual'                , ...
+   'defaultAxesXMinorTickMode'      ,  'manual'                , ...
+   'defaultAxesYMinorGridMode'      ,  'manual'                , ...
+   'defaultAxesYMinorTickMode'      ,  'manual'                , ...
+   'defaultAxesMinorGridAlpha'      ,  0.075                   , ...
+   'defaultAxesMinorGridLineStyle'  ,  '-'                     );
 
-% turn off the annoying error beep
+%% Environment configuration
 beep off
-
-% set format for numbers printed to screen so they're readable:
 format shortG % try 'doc format' for examples
 format compact % use pi to see different formats: pi
-
-%% Python configuration
-
-if verLessThan('matlab','9.11') % <r2021b use 3.8
-
-   % dont think I want to use system python
-   % pyenv('Version','/usr/bin/python3');
-
-   % these both point to the first one, but not sure if the pyenv 'tools385'
-   % one will also use the installed environment packages
-   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.8.5/bin/python'));
-   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/tools385/bin/python'));
-else
-   pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/3.9.0/bin/python'));
-   % pyenv('Version',fullfile(HOMEPATH,'.pyenv/versions/tools3/bin/python'));
-end
-
-%% copy this file to myFunctions where it lives under source control
-
-% % 18 June 2023 - commented this out. I think I added this assuming that edits
-% to this file would be made on the one in the startup folder, so this would
-% copy it to matfunclib where it gets committed to source control, but 'open
-% startup' opens the matfunclib one, so this is more likely to do the opposite -
-% erase updates in that version before committing them. Keeping it for now in
-% case I can update my path so 'open startup' always opens the startup folder
-% version.
-
-% startupFileNameSource = fullfile(userpath,'startup.m');
-% startupFileNameDest = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
-% copyfile(startupFileNameSource,startupFileNameDest);
 
 %% activate toolboxes and projects
 
 % active toolboxes
-activate magicParser
-activate BrewerMap
-activate CubeHelix
-activate mpm
-activate CDT
-activate antarctic-mapping-tools
-activate arctic-mapping-tools
-activate gridbin
-% activate lightspeed
+toolboxes = {'magicParser', 'BrewerMap', 'CubeHelix', 'mpm', 'CDT', ...
+   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin'};
+
+for n = 1:numel(toolboxes)
+   try
+      activate(toolboxes{n})
+   catch ME
+   end
+end
 
 % open the active project
 if usejava('desktop')
    workon(getactiveproject())
+end
+
+
+%% Python configuration
+
+if verLessThan('matlab','9.11') % <r2021b use 3.8
+   try
+      pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.8.5/bin/python'));
+   catch ME
+      try
+         pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.8'));
+      catch ME
+         % pyenv('Version', '/usr/bin/python3')
+      end
+   end
+
+else
+   try
+      pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.9.0/bin/python'));
+   catch ME
+      try
+         pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.9'));
+      catch ME
+         % pyenv('Version', '/usr/bin/python3')
+      end
+   end
 end
 
 %% FINAL STEPS
@@ -193,32 +194,17 @@ disp('BE GRATEFUL')
 
 %% Notes
 
-% % additional options I found I wasn't aware of:
-% set(groot, ...
-% 'DefaultAxesXColor', 'k', ...
-% 'DefaultAxesYColor', 'k', ...
-% 'DefaultAxesFontUnits', 'points', ...
-% 'DefaultTextFontUnits', 'Points', ...
-
-% default font is Monospaced but other good ones include:
+% default font is Monospaced. Some good ones include:
 % fontName = 'Verdana';
 % fontName = 'avantgarde';
 % fontName = 'BitstreamSansVeraMono';
 % fontName = 'Helvetica';
 % fontName = 'Source Sans Pro' (nice and compact also if bold)
 
-% note: axes box off does not work because groot applies to low level
-% properties, 'plot' is a high level function that puts on the box. setting
-% defaultAxesBox off above means that 'line' will not produce a box
-
-% use python 3
-%pyenv('Version','/usr/bin/python3')
-%pyenv('Version','/Users/coop558/.pyenv/shims/python3.8')
-
 % regarding PATH, when matlab is started from command terminal, it inherits
 % the PATH variable (modified in .bashrc), but when started from the gui
 % icon, it inherits the 'default system PATH', which isn't the same as the
-% one modified in .bashrc. 
+% one modified in .bashrc.
 
 % update PATH (this was recommended online, but I think would not work,
 % because system('echo -n $PATH') returns the system path, as noted above
