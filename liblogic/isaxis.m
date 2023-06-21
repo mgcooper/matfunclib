@@ -1,7 +1,19 @@
-function tf = isaxis(ax)
-%ISAXIS return true if ax is an axes object
-tf = isa(ax,'matlab.graphics.axis.Axes');
+function tf = isaxis(varargin)
+%ISAXIS return true for any inputs that are axes objects
+%
+%
+% See also isfigure
 
-% % based on plot.m functionsignature file, might need these:
-% "type":[["matlab.graphics.axis.AbstractAxes"], ["matlab.ui.control.UIAxes"]]},
+inoctave = exist ("OCTAVE_VERSION", "builtin") > 0;
 
+tf = false(size(varargin));  % preallocate result
+for k = 1:nargin
+   if inoctave
+      tf(k) = ishandle(varargin{k}) && strcmp(get(varargin{k}, 'type'), 'axes');
+   else
+      tf(k) = isa(varargin{k}, 'matlab.graphics.axis.AbstractAxes') || ...
+         (isnumeric(varargin{k}) && isgraphics(varargin{k}, 'axes'));
+   end
+end
+
+end
