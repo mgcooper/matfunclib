@@ -196,7 +196,12 @@ switch lower(opts.AggFunc)
    
    case 'areasum'
       
-      % note, v has both nan and 0, need to figure that out
+      % note, v has both nan and 0, need to figure that 
+
+      % update jun 2023, for the case whre I clip a regular grid of cells by one
+      % polygon, I can't even recall if this is forward or reverse, but the IV,
+      % IW was not correct, IW was  acell of size 1 with 1:numel(V), but IV was
+      % just scalar 1 which i htink is correct
 
       % For each polygon, apply the weights vector in each element of W to the
       % indices of the variable vector V(i), and sum. Set 'uni',false for cell.
@@ -303,7 +308,16 @@ function PA = totalPolygonArea(P,tfgeo,E)
          P);
       % sqkm2sqmi(PA/1e6) m2->mi2
    else
-      PA = sum(area(P));
+      % jun 20, 2023, added the try-catch as a temporary workoaround, not sure
+      % what changed, but the input parsing may not be setup as expected, got
+      % here and P was a cell array containing a single ppolyshape.
+      try
+         PA = sum(area(P));
+      catch ME
+         if numel(P) == 1
+            PA = sum(area(P{:}));
+         end
+      end
    end
 
 % % For reference, the simple case:
@@ -575,6 +589,7 @@ if GridOption == "gridvectors"
 
 elseif GridOption == "unstructured"
    
+   % Jun 2023, looks like i was trying to enforce CellVertices be provided 
    if all(~isnan(CellVertices))
       [CellSizeX, CellSizeY, GridType] = mapGridCellSize(X, Y);
    

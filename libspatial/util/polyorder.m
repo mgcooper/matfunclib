@@ -1,4 +1,4 @@
-function tf = polyorder(x,y,order)
+function [tf, pa] = polyorder(x,y,order)
 %POLYORDER check if polygon vertex ordering is clockwise (true) or ccw (false)
 %
 % tf = polyorder(x,y) returns twice the area of the simple
@@ -19,8 +19,10 @@ end
 
 if iscell(x)
    tf = false(size(x));
+   pa = zeros(size(x));
    for k = 1:numel(x)
-      tf(k) = signedPolyArea(x{k}, y{k}) >= 0;
+      pa(k) = signedPolyArea(x{k}, y{k});
+      tf(k) = pa(k) >= 0;
    end
 else
    % checkxy(lon, lat, mfilename, 'X', 'Y', 1, 2)
@@ -28,18 +30,25 @@ else
    numParts = numel(first);
    if isrow(x)
       tf = zeros(1,numParts);
+      pa = zeros(1,numParts);
    else
       tf = zeros(numParts,1);
+      pa = zeros(numParts,1);
    end
    for k = 1:numParts
       s = first(k);
       e = last(k);
-      tf(k) = signedPolyArea(x(s:e), y(s:e)) >= 0;
+      pa(k) = signedPolyArea(x(s:e), y(s:e));
+      tf(k) =  pa(k) >= 0;
    end
 end
 
 if order == "ccw"
    tf = ~tf;
+   pa = -pa;
+   % pa(tf == 1) = -pa(tf == 1);
+   % pa(tf == 0) = -pa(tf == 0);
+   
 end
 
 

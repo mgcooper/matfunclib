@@ -30,6 +30,8 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
 % unstructured grids, for that would need unique(X(:),'stable') ... need to
 % revisit
 
+   debug = false;
+
    if verLessThan('matlab', '9.13')
       [xIsUniform, cellSizeX] = customIsUniform(unique(X(:)));
       [yIsUniform, cellSizeY] = customIsUniform(unique(Y(:)));
@@ -39,6 +41,17 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
    end
    
    % Determine grid type and cell size
+   
+   % If one is uniform but the other not, determine just how non-uniform it is
+   if xIsUniform && ~yIsUniform 
+      
+      [yIsUniform, cellSizeY] = checkuniformity(unique(Y(:)), 0.05);
+      
+   elseif ~xIsUniform && yIsUniform
+      
+      [xIsUniform, cellSizeX] = checkuniformity(unique(X(:)), 0.05);
+   end
+   
    if xIsUniform && yIsUniform
       if cellSizeX == cellSizeY
          gridType = 'uniform';
@@ -59,6 +72,9 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
             cellSizeX = cellSizeX(1,:);
          end
          
+         % if one value is non-uniform, then nnz(diff(cellSizeY,2)) will equal
+         % 3*size(Y,2) because diff(...,2) will be non-zero for the jump and the
+         % row above and below. 
          if nnz(diff(cellSizeY,2))==0 % allcolsequal
             cellSizeY = cellSizeY(:,1);
          end
@@ -78,6 +94,30 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y)
       % cellSizeY = NaN;
    end
    
+   if debug == true
+      
+      xu = unique(X(:));
+      yu = unique(Y(:));
+      idx = findjumps(yu);
+      nu = find(Y(:)==yu(idx));
+            
+      figure; 
+      scatter(X(:), Y(:), 'filled'); hold on;
+      scatter(X(nu), Y(nu), 'filled')
+
+      % try grid vecs
+      [xvec, yvec] = gridvec(X, Y);
+      
+      % this was the debugging that lead to checkuniformity
+      xjumps = findjumps(unique(X(:)));
+      yjumps = findjumps(unique(Y(:)));
+
+      dx = diff(unique(X(:)));
+      dy = diff(unique(Y(:)));
+      xnu = sum(mode(dx) ~= dx);
+      ynu = sum(mode(dy) ~= dy);
+   end
+      
 end
    
 function [tf, cellsize] = customIsUniform(x)
@@ -88,7 +128,7 @@ function [tf, cellsize] = customIsUniform(x)
    end
    
    celldiffs = diff(x);
-   cellsize = celldiffs(1);
+   cellsize = mode(celldiffs); % was celldiffs(1)
    tol = 4 * eps(max(abs(x(1)), abs(x(end))));
    
    tf = all(abs(celldiffs - cellsize) <= tol);
@@ -96,6 +136,20 @@ function [tf, cellsize] = customIsUniform(x)
    % all(abs(diff(x_spacing)) < tol) && all(abs(diff(y_spacing)) < tol)
 end
 
+function [tf, cellsize] = checkuniformity(x, tol)
+
+xjumps = findjumps(x);
+dx = diff(x);
+xnu = sum(mode(dx) ~= dx);
+
+tf = xnu/numel(x) < tol;
+
+if tf
+   cellsize = mode(dx);
+end
+
+   
+end
 
 % function [cellsizeX,cellsizeY,tfGeo,tol] = mapgridcellsize(X,Y)
 % 

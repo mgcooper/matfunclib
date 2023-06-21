@@ -1,17 +1,4 @@
 function [R,X,Y] = rasterref(X,Y,varargin)
-
-% NOTE: it doesn't work if X,Y are irregular, so you can't do something
-% like:
-% [lt,ln] = projinv(proj,x,y);
-% [xnew,ynew] = projfwd(projnew,lt,ln);
-% Rnew = rasterref(xnew,ynew)
-
-% Based on the results of my comparison, rasterref is correct. The issue is
-% with Matlab's interpretation of 'surface' vs 'texture' and 'cells' vs
-% 'postings'. But also check the latest results with
-% test_cells_vs_postings_v2. This suggests if I use 'postings' I need to
-% adjust the limits at the poles.
-
 %RASTERREF R = rasterref(X,Y,cellInterpretation) constructs spatial
 %referencing object R from 2-d grids X,Y that define the E-W and N-S
 %coordinates of each grid cell. User provides cellInterpretation as
@@ -20,27 +7,27 @@ function [R,X,Y] = rasterref(X,Y,varargin)
 %pairs represent the edges of the grid cells, typical of image-based
 %satellite data. X and Y can be geographic or projected (planar)
 %coordinates.
-
+% 
 %   This function exists because many geospatial datasets are provided with
 %   vectors or grids of latitude/longitude and/or planar coordinate values
 %   that represent the centroid or cell edges of each grid-cell, but many
 %   Matlab Mapping Toolbox functions require the spatial referencing object
 %   R as input. This function creates the object R from the
 %   latitude/longitude or x/y coordinate vectors or grids.
-
+% 
 %   Author: Matt Cooper, guycooper@ucla.edu, June 2019 Citation: Matthew
 %   Cooper (2019). matrasterlib: a software library for processing
 %   satellite and climate model data in Matlab©
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY.
-
+% 
 %   Syntax
-
+% 
 %   R = rasterref(X,Y,cellInterpretation)
 %   R = rasterref(LON,LAT,cellInterpretation)
-
+% 
 %   Description
-
+% 
 %   R = rasterref(X,Y) constructs spatial referencing object R from 1-d
 %   vectors or 2-d grids of E-W (longitude) and N-S (latitude) coordinates
 %   X,Y. If X and Y are 2-d numeric matrices (grids) they must be equal
@@ -60,47 +47,41 @@ function [R,X,Y] = rasterref(X,Y,varargin)
 %   min(y):y_cell_extent:max(y) where x and y define the coordinates of
 %   data values (not cell edges). X and Y can be geographic or planar
 %   coordinate systems.
-
+% 
 %   R = rasterref(X,Y,'Cells') applies the 'Cells' intepretation instead of
 %   'Postings', which is consistent with an interpretation that X,Y define
 %   the E-W and N-S coordinates of the grid cell edges, for example as
 %   is commonly the case for image-based data (e.g. MODIS satellite
 %   imagery).
-
+% 
 %   See also rasterref, georefcells, maprefcells, meshgrid
 % 
 %   Examples - forthcoming
 
-% Input parsing
-%-------------------------------------------------------------------------------
+% NOTE: it doesn't work if X,Y are irregular, so you can't do something
+% like:
+% [lt,ln] = projinv(proj,x,y);
+% [xnew,ynew] = projfwd(projnew,lt,ln);
+% Rnew = rasterref(xnew,ynew)
+
+% Based on the results of my comparison, rasterref is correct. The issue is
+% with Matlab's interpretation of 'surface' vs 'texture' and 'cells' vs
+% 'postings'. But also check the latest results with
+% test_cells_vs_postings_v2. This suggests if I use 'postings' I need to
+% adjust the limits at the poles.
+
 
 % confirm mapping toolbox is installed
 assert(license('test','map_toolbox')==1, ...
    'rasterref requires Matlab''s Mapping Toolbox.')
 
-p              = inputParser;
-p.FunctionName = mfilename;
-addRequired( p, 'X',                               @(x)isnumeric(x));
-addRequired( p, 'Y',                               @(x)isnumeric(x));
-addParameter(p, 'cellInterpretation',  'cells',    @(x)ischar(x));
-addParameter(p, 'projection',          'unknown',  @(x)isa(x,'projcrs')||ischar(x));
-
-parse(p,X,Y,varargin{:});
-
-celltype   = p.Results.cellInterpretation;
-projection = p.Results.projection;
-
-% % confirm X and Y are 2d numeric grids of equal size
-% validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'rasterref', 'X', 1)
-% validateattributes(Y, {'numeric'}, {'2d','size',size(X)}, 'rasterref', 'Y', 2)
-%-------------------------------------------------------------------------------
+% parse inputs
+[X, Y, cellType, mapProjection] = parseinputs(X, Y, mfilename, varargin{:});
 
 % convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and N-S,
 % get an estimate of the grid resolution, and determine if the data is
 % geographic or planar
-% 9 April 2023: "tol" no longer returned by prepareMapGrid due to change from
-% isxyregular to structuredGridType, need a better method
-[X,Y,cellsizeX,cellsizeY,gridType,tfgeo] = prepareMapGrid(X,Y);
+[X, Y, cellsizeX, cellsizeY, gridType, tfgeo] = prepareMapGrid(X,Y);
 
 % extend the lat/lon limits by 1/2 cell in both directions
 halfX = cellsizeX/2;
@@ -114,21 +95,23 @@ halfY = cellsizeY/2;
 
 % call the appropriate function depending on whether R is planar or geographic 
 if tfgeo
-   R = rasterrefgeo(X,Y,halfX,halfY,celltype,tol);
+   R = rasterrefgeo(X, Y, halfX, halfY, cellType);
 else
-   R = rasterrefmap(X,Y,halfX,halfY,celltype,tol);
+   R = rasterrefmap(X, Y, halfX, halfY, cellType);
 end
 
 % if provided, add the projection
-if isa(projection,'projcrs')
-   R.ProjectedCRS = projection;
+if isa(mapProjection,'projcrs')
+   R.ProjectedCRS = mapProjection;
 end
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-% apply the appropriate function
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% apply the appropriate function
 
 function R = rasterrefmap(X,Y,halfX,halfY,cellInterpretation,tol)
+
+if nargin < 6
+   tol = 0;
+end
 
 % NOTE: i convert to double because I have encountered X,Y grids
 % provided by netcdf files that are stored as type uint, but it
@@ -155,6 +138,9 @@ end
 
 function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
 
+if nargin < 6
+   tol = 0;
+end
 % 'columnstartfrom','south' is default and corresponds to S-N
 % oriented grid as often provided by netcdf and h5 but I require
 % this function accept N-S oriented grids i.e. index (1,1) is NW
@@ -219,6 +205,25 @@ elseif strcmp(cellInterpretation,'postings')
    % interpretation gets it wrong
 
 end
+
+function [X, Y, cellType, mapProj] = parseinputs(X, Y, funcname, varargin)
+
+p = inputParser;
+p.FunctionName = funcname;
+addRequired( p, 'X', @(x)isnumeric(x));
+addRequired( p, 'Y', @(x)isnumeric(x));
+addParameter(p, 'cellInterpretation', 'cells', @(x)ischar(x));
+addParameter(p, 'projection', 'unknown', @(x)isa(x,'projcrs')||ischar(x));
+
+parse(p,X,Y,varargin{:});
+
+cellType = p.Results.cellInterpretation;
+mapProj = p.Results.projection;
+
+% % confirm X and Y are 2d numeric grids of equal size
+% validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'rasterref', 'X', 1)
+% validateattributes(Y, {'numeric'}, {'2d','size',size(X)}, 'rasterref', 'Y', 2)
+
 
 % Notes
 
