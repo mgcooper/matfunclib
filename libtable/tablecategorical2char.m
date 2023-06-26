@@ -1,10 +1,9 @@
 function T = tablecategorical2char(T)
-
-%    % NOTE: built-in 'vartype' accomplishes this, e.g.:
-%    bikeTbl  = readtable('BicycleCounts.csv');
-%    bikeData = table2timetable(bikeTbl);
-%    counts   =  bikeData{:,vartype('numeric')};
-%    mean(counts,'omitnan')
+%TABLECATEGORICAL2CHAR convert categorical table variables to char 
+% 
+% T = tablecategorical2char(T)
+% 
+% See also 
 
 idx = vartype('categorical');
 newvars = T(:,idx);
