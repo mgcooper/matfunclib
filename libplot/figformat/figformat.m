@@ -482,6 +482,10 @@ ff.mainAxis.XAxis.TickLabels = compose('%g',ff.mainAxis.XAxis.TickValues);
 ff.mainAxis.YAxis.TickLabels = round(ff.mainAxis.YAxis.TickValues-1,1);
 ff.backgroundAxis.Position   = ff.mainAxis.Position;
 
+% for reference, this would convert exponential ticklabels to fixed point
+% set(gca, "YTickLabels", compose('%s', string(get(gca, "YTick"))))
+
+
 
 % this would work to modify all axes e..g in a subplot, but it messes with
 % the legend so I need to figure out how to add them back
