@@ -1,8 +1,11 @@
-function varargout = withwarnoff(warningIDs)
+function cleanupObj = withwarnoff(warningIDs)
 %WITHWARNOFF Temporarily disable warnings
 %
-%  cleanupObj = WITHWARNOFF('stats:nlinfit:IllConditionedJacobian') disables the
-%  warning and reenable it when cleanupObj destroyed.
+% WITHWARNOFF('stats:nlinfit:IllConditionedJacobian') disables the warning and
+% reenables it when the calling function exits.
+% 
+% cleanupObj = WITHWARNOFF('stats:nlinfit:IllConditionedJacobian') disables the
+% warning and reenables it when cleanupObj is destroyed.
 %
 % Note that it's not necessary for the function to return the onCleanup object
 % because it works automatically once it's created. However, you might want to
@@ -14,7 +17,7 @@ function varargout = withwarnoff(warningIDs)
 %
 % Matt Cooper, 26-May-2023, https://github.com/mgcooper
 %
-% See also
+% See also withcd, withjava
 
 %% parse arguments
 
@@ -35,9 +38,7 @@ for n = 1:numel(warningIDs)
    warning('off', warningIDs(n));
 end
 
-% Return the cleanup task if requested.
-[varargout{1:nargout}] = deal(cleanupObj);
-
+% Note: varargout style return destroys the cleanupObj, so don't use it.
 end
 
 

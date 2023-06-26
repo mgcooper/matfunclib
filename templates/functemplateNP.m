@@ -1,4 +1,4 @@
-function Y = functemplate(X,varargin)
+function Y = functemplate(X, varargin)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
@@ -56,6 +56,9 @@ narginchk(0,1)
 % if (nargin<4) % set default ; end
 
 % ... main code
+
+% Parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
 
 end
 

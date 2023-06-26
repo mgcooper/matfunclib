@@ -48,9 +48,12 @@ function Y = functemplate(X,varargin)
 %% main code
 
 % parse inputs
-[X,option,namevalue] = parseinputs(X,varargin);
+[X,option,namevalue] = parseinputs(X,varargin{:});
 
 % ... main code
+
+% Parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
 
 end
 
@@ -59,7 +62,7 @@ end
 
 %% parse inputs
 
-function [X,option,namevalue] = parseinputs(X,varargin)
+function varargout = parseinputs(X, mfilename, varargin)
 
 % Import the validationModule and add optional argument validation function
 f = validationModule;
@@ -69,14 +72,17 @@ f.validOption = @(x)~isempty(validatestring(x,validoptions));
 % Create the input parser
 p = inputParser;
 p.FunctionName = mfilename;
-p.addRequired( 'X', f.validNumericVector );
-p.addOptional( 'option', 'defaultoption', f.validOption );
+p.addRequired('X', f.validNumericVector );
+p.addOptional('option', 'defaultoption', f.validOption );
 p.addParameter('namevalue', false, f.validLogicalScalar );
 
 % Parse the arguments
 p.parse(X,varargin{:});
 option = p.Results.option;
 namevalue = p.Results.namevalue;
+
+% Parse outputs
+[varargout{1:nargout}] = deal(X, option, namevalue);
 
 % for backdoor default matlab options, use:
 % varargs = namedargs2cell(p.Unmatched);

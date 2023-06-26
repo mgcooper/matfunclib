@@ -1,4 +1,4 @@
-function mkfunction(name,varargin)
+function mkfunction(funcname,varargin)
 %MKFUNCTION make new function file from function template
 %
 %  mkfunction('myfunc') creates a new function file matfunclib/myfunc.m with
@@ -20,39 +20,10 @@ function mkfunction(name,varargin)
 % TODO: instead of fencing off functions in parent folders, copy the json file
 % to a filename with the funcname appended
 
-%------------------------------------------------------------------------------
-p              = inputParser;
-p.FunctionName = mfilename;
+% parse inputs
+[funcname, library, project, parser] = parseinputs(funcname, mfilename, varargin{:});
 
-addRequired(   p,'funcname',              @(x)ischar(x)  );
-addParameter(  p,'library',   'unsorted', @(x)ischar(x)  );
-addParameter(  p,'project',   'unsorted', @(x)ischar(x)  );
-addParameter(  p,'parser',    'MP',       @(x)ischar(x)  );
-   
-% % now that i understand addOptional, this may work:
-% validlib    = @(x)any(validatestring(x,functiondirectorylist));
-% validproj   = @(x)any(validatestring(x,projectdirectorylist));
-% validparser = @(x)any(validatestring(x,{'MP','IP','AP','OP','NP'}));
-% 
-% addRequired(   p,'funcname',              @(x)ischar(x)  );
-% addOptional(   p,'library',   'unsorted', validlib       );
-% addOptional(   p,'project',   'unsorted', validproj      );
-% addOptional(   p,'parser',    'MP',       validparser    );
-% 
-% i think inputs and outputs will need to be structures to distinguish
-% required, parameter, optional, etc. but don't have time to sort it out rn
-% addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
-% addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
-   
-parse(p,name,varargin{:});
-
-funcname = p.Results.funcname;
-library  = p.Results.library;
-project  = p.Results.project;
-parser   = p.Results.parser;
-%inputs   = p.Results.inputs;
-%outputs  = p.Results.outputs;
-%------------------------------------------------------------------------------
+%% main function
 
 % keep the library or project parent folder
 parent = library;
@@ -102,6 +73,7 @@ else
 end
 
 
+% Make New Function
 function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
 %function mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs)
    
@@ -244,6 +216,7 @@ else
    return
 end
 
+% Function Path Parser
 function [functionpath,filenamepath] = parseFunctionPath(funcname,library,project)
       
 % parse the function path. if library and project are both default
@@ -297,4 +270,39 @@ end
 
 filenamepath = fullfile(functionpath,[funcname '.m']);
 
+
+% Input Parser
+function [funcname, library, project, parser] = parseinputs(funcname, ...
+   mfilename, varargin)
+
+p = inputParser;
+p.FunctionName = mfilename;
+
+addRequired(   p,'funcname', @(x)ischar(x) );
+addParameter(  p,'library', 'unsorted', @(x)ischar(x) );
+addParameter(  p,'project', 'unsorted', @(x)ischar(x) );
+addParameter(  p,'parser', 'MP', @(x)ischar(x) );
+   
+% % now that i understand addOptional, this may work:
+% validlib    = @(x)any(validatestring(x,functiondirectorylist));
+% validproj   = @(x)any(validatestring(x,projectdirectorylist));
+% validparser = @(x)any(validatestring(x,{'MP','IP','AP','OP','NP'}));
+% 
+% addRequired(   p,'funcname',              @(x)ischar(x)  );
+% addOptional(   p,'library',   'unsorted', validlib       );
+% addOptional(   p,'project',   'unsorted', validproj      );
+% addOptional(   p,'parser',    'MP',       validparser    );
+% 
+% i think inputs and outputs will need to be structures to distinguish
+% required, parameter, optional, etc. but don't have time to sort it out rn
+% addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
+% addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
+   
+parse(p,funcname,varargin{:});
+
+library = p.Results.library;
+project = p.Results.project;
+parser = p.Results.parser;
+%inputs = p.Results.inputs;
+%outputs = p.Results.outputs;
    

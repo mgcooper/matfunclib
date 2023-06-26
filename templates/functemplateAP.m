@@ -88,6 +88,10 @@ varargs = namedargs2cell(opts);
 
 %% main code
 
+
+% Parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
+
 end
 
 %% local functions
