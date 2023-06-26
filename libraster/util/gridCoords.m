@@ -1,7 +1,6 @@
-function [ x,y ] = gridCoords( nrows,ncols,xll,yll,cellsize )
+function [x, y] = gridCoords(nrows, ncols, xll, yll, cellsize)
 %GRIDCOORDS returns the x y coordinates of the centroid of each cell in a
 %grid, since arcmap won't do this as far as I can figure out
-%   Detailed explanation goes here
 
 rows = 1:nrows;
 cols = 1:ncols;

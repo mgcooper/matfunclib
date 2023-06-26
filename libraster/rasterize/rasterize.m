@@ -140,21 +140,21 @@ else % build a query grid and interpolate the scattered data onto it
    ymin = roundn(min(y(:)),ytol);
    ymax = roundn(max(y(:)),ytol);
 
-%    This can rectify some issues where rounding to x/ytol fails to
-%    encompass the entire extent, but extending by xmindif can also
-%    substantially increase the extent and therefore slow down the
-%    function because it increases the interpolation below
-%    ymin = roundn(min(y(:)),ytol)-ymindif;
-%    ymax = roundn(max(y(:)),ytol)+ymindif;
-%    xmin = roundn(min(x(:)),xtol)-xmindif;
-%    xmax = roundn(max(x(:)),xtol)+xmindif;
+   %    This can rectify some issues where rounding to x/ytol fails to
+   %    encompass the entire extent, but extending by xmindif can also
+   %    substantially increase the extent and therefore slow down the
+   %    function because it increases the interpolation below
+   %    ymin = roundn(min(y(:)),ytol)-ymindif;
+   %    ymax = roundn(max(y(:)),ytol)+ymindif;
+   %    xmin = roundn(min(x(:)),xtol)-xmindif;
+   %    xmax = roundn(max(x(:)),xtol)+xmindif;
 
    xlims = [xmin xmax];
    ylims = [ymin ymax];
 
-% i could also push the extent outward by 1/10th of its value ...
-%     xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
-%     yoffset = (max(y(:))-min(y(:)))/10;
+   % i could also push the extent outward by 1/10th of its value ...
+   %     xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
+   %     yoffset = (max(y(:))-min(y(:)))/10;
 
    % determine if the data is planar or geographic and build the R object
 

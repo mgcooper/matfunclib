@@ -1,10 +1,10 @@
 {
   "_schemaVersion": "1.0.0",
-  "grid2R":
+  "rasterinterp":
   {
      "inputs":
      [
-        {"name":"X",  "kind":"required", "type":["numeric"]},
+        {"name":"Z",  "kind":"required", "type":["numeric"]},
         {"name":"R",  "kind":"required", "type":["scalar"]},
         {"name":"Rq",  "kind":"required", "type":["scalar"]},
         {"name":"method",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline'}"]}
