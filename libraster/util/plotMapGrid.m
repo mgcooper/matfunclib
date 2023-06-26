@@ -101,7 +101,8 @@ end
 if strcmp(opt, 'centroids') || strcmp(opt, 'both')
    % Plot the grid centroids
    [x,y] = fastgrid(X,Y);
-   p2 = scatter(ax, x(:), y(:), 'ro', 'filled');
+   % p2 = scatter(ax, x(:), y(:), 'ro', 'filled');
+   p2 = plot(ax, x(:), y(:), 'o', 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'none');
    H(4) = p2;   
 
    % this produces a graphics handle with one element per column (so does
