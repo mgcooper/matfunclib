@@ -32,11 +32,9 @@ function [xlocs,xleft,xright] = boxchartxdata(H)
 
 % This might be helpful, but it's notch on that matters
 % any(arrayfun(@(n) iscategorical(H(n).XData),1:numel(H)))
-warning('off','MATLAB:handle_graphics:exceptions:SceneNode');
-% warning('off','MATLAB:structOnObject')
+withwarnoff('MATLAB:handle_graphics:exceptions:SceneNode');
+% withwarnoff('MATLAB:structOnObject')
 drawnow;
-% warning('on','MATLAB:structOnObject')
-warning('on','MATLAB:handle_graphics:exceptions:SceneNode');
 
 % Data dimensions
 M = numel(H);

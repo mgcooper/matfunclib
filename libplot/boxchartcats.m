@@ -149,6 +149,7 @@ arguments
    CustomOpts.ConnectMeans (1,1) logical = false
    CustomOpts.ConnectMedians (1,1) logical = false
    CustomOpts.Legend (1,1) string = "on"
+   CustomOpts.LegendText (:,1) string = ""
    CustomOpts.XGroupMembers (:,1) string = "none"
    CustomOpts.CGroupMembers (:,1) string = "none"
 %    CustomOpts.GroupSelect (:,1) string = "none"
@@ -257,7 +258,7 @@ catch
 end
 
 % Create the box chart
-H = createCategoricalBoxChart(XData,YData,CData,datavar,varargs);
+H = createCategoricalBoxChart(XData,YData,CData,datavar,CustomOpts,varargs);
 
 % If "markerstyle", "none" is in varargin, clip the ylimits to the data
 setboxchartylim(H);
@@ -282,17 +283,22 @@ end
 
 end
 
-function H = createCategoricalBoxChart(XData,YData,CData,datavar,varargs)
+function H = createCategoricalBoxChart(XData,YData,CData,datavar,CustomOpts,varargs)
 % Create the boxcharts
 H = boxchart( XData, YData, 'GroupByColor', CData, varargs{:} );
 
 % Add the legend
+withwarnoff('MATLAB:legend:IgnoringExtraEntries');
+legendtxt = CustomOpts.LegendText;
+if legendtxt == ""
+   legendtxt = unique(CData);
+end
 try
-   legend(unique(CData), ...
+   legend(legendtxt, ...
       'Orientation', 'horizontal', ...
       'Location', 'northoutside', ...
       'AutoUpdate', 'off', ...
-      'numcolumns', numel(unique(CData)) );
+      'numcolumns', numel(legendtxt) );
 catch
 end
 
