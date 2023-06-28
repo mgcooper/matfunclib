@@ -36,6 +36,10 @@ function R = bbox2R(bbox, gridRes, varargin)
 %     R2 = bbox2R(bbox,R1.CellExtentInWorldY, R1.ProjectedCRS.wktstring);
 % %   examine Rcheck to confirm the function works
 %     isequal(R1, R2)
+% 
+% % Use the projection code and authority syntax
+%     R2 = bbox2R(bbox,R1.CellExtentInWorldY, 26919, 'EPSG');
+%     isequal(R1, R2)
 %
 % % Example 2: build a custom bbox and georeference it
 % %   load a raster Z and its referencing object R
@@ -83,26 +87,29 @@ yres = gridRes;
 tfgeo = islatlon(minY,minX);
 
 % if provided, parse the map projection
-if nargin == 3
-
-   mapProj = varargin{1};
-   validateattributes(mapProj, {'projcrs', 'geocrs', 'char', 'string'}, ...
-      {'nonempty'}, 'bbox2R', 'mapProj', 3)   
-   mapProj = parseMapProjection(tfgeo, mapProj);
-
-elseif nargin == 4
-
-   projCode = varargin{1};
-   projAuth = varargin{2};
-   validateattributes(projCode, {'numeric'}, {'nonempty'}, ...
-      'bbox2R', 'projCode', 3)
-   validateattributes(projAuth, {'char', 'string'}, {'nonempty'}, ...
-      'bbox2R', 'projAuth', 4)
-   mapProj = parseMapProjection(tfgeo, projCode, projAuth);
-   
+if nargin > 2
+   mapProj = parseMapProjection(tfgeo, varargin{:});
 else
    mapProj = [];
 end
+
+% if nargin == 3
+% 
+%    mapProj = parseMapProjection(tfgeo, varargin{1});
+% 
+% elseif nargin == 4
+% 
+%    projCode = varargin{1};
+%    projAuth = varargin{2};
+%    validateattributes(projCode, {'numeric'}, {'nonempty'}, ...
+%       'bbox2R', 'projCode', 3)
+%    validateattributes(projAuth, {'char', 'string'}, {'nonempty'}, ...
+%       'bbox2R', 'projAuth', 4)
+%    mapProj = parseMapProjection(tfgeo, projCode, projAuth);
+%    
+% else
+%    mapProj = [];
+% end
 
 % call the appropriate function
 if tfgeo == 1
@@ -132,62 +139,6 @@ R = georefcells(ylims,xlims,xres,yres, ...
    'ColumnsStartFrom','north', ...
    'RowsStartFrom', 'west');
 R.GeographicCRS = mapProj;
-end
-
-
-function mapProj = parseMapProjection(tfgeo, varargin)
-
-if nargin == 2
-
-   mapProj = varargin{1};
-
-   % if mapProj is a string or char, assume it is a wkt string
-   if isa(mapProj, 'char') || isa(mapProj, 'string')
-      if tfgeo
-         try
-            mapProj = geocrs(mapProj);
-         catch ME
-            rethrow(ME);
-         end
-      else
-         try
-            mapProj = projcrs(mapProj);
-         catch ME
-            rethrow(ME);
-         end
-      end
-   else
-      % mapProj is already a projcrs or geocrs
-   end
-
-elseif nargin == 3
-
-   projCode = varargin{1};
-   projAuth = varargin{2};
-   
-   % Try to create the map projection
-   if tfgeo
-      try
-         mapProj = geocrs(projCode, "Authority", projAuth);
-      catch ME
-         rethrow(ME);
-      end
-   else
-      try
-         mapProj = projcrs(projCode, "Authority", projAuth);
-      catch ME
-         rethrow(ME);
-      end
-   end
-end
-
-% mapProj is a projcrs or geocrs, confirm it matches tfgeo
-if tfgeo
-   assert(isa(mapProj, 'geocrs'), 'Inconsistent coordinate system')
-else
-   assert(isa(mapProj, 'projcrs'), 'Inconsistent coordinate system')
-end
-
 end
 
 % Notes
