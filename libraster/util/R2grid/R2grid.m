@@ -1,6 +1,12 @@
 function [X,Y] = R2grid(R)
-%R2GRID [X,Y] = R2grid(R) constructs 2-d grids X and Y of coordinate pairs
-%from spatial referencing object R
+%R2GRID construct full grids X and Y from spatial referencing object R.
+% 
+% R2GRID [X,Y] = R2grid(R) constructs 2-d grids X and Y of coordinate pairs from
+% spatial referencing object R 
+%
+% Author: matt cooper (guycooper@ucla.edu)
+%
+% See also R2grat
 
 %% Check inputs
 

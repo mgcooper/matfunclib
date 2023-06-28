@@ -1,13 +1,19 @@
 function [h,coords] = plotBbox(bbox,varargin)
-%PLOTBBOX plotBbox plots a box corresponding to the geographic limits of
-%the map/geographic bounding box BBOX. 
-
+%PLOTBBOX plot a box over the geographic extent of bounding box BBOX. 
+% 
+% [h,coords] = plotBbox(bbox) plots a box corresponding to the geographic limits
+% of the map/geographic bounding box BBOX.
+% 
 %   Author: Matt Cooper, guycooper@ucla.edu, May 2019
 %   Citation: Matthew Cooper (2019). matrasterlib
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY
+% 
+% See also plotRbox, patchRbox
 
-[ax,tf,varargin]   = isax(varargin);
+% Work in progress
+
+[ax,tf,varargin] = isax(varargin);
 
 uplefty     =   bbox(2,2);
 upleftx     =   bbox(1,1);

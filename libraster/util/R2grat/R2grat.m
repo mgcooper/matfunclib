@@ -1,8 +1,12 @@
 function [X,Y] = R2grat(R)
-%R2GRID [X,Y] = R2grat(R) constructs 2-d grids X and Y of coordinate pairs
-%from spatial referencing object R
-
-%     Author: matt cooper (matt.cooper@pnnl.gov)
+%R2GRID construct graticules X and Y from spatial referencing object R
+%
+% R2GRID [X,Y] = R2grat(R) constructs 2-d grids X and Y of coordinate pairs
+% from spatial referencing object R
+%
+% Author: matt cooper (guycooper@ucla.edu)
+%
+% See also
 
 %% Check inputs
 

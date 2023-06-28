@@ -1,24 +1,22 @@
 function R = grid2R(X,Y)
-
-% NOTE: I might delete everything in here (which is identical to rasterref
-% and replace with this:
-
-%GRID2R R = grid2R(X,Y) is an alias for rasterref
-
-%GRID2R R = grid2R(X,Y) constructs spatial referencing object R from 2-d
-%grids of E-W (longitude) and N-S (latitude) coordinates X,Y.
-
+%GRID2R alias for rasterref
+%
+% GRID2R R = grid2R(X,Y) is an alias for rasterref
+%
+% GRID2R R = grid2R(X,Y) constructs spatial referencing object R from 2-d
+% grids of E-W (longitude) and N-S (latitude) coordinates X,Y.
+%
 %   Author: Matt Cooper, guycooper@ucla.edu, June 2019
 %   Citation: Matthew Cooper (2019). matrasterlib
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY.
-
+%
 %   Syntax
-
+%
 %   R = grid2R(X,Y)
-
+%
 %   Description
-
+%
 %   R = grid2R(X,Y) constructs spatial referencing object R from 2-d grids
 %   of E-W (longitude) and N-S (latitude) coordinates X,Y. X and Y are 2-d
 %   numeric matrices (grids) of equal size oriented E-W and N-S such that
@@ -31,8 +29,11 @@ function R = grid2R(X,Y)
 %   scientific raster dataset or using [X,Y]=meshgrid(x,y) where x and y
 %   are vectors that span min(x):x_cell_extent:max(x) and
 %   min(y):y_cell_extent:max(y).
-% 
+%
 %   See also rasterref, georefcells, maprefcells, meshgrid
+
+% NOTE: I might delete everything in here (which is identical to rasterref
+% and replace with this:
 
 %% Check inputs
 
@@ -41,7 +42,7 @@ narginchk(2,2)
 
 % confirm mapping toolbox is installed
 assert( license('test','map_toolbox')==1, ...
-   'rastersurf requires Matlab''s Mapping Toolbox.')
+   'grid2R requires Matlab''s Mapping Toolbox.')
 
 % confirm X and Y are 2d numeric grids of equal size
 validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'grid2R', 'X', 1)
@@ -90,39 +91,27 @@ end
 
    function R = mapgrid2R(X,Y)
 
-      % build query grid from R, adjusted to cell centroids
-      xlims = double([min(X(:)) max(X(:))]);
-      ylims = double([min(Y(:)) max(Y(:))]);
-      rasterSize = size(X);
-      R = maprefcells(xlims,ylims,rasterSize, ...
-         'ColumnsStartFrom','north', ...
-         'RowsStartFrom', 'west');
+   % build query grid from R, adjusted to cell centroids
+   xlims = double([min(X(:)) max(X(:))]);
+   ylims = double([min(Y(:)) max(Y(:))]);
+   rasterSize = size(X);
+   R = maprefcells(xlims,ylims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
    end
 
    function R = geogrid2R(X,Y)
 
-      % 'columnstartfrom','south' is default and corresponds to N-S
-      % oriented grid as in index (1,1) is NW corner
+   % 'columnstartfrom','south' is default and corresponds to N-S
+   % oriented grid as in index (1,1) is NW corner
 
-      xlims = double([min(X(:)) max(X(:))]);
-      ylims = double([min(Y(:)) max(Y(:))]);
-      rasterSize = size(X);
-      R = georefcells(ylims,xlims,rasterSize, ...
-         'ColumnsStartFrom','north', ...
-         'RowsStartFrom', 'west');
+   xlims = double([min(X(:)) max(X(:))]);
+   ylims = double([min(Y(:)) max(Y(:))]);
+   rasterSize = size(X);
+   R = georefcells(ylims,xlims,rasterSize, ...
+      'ColumnsStartFrom','north', ...
+      'RowsStartFrom', 'west');
    end
 
 end
-
-% Notes
-
-% for reference, the N-S E-W could be handled here but the error message
-% is less informative than custom message with assert
-% % confirm X and Y are 2d numeric grids of equal size oriented N-S and E-W
-% validateattributes(X(1,:),  {'numeric'}, ...
-%                             {'2d','size',size(Y(1,:)),'increasing'}, ...
-%                             'R2grid', 'X', 1)
-% validateattributes(Y(1,:),  {'numeric'}, ...
-%                             {'2d','size',size(X(1,:)),'decreasing'}, ...
-%                             'R2grid', 'Y', 2)
 
