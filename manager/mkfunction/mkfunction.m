@@ -12,15 +12,7 @@ function mkfunction(funcname,varargin)
 % 
 %  See also
 
-% UPDATES
-% 10 Feb 2023, removed ringfenced funcname folder, instead funcname is appended
-% to .json file and _tmp to funcname to prevent overwriting existing ones, and
-% isfile/isfolder checks are used throughout
-
-% TODO: instead of fencing off functions in parent folders, copy the json file
-% to a filename with the funcname appended
-
-% parse inputs
+%% parse inputs
 [funcname, library, project, parser] = parseinputs(funcname, mfilename, varargin{:});
 
 %% main function
@@ -47,7 +39,7 @@ end
 % path doesn't exist, it won't issue an error (but addpath alone, without
 % genpath, will issue an error). NOTE: shouldn't be necessary now that
 % ringfenced folder is not created, but doesn't hurt.
-addpath(genpath(functionpath));
+pathadd(functionpath);
 
 % isfile should be sufficient to catch the case where parseFunctionPath fences
 % off the new function in a parent folder with the same name as the function to
@@ -66,7 +58,7 @@ else
       system(sprintf('mkdir %s',functionpath));
    end
 
-   addpath(genpath(functionpath));
+   pathadd(functionpath);
 
    mknewfunc(functionpath,filenamepath,funcname,parent,parser);
    %mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs);
@@ -96,11 +88,15 @@ wholefile = strrep(wholefile,'funcname',funcname);
 wholefile = strrep(wholefile,'functemplate',funcname);
 
 % REPLACE DD-MMM-YYYY on AUTHOR line with the current date
-wholefile = strrep(wholefile,'DD-MMM-YYYY',char(datetime("today")));
+try %#ok<*TRYNC> 
+   wholefile = strrep(wholefile,'DD-MMM-YYYY',char(datetime("today")));
+end
 
 % REPLACE YYYY on COPYRIGHT line with the current YEAR
-wholefile = strrep(wholefile,'Copyright (c) YYYY', ...
-   ['Copyright (c) ' num2str(year(datetime('today')))]);
+try
+   wholefile = strrep(wholefile,'Copyright (c) YYYY', ...
+      ['Copyright (c) ' num2str(year(datetime('today')))]);
+end
 
 % REPLACE the input varname with default library varnames
 switch parent
@@ -122,7 +118,7 @@ switch parent
       wholefile = strrep(wholefile,'Y','H'); % handle (graphics object array) 
 
    case {'libraster'}
-      wholefile = strrep(wholefile,'X','[Z,R]');
+      wholefile = strrep(wholefile,'X','Z,R');
       wholefile = strrep(wholefile,'Y','[Z,R]');
 
    case {'libspatial'}

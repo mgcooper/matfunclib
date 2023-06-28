@@ -11,9 +11,58 @@ function Y = functemplate(X,varargin)
 %
 %
 %
-% Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
+% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
 %
 % See also
+
+%% main code
+
+% parse inputs
+[X,option,namevalue] = parseinputs(mfilename, X, varargin{:});
+
+% ... main code
+
+
+% Parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
+
+end
+
+%% local functions
+
+
+%% parse inputs
+
+function varargout = parseinputs(funcname, X, varargin)
+
+[varargin{:}] = convertStringsToChars(varargin{:});
+
+% Import the validationModule and add optional argument validation function
+f = validationModule;
+validoptions = {'a','b'};
+f.validOption = @(x)~isempty(validatestring(x,validoptions));
+
+% Create the input parser
+p = magicParser; %#ok<*NODEF,*USENS>
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.addRequired('X', f.validNumericVector );
+p.addOptional('option', 'defaultoption', f.validOption );
+p.addParameter('namevalue', false, f.validLogicalScalar );
+
+% Parse the arguments
+p.parseMagically('caller');
+
+% Parse outputs
+[varargout{1:nargout}] = dealout(X, option, namevalue);
+
+% for backdoor default matlab options, use:
+% varargs = namedargs2cell(p.Unmatched);
+% then pass varargs{:} as the last argument. but for autocomplete, copy the
+% json file arguments to the local one.
+end
+
+%% LICENSE
 
 % BSD 3-Clause License
 %
@@ -44,48 +93,3 @@ function Y = functemplate(X,varargin)
 % CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-%% main code
-
-% parse inputs
-[X,option,namevalue] = parseinputs(X,varargin{:});
-
-% ... main code
-
-
-% Parse outputs
-% [varargout{1:nargout}] = dealout(argout1, argout2)
-
-end
-
-%% local functions
-
-
-%% parse inputs
-
-function varargout = parseinputs(X, mfilename, varargin)
-
-% Import the validationModule and add optional argument validation function
-f = validationModule;
-validoptions = {'a','b'};
-f.validOption = @(x)~isempty(validatestring(x,validoptions));
-
-% Create the input parser
-p = magicParser; %#ok<*NODEF,*USENS>
-p.FunctionName = mfilename;
-p.CaseSensitive = false;
-p.addRequired('X', f.validNumericVector );
-p.addOptional('option', 'defaultoption', f.validOption );
-p.addParameter('namevalue', false, f.validLogicalScalar );
-
-% Parse the arguments
-p.parseMagically('caller');
-
-% Parse outputs
-[varargout{1:nargout}] = deal(X, option, namevalue);
-
-% for backdoor default matlab options, use:
-% varargs = namedargs2cell(p.Unmatched);
-% then pass varargs{:} as the last argument. but for autocomplete, copy the
-% json file arguments to the local one.
-end

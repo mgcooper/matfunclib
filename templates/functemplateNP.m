@@ -11,9 +11,33 @@ function Y = functemplate(X, varargin)
 %
 %
 %
-% Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
+% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
 %
 % See also
+
+%% main code
+
+% input checks
+narginchk(0,Inf)
+
+[varargin{:}] = convertStringsToChars(varargin{:});
+
+% simplest input parsing
+% if (nargin<2) % set default ; end
+% if (nargin<3) % set default ; end
+% if (nargin<4) % set default ; end
+
+% ... main code
+
+% Parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
+
+end
+
+%% local functions
+
+
+%% LICENSE
 
 % BSD 3-Clause License
 %
@@ -44,22 +68,3 @@ function Y = functemplate(X, varargin)
 % CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-%% main code
-
-% input checks
-narginchk(0,1)
-
-% simplest input parsing
-% if (nargin<2) % set default ; end
-% if (nargin<3) % set default ; end
-% if (nargin<4) % set default ; end
-
-% ... main code
-
-% Parse outputs
-% [varargout{1:nargout}] = dealout(argout1, argout2)
-
-end
-
-%% local functions

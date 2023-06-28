@@ -34,7 +34,7 @@ arguments
 end
 
 % Temporarily turn off warnings about paths not already being on the path
-withwarnoff('MATLAB:rmpath:DirNotFound')
+withwarnoff('MATLAB:rmpath:DirNotFound');
 
 % Add the default ignorePaths to the provided ones.
 ignorePaths = [ignorePaths; ".git"; ".svn"; "CVS"; "."; ".."];
