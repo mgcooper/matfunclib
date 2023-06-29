@@ -1,23 +1,15 @@
-function [ h,ax,c ] = rastersurf( Z,R,varargin )
-
-% note: I need to change this so it can also accept lat,lon,z as with
-% mapshow/geoshow. this is because i realized today that that syntax
-% permits irregularly spaced data. on the other hand, since this is
-% rastershow, maybe i should require they grid it first, and suggest
-% rasterfromscatter when I make that function.
-
-% secondly,
-
-%RASTERSURF rastersurf(Z,R,varargin) project and display spatially
-%referenced raster Z associated with map/geographic raster reference object
-%or valid referencing vector/matrix R as a 2-d surface using in-built
-%Matlab functions mapshow.m or geoshow.m (Copyright 2016 The MathWorks,
-%Inc.). Default behavior sets properties ('DisplayType','surface'),
-%('Box','on'), ('TickDir','out'), ('LineWidth',1.5), axis image, and adds a
-%colorbar. The function accepts any input to mapshow.m or geoshow.m and
-%returns the graphics, axis, and colorbar handle objects so the user can
-%make ex-post adjustments as desired.
-
+function [h, ax, cb] = rastersurf(Z, R, varargin)
+%RASTERSURF create raster surface plot using mapshow or geoshow.
+% 
+% rastersurf(Z,R,varargin) project and display spatially referenced raster Z
+% associated with map/geographic raster reference object or valid referencing
+% vector/matrix R as a 2-d surface using in-built Matlab functions mapshow.m or
+% geoshow.m (Copyright 2016 The MathWorks, Inc.). Default behavior sets
+% properties ('DisplayType','surface'), ('Box','on'), ('TickDir','out'),
+% ('LineWidth',1.5), axis image, and adds a colorbar. The function accepts any
+% input to mapshow.m or geoshow.m and returns the graphics, axis, and colorbar
+% handle objects so the user can make ex-post adjustments as desired.
+% 
 %   This function is a wrapper for the in-built Matlab functions geoshow.m
 %   and mapshow.m (Copyright 2016 The MathWorks, Inc.). The function is
 %   designed to display spatially referenced 2-d gridded data as a surface
@@ -35,14 +27,14 @@ function [ h,ax,c ] = rastersurf( Z,R,varargin )
 %   'contour', or the property 'FaceColor' (shading) to alternate values
 %   such as 'flat', 'faceted', or 'interp'. Also see rastercontour.m
 %   rastersurf3.m, and rastercontour3.m.
-
+% 
 %   Author: Matt Cooper, guycooper@ucla.edu, May 2019
 %   Citation: Matthew Cooper (2019). matrasterlib
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY
-
+% 
 %   Syntax
-
+% 
 %   RASTERSURF(...) displays a regular data grid Z and appends a colorbar
 %   to the current axes in the default (right) location. By default,
 %   DISPLAYTYPE is set to 'surface' and the axis is set image. Z is a 2-D
@@ -75,22 +67,32 @@ function [ h,ax,c ] = rastersurf( Z,R,varargin )
 %
 %   [H,AX,C] = RASTERSURF(...) returns a handle to a MATLAB graphics
 %   object, a MATLAB axes object, and a MATLAB colorbar object
-
+% 
 %   RASTERSURF(..., Name, Value) specifies name-value pairs that set
 %   MATLAB graphics properties. Parameter names can be abbreviated and are
 %   case-insensitive. Refer to the MATLAB Graphics documentation on surface
 %   for a complete description of these properties and their values.
-
+% 
 %   See also geoshow, mapshow, rastercontour, rastersurf3, rastercontour3
 
-%% Check inputs
+%% TODO
 
-% note - for future refrence If I want autocompletion of the options
-% available to geoshow/mapshow, I will need to use inputParser. I can
-% define the inputs in the same manner as functionSignatures.json and it
-% will take care of the autocompletion of Name Value pairs. see
-% https://www.mathworks.com/company/newsletters/articles/tips-and-tricks-
-% writing-matlab-functions-with-flexible-calling-syntax.html
+% accept lat, lon, z for compatibility with mapshow/geoshow, which permits lists
+% of georeferenced x,y data, but possibly also irregularly spaced data, so
+% double check if that is consistent with the intent of libraster, or if
+% rasterize should be suggested.
+
+% to allow postings:
+% check if R and or Rq are of type 'postings'. If so, tell the user to
+% convert to type 'cell' and exit
+% assert(~strcmp(R.RasterInterpretation,'postings') , ...
+%    ['Input argument 2, R, and input argument 3, Rq, must be of type ' ...
+%    '''cells'' rasterInterpretation. Use RPost2Cells.m to convert. ' ...
+%    'Support for type ''postings'' will be provided in a future release']);
+
+% support mapshow(Z, cmap, R), but see image_tricks for clarity.
+
+%% Check inputs
 
 % confirm mapping toolbox is installed
 assert( license('test','map_toolbox')==1, ...
@@ -128,10 +130,10 @@ end
 
 % confirm Z is a numeric or logical grid of size R.RasterSize
 validateattributes(Z, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
-   'rastersurf', 'Z', 1)
+   mfilename, 'Z', 1)
 
 % confirm R is either a MapCells or GeographicCellsReference objects. Note,
-% this is redundant with try catch block above, but keeping just in case
+% this is redundant with try catch block above, but keep for further testing.
 % validateattributes(R, ...
 %    {'map.rasterref.MapCellsReference', ...
 %    'map.rasterref.GeographicCellsReference'}, ...
@@ -151,42 +153,42 @@ end
 
 %% apply the function
 
-% NOTE: Need to make it so if cmap is passed in, it detects it, since cmap
-% is mapshow(Z,cmap,R) which is confusing, see notes in image_tricks
-
-% make a surface of zeros (jun 2022, added this and changed plotting call)
+% make a surface of zeros.
 Z0 = zeros(size(Z));
 
 if strcmp(R.CoordinateSystemType,'planar')
-   %h = mapshow(Z,R,'DisplayType','surface',varargin{:});
    h = mapshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
+
 elseif strcmp(R.CoordinateSystemType,'geographic')
-   %h = geoshow(Z,R,'DisplayType','surface',varargin{:});
    h = geoshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
+   
 end
 
 shading flat
 axis image
 hold on
 
-% set nan transparant - not sure when this is needed
-% set(h,'FaceAlpha','texturemap','AlphaData',double(~isnan(Z)));
-
 ax = gca;
 ax.Box = 'on';
 ax.TickDir = 'out';
 ax.LineWidth = 1.5;
+
+% % need further testing: set nan transparant and adjust aspect ratio
+% set(h,'FaceAlpha','texturemap','AlphaData',double(~isnan(Z)));
 % ax.DataAspectRatio = [diff(ax.XLim) diff(ax.XLim) diff(ax.ZLim)];
 
 % add colorbar using default location
-c = colorbar;
+cb = colorbar;
 
-% uncomment for narrow colorbar
-% axpos = ax.Position;
-% cpos = c.Position;
-% cpos(3) = 0.5*cpos(3); % make colorbar half width
-% c.Position = cpos;
-% ax.Position = axpos;
+% make colorbar half width
+makenarrowcolorbar = false;
+if makenarrowcolorbar == true
+   axpos = ax.Position;
+   cbpos = cb.Position;
+   cbpos(3) = 0.5*cbpos(3);
+   cb.Position = cbpos;
+   ax.Position = axpos;
+end
 
 %% arrange the outputs
 
@@ -202,24 +204,10 @@ switch nargout
    case 3
       varargout{1} = h;
       varargout{2} = ax;
-      varargout{3} = c;
+      varargout{3} = cb;
 
    otherwise
       error('Unrecognized number of outputs.')
 end
 
-%% clean up
-
-if nargout==0
-   clear h ax c
 end
-
-end
-
-% 3/7/2020 - allow postings
-% check if R and or Rq are of type 'postings'. If so, tell the user to
-% convert to type 'cell' and exit
-% assert(~strcmp(R.RasterInterpretation,'postings') , ...
-%         ['Input argument 2, R, and input argument 3, Rq, must be of type ' ...
-%         '''cells'' rasterInterpretation. Use RPost2Cells.m to convert. ' ...
-%         'Support for type ''postings'' will be provided in a future release']);

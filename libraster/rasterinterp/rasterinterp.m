@@ -1,11 +1,13 @@
 function [Zq,Rq] = rasterinterp(Z,R,Rq,method)
-%RASTERINTERP rasterinterp(Z,R,Rq,method) Interpolate spatially referenced
-%raster Z associated with map/geographic raster reference object R onto new
-%grid Zq defined by map/geographic raster reference object Rq. Default
-%interpolation is 'bilinear', user specifies alternate methods 'nearest',
-%'cubic', or 'spline' following syntax of geointerp.m / mapinterp.m
-%(Copyright 2016 The MathWorks, Inc.). Works with planar (projected) and
-%geographic data, but R and Rq must both be planar or both be geographic.
+%RASTERINTERP interpolate raster from reference R to Rq using method
+%
+% RASTERINTERP rasterinterp(Z,R,Rq,method) Interpolate spatially referenced
+% raster Z associated with map/geographic raster reference object R onto new
+% grid Zq defined by map/geographic raster reference object Rq. Default
+% interpolation is 'bilinear', user specifies alternate methods 'nearest',
+% 'cubic', or 'spline' following syntax of geointerp.m / mapinterp.m
+% (Copyright 2016 The MathWorks, Inc.). Works with planar (projected) and
+% geographic data, but R and Rq must both be planar or both be geographic.
 %
 %   This function is a wrapper for the in-built Matlab functions
 %   mapinterp.m and geointerp.m (Copyright 2016 The MathWorks, Inc.),
@@ -96,10 +98,10 @@ function [Zq,Rq] = rasterinterp(Z,R,Rq,method)
 
 % confirm mapping toolbox is installed
 assert(license('test','map_toolbox')==1, ...
-   'rasterinterp requires Matlab''s Mapping Toolbox.')
+   [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
 % confirm Z is a numeric or logical grid of size R.RasterSize
-validateattributes(Z,   {'numeric', 'logical'}, ...
+validateattributes(Z, {'numeric', 'logical'}, ...
    {'size', R.RasterSize}, 'rasterinterp', 'Z', 1)
 
 % confirm R and Rq are either MapCells or GeographicCellsReference objects
@@ -108,13 +110,14 @@ validateattributes(R, ...
    'map.rasterref.GeographicCellsReference', ...
    'map.rasterref.MapPostingsReference', ...
    'map.rasterref.GeographicPostingsReference'}, ...
-   {'scalar'}, 'rasterinterp', 'R', 2)
+   {'scalar'}, mfilename, 'R', 2)
+
 validateattributes(Rq, ...
    {'map.rasterref.MapCellsReference', ...
    'map.rasterref.GeographicCellsReference', ...
    'map.rasterref.MapPostingsReference', ...
    'map.rasterref.GeographicPostingsReference'}, ...
-   {'scalar'}, 'rasterinterp', 'Rq', 3)
+   {'scalar'}, mfilename, 'Rq', 3)
 
 % set interpolation to 'linear' or as user-defined
 if nargin < 4
@@ -122,7 +125,7 @@ if nargin < 4
 else
    method = validatestring(method, ...
       {'nearest', 'linear', 'cubic', 'spline'}, ...
-      'rasterinterp', 'method');
+      mfilename, 'method');
 end
 
 % confirm R and Rq are either both planar or both geographic
@@ -164,78 +167,78 @@ end
 
    function Zq = maprasterinterp(Z,R,Rq,method)
 
-   % build query grid from Rq, adjusted to cell centroids
-   xpsz = Rq.CellExtentInWorldX; % x pixel size
-   xmin = Rq.XWorldLimits(1)+xpsz/2; % left limit
-   xmax = Rq.XWorldLimits(2)-xpsz/2; % right limit
-   xq = xmin:xpsz:xmax;
+      % build query grid from Rq, adjusted to cell centroids
+      xpsz = Rq.CellExtentInWorldX; % x pixel size
+      xmin = Rq.XWorldLimits(1)+xpsz/2; % left limit
+      xmax = Rq.XWorldLimits(2)-xpsz/2; % right limit
+      xq = xmin:xpsz:xmax;
 
-   % note: the centroid adjustment is only necessary for 'Cells'
-   % interpretation. If 'Postings' interpretation is used this should
-   % not be necessary and will require somewhat substantial
-   % modifcation to handle the unique field names in the postings
-   % object, but will probably be worth it to ensure compatibility
+      % note: the centroid adjustment is only necessary for 'Cells'
+      % interpretation. If 'Postings' interpretation is used this should
+      % not be necessary and will require somewhat substantial
+      % modifcation to handle the unique field names in the postings
+      % object, but will probably be worth it to ensure compatibility
 
-   % y direction
-   ypsz = Rq.CellExtentInWorldY; % y pixel size
-   ymin = Rq.YWorldLimits(1)+ypsz/2; % bottom limit
-   ymax = Rq.YWorldLimits(2)-ypsz/2; % top limit
-   yq = ymin:ypsz:ymax;
+      % y direction
+      ypsz = Rq.CellExtentInWorldY; % y pixel size
+      ymin = Rq.YWorldLimits(1)+ypsz/2; % bottom limit
+      ymax = Rq.YWorldLimits(2)-ypsz/2; % top limit
+      yq = ymin:ypsz:ymax;
 
-   % construct unique x,y pairs for each Zq grid centroid
-   [X,Y] = meshgrid(xq,yq);
-   Xq = reshape(X,size(X,1)*size(X,2),1);
-   Yq = reshape(Y,size(Y,1)*size(Y,2),1);
+      % construct unique x,y pairs for each Zq grid centroid
+      [X,Y] = meshgrid(xq,yq);
+      Xq = reshape(X,size(X,1)*size(X,2),1);
+      Yq = reshape(Y,size(Y,1)*size(Y,2),1);
 
-   % call mapinterp and reshape back into the new grid Zq
-   Zq = mapinterp(Z,R,Xq,Yq,method);
-   Zq = reshape(Zq,length(yq),length(xq));
+      % call mapinterp and reshape back into the new grid Zq
+      Zq = mapinterp(Z,R,Xq,Yq,method);
+      Zq = reshape(Zq,length(yq),length(xq));
 
-   % flip the data upside down if oriented S-N
-   if strcmp(R.ColumnsStartFrom,'north')
-      Zq = flipud(Zq);
-   end
+      % flip the data upside down if oriented S-N
+      if strcmp(R.ColumnsStartFrom,'north')
+         Zq = flipud(Zq);
+      end
 
-   % flip the data left/right if oriented E-W
-   if strcmp(R.ColumnsStartFrom,'east')
-      Zq = fliplr(Zq);
-   end
+      % flip the data left/right if oriented E-W
+      if strcmp(R.ColumnsStartFrom,'east')
+         Zq = fliplr(Zq);
+      end
    end
 
 % note, geointerp wants latq,lonq whereas mapinterp wants xq,yq
 
    function Zq = georasterinterp(Z,R,Rq,method)
 
-   % build query grid from Rq, adjusted to cell centroids
-   lonpsz = Rq.CellExtentInLongitude; % x pixel size
-   lonmin = Rq.LongitudeLimits(1)+lonpsz/2; % left limit
-   lonmax = Rq.LongitudeLimits(2)-lonpsz/2; % right limit
-   lonq = lonmin:lonpsz:lonmax;
+      % build query grid from Rq, adjusted to cell centroids
+      lonpsz = Rq.CellExtentInLongitude; % x pixel size
+      lonmin = Rq.LongitudeLimits(1)+lonpsz/2; % left limit
+      lonmax = Rq.LongitudeLimits(2)-lonpsz/2; % right limit
+      lonq = lonmin:lonpsz:lonmax;
 
-   % y direction
-   latpsz = Rq.CellExtentInLatitude; % y pixel size
-   latmin = Rq.LatitudeLimits(1)+latpsz/2; % bottom limit
-   latmax = Rq.LatitudeLimits(2)-latpsz/2; % top limit
-   latq = latmin:latpsz:latmax;
+      % y direction
+      latpsz = Rq.CellExtentInLatitude; % y pixel size
+      latmin = Rq.LatitudeLimits(1)+latpsz/2; % bottom limit
+      latmax = Rq.LatitudeLimits(2)-latpsz/2; % top limit
+      latq = latmin:latpsz:latmax;
 
-   % construct unique x,y pairs for each Zq grid centroid
-   [LON,LAT] = meshgrid(lonq,latq);
-   LONq = reshape(LON,size(LON,1)*size(LON,2),1);
-   LATq = reshape(LAT,size(LAT,1)*size(LAT,2),1);
+      % construct unique x,y pairs for each Zq grid centroid
+      [LON,LAT] = meshgrid(lonq,latq);
+      LONq = reshape(LON,size(LON,1)*size(LON,2),1);
+      LATq = reshape(LAT,size(LAT,1)*size(LAT,2),1);
 
-   % call geointerp and reshape back into the new grid Zq
-   Zq = geointerp(Z,R,LATq,LONq,method);
-   Zq = reshape(Zq,length(latq),length(lonq));
+      % call geointerp and reshape back into the new grid Zq
+      Zq = geointerp(Z,R,LATq,LONq,method);
+      Zq = reshape(Zq,length(latq),length(lonq));
 
-   % flip the data upside down if oriented S-N
-   if strcmp(R.ColumnsStartFrom,'north')
-      Zq = flipud(Zq);
-   end
+      % flip the data upside down if oriented S-N
+      if strcmp(R.ColumnsStartFrom,'north')
+         Zq = flipud(Zq);
+      end
 
-   % flip the data left/right if oriented E-W
-   if strcmp(R.ColumnsStartFrom,'east')
-      Zq = fliplr(Zq);
-   end
+      % flip the data left/right if oriented E-W
+      if strcmp(R.ColumnsStartFrom,'east')
+         Zq = fliplr(Zq);
+      end
    end
 
 end

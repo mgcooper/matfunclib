@@ -1,41 +1,43 @@
 function [Z,R,X,Y] = rasterize(x,y,z,varargin)
-%RASTERIZE construct a spatially-referenced raster Z and map/geographic
-%raster reference object R from scattered data z referenced to geo/map
-%coordinates x,y
-%[Z,R] = RASTERIZE(x,y,z,rasterSize)
-%[Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY)
-%[Z,R] = RASTERIZE(___,method). Options: 'linear', 'nearest', 'natural',
-%'cubic', or 'v4'. The default method is 'natural'.
-%[___,X,Y] = RASTERIZE(___) also returns 2-d coordinate arrays X,Y with
-%size equal to size(Z) that specify the x/y map/geographic coordinates of
-%each data value in Z
-
+%RASTERIZE convert x,y,z data to full grids
+% 
+% RASTERIZE construct a spatially-referenced raster Z and map/geographic
+% raster reference object R from scattered data z referenced to geo/map
+% coordinates x,y
+% [Z,R] = RASTERIZE(x,y,z,rasterSize)
+% [Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY)
+% [Z,R] = RASTERIZE(___,method). Options: 'linear', 'nearest', 'natural',
+% 'cubic', or 'v4'. The default method is 'natural'.
+% [___,X,Y] = RASTERIZE(___) also returns 2-d coordinate arrays X,Y with
+% size equal to size(Z) that specify the x/y map/geographic coordinates of
+% each data value in Z
+%
 %   This function is similar to the in-built Matlab function geoloc2grid.m
 %   (Copyright 2016 The MathWorks, Inc.) but adds a bit more functionality.
 %   The function uses griddata instead of TriScatteredInterpolant, and
 %   instead of returning the 1-d refvec object it returns a map/geographic
 %   reference object R, which permits compatibility with the multitude of
 %   other Matlab functions that require it.
-
+%
 %   USAGE
-
+%
 %   [Z,R] = RASTERIZE(x,y,z,rasterSize) constructs spatially referenced
 %   raster Z and map/geographic raster reference object R from scattered
 %   data z with geo/map coordinates x,y with the numbers of rows and
 %   columns specified by rasterSize
-
+%
 %   [Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY) allows the geographic
 %   cell extents to be set precisely. The geographic limits will be
 %   adjusted slightly, if necessary, to ensure an integer number of cells
 %   in each dimenstion.
-
+%
 %   [Z,R] = RASTERIZE(___,method)  specifies the interpolation
 %   method used to compute Z using any of the input arguments in the
 %   previous syntaxes. method can be 'linear', 'nearest', 'natural',
 %   'cubic', or 'v4'. The default method is 'natural'. For more information
 %   on why this option is default, see:
 %   https://blogs.mathworks.com/loren/2015/07/01/natural-neighbor-a-superb-interpolation-method/
-
+%
 %   Notes on griddata vs scatteredInterpolant: This function is designed to
 %   return a single 2-d surface. scatteredInterpolant is faster when
 %   querying multiple values in repeated calls, but is identical when
@@ -47,9 +49,10 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 %   geophysical raster data. A future release might update to file_exchange
 %   function gridfit. More work is needed to determine if that function is
 %   a better choice.
-
+%
 %   EXAMPLES
-
+%
+% See also rasterinterp, rasterref, rastersurf
 
 %% Check inputs
 
@@ -57,19 +60,19 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 narginchk(4,6)
 
 % confirm mapping toolbox is installed
-assert(license('test','map_toolbox')==1, ...
-   'rasterize requires Matlab''s Mapping Toolbox.')
+assert( license('test','map_toolbox')==1, ...
+   [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
 % check if lat/lon or planar and validate attributes accordingly
 tf = islatlon(y,x);
 
 % confirm x, y, and z are 2d numeric arrays of equal size
 validateattributes(x,{'numeric'},{'real','2d','nonempty','size',size(y)}, ...
-   'rasterize', 'x', 1)
+   mfilename, 'x', 1)
 validateattributes(y,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-   'rasterize', 'y', 2)
+   mfilename, 'y', 2)
 validateattributes(z,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-   'rasterize', 'z', 3)
+   mfilename, 'z', 3)
 
 % convert to double for compatibility with scatteredInterpolant
 x = double(x);
@@ -93,11 +96,11 @@ switch numarg
       if tf % x,y are geographic coordinates
          validateattributes(rasterSize, {'numeric'}, ...
             {'real','2d','finite','positive'}, ...
-            'rasterize','rasterSize', 4)
+            mfilename, 'rasterSize', 4)
       else % x,y are map coordinates (validation is identical)
          validateattributes(rasterSize, {'numeric'}, ...
             {'real','2d','finite','positive'}, ...
-            'rasterize','rasterSize', 4)
+            mfilename, 'rasterSize', 4)
       end
    case 2 % user passed in cellextentX and cellextentY, validate them here
       inrasterSize = false;
@@ -106,17 +109,17 @@ switch numarg
       if tf % x,y are geographic coordinates
          validateattributes(cellextentX, {'numeric'}, ...
             {'real','scalar','finite','positive','<=',360}, ...
-            'rasterize','cellextentX', 4)
+            mfilename, 'cellextentX', 4)
          validateattributes(cellextentY, {'numeric'}, ...
             {'real','scalar','finite','positive','<=',180}, ...
-            'rasterize','cellextentY', 5)
+            mfilename, 'cellextentY', 5)
       else % x,y are map coordinates (validation is identical)
          validateattributes(cellextentX, {'numeric'}, ...
             {'real','scalar','finite','positive'}, ...
-            'rasterize','cellextentX', 4)
+            mfilename, 'cellextentX', 4)
          validateattributes(cellextentY, {'numeric'}, ...
             {'real','scalar','finite','positive'}, ...
-            'rasterize','cellextentY', 5)
+            mfilename, 'cellextentY', 5)
       end
 end
 
@@ -134,26 +137,26 @@ else % build a query grid and interpolate the scattered data onto it
    % will be interpolated. If we just use
 
    % this method attempts to account for both very small and large domains
-   xdiffs      =   abs(diff(x(:)));
-   ydiffs      =   abs(diff(y(:)));
-   xmindif     =   min(xdiffs(xdiffs>0.0));
-   ymindif     =   min(ydiffs(ydiffs>0.0));
-   xtol        =   floor(log10(xmindif))-1;
-   ytol        =   floor(log10(ymindif))-1;
-   xmin        =   roundn(min(x(:)),xtol);
-   xmax        =   roundn(max(x(:)),xtol); % extending by xmindif can substantially increase the extent
-   ymin        =   roundn(min(y(:)),ytol);
-   ymax        =   roundn(max(y(:)),ytol);
-   %     ymin        =   roundn(min(y(:)),ytol)-ymindif;
-   %     ymax        =   roundn(max(y(:)),ytol)+ymindif;
-   %     xmin        =   roundn(min(x(:)),xtol)-xmindif;
-   %     xmax        =   roundn(max(x(:)),xtol)+xmindif;
+   xdiffs = abs(diff(x(:)));
+   ydiffs = abs(diff(y(:)));
+   xmindif = min(xdiffs(xdiffs>0.0));
+   ymindif = min(ydiffs(ydiffs>0.0));
+   xtol = floor(log10(xmindif))-1;
+   ytol = floor(log10(ymindif))-1;
+   xmin = round(min(x(:)),-xtol);
+   xmax = round(max(x(:)),-xtol); % extending by xmindif can substantially increase the extent
+   ymin = round(min(y(:)),-ytol);
+   ymax = round(max(y(:)),-ytol);
+   % ymin = round(min(y(:)),-ytol)-ymindif;
+   % ymax = round(max(y(:)),-ytol)+ymindif;
+   % xmin = round(min(x(:)),-xtol)-xmindif;
+   % xmax = round(max(x(:)),-xtol)+xmindif;
    xlims = [xmin xmax];
    ylims = [ymin ymax];
 
    % i could also push the extent outward by 1/10th of its value ...
-   %     xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
-   %     yoffset = (max(y(:))-min(y(:)))/10;
+   % xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
+   % yoffset = (max(y(:))-min(y(:)))/10;
 
    % determine if the data is planar or geographic and build the R object
 
@@ -212,13 +215,13 @@ else % build a query grid and interpolate the scattered data onto it
    % intrinsic grid cell coordinate, unless worldToIntrinsic has sub-grid cell
    % precision. Keeping it for refrence.
 
-   %     if tf % note order of output xq,yq vs input xq,yq
-   %          [xq,yq] =   geographicToIntrinsic(R,yq,xq);
-   %          [x,y]   =   geographicToIntrinsic(R,y,x);
-   %     else
-   %         [xq,yq] =   worldToIntrinsic(R,xq,yq);
-   %         [x,y]   =   worldToIntrinsic(R,y,x);
-   %     end
+   % if tf % note order of output xq,yq vs input xq,yq
+   %    [xq,yq] = geographicToIntrinsic(R,yq,xq);
+   %    [x,y] = geographicToIntrinsic(R,y,x);
+   % else
+   %    [xq,yq] = worldToIntrinsic(R,xq,yq);
+   %    [x,y] = worldToIntrinsic(R,y,x);
+   % end
 
    % apply griddata and reshape to a grid
    Z = griddata(x,y,z,xq,yq,method);
@@ -293,18 +296,18 @@ end
 
 % 1. The first thing I tried was extending the limits to even degrees in
 % lat and lon i.e. the first approach I used in rasterref
-%     ylims           =   [floor(min(y(:))) ceil(max(y(:)))];
-%     xlims           =   [floor(min(x(:))) ceil(max(x(:)))];
+%     ylims = [floor(min(y(:))) ceil(max(y(:)))];
+%     xlims = [floor(min(x(:))) ceil(max(x(:)))];
 % but for very small spatial extent it does not work e.g. limits of 67.02
 % to 67.08 would become 67 to 68.
 
 % 2. Then I tried to determine a rounding tolerance based on the x/y extent
-%     xextent     =   max(x(:)) - min(x(:));
-%     yextent     =   max(y(:)) - min(y(:));
+%     xextent = max(x(:)) - min(x(:));
+%     yextent = max(y(:)) - min(y(:));
 %     if xextent < 1; xtol = floor(log10(xextent))-1; else; xtol = 0; end
 %     if yextent < 1; ytol = floor(log10(yextent))-1; else; ytol = 0; end
-%     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
+%     xlims = [round(min(x(:)),-xtol) round(max(x(:)),-xtol)];
+%     ylims = [round(min(y(:)),-ytol) round(max(y(:)),-ytol)];
 
 %
 %     xdiffs = diff(x);
@@ -317,26 +320,26 @@ end
 % close, in which case min/max/mean could give weird output
 
 % 3. Then I used the minimum difference between points in each direction
-%   xextent     =   max(x(:)) - min(x(:));
-%   yextent     =   max(y(:)) - min(y(:));
-%   xmindif     =   abs(min(diff(x(:))));
-%   ymindif     =   abs(min(diff(y(:))));
+%   xextent = max(x(:)) - min(x(:));
+%   yextent = max(y(:)) - min(y(:));
+%   xmindif = abs(min(diff(x(:))));
+%   ymindif = abs(min(diff(y(:))));
 %   if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
 %   if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
-%   xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%   ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
+%   xlims = [round(min(x(:)),-xtol) round(max(x(:)),-xtol)];
+%   ylims = [round(min(y(:)),-ytol) round(max(y(:)),-ytol)];
 
 % THis seems to work
 
 % NOTE: this simple approach might also work for the majority of cases
 %     if tf
-%         tol     =   -7; % approximately 1 cm in units of degrees
+%         tol = -7; % approximately 1 cm in units of degrees
 %     else
-%         % tol     =   -2; % nearest cm
-%         tol     =   0; % nearest m (changed for MAR)
+%         % tol = -2; % nearest cm
+%         tol = 0; % nearest m (changed for MAR)
 %     end
-%     xlims       =   [roundn(min(x(:)),tol) roundn(max(x(:)),tol)];
-%     ylims       =   [roundn(min(y(:)),tol) roundn(max(y(:)),tol)];
+%     xlims = [round(min(x(:)),tol) round(max(x(:)),tol)];
+%     ylims = [round(min(y(:)),tol) round(max(y(:)),tol)];
 
 % Finally, one way to get around it completely is to force the user to pass
 % in a query grid, or allow it, and if the output is weird, they can get
@@ -351,9 +354,9 @@ end
 % best to use the small-domain method for all domains, then I could add a
 % check where for large domains I round to the nearest whole-integer ...
 
-%     xextent     =   max(x(:)) - min(x(:));
-%     yextent     =   max(y(:)) - min(y(:));
+%     xextent = max(x(:)) - min(x(:));
+%     yextent = max(y(:)) - min(y(:));
 %     if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
 %     if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
-%     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
+%     xlims = [round(min(x(:)),-xtol) round(max(x(:)),-xtol)];
+%     ylims = [round(min(y(:)),-ytol) round(max(y(:)),-ytol)];
