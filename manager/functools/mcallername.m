@@ -1,4 +1,4 @@
-function msg = mcallername(varargin)
+function varargout = mcallername(varargin)
 %MCALLERNAME get the name of the calling function on the stack
 %
 %  MSG = MCALLERNAME() returns char MSG, the name of the bottom-most function on
@@ -54,7 +54,6 @@ else
    N = numel(stack);
 end
 
-
 % parse inputs
 [stacklevel, fileoption] = parseinputs(N, mfilename, varargin{:});
 
@@ -77,8 +76,14 @@ switch fileoption
       
 end
 
-%% parse inputs
+if nargout <= 1
+   varargout{1} = msg;
+elseif nargout > 1
+   error([mfilename ' expected at most one output argument'])
+end
 
+
+% parse inputs
 function [stacklevel, fileoption] = parseinputs(N, funcname, varargin)
 
 [varargin{:}] = convertStringsToChars(varargin{:});
@@ -141,31 +146,31 @@ fileoption = p.Results.fileoption;
 %% LICENSE
 
 % BSD 3-Clause License
-%
-% Copyright (c) 2023, Matt Cooper (mgcooper)
+% 
+% Copyright (c) YYYY, Matt Cooper (mgcooper)
 % All rights reserved.
-%
+% 
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
-%
+% 
 % 1. Redistributions of source code must retain the above copyright notice, this
 %    list of conditions and the following disclaimer.
-%
+% 
 % 2. Redistributions in binary form must reproduce the above copyright notice,
 %    this list of conditions and the following disclaimer in the documentation
 %    and/or other materials provided with the distribution.
-%
+% 
 % 3. Neither the name of the copyright holder nor the names of its
 %    contributors may be used to endorse or promote products derived from
 %    this software without specific prior written permission.
-%
-% THIS SOFTWARE IS PROVIDED Bmsg THE COPmsgRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANmsg EcmdPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITmsg AND FITNESS FOR A PARTICULAR PURPOSE ARE
-% DISCLAIMED. IN NO EVENT SHALL THE COPmsgRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-% FOR ANmsg DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EcmdEMPLARmsg, OR CONSEQUENTIAL
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 % DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 % SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-% CAUSED AND ON ANmsg THEORmsg OF LIABILITmsg, WHETHER IN CONTRACT, STRICT LIABILITmsg,
-% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANmsg WAmsg OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITmsg OF SUCH DAMAGE.
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

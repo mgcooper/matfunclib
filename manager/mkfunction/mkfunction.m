@@ -83,6 +83,10 @@ copyfunctemplate(filenamepath,parser);    % specify path w/file name
 fid = fopen(filenamepath);
 wholefile = fscanf(fid,'%c');     fclose(fid);
 
+% Strip out the license so the strrep commands do not rewrite any content
+license = wholefile(strfind(wholefile, "%% LICENSE"):end);
+wholefile = wholefile(1:strfind(wholefile, "%% LICENSE")-1);
+
 wholefile = strrep(wholefile,'FUNCNAME',upper(funcname));
 wholefile = strrep(wholefile,'funcname',funcname);
 wholefile = strrep(wholefile,'functemplate',funcname);
@@ -150,6 +154,9 @@ end
 %    requiredinputrepl = inputs{n};
 %    wholefile = '';
 % end
+
+% replace the license
+wholefile = [wholefile license];
 
 % write it over again
 fid = fopen(filenamepath, 'wt');

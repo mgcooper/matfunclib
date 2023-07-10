@@ -7,6 +7,29 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% error handling
+
+% For error (and i think assert), use num2ordinal, unlike validateattributes,
+% where the integer is used. for example from checkxy.m:
+error(sprintf('map:%s:inconsistentXY', function_name), ...
+   'Function %s expected its %s and %s input arguments, %s and %s, to match in size or NaN locations.', ...
+   upper(function_name), num2ordinal(x_pos), num2ordinal(y_pos), ...
+   x_var_name, y_var_name)
+
+% for cleaner try-catch, use this:
+try
+   something
+catch e
+   rethrow(e)
+end
+
+% in a subfunction (or private/internal function meant to always be called)
+try
+   something
+catch e
+   throwAsCaller(e)
+end
+
 %%
 % below are snippets from zmat libary
 

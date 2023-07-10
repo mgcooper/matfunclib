@@ -15,9 +15,8 @@ function Y = functemplate(X, varargin)
 %
 % See also
 
-%% main code
+%% parse inputs
 
-% input checks
 narginchk(0,Inf)
 
 [varargin{:}] = convertStringsToChars(varargin{:});
@@ -27,9 +26,10 @@ narginchk(0,Inf)
 % if (nargin<3) % set default ; end
 % if (nargin<4) % set default ; end
 
-% ... main code
+%% main code
 
-% Parse outputs
+
+%% parse outputs
 % [varargout{1:nargout}] = dealout(argout1, argout2)
 
 end
