@@ -3,7 +3,7 @@ function out = tocellstr(in)
 
 validateattributes(in,{'string','cell','char'},{'vector'},mfilename,'in',1)
 
-if iscellstr(in)
+if iscellstr(in) %#ok<*ISCLSTR>
    out = in;
 else
    out = cellstr(in);

@@ -5,7 +5,10 @@ function varargout = tostring(stringlike)
 % [str1,str2] = tostring({'1','2'})
 % [str1,str2] = tostring({'1'},{'2'})
 
-% Note: if string.empty() is passed in it will come out as 1x0 empty string
+% Notes
+% if string.empty() is passed in it will come out as 1x0 empty string
+% if stringlike contains non-string-like values, they will be converted to
+% strings e.g. numbers will become their string equivalent.
 
 % might be enough to just cast to string in arguments block?
 arguments (Repeating)
