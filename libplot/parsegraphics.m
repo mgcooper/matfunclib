@@ -29,7 +29,7 @@ H = [];
 % Check for either a scalar numeric Figure or Axes handle, or any size array of
 % Axes or Figures. 'isgraphics' will catch numeric graphics handles, but will
 % not catch deleted graphics handles, so we need to check for both separately.
-if nargs > 0 && ( isaxis(args{1}) || isfig(args{1}) )
+if (nargs > 0) && ( isaxis(args{1}) || isfig(args{1}) )
    isfigure = isfig(args{1});
    H = handle(args{1});
    args = args(2:end);

@@ -17,7 +17,8 @@ function tf = isfig(varargin)
          tf(k) = isfigure(varargin{k});
       else
          tf(k) = isa(varargin{k}, 'matlab.ui.Figure') || ...
-            (isnumeric(varargin{k}) && isgraphics(varargin{k}, 'figure'));
+            (isnumeric(varargin{k}) && isscalar(varargin{k}) && ...
+            isgraphics(varargin{k}, 'figure'));
       end
    end
 

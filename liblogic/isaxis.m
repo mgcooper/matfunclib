@@ -2,7 +2,7 @@ function tf = isaxis(varargin)
 %ISAXIS return true for any inputs that are axes objects
 %
 %
-% See also isfigure
+% See also isfig
 
 inoctave = exist ("OCTAVE_VERSION", "builtin") > 0;
 
@@ -12,7 +12,8 @@ for k = 1:nargin
       tf(k) = ishandle(varargin{k}) && strcmp(get(varargin{k}, 'type'), 'axes');
    else
       tf(k) = isa(varargin{k}, 'matlab.graphics.axis.AbstractAxes') || ...
-         (isnumeric(varargin{k}) && isgraphics(varargin{k}, 'axes'));
+         (isnumeric(varargin{k}) && isscalar(varargin{k}) && ...
+         isgraphics(varargin{k}, 'axes'));
    end
 end
 
