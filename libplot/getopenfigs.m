@@ -17,16 +17,14 @@ function H = getopenfigs(H,flag)
 % 
 % See also: 
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
+%% parse inputs
 
 arguments
    H (:,1) matlab.ui.Figure
    flag (1,1) string {mustBeMember(flag,{'match','count'})} = 'match'
 end
 
-%------------------------------------------------------------------------------
+%% main function
 
 allfigs = findobj(allchild(0), 'flat', 'type', 'figure');
 if isempty(H)

@@ -32,24 +32,42 @@ function H = scatterfit(varargin)
 %     end
 % end
 
-% Ensure 2 or 3 inputs.
-narginchk(2, 3)
+% TODO face colors
+% If alphadata is a vector of size equal to the data then set face alpha to flat
+% to map face alpha onto each point. So I guess shading flat means each data
+% point maps directly to it's color and shading interp interpolates
 
-switch nargin
-   case 2                  % scatterfit(x,y)
-      f = gcf;
-      x = varargin{1};
-      y = varargin{2};
-   otherwise               % scatterfit(f, x, y)
-      f = varargin{1};
-      x = varargin{2};
-      y = varargin{3};
+%% parse inputs
+
+% at least two inputs (x,y), and as many additional for call to plot.
+narginchk(2, Inf)
+
+% look for provided axes or figure
+[h, args, nargs, isfigure] = parsegraphics(varargin{:});
+
+if isempty(h) % no figure or axes was provided
+   f = figure;
+   ax = axes('Parent', f);
+elseif isfigure % h is a figure
+   f = h;
+   ax = axes('Parent', f);
+else % h is an axes object
+   ax = h;
+   f = get(ax, 'Parent');
 end
+
+% pull out x and y and remove them
+x = args{1};
+y = args{2};
+args = args(3:end);
+
+% Call to rmMarkerArgs would have gone here, but calling syntax below works.
+args = rmMarkerArgs(args);
 
 % Create the chart axes and scatter plot.
 H.figure = f;
-H.ax = axes('Parent', f);
-H.plot = plot(H.ax,x,y,'o');  % scatter(ax, x, y, 6, "filled")
+H.ax = ax;
+H.plot = plot(H.ax,x,y, 'Marker', 'o', args{:});
 hold on;
 formatPlotMarkers;
 
@@ -62,8 +80,19 @@ H.onetoone = addOnetoOne;
 xylabel('x data','ydata')
 legend('data','linear fit','1:1 line')
 
-% TODO face colors
-% If alphadata is a vector of size equal to the data then set face alpha to flat
-% to map face alpha onto each point. So I guess shading flat means each data
-% point maps directly to it's color and shading interp interpolates
+function args = rmMarkerArgs(args)
+
+args = args(~cellfun(@(arg) strcmp(arg, 'o'), args));
+
+% % Update: If 'Marker' is provided, then use it. But need to check for an
+% additional argument specifying the type
+
+% % Remove marker types from args in case they are provided
+% rmargs = cellfun(@(arg) strcmp(arg, 'Marker'), args);
+% if any(rmargs) % works if rmargs is empty or logical
+%    % need to complete this, the idea is if "marker" is found, remove the enxt
+%    % entry too
+% end
+% args = args(~rmargs);
+% args = args(~cellfun(@(arg) strcmp(arg, 'o'), args));
 

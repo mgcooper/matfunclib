@@ -13,11 +13,11 @@ function h = figformat(varargin)
 
 % see xlim('tickaligned') method
 
-%-------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+% parse inputs
+p = magicParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
 p.addParameter(    'reformat',           false,      @(x)islogical(x)  );
 p.addParameter(    'textfontsize',       14,         @(x)isscalar(x)   );
@@ -46,37 +46,38 @@ p.addParameter(    'xgridminor',         'off',      @(x)ischar(x)     );
 p.addParameter(    'ygridminor',         'off',      @(x)ischar(x)     );
 
 p.parseMagically('caller');
-%-------------------------------------------------------------------------------
 
 suppliedaxis = p.Results.suppliedaxis;
 
+%%
+
 % if an axis is provided, only apply settings to that object (note that
 % some settings cannot be controlled axis-by-axis so mileage will vary)
-setaxisonly    = false;
+setaxisonly = false;
 if ~isaxis(suppliedaxis)
-   suppliedaxis   = gca;
+   suppliedaxis = gca;
 else
-   setaxisonly    = true;
+   setaxisonly = true;
 end
 
-%    switch p.Results.reformat
-%       case true
-%          h = refigformat(p);
-%       case false
-%          h = newfigformat(p);
-%    end
+% switch p.Results.reformat
+%    case true
+%       h = refigformat(p);
+%    case false
+%       h = newfigformat(p);
+% end
 % end
 %
 %
 % function h = newfigformat(p)
 
-%    p.parseMagically('caller');
+% p.parseMagically('caller');
 
 unmatched = p.Unmatched;
 
 % might use this:
-% allChildren    = findobj(allchild(gcf));
-% htext    = findobj(allChildren,'Type','Text')
+% allChildren = findobj(allchild(gcf));
+% htext = findobj(allChildren,'Type','Text')
 
 % this was from answers, it converts open figures into a tiledlayout
 %    figlist=get(groot,'Children');
