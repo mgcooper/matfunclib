@@ -1,12 +1,12 @@
-function varargout = xylabel(xlab,ylab,varargin)
-%XYLABEL wrapper to plot both labels with one command
+function varargout = xylabel(xlabelstring,ylabelstring,varargin)
+%XYLABEL place xlabel and ylabel with one command
 % 
 % xylabel('xlabel','ylabel')
 % 
 % See also
 
-h(1) = xlabel(xlab,varargin{:});
-h(2) = ylabel(ylab,varargin{:});
+h(1) = xlabel(xlabelstring,varargin{:});
+h(2) = ylabel(ylabelstring,varargin{:});
 
 switch nargout
    case 0
