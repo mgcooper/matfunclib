@@ -18,13 +18,17 @@ out = arrayfun(fn, varargin{:}, 'UniformOutput', false);
 
 % try to put in a uniform array
 try
-   [varargout{1:nargout}] = horzcat(out{:});
-catch
-   try
+   if isrow(out{1})
       [varargout{1:nargout}] = vertcat(out{:});
-   catch
-      [varargout{1:nargout}] = out;
+   elseif iscolumn(out{1})
+      [varargout{1:nargout}] = horzcat(out{:});
+   elseif ~isvector(out{1}) && ismatrix(out{1})
+      % ambiguous, return to this later
+   elseif numel(size(out{1})) == 3
+      [varargout{1:nargout}] = cat(3, out{:});
    end
+catch
+   [varargout{1:nargout}] = out;
 end
 
 end
