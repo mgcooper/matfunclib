@@ -1,4 +1,13 @@
 function props = tableprops(T,varargin)
+%TABLEPROPS return table properties as a string array
+%
+%  props = tableprops(T) returns properties for all variables in table T
+%
+%  props = tableprops(T,vars) returns properties for variables VARS in table T
+% 
+% See also
+
+narginchk(1,2);
 
 if nargin == 1
    vars  = string(T.Properties.VariableNames);
@@ -15,7 +24,7 @@ else
    end
 end
 
-props    = [vars;units];
+props = [vars;units];
    
 %    vars  = cellstr(T.Properties.VariableNames);
 %    units = string(T.Properties.VariableUnits);

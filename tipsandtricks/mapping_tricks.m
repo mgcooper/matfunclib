@@ -12,6 +12,86 @@ narginchk(0,0)
 % cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libspatial'));
 % doc mapping
 
+%% help pages
+
+% Image Coordinate Systems
+% Define World Coordinate System of Image
+
+%%
+
+% Regarding the construction of the grid from the R object. From the
+% documentation for MapCellsReference: "The Mapping Toolbox™ and Image
+% Processing Toolbox™ use the convention for the location of the origin
+% relative to the raster cells or sampling points such that, at a sample
+% location or at the center of a cell, x has an integer value equal to the
+% column index. Likewise, at a sample location or at the center of a cell,
+% y has an integer value equal to the row index.". This is why we construct
+% the grid by adding the cell size /2 to the first X world coordinate, and
+% subtracting the cells size/2 from the last X world coordinate (m+0.5)
+% ____________________
+% HORIZONTAL DIMENSION
+% 
+% center of first cell                 center of last cell
+%           |                                   |
+%           v                                   v
+% 0   0.5   1   1.5   2   2.5  m-1.5 m-1 m-0.5  m  m+0.5
+%       ___________________       ___________________
+%      |         |         |     |         |         |
+% o    |    o    |    o    | ... |    o    |    o    |    o
+%      |         |         |     |         |         | 
+%       -------------------       -------------------
+% ^    ^                                             ^
+% |    |                                             |
+% |     \                                             \
+%  \    raster left edge = R.XWorldLimits(1)           raster right edge = R.XWorldLimits(2)
+%   \
+%    origin
+% __________________
+% VERTICAL DIMENSION
+% 
+%     o <- origin
+%
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of first cell
+% |       |
+%  -------
+%     .
+%     .
+%     .
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of last cell
+% |       |
+%  -------  <- raster bottom edge ( R.YWorldLimits(2) )
+%
+%     o <- phantom point mirroring origin on other end
+% 
+% 
+% The default R = maprefcells() is equivalent to:
+% xlimits = [0.5 2.5];
+% ylimits = [0.5 2.5];
+% rasterSize = [2 2];
+% R = maprefcells(xlimits, ylimits, rasterSize)
+% 
+% This defines a 2x2 raster with four grid cells.
+% 
+% This is why when starting with an R object, creating a grid involves adjusting
+% the X/YWorldLimits (or Latitude/LongitudeLimits) INWARD by 1/2 cell size.
+% 
+% If instead, the raster cell centers are used to construct an R object, the
+% opposite is true - the min/max cell centers are adjusted OUTWARD by 1/2 cell
+% size to create the xlimits/ylimits inputs to MAPREFCELLS or GEOREFCELLS
+
+%% resources to revist
+
+% https://github.com/wme7/Aero-matlab
+% https://github.com/Alexander-Barth/GeoMapping.jl
+% https://github.com/kunlz/mapplot/blob/master/plotmap.m
+% https://github.com/kkyyhh96/MapProjectionMatlab
+% https://github.com/IPGP
+% https://github.com/IPGP/a-simple-spatial-database
+
 %% reading polylinez
 
 % see baseflow map_region and cell_fun.m for how I used m_shaperead to read a
@@ -129,9 +209,18 @@ figure; scatter(X(:),Y(:),12,swsdavg2(:))
 % R = georefcells(latlim,lonlim,cellExtentInLatitude,cellExtentInLongitude)
 % R = georefcells(latlim,lonlim,___,Name,Value)
 
-% I could contruct one of these, for example, if I have a netcdf file or some other grid of geographic data that isn't saved as a geotiff or arcgrid and therefore cannot be read into matlab with geotiffread or arcgridread, but it does have the lat/lon info so I can figure out lat lim, lon lim, etc. Note, however, that the lat/lon values in a netcdf lat and lon matrix are the cell centers, and for georefcells, the latlim/lonlim values are the cell edges, so need to adjust accordingly. I have an example in the Geog 207 folder SWE_extract_daily_region_props 
+% I could contruct one of these, for example, if I have a netcdf file or some
+% other grid of geographic data that isn't saved as a geotiff or arcgrid and
+% therefore cannot be read into matlab with geotiffread or arcgridread, but it
+% does have the lat/lon info so I can figure out lat lim, lon lim, etc. Note,
+% however, that the lat/lon values in a netcdf lat and lon matrix are the cell
+% centers, and for georefcells, the latlim/lonlim values are the cell edges, so
+% need to adjust accordingly. I have an example in the Geog 207 folder
+% SWE_extract_daily_region_props
 % 
-% 4. Do the same as above with regularly spaced samples i.e. 'postings'. The only difference as far as I can tell would be the R.RasterInterpretation field would be set to 'postings' instead of 'cells':
+% 4. Do the same as above with regularly spaced samples i.e. 'postings'. The
+% only difference as far as I can tell would be the R.RasterInterpretation field
+% would be set to 'postings' instead of 'cells':
 
 % R = georefpostings()
 % R = georefpostings(latlim,lonlim,rasterSize)
@@ -219,7 +308,7 @@ f = figure;
 
 % 11. Control the spacing of a worldmap (or axesm) object graticule:
 
-ax1 =   worldmap([latmin latmax],[lonmin lonmax]); hold on;
+ax1 = worldmap([latmin latmax],[lonmin lonmax]); hold on;
 setm(ax1,'PLineLocation',2); % change the Parallel line locations to be 2 degrees apart
 setm(ax1,'PLabelLocation',2) % similarly for the labels
 
@@ -257,9 +346,9 @@ set(h1,'FaceAlpha','texturemap','AlphaData',double(~isnan(Zsmb)));
 % PLOT VECTOR DATA ON SURFACE 
 load('/Users/coop558/mydata/e3sm/topo/ifsar_region_160m');
 load('sag_basin');
-HS      = DEM.HS;
-R       = DEM.R;
-zHS     = zeros(size(HS));
+HS = DEM.HS;
+R = DEM.R;
+zHS = zeros(size(HS));
 
 figure;
 mapshow(zHS,R,'CData',HS,'DisplayType','surface'); hold on;

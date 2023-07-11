@@ -14,6 +14,48 @@
          {"name":"ax",  "kind":"namevalue",  "type":["matlab.graphics.axis.Axes"]},
          {"name":"goto","kind":"flag",       "type":["char","choices={'goto'}","scalar"], "default":"'no'","purpose":"Option"},
          {"name":"goto","kind":"ordered",    "type":["char","choices={'goto'}"],"default":"'no'","purpose":"Option"}
+
+         Filenames, example from h5read
+         {"name":"filename", "kind":"required", "type":["char", "file"]},
+         {"name":"filename", "kind":"required", "type":[["file=*.h5,*.hdf"], ["matlabpathfile=*.h5,*.hdf"], ["char"]]},
+
+         Old filename format example from h5read
+         {"name":"filename", "kind":"required", "type":"filepath"},
+         {"name":"filename", "kind":"required", "type":[["filepath=*.shp,*.tif,*.tiff,*.json"], ["matlabpath=*.shp,*.tif,*.tiff,*.json"]]},
+
+         Not sure this is supported
+         {"name":"varargin", "kind":"optional", "multiplicity":"append"}
       ]
    }
 }
+
+...
+"h5read":
+{
+  "inputs":
+  [
+    
+  ]
+},
+...
+"imread":
+{
+  "inputs":
+  [
+    {"mutuallyExclusiveGroup":
+      [
+        {"name":"filename", "kind":"required", "type":[["filepath=*.cur,*.ico,*.gif,*.hdf"], ["matlabpath=*.cur,*.ico,*.gif,*.hdf"]]},
+        [
+          {"name":"filename", "kind":"required", "type":[["char"], ["filepath"]]},
+          {"name":"fmt", "kind":"required", "type":["char", "choices={'cur','ico','gif','hdf'}"]}
+        ]
+      ]
+    },
+    {"name":"idx", "kind":"optional", "type":["numeric", "vector", ">=1"]}
+  ],
+  "outputs":
+  [
+    {"name":"A", "type":[["numeric", "2d"], ["numeric", "3d"]]}
+  ]
+},
+...

@@ -4,8 +4,8 @@
    {
       "inputs":
       [
-         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"},
-         {"name":"gohome","kind":"flag","type":["char","choices={'gohome'}"], "default":"'no'"}
+         {"name":"projectname","kind":"ordered","type":["char","choices=projectdirectorylist"],"purpose":"Option"},
+         {"name":"updatefiles","kind":"namevalue","type":["logical","scalar"],"purpose":"Option"}
       ]
    }
 }

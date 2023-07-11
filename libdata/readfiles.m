@@ -104,7 +104,7 @@ function defaultopts = defaultImportOpts(filenameorlist)
 % variablenames 'false' to check later
 
 filelist = makefilelist(filenameorlist);
-filename = [filelist(1).folder '/' filelist(1).name];
+filename = fullfile(filelist(1).folder,filelist(1).name);
 
 if isspreadsheet(filename) || istextfile(filename)
    defaultopts = detectImportOptions(filename);
@@ -148,7 +148,7 @@ for iFile = 1:numfiles
    % main struct will be collapsed, see the main calling routine
 
    thisName = filelist(iFile).name;
-   thisFile = [filepath '/' thisName];
+   thisFile = fullfile(filepath,thisName);
    thisName = strrep(thisName,filetype,'');
    thisName = strrep(thisName,' ','_');
    fieldName = matlab.lang.makeValidName(thisName,'ReplacementStyle','delete');

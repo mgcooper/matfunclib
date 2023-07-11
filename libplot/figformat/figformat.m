@@ -8,11 +8,16 @@ function h = figformat(varargin)
 % the problem with the current add second axis function is that i can't add
 % new plots to the figure, they are hidden behind the data.
 
-%-------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+% NOTE see export_fig function copyfig, should fix the issues where not all
+% figure props are copied over with copyobj
+
+% see xlim('tickaligned') method
+
+% parse inputs
+p = magicParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
 p.addParameter(    'reformat',           false,      @(x)islogical(x)  );
 p.addParameter(    'textfontsize',       14,         @(x)isscalar(x)   );
@@ -41,37 +46,38 @@ p.addParameter(    'xgridminor',         'off',      @(x)ischar(x)     );
 p.addParameter(    'ygridminor',         'off',      @(x)ischar(x)     );
 
 p.parseMagically('caller');
-%-------------------------------------------------------------------------------
 
 suppliedaxis = p.Results.suppliedaxis;
 
+%%
+
 % if an axis is provided, only apply settings to that object (note that
 % some settings cannot be controlled axis-by-axis so mileage will vary)
-setaxisonly    = false;
+setaxisonly = false;
 if ~isaxis(suppliedaxis)
-   suppliedaxis   = gca;
+   suppliedaxis = gca;
 else
-   setaxisonly    = true;
+   setaxisonly = true;
 end
 
-%    switch p.Results.reformat
-%       case true
-%          h = refigformat(p);
-%       case false
-%          h = newfigformat(p);
-%    end
+% switch p.Results.reformat
+%    case true
+%       h = refigformat(p);
+%    case false
+%       h = newfigformat(p);
+% end
 % end
 %
 %
 % function h = newfigformat(p)
 
-%    p.parseMagically('caller');
+% p.parseMagically('caller');
 
 unmatched = p.Unmatched;
 
 % might use this:
-% allChildren    = findobj(allchild(gcf));
-% htext    = findobj(allChildren,'Type','Text')
+% allChildren = findobj(allchild(gcf));
+% htext = findobj(allChildren,'Type','Text')
 
 % this was from answers, it converts open figures into a tiledlayout
 %    figlist=get(groot,'Children');
@@ -476,6 +482,10 @@ function ff = reformatTickLabels(ff)
 ff.mainAxis.XAxis.TickLabels = compose('%g',ff.mainAxis.XAxis.TickValues);
 ff.mainAxis.YAxis.TickLabels = round(ff.mainAxis.YAxis.TickValues-1,1);
 ff.backgroundAxis.Position   = ff.mainAxis.Position;
+
+% for reference, this would convert exponential ticklabels to fixed point
+% set(gca, "YTickLabels", compose('%s', string(get(gca, "YTick"))))
+
 
 
 % this would work to modify all axes e..g in a subplot, but it messes with

@@ -1,4 +1,4 @@
-function H = addOnetoOne(varargin)
+function varargout = addOnetoOne(varargin)
 %addOnetoOne adds a one:one line to an open plot
 %   Adds a solid black line of width 1, scales the x and y lims to be
 %   equal, returns the handle to the plot so the user can specify line
@@ -41,16 +41,31 @@ function H = addOnetoOne(varargin)
 %     end
 % end
 
-hold on; axis tight;
+narginchk(0,Inf)
 
-newlims(1) = min(min(xlim),min(ylim));
-newlims(2) = max(max(xlim),max(ylim));
+hold on; 
+if nargin < 1
+   axis tight;
+   
+   %pad = pad/100*(newlims(2)-newlims(1));
+   
+   newlims(1) = min(min(xlim),min(ylim)) * 0.98;
+   newlims(2) = max(max(xlim),max(ylim)) * 1.02;
+   
+elseif strcmp(varargin{1},'keeplims')
+   varargin = varargin(2:end);
+   newlims = xlim;
+end
 
-set(gca,'XLim',newlims,'YLim',newlims);
-
+set(gca,'XLim',newlims,'YLim',newlims);   
 delta = (newlims(2) - newlims(1))/100;
 
+
 H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
+
+if nargout == 1
+   varargout{1} = H;
+end
 
 % i diabled this b/c it's the reason the exponent isn't showing up on the
 % tick labels anymore, need to come up with a solution

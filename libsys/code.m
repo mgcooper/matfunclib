@@ -1,4 +1,4 @@
-function msg = code(cmd)
+function varargout = code(cmd)
 %CODE pass cmd to vscode to open a project (cmd is a path)
 % 
 %  msg = CODE(cmd) 
@@ -18,3 +18,7 @@ if nargin < 1
    cmd = '.';
 end
 msg = system(['/usr/local/bin/code ' cmd]);
+
+if nargout == 1
+   varargout{1} = msg;
+end

@@ -4,16 +4,18 @@
    {
       "inputs":
       [
-         {"name":"t1",  "kind":"required",   "type":["datetime","numeric","column"]},
-         {"name":"t2",  "kind":"required",   "type":["datetime","numeric","column"]},
-         {"name":"dt",  "kind":"required",   "type":[["char", "choices={'y','mm','w','d','h','m','s'}"],["duration"]],"purpose":"Option"}
+         {"name":"t1", "kind":"required", "type":["datetime","numeric","column"]},
+         {"name":"t2", "kind":"required", "type":["datetime","numeric","column"]},
+         {"name":"dt", "kind":"required", "type":[["char", "choices={'y','mm','w','d','h','m','s'}"],["duration"]],"purpose":"Option"},
+         {"name":"CalType","kind":"ordered", "type":["char", "choices={'noleap', 'leap'}"],"default":"'leap'","purpose":"Option"},
+         {"name":"TimeZone", "kind":"namevalue", "type":[["choices=matlab.internal.datetime.functionSignatures.timezoneChoices()"], ["char","row"]]}
       ]
    },
    "timespan":
    {
       "inputs":
       [
-         {"name":"T",   "kind":"required",   "type":["datetime","timetable","duration"]}
+         {"name":"T", "kind":"required", "type":["datetime","timetable","duration"]}
       ]
    }
 }

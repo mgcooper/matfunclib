@@ -15,8 +15,8 @@ switch parser
       src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateOP.m');
    case 'NP' % no parser
       src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateNP.m');
-   case 'ArgList' % arguments block
-      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateArgList.m');
+   case 'AP' % arguments block
+      src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateAP.m');
 end
 
 copyfile(src,newfuncpath);

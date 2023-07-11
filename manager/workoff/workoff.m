@@ -1,15 +1,19 @@
 function workoff(varargin)
-%WORKOFF removes project 'projectname' from path and (optionally) goes to
-%the home directory (go home)
+%WORKOFF deactivate project and (optionally) update activefiles
 % 
-%  workoff('myproject') removes paths and unsets env vars
+%  workoff('myproject') removes project paths, unsets env vars, updates the
+%  activefiles property of the projectdirectory to the currently open files, and
+%  sets the 'default' project active. 
 % 
-%  workoff('myproject','gohome') cd to the MATLABUSERPATH
+%  workoff('myproject','updatefiles', false) does not update the activefiles
+%  list associated with MYPROJECT to the current open files. Default is true,
+%  the current open files are saved to the activefiles property for MYPROJECT.
 % 
 % See also: workon, manager, addproject
 
-% TODO: save open help docs. couldn't find a built in or fex method but see
-% gethelpdoclink, it gets the active one, would 
+% TODO: save open variables in struct then save as .mat file, save open figures,
+% and save help docs? couldn't find a built in or fex method but see
+% gethelpdoclink, it gets the active one.
 
 % UPDATES
 % 10 Mar 2023 set active project to 'default' to prevent losing active files
@@ -23,32 +27,15 @@ function workoff(varargin)
 % updated for project 'default'.
 
 % parse inputs
-%-------------------------------------------------------------------------------
-p = inputParser;
-p.FunctionName = mfilename;
-
-projectnames = cat(1,cellstr(projectdirectorylist),'default');
-validproject = @(x)any(validatestring(x,projectnames));
-validoptions = @(x)any(validatestring(x,{'gohome','no'}));
-
-addOptional(p,'projectname',getactiveproject,validproject);
-addOptional(p,'gohome','gohome',validoptions);
-parse(p,varargin{:});
-
-projname = p.Results.projectname;
-gohome = string(p.Results.gohome) == "gohome"; % transform to logical
-
-% % if no path was provided, this assumes the local directory is it
-% if nargin == 0
-%    [~,projectname] = fileparts(pwd);
-% end
-%-------------------------------------------------------------------------------
+[projname, updatefiles] = parseinputs(mfilename, varargin{:});
 
 % deactivate the project
 disp(['deactivating ' projname]);
 
 % update the active file list
-setprojectfiles(projname);
+if updatefiles == true
+   setprojectfiles(projname);
+end
 
 % close all currently open files
 closeopenfiles();
@@ -66,6 +53,17 @@ end
 % unset the active project
 setprojectactive('default');
 
-if gohome; cdhome(); end
 
+function [projname, updatefiles] = parseinputs(funcname, varargin)
+p = inputParser;
+p.FunctionName = funcname;
 
+projectnames = cat(1,cellstr(projectdirectorylist),'default');
+validproject = @(x)any(validatestring(x,projectnames));
+
+addOptional(p,'projectname',getactiveproject,validproject);
+addParameter(p,'updatefiles',true,@(x)islogical(x));
+parse(p,varargin{:});
+
+projname = p.Results.projectname;
+updatefiles = p.Results.updatefiles;

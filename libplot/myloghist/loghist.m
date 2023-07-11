@@ -1,5 +1,5 @@
 function [h,edges,centers,hfit] = loghist(data,varargin)
-
+%LOGHIST
 p                 = inputParser;
 p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
@@ -21,9 +21,7 @@ edges          = p.Results.edges;
 centers        = p.Results.centers;
 dist           = string(p.Results.dist);
 theta          = p.Results.theta;
-
 varargs        = unmatched2varargin(p.Unmatched);
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % remove negative values
 data = data(data>0);

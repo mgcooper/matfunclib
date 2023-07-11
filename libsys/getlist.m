@@ -1,4 +1,4 @@
-function [ list ] = getlist( dirpath,pattern,varargin )
+function [ list ] = getlist( dirpath, pattern, varargin )
 %GETLIST get a list of files matching pattern in the folder dirpath
 % 
 %     [ list ] = getlist( dirpath,pattern,varargin )
@@ -12,44 +12,12 @@ function [ list ] = getlist( dirpath,pattern,varargin )
 % getfilelist which used 'pattern' as an optional input the input parser here
 % interpreted pattern as the output of the function 'pattern'
 
-%-------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+% parse inputs
+[dirpath, pattern, postget, subdirs, asfiles] = parseinputs( ...
+   dirpath, pattern, mfilename, varargin{:});
 
-validpath = ...
-   @(x)validateattributes(x,{'char','string'},{'scalartext'},'getlist','path',1);
-validpattern = ...
-   @(x)validateattributes(x,{'char','string'},{'scalartext'},'getlist','pattern',2);
-validoptions = ...
-   @(x)any(validatestring(x,{'show','none'}));
-
-addRequired(   p,'dirpath',                  validpath            );
-addRequired(   p,'pattern',                  validpattern         );
-addOptional(   p,'postget',      'none',     validoptions         );
-addParameter(  p,'subdirs',      false,      @(x)islogical(x)     );
-addParameter(  p,'asfiles',      false,      @(x)islogical(x)     );
-
-parse(p,dirpath,pattern,varargin{:});
-
-dirpath  = p.Results.dirpath;
-pattern  = p.Results.pattern;
-postget  = p.Results.postget;
-subdirs  = p.Results.subdirs;
-asfiles  = p.Results.asfiles;
-
-% could use optionParser for subdirs, asfiles, asstring,etc, and change postget
-% to name-value or add it to optionParser as 'showlist'
-
-%-------------------------------------------------------------------------------
-
-% note: I think using fullfile(path,file) or fullfile(path,wildcard) negates the
-% need to ever deal with trailing filesep, and I've been using it wrong all this
-% time like fullfile([path file])
-if strcmp(dirpath(end),'/') == false; dirpath = [dirpath '/']; end
-
-[pattern,pflag] = fixpattern(pattern,subdirs);
+% parse the wildcard pattern
+[pattern, pflag] = fixpattern(pattern,subdirs);
 
 list = dir(fullfile(dirpath,pattern));
 % list = list([list.isdir]); % activate if you only want folders
@@ -100,3 +68,35 @@ if searchsubs
    pattern = ['**/' pattern];
 end
 
+
+function [dirpath, pattern, postget, subdirs, asfiles] = parseinputs( ...
+   dirpath, pattern, funcname, varargin);
+
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+validpath = ...
+   @(x)validateattributes(x,{'char','string'},{'scalartext'},'getlist','path',1);
+validpattern = ...
+   @(x)validateattributes(x,{'char','string'},{'scalartext'},'getlist','pattern',2);
+validoptions = ...
+   @(x)any(validatestring(x,{'show','none'}));
+
+addRequired( p,'dirpath', validpath );
+addRequired( p,'pattern', validpattern );
+addOptional( p,'postget', 'none', validoptions );
+addParameter(p,'subdirs', false, @(x)islogical(x) );
+addParameter(p,'asfiles', false, @(x)islogical(x) );
+
+parse(p,dirpath,pattern,varargin{:});
+
+dirpath = p.Results.dirpath;
+pattern = p.Results.pattern;
+postget = p.Results.postget;
+subdirs = p.Results.subdirs;
+asfiles = p.Results.asfiles;
+
+% could use optionParser for subdirs, asfiles, asstring,etc, and change postget
+% to name-value or add it to optionParser as 'showlist'

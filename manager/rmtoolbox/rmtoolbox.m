@@ -1,14 +1,18 @@
-function toolboxes = rmtoolbox(tbname,varargin)
+function varargout = rmtoolbox(tbname,varargin)
 %RMTOOLBOX removes toolbox from toolboxdir (optional: delete the toolbox)
 %
 %
-% See also
+% See also renametoolbox addtoolbox
+
+% Note: I have an optional 'libary' option but i don't think it's needed if the
+% tbpath is read from the directory 'source' column, but maybe for backward
+% compatibility with older entries? 
 
 % parse inputs
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
 validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
 
@@ -17,24 +21,24 @@ addOptional(p, 'library','',validlibs);
 addParameter(p,'removesource',false,@(x)islogical(x));
 
 parse(p,tbname,varargin{:});
-tbname         = p.Results.tbname;
-sublib         = p.Results.library;
-removesource   = p.Results.removesource;
+tbname = p.Results.tbname;
+sublib = p.Results.library;
+removesource = p.Results.removesource;
 
 % function code
 
 % read in the toolbox directory and find the entry for this toolbox
-toolboxes   = readtbdirectory(gettbdirectorypath());
-tbidx       = findtbentry(toolboxes,tbname);
-tbpath      = gettbsourcepath(tbname);
+toolboxes = readtbdirectory(gettbdirectorypath());
+tbindx = findtbentry(toolboxes,tbname);
+tbpath = gettbsourcepath(tbname);
 
-if not(any(tbidx))
+if not(any(tbindx))
 
    error('toolbox not in directory');
 
 else
 
-   toolboxes(tbidx,:) = [];
+   toolboxes(tbindx,:) = [];
 
    fprintf('\n toolbox %s removed from toolbox directory \n',tbname);
 
@@ -50,6 +54,10 @@ rmjsondirectoryentry(tbname,'deactivate');
 
 % remove the source?
 removetbsourcedir(removesource,tbpath);
+
+if nargout == 1
+   varargout{1} = toolboxes;
+end
 
 
 

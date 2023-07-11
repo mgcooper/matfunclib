@@ -1,7 +1,18 @@
-% the original script that saved the world_borders.mat file
+function save_world_borders(varargin)
 
-f   = '/Volumes/GoogleDrive/My Drive/GIS/TM_WORLD_BORDERS-0/';
-f   = [f 'TM_WORLD_BORDERS-0.3.shp'];
-borders = shaperead(f);
-save('/Volumes/GoogleDrive/My Drive/MATLAB/myFunctions/raster/data/world_borders','borders');
-figure; mapshow(borders)
+if nargin < 2
+   pathsave = fullfile(getenv('MATLABFUNCTIONPATH'),'libraster','data');
+end
+
+if nargin < 1
+   pathfile = which('TM_WORLD_BORDERS-0.3.shp');
+   % for example:
+   % pathfile = '/Volumes/GoogleDrive/My Drive/GIS/TM_WORLD_BORDERS-0/TM_WORLD_BORDERS-0.3.shp';
+end
+borders = shaperead(pathfile);
+save(fullfile(pathsave, 'world_borders.mat'), 'borders');
+
+if plotfig == true
+   figure; 
+   mapshow(borders)
+end

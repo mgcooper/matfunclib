@@ -18,34 +18,9 @@ function h = formatPlotMarkers(varargin)
 %where lineobj is a handle to a plotted line. Note, the function checks in
 %lineobj is in fact an axis and if so,
 
-%-------------------------------------------------------------------------------
-p               = inputParser;
-p.FunctionName  = mfilename;
-p.CaseSensitive = false;
-p.KeepUnmatched = true;
-
-%addParameter(  p,'markerfacecolor', 'none',        @(x)ischar(x)     );
-addParameter(  p,'fillspacing',     nan,           @(x)isscalar(x)   );
-addParameter(  p,'sparsefill',      false,         @(x)islogical(x)  );
-addParameter(  p,'markersize',      10,            @(x)isnumeric(x)  );
-addParameter(  p,'suppliedaxes',    gca,           @(x)any(isaxis(x)));
-addParameter(  p,'suppliedline',    nan,           @(x)isobject(x)   );
-
-
-
-parse(p,varargin{:});
-
-%markerfacecolor   = rbg(p.Results.markerfacecolor);
-fillspacing    = p.Results.fillspacing;
-sparsefill     = p.Results.sparsefill;
-markersize     = p.Results.markersize;
-suppliedaxes   = p.Results.suppliedaxes;
-suppliedline   = p.Results.suppliedline;
-unmatched      = p.Unmatched;
-
-% convert unmatched to varargin
-varargs        = unmatched2varargin(unmatched);
-%-------------------------------------------------------------------------------
+% parse inputs
+[fillspacing, sparsefill, markersize, suppliedaxes, suppliedline, varargs] = ...
+   parseinputs(mfilename, varargin{:});
 
 % %  rather than isobject, I could use this to check the line input handle:
 %    if isa(suppliedline,'matlab.graphics.chart.primitive.Line')
@@ -62,8 +37,8 @@ if ~isnan(fillspacing)
    end
 end
 
-numaxes              = numel(suppliedaxes);
-numlineswithmarkers  = 0;
+numaxes = numel(suppliedaxes);
+numlineswithmarkers = 0;
 
 for m = 1:numaxes
 
@@ -86,10 +61,15 @@ for m = 1:numaxes
    % lines with markers on an axis will be found, but in some cases, such
    % as with lsline, try will fail, and no lines with markers will be
    % found, so we loop through all the children and get ones with markers
-   numchildren       = numel(Children);
-   linesWithMarkers  = false(numchildren);
+   numchildren = numel(Children);
+   linesWithMarkers = false(numchildren,1);
    for mm = 1:numchildren
-      child    = Children(mm);
+      child = Children(mm);
+      
+      if child.Type == "bar" % add more types: || child.Type == ""
+         % continue, leave linesWithMarkers(mm) = false;
+         continue
+      end
 
       % I think this is here in case a child has more than one line, but if
       % only one line per child, it would be sufficient to store the
@@ -98,14 +78,24 @@ for m = 1:numaxes
       try
          linehasmarkers = ~ismember({child.Marker},'none');
       catch
-         linehasmarkers = false(size({child.Marker}));
+         try
+            linehasmarkers = false(size({child.Marker}));
+         catch % catch-all back up
+            linehasmarkers = false;
+         end
       end
 
+      % May 2023 - if an errorbar is sent in without a marker, which is the
+      % default case for errorbar, then this will catch it, but this is hacky
+      if child.Type == "errorbar"
+         linehasmarkers = true;
+      end
+      
       % I replaced the child(linehasmarkers) with the true-false, so now
       % linesWithMarkers is a tf in the loop, and after the loop it becomes
       % a container for the lines with markers
       linesWithMarkers(mm) = any(linehasmarkers);
-      % linesWithMarkers     = child(linehasmarkers);
+      % linesWithMarkers = child(linehasmarkers);
       numlineswithmarkers = numlineswithmarkers + sum(linehasmarkers);
    end
 
@@ -141,24 +131,26 @@ for m = 1:numaxes
          markerSz = 6;
       end
       markerColor = thisLine.Color;
-      %         markerColor = thisLine.MarkerEdgeColor;
+      % markerColor = thisLine.MarkerEdgeColor;
 
       % errorbar doesn't have 'MarkerIndices'
       if iserrorbar(thisLine)
-         set(thisLine,     'MarkerSize',           markersize,       ...
+         set(thisLine,                                ...
+            'Marker' ,              'o' ,             ...
+            'MarkerSize',           markersize,       ...
             'Color',                markerColor,      ...
             'MarkerEdgeColor',      [.3 .3 .3],       ...
             'MarkerFaceColor',      markerColor,      ...
             'CapSize',              0,                ...
             varargs{:}                              );
       else
-         set(thisLine,     'MarkerIndices',        markerIdx,        ...
+         set(thisLine,                                ...
+            'MarkerIndices',        markerIdx,        ...
             'MarkerSize',           markersize,       ...
             'MarkerEdgeColor',      'none',           ...
             'MarkerFaceColor',      markerColor,      ...
             varargs{:}                              );
       end
-
    end
 
 end
@@ -169,6 +161,39 @@ if numlineswithmarkers == 0
    return;
 end
 
+
+function [fillspacing, sparsefill, markersize, suppliedaxes, ...
+   suppliedline, varargs] = parseinputs(funcname, varargin);
+
+
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+validaxis = @() any(isa(x,'matlab.graphics.axis.Axes'));
+
+%addParameter(  p,'markerfacecolor', 'none',        @(x) ischar(x) );
+addParameter(  p,'fillspacing',     nan,           @(x) isscalar(x) );
+addParameter(  p,'sparsefill',      false,         @(x) islogical(x) );
+addParameter(  p,'markersize',      10,            @(x) isnumeric(x) );
+addParameter(  p,'suppliedaxes',    gca,           @(x) validaxis(x) );
+addParameter(  p,'suppliedline',    nan,           @(x) isobject(x) );
+
+parse(p,varargin{:});
+
+%markerfacecolor   = rbg(p.Results.markerfacecolor);
+fillspacing    = p.Results.fillspacing;
+sparsefill     = p.Results.sparsefill;
+markersize     = p.Results.markersize;
+suppliedaxes   = p.Results.suppliedaxes;
+suppliedline   = p.Results.suppliedline;
+unmatched      = p.Unmatched;
+
+% convert unmatched to varargin
+varargs = namedargs2cell(unmatched);
+
+
 % for reference, could use these to validate suppliedline
 % if isa(linesWithMarkers,'matlab.graphics.primitive.Line.Type')
 
@@ -178,66 +203,3 @@ end
 % if isa(linesWithMarkers,'matlab.graphics.function.ImplicitFunctionLine.Type')
 % if isa(linesWithMarkers,'matlab.graphics.function.ParameterizedFunctionLine.Type')
 % if isa(linesWithMarkers,'matlab.graphics.chart.decoration.ConstantLine.Type')
-
-
-%    scatterfill     = true;
-%    if nargin == 1
-%       %Children    = varargin{1};  % plot handles (not axis)
-%       scatterfill  = varargin{1};  % true means fill every point
-%    else
-%       ax          = gca;
-%       Children    = allchild(ax);
-%    end
-%
-%    % this should work for cases where Children comes up empty
-%    try
-%       linesWithMarkers    = Children(~ismember({Children.Marker},'none'));
-%    catch
-%       h = [];
-%       return;
-%    end
-%
-%    for n = 1:numel(linesWithMarkers)
-%
-%       thisLine    = linesWithMarkers(n);
-%       numPoints   = numel(thisLine.XData);
-%
-%       if scatterfill == true
-%          markerIdx   = 1:numPoints;
-%          markerSz    = 6;
-%       else
-%          markerIdx = round(linspace(1,numPoints,10),0);
-%          markerSz    = 8;
-%       end
-%       markerColor = thisLine.Color;
-%       %         markerColor = thisLine.MarkerEdgeColor;
-%
-%       set(thisLine,   'MarkerIndices',        markerIdx,      ...
-%          'MarkerSize',           markerSz,       ...
-%          'MarkerEdgeColor',      'none',         ...
-%          'MarkerFaceColor',      markerColor,    ...
-%          varargin{:});
-%    end
-% end
-
-%    validQ         = @(x)validateattributes(x,{'numeric'},               ...
-%                         {'real','column','size',size(T)},               ...
-%                         'BFRA_dQdt','Q',1);
-%    validTime      = @(x)validateattributes(x,{'numeric'},               ...
-%                         {'real','column','size',size(Q)},               ...
-%                         'BFRA_dQdt','T',2);
-%    validDeriv     = @(x)validateattributes(x,{'char','string'},         ...
-%                         {'scalartext'},                                 ...
-%                         'BFRA_dQdt','deriv',3);
-%    validWindow    = @(x)validateattributes(x,{'numeric'},               ...
-%                         {'real','scalar'},                              ...
-%                         'BFRA_dQdt','window');
-%    validfitMethod = @(x)validateattributes(x,{'char','string'},         ...
-%                         {'scalartext'},                                 ...
-%                         'BFRA_dQdt','fitmethod');
-%    validpickMethod= @(x)validateattributes(x,{'char','string'},         ...
-%                         {'scalartext'},                                 ...
-%                         'BFRA_dQdt','pickmethod');
-%    addRequired(   p,'Q',                           validQ            );
-%    addRequired(   p,'T',                           validTime         );
-%    addRequired(   p,'deriv',                       validDeriv        );

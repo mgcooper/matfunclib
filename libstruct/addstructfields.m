@@ -15,6 +15,10 @@ function S = addstructfields(S,fields,varargin)
 % 
 % See also
 
+% TODO rename assignNonScalarStructFields, might also be worth abandoning this,
+% its akward, I think it is designed to assign to non-scalar structs, which is
+% tricky, so 
+
 %------------------------------------------------------------------------------
 % input parsing
 %------------------------------------------------------------------------------

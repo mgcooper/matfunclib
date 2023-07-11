@@ -7,6 +7,64 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% ? syntax for arguments block
+
+% to get the ? syntax, create the object, and call metaclass, e.g. if H is a
+% boxcchart handle:
+mc = metaclass(H);
+
+% If the class is known, use it, as in the opts.? arguments block method:
+mc = ?matlab.graphics.chart.primitive.BoxChart
+
+% Equivalent to:
+meta.class.fromName('matlab.graphics.chart.primitive.BoxChart')
+
+% But since the class name is not normally known, the workflow is to create the
+% object then query it using mc =metaclass(obj)
+
+% Example:
+
+% Generate some data
+data = randn(100, 3);
+
+% Create a boxchart
+H = boxchart(data); hold on;
+
+% Gett the metaclass
+mc = metaclass(H);
+
+% then use the 'Name' field, evaluate the next line to see what would go in the
+% arguments block:
+['opts.?' mc.Name]
+
+% e.g.:
+% arguments
+%    opts.?matlab.graphics.chart.primitive.BoxChart
+% end
+
+%% plotting into an open figure/axis
+
+
+
+%% best practice for passing around figures/axes
+
+% TLDR see hyetograph for an approach I came up with
+
+% https://www.mathworks.com/matlabcentral/answers/366950-how-do-i-use-the-tag-name-handle-of-a-axes-rather-than-gca
+
+% According to Stephen123, the best practice is to assign handles each time a
+% plot or figure is created, and pass them around. I thought maybe a better
+% practice would be to use a findall or findobj approach with or without a 'Tag'
+% or 'Name' property, but maybe not. He doesn't metnion gobject
+
+% =====================================================================
+% pretty plots
+% =====================================================================
+
+% prettyplot
+% dropshadow
+
+
 %%
 
 
@@ -72,8 +130,7 @@ title('$\mathsf{\alpha_{sub}\, here}$')
 % =====================================================================
 % check if figure exists
 % =====================================================================
-g = groot;
-if isempty(g.Children)
+if isempty(groot().Children)
   f = figure;
 else
   f = gcf;

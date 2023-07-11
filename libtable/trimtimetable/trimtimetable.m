@@ -5,8 +5,16 @@ function T = trimtimetable(T,t1,t2)
 % See also
 
 % parse inputs
+[T, t1, t2] = parseinputs(T, t1, t2, mfilename);
+
+% trim the time table
+ok = isbetween(T.Time,t1,t2);
+T = T(ok,:);
+
+
+function [T, t1, t2] = parseinputs(T, t1, t2, funcname);
 p = inputParser;
-p.FunctionName = mfilename;
+p.FunctionName = funcname;
 p.CaseSensitive = false;
 p.KeepUnmatched = true;
 
@@ -26,9 +34,3 @@ parse(p,T,t1,t2);
 T = p.Results.T;
 t1 = p.Results.t1;
 t2 = p.Results.t2;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-ok = isbetween(T.Time,t1,t2);
-T = T(ok,:);
-
-

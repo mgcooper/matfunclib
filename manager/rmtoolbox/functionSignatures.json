@@ -4,7 +4,7 @@
    {
       "inputs":
       [
-         {"name":"tbname",       "kind":"required",   "type":["char"]},
+         {"name":"tbname",       "kind":"required",   "type":["char","choices=gettbnamelist"]},
          {"name":"removesource", "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    }

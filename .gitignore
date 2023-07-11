@@ -4,9 +4,11 @@ manager/workoff/functionSignatures.json
 manager/activate/functionSignatures.json
 manager/deactivate/functionSignatures.json
 
-*~
+# ignore "submodules" (just repos in subfolders)
+exactextract*
 
 # Mac stuff
+*~
 .DS_Store
 Desktop.ini
 

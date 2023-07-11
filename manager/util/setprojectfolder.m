@@ -1,4 +1,4 @@
-function projectlist = setprojectfolder(projectname,projectfolder,projectlist)
+function varargout = setprojectfolder(projectname,projectfolder,projectlist)
 %SETPROJECTFOLDER set the activefolder property for a project
 % 
 %     projlist = setprojectfolder(projname,projfolder) sets the
@@ -51,3 +51,6 @@ projectlist.activefolder{projindx} = projectfolder;
 
 writeprjdirectory(projectlist);
 
+if nargout == 1
+   varargout{1} = projectlist;
+end

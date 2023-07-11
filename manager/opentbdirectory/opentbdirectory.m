@@ -1,11 +1,15 @@
 function opentbdirectory()
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%OPENTBDIRECTORY
+% 
+% 
+% See also
 
-dbpath = [getenv('TBDIRECTORYPATH') 'toolboxdirectory.csv'];
+% parse inputs
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+dbpath = fullfile(getenv('TBDIRECTORYPATH'),'toolboxdirectory.csv');
 
 system(sprintf('open %s',dbpath));

@@ -10,6 +10,9 @@ if nargin < 1
    evalin( 'base', ['open ' list{1}]);
 elseif nargin == 1
    evalin( 'base', ['open ' varargin{1}]);
+elseif nargin == 2
+   % varargin{2} is the workspace, either 'base' or 'caller'
+   evalin( varargin{2}, ['open ' varargin{1}]);
 end
 
 % % another way to do it:

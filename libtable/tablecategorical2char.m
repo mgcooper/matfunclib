@@ -1,18 +1,17 @@
 function T = tablecategorical2char(T)
+%TABLECATEGORICAL2CHAR convert categorical table variables to char 
+% 
+% T = tablecategorical2char(T)
+% 
+% See also 
 
-%    % NOTE: built-in 'vartype' accomplishes this, e.g.:
-%    bikeTbl  = readtable('BicycleCounts.csv');
-%    bikeData = table2timetable(bikeTbl);
-%    counts   =  bikeData{:,vartype('numeric')};
-%    mean(counts,'omitnan')
-   
-   idx         =  vartype('categorical');
-   newvars     =  T(:,idx);
-   varnames    =  newvars.Properties.VariableNames;
-   newvars     =  cellstr(table2array(newvars));
+idx = vartype('categorical');
+newvars = T(:,idx);
+varnames = newvars.Properties.VariableNames;
+newvars = cellstr(table2array(newvars));
 
-   for n = 1:numel(varnames)
-      T.(varnames{n})   = newvars(:,n);
-   end
-   
+for n = 1:numel(varnames)
+   T.(varnames{n}) = newvars(:,n);
+end
+
 end

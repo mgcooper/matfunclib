@@ -9,6 +9,110 @@ narginchk(0,0)
 
 %%
 
+% might try to implement this. It is not needed for parsegraphics, but might be
+% useful in general.
+
+% ifany = any(cellfun(@(v) strcmp('any', v), varargin));
+
+%% error handling
+
+% For error (and i think assert), use num2ordinal, unlike validateattributes,
+% where the integer is used. for example from checkxy.m:
+error(sprintf('map:%s:inconsistentXY', function_name), ...
+   'Function %s expected its %s and %s input arguments, %s and %s, to match in size or NaN locations.', ...
+   upper(function_name), num2ordinal(x_pos), num2ordinal(y_pos), ...
+   x_var_name, y_var_name)
+
+% for cleaner try-catch, use this:
+try
+   something
+catch e
+   rethrow(e)
+end
+
+% in a subfunction (or private/internal function meant to always be called)
+try
+   something
+catch e
+   throwAsCaller(e)
+end
+
+%%
+% below are snippets from zmat libary
+
+% contents of miss_hit:
+% project_root
+% suppress_rule: "redundant_brackets"
+% indent_function_file_body: false
+
+% Could use this instead of my other default nargin == 0 open file command,
+% and/or call the .help function
+if (nargin == 0)
+    fprintf(1, 'Usage:\n\t[output,info]=zmat(input,iscompress,method);\nPlease run "help zmat" for more details.\n');
+    return
+end
+
+% zipmat is a mex file, the 
+[varargout{1:max(1, nargout)}] = zipmat(input, iscompress, zipmethod);
+
+%% ? syntax for arguments block
+
+% to get the ? syntax, create the object, and call metaclass, e.g. if H is a
+% boxcchart handle:
+mc = metaclass(H);
+
+% If the class is known, use it, as in the opts.? arguments block method:
+mc = ?matlab.graphics.chart.primitive.BoxChart
+
+% Equivalent to:
+meta.class.fromName('matlab.graphics.chart.primitive.BoxChart')
+
+% But since the class name is not normally known, the workflow is to create the
+% object then query it using mc =metaclass(obj)
+
+% Example:
+
+% Generate some data
+data = randn(100, 3);
+
+% Create a boxchart
+H = boxchart(data); hold on;
+
+% Gett the metaclass
+mc = metaclass(H);
+
+% then use the 'Name' field, evaluate the next line to see what would go in the
+% arguments block:
+['opts.?' mc.Name]
+
+% e.g.:
+% arguments
+%    opts.?matlab.graphics.chart.primitive.BoxChart
+% end
+
+%% ax input
+
+% I tried to add an optional 'ax' first arg to mimic the way matlab pltoting
+% fucntions work, but the trick is the function must only accept vararagin, so
+% ax can be removed, and the remainig args parsed so this doesnt work b/c 'ax'
+% is interpreted as 'time' if passed in, and cannot be removed, although i
+% suppose i could do a complicated check if th efirst arg is an ax, then
+% time=flow, and flow=prec, and prec = varargin{1}
+
+% function h = hyetograph(time,flow,prec,varargin)
+% p = magicParser; %#ok<*NODEF>
+% p.FunctionName = mfilename;
+% p.addOptional('ax',     gca,              @(x)isaxis(x)                    );
+% p.addRequired('time',                     @(x)isnumeric(x)|isdatetime(x)   );
+% p.addRequired('flow',                     @(x)isnumeric(x)                 );
+% p.addRequired('prec',                     @(x)isnumeric(x)                 );
+% p.addOptional('t1',     min(time),        @(x)isnumeric(x)|isdatetime(x)   );
+% p.addOptional('t2',     max(time),        @(x)isnumeric(x)|isdatetime(x)   );
+% p.addParameter('units', {'mm','cm d-1'},  @(x)ischarlike(x)                );
+% p.parseMagically('caller');
+
+%%
+
 % various fex arg parsers
 % https://www.mathworks.com/matlabcentral/fileexchange/42205-argutils?s_tid=answers_rc2-1_p4_Topic
 % https://www.mathworks.com/matlabcentral/fileexchange/39772-easyparse?s_tid=answers_rc2-3_p6_Topic
