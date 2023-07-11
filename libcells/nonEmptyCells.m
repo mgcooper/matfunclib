@@ -17,7 +17,7 @@ function C = nonEmptyCells(C,varargin)
 % validopts = {''}; % can be a single char
 % opts = optionParser(validopts,varargin(:)); 
 
-C = cellArray(cellfun(@(c) ~isempty(c), C));
+C = C(cellfun(@(c) ~isempty(c), C));
 
 
 

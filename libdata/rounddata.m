@@ -1,6 +1,7 @@
 function data = rounddata(data)
-
-% % this implements my standard rounding rules. need to be careful with
+%ROUNDDATA custom function to round common climate model data to known precision
+% 
+% This implements my standard rounding rules. need to be careful with
 % incremental vs cumulative fluxes. i round to 8 digits to be safe but if
 % storing cumulative, that won't be needed.
 

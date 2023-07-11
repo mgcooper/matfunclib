@@ -1,4 +1,8 @@
 function V = cellflatten(C)
+%CELLFLATTEN flatten cell array
+% 
+% 
+% See also:
 
 try
    V = horzcat(C{:});

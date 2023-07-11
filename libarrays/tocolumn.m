@@ -3,6 +3,6 @@ function Column = tocolumn(Array)
 % 
 %  Column = tocolumn(Array)
 % 
-% See also tocol torow
+% See also: torow, vec
 Column = Array(:);
 

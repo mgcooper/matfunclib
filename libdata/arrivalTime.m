@@ -3,6 +3,7 @@ function [ arrival_times ] = arrivalTime( X )
 % 
 %  [arrival_times] = arrivalTime(X) returns arrival_times 
 % 
+% See also
 
 arrival_times = nan(size(X));
 for n = 1:length(X)

@@ -1,6 +1,9 @@
 function M = setdiag(M, v)
 % SETDIAG Set the diagonal of a matrix to a specified scalar/vector.
+% 
 % M = set_diag(M, v)
+% 
+% See also
 
 n = length(M);
 if length(v)==1

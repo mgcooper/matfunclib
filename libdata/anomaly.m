@@ -8,13 +8,13 @@ function [ anoms,norms,pctdif,pctanom ] = anomaly( data, norms )
 % See also: climatology.m, season.m, CDT
 
 % convert to columns and get the normals if not provided
-[r,c,p]  = size(data);
+[r,c,p] = size(data);
 if p>1
    error('input must be a vector or an array organized as columns')
 elseif c == 1
-   data  = data(:); % for the case of one row, make it a column
+   data = data(:); % for the case of one row, make it a column
 elseif c>r
-   data  = data';
+   data = data';
    warning('more columns than rows, assuming data needs to be transposed')
 end
 % if a column or row is passed in it doesn't make any difference if the
@@ -24,9 +24,9 @@ if nargin == 1
    norms = mean(data,1,'omitnan'); % take the average of each column
 end
 
-anoms    =   data - norms;
-ratio    =   anoms./norms;
-pctdif   =   100.*ratio;
-pctanom  =   100 + pctdif;
-% pctanom =   100.*data./normal;
+anoms = data - norms;
+ratio = anoms./norms;
+pctdif = 100.*ratio;
+pctanom = 100 + pctdif;
+% pctanom = 100.*data./normal;
 

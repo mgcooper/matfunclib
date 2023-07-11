@@ -1,34 +1,19 @@
 function varargout = aggannualdata(Data,aggfunc,aggvars)
 %AGGANNUALDATA aggregate annual data
 % 
-%  varargout = aggannualdata(Data,aggfunc,aggvars)
+%  [val, ival, tval] = aggannualdata(Data,aggfunc,aggvars) aggregates columns of
+%  timetable DATA to annual values using aggregation function AGGFUNC and
+%  returns the aggregated value VAL, index of the value IVAL, and time TVAL. 
+% 
+%  Example
+%  
+%  [val, ival, tval] = aggannualdata(Data,'min','Discharge') finds the minimum
+%  value of Data.Discharge each year and returns the minimum value, annual
+%  index, and annual date.
 % 
 % See also: 
 
-% originla plan:
-% mkfunction('findannualmaxmin','library','libtable','parser','MIP')
-
-% switch nargout
-%    case 2
-%       switch aggfunc
-%          case 'max'
-%             valfunc = @(x)max(x);
-%             idxfunc = @(x)find(x==max(x),1);
-%          case 'min'
-%             valfunc = @(x)min(x);
-%             idxfunc = @(x)find(x==min(x),1);
-%       end
-% 
-%       val = table2array(retime(Data,'regular',valfunc,'TimeStep',calyears(1)));
-%       ival = table2array(retime(Data,'regular',idxfunc,'TimeStep',calyears(1)));
-%       JAN1 = find(ismember(Data.Time,datetime(unique(year(Data.Time)),1,1,0,0,0)));
-%       tval = Data.Time(ival+JAN1);
-% 
-%    case 3
-%       
-% end
-
-% NOTE: I did not realize how slow isbetween is and year(datetime), so I need a
+% NOTE: isbetween and year(datetime) are very slow, so I need a
 % faster way to index into the calendars for arbitrary timesteps
 
 allvars = Data.Properties.VariableNames;
@@ -79,6 +64,31 @@ switch nargout
       varargout{3} = tval;
 end
 
+%%
+
+% original plan:
+% mkfunction('findannualmaxmin','library','libtable','parser','MIP')
+
+% switch nargout
+%    case 2
+%       switch aggfunc
+%          case 'max'
+%             valfunc = @(x)max(x);
+%             idxfunc = @(x)find(x==max(x),1);
+%          case 'min'
+%             valfunc = @(x)min(x);
+%             idxfunc = @(x)find(x==min(x),1);
+%       end
+% 
+%       val = table2array(retime(Data,'regular',valfunc,'TimeStep',calyears(1)));
+%       ival = table2array(retime(Data,'regular',idxfunc,'TimeStep',calyears(1)));
+%       JAN1 = find(ismember(Data.Time,datetime(unique(year(Data.Time)),1,1,0,0,0)));
+%       tval = Data.Time(ival+JAN1);
+% 
+%    case 3
+%       
+% end
+%%
 % aggData = ival;
 
 % for reference, here are two slick ways to get the annual max value and index,

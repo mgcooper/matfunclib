@@ -123,19 +123,16 @@ end
 
 function [Data, nanval, naninds] = parseinputs(Data, funcname, varargin)
 
-p = inputParser;
-p.FunctionName = funcname;
-
 % NOTE: to use the two optionals, when calling, must use [] for nanval if
 % naninds are passed in
+p = inputParser;
+p.FunctionName = funcname;
 p.addRequired( 'Data' );
-p.addOptional( 'nanval', nan, @(x)isnumeric(x) );
-p.addOptional( 'naninds', false, @(x)islogical(x) );
-
-% p.addOptional( 'nanval',   nan,   @(x)isnumeric(x) | islogical(x)   );
-% p.addParameter( 'nanval',   nan,   @(x)isnumeric(x)    );
-% p.addParameter( 'naninds',  false, @(x)islogical(x)    );
-
+p.addOptional( 'nanval', nan, @isnumeric);
+p.addOptional( 'naninds', false, @islogical);
+% p.addOptional( 'nanval',   nan,   @(x) isnumeric(x) | islogical(x));
+% p.addParameter( 'nanval',   nan,   @isnumeric);
+% p.addParameter( 'naninds',  false, @islogical);
 p.parse(Data, varargin{:});
 
 Data = p.Results.Data;
