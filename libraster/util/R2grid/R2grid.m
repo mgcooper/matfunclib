@@ -18,9 +18,9 @@ assert(license('test','map_toolbox')==1, ...
 validateattributes(R, ...
    {'map.rasterref.MapCellsReference', ...
    'map.rasterref.GeographicCellsReference'}, ...
-   {'scalar'}, 'R2grid', 'R', 2)
+   {'scalar'}, 'R2grid', 'R', 2) % might need {'scalar', 'object'}
 
-% note regarding the construction of the grid from the R object. From the
+% Regarding the construction of the grid from the R object. From the
 % documentation for MapCellsReference: "The Mapping Toolbox™ and Image
 % Processing Toolbox™ use the convention for the location of the origin
 % relative to the raster cells or sampling points such that, at a sample
@@ -29,42 +29,60 @@ validateattributes(R, ...
 % y has an integer value equal to the row index.". This is why we construct
 % the grid by adding the cell size /2 to the first X world coordinate, and
 % subtracting the cells size/2 from the last X world coordinate (m+0.5)
-%
+% ____________________
+% HORIZONTAL DIMENSION
+% 
 % center of first cell                 center of last cell
 %           |                                   |
 %           v                                   v
-%
 % 0   0.5   1   1.5   2   2.5  m-1.5 m-1 m-0.5  m  m+0.5
+%       ___________________       ___________________
+%      |         |         |     |         |         |
 % o    |    o    |    o    | ... |    o    |    o    |    o
-%
+%      |         |         |     |         |         | 
+%       -------------------       -------------------
 % ^    ^                                             ^
 % |    |                                             |
 % |     \                                             \
-%  \    raster left edge                              raster right edge
+%  \    raster left edge = R.XWorldLimits(1)           raster right edge = R.XWorldLimits(2)
 %   \
 %    origin
-
-
-% o <- origin
+% __________________
+% VERTICAL DIMENSION
+% 
+%     o <- origin
 %
-% - <- raster top edge ( R.YWorldLimits(1) )
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of first cell
+% |       |
+%  -------
+%     .
+%     .
+%     .
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of last cell
+% |       |
+%  -------  <- raster bottom edge ( R.YWorldLimits(2) )
 %
-% o <- center of first cell
-%
-% -
-%
-% .
-% .
-% .
-%
-% -
-%
-% o <- center of last cell
-%
-% - <- raster bottom edge ( R.YWorldLimits(2) )
-%
-% o
-
+%     o <- phantom point mirroring origin on other end
+% 
+% 
+% The default R = maprefcells() is equivalent to:
+% xlimits = [0.5 2.5];
+% ylimits = [0.5 2.5];
+% rasterSize = [2 2];
+% R = maprefcells(xlimits, ylimits, rasterSize)
+% 
+% This defines a 2x2 raster with four grid cells.
+% 
+% This is why when starting with an R object, creating a grid involves adjusting
+% the X/YWorldLimits (or Latitude/LongitudeLimits) INWARD by 1/2 cell size.
+% 
+% If instead, the raster cell centers are used to construct an R object, the
+% opposite is true - the min/max cell centers are adjusted OUTWARD by 1/2 cell
+% size to create the xlimits/ylimits inputs to MAPREFCELLS or GEOREFCELLS
 
 % Determine if R is planar or geographic and call the appropriate function
 if strcmp(R.CoordinateSystemType,'planar')
@@ -91,17 +109,16 @@ function [X,Y] = mapR2grid(R)
    % construct unique x,y pairs for each Zq grid centroid
    [X,Y] = meshgrid(xq,yq);
 
-   % UPDATE Jul 2019 added this based on experience, this is the
-   % reverse of how it's done in rasterinterp
+   % flip the y-coordinates upside down if oriented S-N
    if strcmp(R.ColumnsStartFrom,'north')
       Y = flipud(Y);
    end
 
-   % flip the data left/right if oriented E-W
+   % flip the x-coordinates left/right if oriented E-W
    if strcmp(R.ColumnsStartFrom,'east')
       X = fliplr(X);
    end
-
+   
 end
 
 function [X,Y] = geoR2grid(R)
@@ -121,17 +138,20 @@ function [X,Y] = geoR2grid(R)
    % construct unique x,y pairs for each Zq grid centroid
    [X,Y] = meshgrid(lonq,latq);
 
-   % UPDATE Jul 2019 added this based on experience, this is the
-   % reverse of how it's done in rasterinterp
+   % flip the y-coordinates upside down if oriented S-N
    if strcmp(R.ColumnsStartFrom,'north')
       Y = flipud(Y);
    end
 
-   % flip the data left/right if oriented E-W
+   % flip the x-coordinates left/right if oriented E-W
    if strcmp(R.ColumnsStartFrom,'east')
       X = fliplr(X);
    end
 
+   % Note: this might also work
+   % [X, Y] = meshgrid( R.intrinsicXToLongitude(1:R.RasterSize(2)), ...
+   %    R.intrinsicYToLatitude( 1:R.RasterSize(1)));
+   
 end
 
 end

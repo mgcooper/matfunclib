@@ -4,10 +4,36 @@
   {
      "inputs":
      [
-        {"name":"Z",  "kind":"required", "type":["numeric"]},
+        {"name":"V",  "kind":"required", "type":["numeric"]},
         {"name":"R",  "kind":"required", "type":["scalar"]},
         {"name":"Rq",  "kind":"required", "type":["scalar"]},
-        {"name":"method",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline'}"]}
+        {"name":"method",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima'}"]},
+        {"name":"extrap",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima','none'}"]}
+     ]
+  },
+  "rasterinterp":
+  {
+     "inputs":
+     [
+        {"name":"V",  "kind":"required", "type":["numeric"]},
+        {"name":"R",  "kind":"required", "type":["scalar"]},
+        {"name":"Xq",  "kind":"required", "type":["numeric"]},
+        {"name":"Yq",  "kind":"required", "type":["numeric"]},
+        {"name":"method",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima'}"]},
+        {"name":"extrap",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima','none'}"]}
+     ]
+  },
+  "rasterinterp":
+  {
+     "inputs":
+     [
+        {"name":"V",  "kind":"required", "type":["numeric"]},
+        {"name":"X",  "kind":"required", "type":["numeric"]},
+        {"name":"Y",  "kind":"required", "type":["numeric"]},
+        {"name":"Xq",  "kind":"required", "type":["numeric"]},
+        {"name":"Yq",  "kind":"required", "type":["numeric"]},
+        {"name":"method",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima'}"]},
+        {"name":"extrap",  "kind":"ordered", "type":["char", "choices={'nearest','linear','cubic','spline','makima','none'}"]}
      ]
   }
 }

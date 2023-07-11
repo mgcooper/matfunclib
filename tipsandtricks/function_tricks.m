@@ -7,6 +7,13 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%%
+
+% might try to implement this. It is not needed for parsegraphics, but might be
+% useful in general.
+
+% ifany = any(cellfun(@(v) strcmp('any', v), varargin));
+
 %% error handling
 
 % For error (and i think assert), use num2ordinal, unlike validateattributes,
