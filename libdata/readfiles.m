@@ -1,9 +1,9 @@
 function data = readfiles(filelist,varargin)
-%READFILES read data files
+%READFILES read data files in directory list FILELIST
 %
-%
-
-%-------------------------------------------------------------------------------
+%  data = readfiles(filelist)
+% 
+% Work in progress
 
 % TODO:
 % see 'convertvars'
@@ -11,55 +11,13 @@ function data = readfiles(filelist,varargin)
 % vars into properties, 1-d vars into table, with option to ask for lat,lon
 % location to put all vars into table
 % see 'tsvread
-
 % see get_Arctic_Rivers for example of parsing an xml metadata file
 
-%-------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-p.StructExpand    = false;
+%% parse inputs
+[filelist, outputtype, importopts, retimeornot, newtime, readvarnames] = ...
+   parseinputs(filelist, mfilename, varargin{:});
 
-validfiles  = @(x)validateattributes(x,{'struct','char','string'},   ...
-   {'nonempty'},'readfiles','filelist',1);
-validoutput = @(x)validateattributes(x,{'char'},                     ...
-   {'nonempty'},'readfiles','outputtype');
-validopts   = @(x)validateattributes(x,                              ...
-   {'matlab.io.text.DelimitedTextImportOptions',      ...
-   'matlab.io.spreadsheet.SpreadsheetImportOptions'}, ...
-   {'nonempty'},'readfiles','importopts');
-validnewt   =  @(x)validateattributes(x,{'datetime','duration'},     ...
-   {'nonempty'},'readfiles','newtime');
-
-defaultopts = defaultImportOpts(filelist);
-
-addRequired(   p,'filelist',                       validfiles         );
-addParameter(  p,'outputtype',      'struct',      validoutput        );
-addParameter(  p,'importopts',      defaultopts,   validopts          );
-addParameter(  p,'retime',          false,         @(x)islogical(x)   );
-addParameter(  p,'newtime',         NaT,           validnewt          );
-addParameter(  p,'ReadVariableNames',true,         @(x)islogical(x)   );
-%  addParameter(  p,'replacewithnan', NaN,           @(x)isnumeric(x)   );
-
-% NOTE: I cahnged outputtype to a parameter from optional, there are a
-% bunch of alternatives in the other folders in this functin's dir i was
-% learnign how to use it, the note below this suggests i wanted to see
-% dataoutputtype at the command line to remind me but if not passed in, use
-% struct, but i think a better approach is to have it be naemvalue and by
-% default i basically always tab complete anwya so i'll see the option
-
-parse(p,filelist,varargin{:});
-
-filelist       = p.Results.filelist;
-outputtype     = p.Results.outputtype;
-importopts     = p.Results.importopts;
-retimeornot    = p.Results.retime;
-newtime        = p.Results.newtime;
-readvarnames   = p.Results.ReadVariableNames;
-% nanval         = p.Results.replacewithnan;
-
-%-------------------------------------------------------------------------------
+%% main
 
 % either pass in a file list or a path to files
 filelist = makefilelist(filelist);
@@ -293,6 +251,54 @@ end
 if numtables == 1
    data = data.(tables{n});
 end
+
+%%
+function [filelist, outputtype, importopts, retimeornot, newtime, readvarnames] = ...
+   parseinputs(filelist, funcname, varargin)
+
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+p.StructExpand = false;
+
+validfiles = @(x)validateattributes(x,{'struct','char','string'}, ...
+   {'nonempty'},'readfiles','filelist',1);
+validoutput = @(x)validateattributes(x,{'char'}, ...
+   {'nonempty'},'readfiles','outputtype');
+validopts = @(x)validateattributes(x, ...
+   {'matlab.io.text.DelimitedTextImportOptions', ...
+   'matlab.io.spreadsheet.SpreadsheetImportOptions'}, ...
+   {'nonempty'},'readfiles','importopts');
+validnewt =  @(x)validateattributes(x,{'datetime','duration'}, ...
+   {'nonempty'},'readfiles','newtime');
+
+defaultopts = defaultImportOpts(filelist);
+
+addRequired(p,'filelist', validfiles);
+addParameter(p,'outputtype', 'struct', validoutput);
+addParameter(p,'importopts', defaultopts, validopts);
+addParameter(p,'retime', false, @islogical);
+addParameter(p,'newtime', NaT, validnewt);
+addParameter(p,'ReadVariableNames',true,@islogical);
+%addParameter(p,'replacewithnan', NaN,@isnumeric);
+
+% NOTE: I cahnged outputtype to a parameter from optional, there are a
+% bunch of alternatives in the other folders in this functin's dir i was
+% learnign how to use it, the note below this suggests i wanted to see
+% dataoutputtype at the command line to remind me but if not passed in, use
+% struct, but i think a better approach is to have it be naemvalue and by
+% default i basically always tab complete anwya so i'll see the option
+
+parse(p,filelist,varargin{:});
+
+filelist = p.Results.filelist;
+outputtype = p.Results.outputtype;
+importopts = p.Results.importopts;
+retimeornot = p.Results.retime;
+newtime = p.Results.newtime;
+readvarnames = p.Results.ReadVariableNames;
+% nanval = p.Results.replacewithnan;
 
 
 % function data = cleantimetable(data,retimeornot,newtime,newstep)

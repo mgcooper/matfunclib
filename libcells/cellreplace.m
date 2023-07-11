@@ -1,4 +1,14 @@
 function Cnewvals = cellreplace(Coldvals,Cnewvals)
+%CELLREPLACE replace values in name-value cell array
+% 
+% Cnewvals = cellreplace(Coldvals, Cnewvals) replaces occurrences of values in
+% Cold with values in Cnew.
+% 
+% 
+% 
+% See also
+
+error('cellreplace is not functional')
 
 % this is really 'vararginreplace' it assumes Coldvals and Cnewvals are cell
 % arrays with name-value pairs so the values are in the index right after the

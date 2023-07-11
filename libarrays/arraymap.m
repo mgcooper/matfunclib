@@ -1,5 +1,5 @@
 function varargout = arraymap(fn, varargin)
-%CELLMAP apply a function to an array, returning a cell array of results.
+%ARRAYMAP apply a function to an array, returning a cell array of results.
 %
 %  A = ARRAYMAP(A) 
 %

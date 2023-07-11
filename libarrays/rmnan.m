@@ -30,7 +30,7 @@ else
       data_out = data_in;
    elseif nargin == 2
       if dim == 1
-         idx =   isnan(data_in(:,1));
+         idx = isnan(data_in(:,1));
          data_in(idx,:) = [];
          data_out = data_in;
       elseif dim == 2
@@ -40,4 +40,3 @@ else
       end
    end
 end
-

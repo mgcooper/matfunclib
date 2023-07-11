@@ -1,5 +1,10 @@
 function [RL,istart,istop] = runlength(M)
-% calculates length of runs of consecutive equal items along columns of matrix M
+%RUNLENGTH calculate run lengths along columns of matrix M
+% 
+%  [RL,istart,istop] = runlength(M) returns the run lengths RL, and start and
+%  stop indices ISTART and ISTOP
+% 
+% See also
 
 % work along columns, so that you can use linear indexing
 

@@ -1,10 +1,11 @@
 function out = tocellstr(in)
 %TOCELLSTR convert char and string arrays to cellstr, or return cellstr input
+% 
+%  out = tocellstr(in) converts string, cell, or char array IN to cellstr array
+%  OUT
+% 
+% See also: tocolumn, torow, rowvec
 
-validateattributes(in,{'string','cell','char'},{'vector'},mfilename,'in',1)
-
-if iscellstr(in) %#ok<*ISCLSTR>
-   out = in;
-else
-   out = cellstr(in);
-end
+%#ok<*ISCLSTR>
+validateattributes(in, {'string','cell','char'}, {'vector'}, mfilename, 'in', 1)
+out = ifelse(iscellstr(in), in, cellstr(in));

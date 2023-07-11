@@ -1,33 +1,26 @@
 function A = rowsum(A,varargin)
 %ROWSUM compute sums across rows of array or tabular object A
-% 
+%
 % Syntax:
-% 
+%
 %  A = ROWSUM(A); returns the sum of all rows in A as a column
 %  A = ROWSUM(A,1); returns the sum of row 1 as a scalar
 %  A = ROWSUM(___,'addcolumn',true); adds the row sum as a column to A
-% 
+%
 % Author: Matt Cooper, DD-MMM-YYYY, https://github.com/mgcooper
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-
-p.addRequired( 'A',                             @(x)ismatrix(x)      );
-p.addOptional( 'rowindex',    defaultrows(A),   @(x)isnumeric(x)     );
-p.addParameter('addcolumn',   false,            @(x)islogical(x)     );
-
+%% parse inputs
+p = magicParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+p.addRequired( 'A', @ismatrix);
+p.addOptional( 'rowindex', defaultrows(A), @isnumeric);
+p.addParameter('addcolumn', false, @islogical);
 p.parseMagically('caller');
 
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
-
+%% main
 wastabular = istable(A) || istimetable(A);
-
 if wastabular
    T = A;
    A = table2array(T);
@@ -51,6 +44,7 @@ else
    A = S;
 end
 
+%% subfunctions
 function rows = defaultrows(A)
 
 if istable(A) || istimetable(A)
@@ -58,11 +52,4 @@ if istable(A) || istimetable(A)
 else
    rows = 1:size(A,1);
 end
-
-
-
-
-
-
-
 

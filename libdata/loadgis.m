@@ -10,46 +10,11 @@ function [S,A] = loadgis(fname,varargin)
 % NOTE: I probably need to have one function for loadshapefile and one for
 % loadraster to have [S,A] and [Z,R] outputs.
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.KeepUnmatched   = true;
+%% PARSE INPUTS
+[fname, reader, UseGeoCoords, Selector, Attributes, BoundingBox, namedargs] = ...
+   parseinputs(fname, mfilename, varargin{:});
 
-% if we do this, then only files returned by getgisfilelist will work, and since
-% fname is required, I don't think we need to be strict like we would with
-% addOptional
-% validstrings      = getgisfilelist;
-% validfilename     = @(x)any(validatestring(x,validstrings));
-validfilename = @(x)ischarlike(x);
-validreader = @(x)any(validatestring(x,{'shaperead','m_map'}));
-
-addRequired(p,    'fname',                         validfilename     );
-addOptional(p,    'reader',         'shaperead',   validreader       );
-addParameter(p,   'UseGeoCoords',   true,          @(x) islogical(x)    );
-addParameter(p,   'Selector',       {},            @(x) iscell(x)       );
-addParameter(p,   'Attributes',     {},            @(x) iscell(x)       );
-addParameter(p,   'BoundingBox',    [],            @(x) isnumeric(x)    );
-
-% p.parse(fname,varargin{:});
-p.parseMagically('caller');
-
-% this is how matlab validates filenames:
-% validateattributes(filename,{'char'},{'vector'},mfilename,'FILENAME',1);
-
-% UPDATE: I think namedargs2cell is what I need
-% I thought I could pass arbitrary name-value pairs and use this to get them,
-% but only the values are stored, not the names, so e.g. in this call:
-% loadgis(fname,'UseGeoCoords',true)
-% opts is a cell with one value 'true', not 'UseGeoCoords',true
-% opts  = struct2cell(p.Unmatched);
-% So for now, I use varargin
-
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
-
-namedargs = parser2varargin(p,'notusingdefaults',{'fname'});
+%% main
 
 % if fname is not already on the path and/or is not a full-path filename, try to
 % find the file in the USERGISPATH
@@ -237,33 +202,75 @@ function S = geostructinit(geometry,numfeatures,varargin);
 %  name-value input.
 %
 %  Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
-%--------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.addRequired(   'geometry',              @(x)ischar(x)           );
-p.addRequired(   'numfeatures',           @(x)isnumeric(x)        );
-p.addParameter(  'fieldnames',   '',      @(x)ischar(x)|iscell(x) );
+% 
+% See also: 
 
+% parse inputs
+p = inputParser;
+p.FunctionName = mfilename;
+p.addRequired('geometry', @ischar);
+p.addRequired('numfeatures', @isnumeric);
+p.addParameter('fieldnames', '', @(x)ischar(x)|iscell(x) );
 p.parse(geometry,numfeatures,varargin{:});
-
-geometry    = p.Results.geometry;
+geometry = p.Results.geometry;
 numfeatures = p.Results.numfeatures;
-fieldnames  = p.Results.fieldnames;
-%--------------------------------------------------------------------------
+fieldnames = p.Results.fieldnames;
 
 % make sure the geometry is capitalized
 geometry(1) = upper(geometry(1));
 
 % init a geo struct
-[S(1:numfeatures).Geometry]  = deal(geometry);
-[S(1:numfeatures).Lon]       = deal(nan);
-[S(1:numfeatures).Lat]       = deal(nan);
+[S(1:numfeatures).Geometry] = deal(geometry);
+[S(1:numfeatures).Lon] = deal(nan);
+[S(1:numfeatures).Lat] = deal(nan);
 
 for n = 1:numel(fieldnames)
    [S(1:numfeatures).(fieldnames{n})] = deal(nan);
 end
 
+%% main parser
+function [fname, reader, UseGeoCoords, Selector, Attributes, BoundingBox, namedargs] = ...
+   parseinputs(fname, funcname, varargin)
 
+p = inputParser;
+p.FunctionName = funcname;
+p.KeepUnmatched = true;
+
+validreader = @(x)any(validatestring(x,{'shaperead','m_map'}));
+addRequired(p, 'fname', @ischarlike);
+addOptional(p, 'reader', 'shaperead', validreader);
+addParameter(p, 'UseGeoCoords', true, @islogical);
+addParameter(p, 'Selector', {}, @iscell);
+addParameter(p, 'Attributes', {}, @iscell);
+addParameter(p, 'BoundingBox', [], @isnumeric);
+p.parse(fname,varargin{:});
+
+reader = p.Results.reader;
+UseGeoCoords = p.Results.UseGeoCoords;
+Selector = p.Results.Selector;
+Attributes = p.Results.Attributes;
+BoundingBox = p.Results.BoundingBox;
+
+namedargs = parser2varargin(p,'notusingdefaults',{'fname'});
+
+% with this, only files returned by getgisfilelist will work, and since fname is
+% required, I don't think we need to be strict like we would with addOptional 
+% validstrings = getgisfilelist;
+% validfilename = @(x)any(validatestring(x,validstrings));
+
+% this is how matlab validates filenames:
+% validateattributes(filename,{'char'},{'vector'},mfilename,'FILENAME',1);
+
+% UPDATE: I think namedargs2cell is what I need
+% I thought I could pass arbitrary name-value pairs and use this to get them,
+% but only the values are stored, not the names, so e.g. in this call:
+% loadgis(fname,'UseGeoCoords',true)
+% opts is a cell with one value 'true', not 'UseGeoCoords',true
+% opts  = struct2cell(p.Unmatched);
+% So for now, I use varargin
+
+
+%%
 % I want a method to figure out which name-values are using defaults and then
 % NOT pass those to the nested function.
 

@@ -5,11 +5,11 @@ function varargout = loaddata(datapath,filename,varargin)
 %
 % See also loadgis
 
-%-------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+%% parse inputs
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
 validpath = @(x)validateattributes(x,{'char','string'},{'scalartext'}, ...
    mfilename,'datapath',1);
@@ -25,17 +25,16 @@ addOptional(   p,'unpackstructs', false,        @(x)islogical(x)     );
 
 parse(p,datapath,filename,varargin{:});
 
-datapath          = p.Results.datapath;
-filename          = p.Results.filename;
-varnames          = p.Results.varnames;
-newvarnames       = p.Results.newvarnames;
-unpackstructs     = p.Results.unpackstructs;
+datapath = p.Results.datapath;
+filename = p.Results.filename;
+varnames = p.Results.varnames;
+newvarnames = p.Results.newvarnames;
+unpackstructs = p.Results.unpackstructs;
 
-%-------------------------------------------------------------------------------
+%% main
 
 loadalldata = string(varnames) == "all";
 renamevars = string(newvarnames) == "false";
-
 
 % first, either load all the variables (default) or the requested ones
 if loadalldata
@@ -66,7 +65,7 @@ if unpackstructs == false && renamevars == false
    for n = 1:numel(varnames)
       assignin('base', varnames{n}, Data.(varnames{n}));
    end
-   varargout{1}   = []; return;
+   varargout{1} = []; return;
 
 end
 
@@ -91,7 +90,7 @@ end
 %    if unpackstructs
 %
 % % if there are no structs, we can simply assignin
-%       varnames  = fieldnames(Data);
+%       varnames = fieldnames(Data);
 %
 %    % first determine how many of the variables are structs
 %       [~,numstructs] = findstructvars(Data);
@@ -102,7 +101,7 @@ end
 %          for n = 1:numel(varnames)
 %             assignin('base', varnames{n}, Data.(varnames{n}));
 %          end
-%          varargout{1}   = [];
+%          varargout{1} = [];
 %          return;
 %
 % % % % this is one (ugly) way to do it - replaces above statemetn
@@ -113,7 +112,7 @@ end
 %
 %       else  % unpack the structs
 %
-%          varnames  = fieldnames(Data);
+%          varnames = fieldnames(Data);
 %
 %          % first determine how many of the variables are structs
 %          [tfisstruct,numstructs,idxstructs] = findstructvars(Data);
@@ -131,31 +130,31 @@ end
 %
 %    if unpackstructs
 %
-%       varnames  = fieldnames(Data);
+%       varnames = fieldnames(Data);
 %
 %       % first determine how many of the variables are structs
 %       [tfisstruct,numstructs,idxstructs] = findstructvars(Data);
 %
 %       for n = 1:numstructs
 %
-%          thisfield   = varnames{idxstructs(n)};
-%          thisstruct  = Data.(thisfield);
+%          thisfield = varnames{idxstructs(n)};
+%          thisstruct = Data.(thisfield);
 %
 %          % test unpacking a struct
 %          tf = findstructvars(thisstruct);
 %
 %          if tf
-%             vars   = fieldnames(thisstruct);
+%             vars = fieldnames(thisstruct);
 %
 %             for m = 1:numel(vars)
-%                thisvar  = vars{m};
+%                thisvar = vars{m};
 %                assignin('base',thisvar,thisstruct.(thisvar));
 %
 %             end
 %          end
 %
-% %          thisfield   = varnames{idxstructs(n)};
-% %          thisstruct  = Data.(thisfield);
+% %          thisfield = varnames{idxstructs(n)};
+% %          thisstruct = Data.(thisfield);
 % %
 % %          assignin('base',thisfield,thisstruct);
 %
@@ -183,7 +182,7 @@ end
 % %
 % %       end
 % %
-% %       Data  = renamestructfields(Data,oldvarnames,newvarnames);
+% %       Data = renamestructfields(Data,oldvarnames,newvarnames);
 % %    end
 %
 %    % test structvars and assignin
@@ -208,11 +207,11 @@ end
 % %
 % %       if
 % %
-% %       thisvar  = data.(vars{n});
+% %       thisvar = data.(vars{n});
 %
 %       % if thisvar is a struct array, then we need to unpack it
 %
-% %    vars  = structvars(data);
+% %    vars = structvars(data);
 % %    structvars(data)
 % %
 % %
@@ -222,7 +221,7 @@ end
 % %
 % %    for n = 1:numel(test)
 % %
-% %       varout   = strsplit(test(n)
+% %       varout = strsplit(test(n)
 % %       assignin(
 % %
 % %    end
@@ -237,18 +236,18 @@ if ~isstruct(data)
    return
 end
 
-varnames    = fieldnames(data);
-numvars     = numel(varnames);
+varnames = fieldnames(data);
+numvars = numel(varnames);
 tfisstruct = false(numvars,1);
 
 for n = 1:numvars
    if isstruct(data.(varnames{n}))
-      tfisstruct    = true;
+      tfisstruct = true;
    end
 end
 
-numstructs  = sum(tfisstruct);
-idxstructs  = find(tfisstruct);
+numstructs = sum(tfisstruct);
+idxstructs = find(tfisstruct);
 
 end
 %
@@ -260,10 +259,10 @@ end
 % %
 % %          if iscell(newvarnames)
 % %
-% %             data  = renamestructfields
+% %             data = renamestructfields
 % %             for m = 1:numel(newvarnames)
 % %
-% %                data.(newvarnames{m})  =
+% %                data.(newvarnames{m}) = 
 % %
 % %       end
 % %
@@ -289,7 +288,7 @@ end
 %          for n = 1:numel(varnames)
 %             assignin('base', varnames{n}, Data.(varnames{n}));
 %          end
-%          varargout{1}   = [];
+%          varargout{1} = [];
 %          return;
 %
 %       end
