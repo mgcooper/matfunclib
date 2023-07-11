@@ -7,6 +7,10 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% new tricks
+
+% column selection is supported by default with option-select
+
 %% documentation
 
 % rickynite/m2html
@@ -16,6 +20,9 @@ narginchk(0,0)
 
 %% people worth following
 
+% *Douglas Schwarz https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:20355
+% https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:870202
+% https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:9872961
 % https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:1010505
 % https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:781437
 % https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:3073010
@@ -80,6 +87,15 @@ for test = string(fieldnames(s)')
    s.(test)
 end
 
+% mgc: start from largest iterator (preallocation shortcut)
+for n = N:-1:1
+   % ... do stuff
+end
+
+% In general, the foreach-style iterator implies a deeper understanding that :
+% means "each member of set", but in a column wise sense
+
+
 % these were my initial tests 
 % test = 1:10;
 % for i = test
@@ -93,7 +109,17 @@ end
 %    test2 = test*i
 % end
 
+%% module concept
 
+% - localfunctions provide a type of module
+% - localfunctions can be called in scripts which could improve scripting if the
+% script could be be treated like a scratch space with a call to localfunctions
+% up top then once finished convert to function, but it only works this way when
+% the script is run
+% - plots should be in modules since they're generally one and done and not
+% performance critical 
+% I think local functions are also a shortcut for over riding built-ins because
+% matlab always looked for local functions before looking for main functions 
 
 %% Best/least known matlab tricks:
 

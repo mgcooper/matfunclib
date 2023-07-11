@@ -5,5 +5,5 @@ function [colors] = defaultcolors()
 % 
 % See also: distinguishable_colors
 
-colors = get(0,'defaultaxescolororder');
+colors = get(groot,'defaultaxescolororder');
 

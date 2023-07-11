@@ -1,7 +1,10 @@
 function varargout = macfig(varargin)
+%MACFIG make figure on mac
 
-p               = inputParser;
-p.FunctionName  = mfilename;
+% see maxfig and maximize for setting the max figure size
+
+p = inputParser;
+p.FunctionName = mfilename;
 p.CaseSensitive = true;
 p.KeepUnmatched = true;
 
@@ -10,9 +13,9 @@ addOptional(p,'monitor','mac',validmonitor);
 addParameter(p,'size','full',@(x)ischar(x));
 
 parse(p,varargin{:});
-monitor  = p.Results.monitor;
-size     = p.Results.size;
-varargs  = unmatched2varargin(p.Unmatched);
+monitor = p.Results.monitor;
+size = p.Results.size;
+args = unmatched2varargin(p.Unmatched);
 
 % for compatibility:
 % mac, large: figure('Position',[1 1 658  576]);
@@ -27,11 +30,11 @@ varargs  = unmatched2varargin(p.Unmatched);
 pos = get(0, 'MonitorPositions');
 switch monitor
    case 'mac'
-      f = makeMacFigure(pos,size,varargs);
+      f = makeMacFigure(pos,size,args);
    case 'main'
-      f = makeMainFigure(pos,size,varargs);
+      f = makeMainFigure(pos,size,args);
    case 'external'
-      f = makeExternalFigure(pos,size,varargs);
+      f = makeExternalFigure(pos,size,args);
 end
 
 switch nargout
@@ -56,6 +59,8 @@ switch size
       figpos = [pos(1) pos(3)/2 pos(3) pos(4)/2];
    case 'vertical'
       figpos = [pos(1) pos(2) pos(3)/2 pos(4)];
+   case 'wide'
+      figpos = [pos(1)*200 pos(2)*200 pos(3)/1.3 pos(4)/2];
    case 'large'
       figpos = [pos(3)/4 pos(4)/4 pos(3)/1.75 pos(4)/1.25];
    case 'medium'

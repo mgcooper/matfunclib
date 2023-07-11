@@ -88,6 +88,8 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
          % if we leave the fit in log-log space (yfit is log(yhat)):
          % yfit = ab(1) + ab(2).*log(xfit);
 
+      otherwise
+         yfit = ab(1) + xfit.*ab(2);
    end
 
             

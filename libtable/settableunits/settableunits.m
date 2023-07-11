@@ -1,16 +1,13 @@
 function T = settableunits(T,units)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+%SETTABLEUNITS set table units property
+% 
+% T = settableunits(T,'m3') sets the 'VarialbeUnits' for every variable in T to
+% 'm3'.
+% 
+% See also: settableprops
 
-addRequired(p,    'T',      @(x)istable(x) || istimetable(x) );
-addRequired(p,    'units',  @(x)ischar(x) || iscell(x)       );
-
-parse(p,T,units);
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+% parse inputs
+[T, units] = parseinputs(T, units);
 
 % TODO: change this or create wrapper 'settableprops' with option to set
 % varnames, units, etc. The main thing this accomplishes is setting the
@@ -24,6 +21,18 @@ if numel(string(units)) == 1
 elseif numel(string(units)) ~= N
    error('either one unit for all columns or one unit per column required');
 end
-
 T.Properties.VariableUnits = units;
 
+
+function [T, units] = parseinputs(T, units);
+
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+addRequired(p, 'T', @(x)istable(x) || istimetable(x) );
+addRequired(p, 'units', @(x)ischar(x) || iscell(x) );
+parse(p,T,units);
+T = p.Results.T;
+units = p.Results.units;

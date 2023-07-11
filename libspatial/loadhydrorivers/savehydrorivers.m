@@ -121,7 +121,7 @@ func = @(x,y) transpose(ingeoquad(x.',y.',latlims,lonlims));
 test = cellfun(func,latc,lonc,'Uni',0);
 lat2 = cellfun(@(x,y) vertcat(x(y)),latc,test,'Uni',0);
 lon2 = cellfun(@(x,y) vertcat(x(y)),lonc,test,'Uni',0);
-keep = ~cellfun(@isempty,lat2); sum(keep) % WORKS!
+keep = ~cellfun('isempty',lat2); sum(keep) % WORKS!
 lat3 = lat2(keep);
 lon3 = lon2(keep);
 [lat3,lon3] = polyjoin(lat3,lon3);
@@ -130,7 +130,7 @@ figure; worldmap([45 60],[-130 -115]); hold on; plotm(lat3,lon3);
 % can I combine any cellfun calls?
 lat = cellfun(@(x,y)vertcat(x(y)),latc,cellfun(func,latc,lonc,'Uni',0),'Uni',0);
 lon = cellfun(@(x,y)vertcat(x(y)),lonc,cellfun(func,latc,lonc,'Uni',0),'Uni',0);
-keep = ~cellfun(@isempty,lat2); sum(keep) % WORKS!
+keep = ~cellfun('isempty',lat2); sum(keep) % WORKS!
 
 %% this shows it works using the Arctic '_ar' file
 
@@ -153,8 +153,8 @@ lonlims = [-125 -120];
 fnc1 = @(x,y) transpose(ingeoquad(x.',y.',latlims,lonlims));
 fnc2 = @(x,y) vertcat(x(y));
 
-[lat,lon] = polyjoin(latc(~cellfun(@isempty,cellfun(fnc2,latc,cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))), ...
-   lonc(~cellfun(@isempty,cellfun(fnc2,lonc,cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))));
+[lat,lon] = polyjoin(latc(~cellfun('isempty',cellfun(fnc2,latc,cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))), ...
+   lonc(~cellfun('isempty',cellfun(fnc2,lonc,cellfun(fnc1,latc,lonc,'Uni',0),'Uni',0))));
 
 figure; worldmap([45 60],[-130 -115]); hold on; plotm(lat,lon);
 

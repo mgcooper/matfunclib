@@ -1,21 +1,32 @@
 function Points = pointsInPoly(x,y,poly,varargin)
-%POINTSINPOLY extracts x,y points that are within poly + buffer
-
+%POINTSINPOLY find x,y points within poly + buffer
+% 
+% Points = pointsInPoly(x,y,poly) returns struct POINTS containing X,Y
+% coordinates found in POLY.
+% 
+% Use POINTSINPOLY to find all X,Y points within the boundaries of POLY with an
+% optional BUFFER. See interpolationPoints for an example of how these are used
+% to resample the found points to a high-resolution grid clipped to POLY for use
+% as interpolation query points. The main feature of pointsInPoly is the ability
+% to use the provided POLY or optionally generate a bounding box around POLY
+% with an optional buffer to capture sufficient grid points for interpolation
+% without extrapolation. 
+% 
+% Basic algorithm:
+%     box = polyshape(lonbox,latbox);
+%     in = inpolygon(lon,lat,lonbox,latbox);
+%     varin = var(in);
+%     latin = lat(in);
+%     lonin = lon(in);
+% 
+% 
 %     Author: matt cooper (matt.cooper@pnnl.gov)
+% 
+% See also interpolationPoints, resamplingCoords
 
-% % For reference, what this is doing:
-%     box     =   polyshape(lonbox,latbox);
-%     in      =   inpolygon(lon,lat,lonbox,latbox);
-%     varin   =   var(in);
-%     latin   =   lat(in);
-%     lonin   =   lon(in);
-
-% % then interpolationPoints resamples latin/lonin to high-resolution
-%   and clips the points to the polygon.
-
-p                = inputParser;
-p.FunctionName   = mfilename;
-
+%% parse
+p = inputParser;
+p.FunctionName = mfilename;
 addRequired(p,'x',@(x)isnumeric(x));
 addRequired(p,'y',@(x)isnumeric(x));
 addRequired(p,'poly',@(x)isa(x,'polyshape'));
@@ -28,25 +39,21 @@ addParameter(p,'bufferbox',true,@(x)islogical(x));
 
 parse(p,x,y,poly,varargin{:});
 
-buffer      = p.Results.buffer;
-xbuffer     = p.Results.xbuffer;
-ybuffer     = p.Results.ybuffer;
-bufferbox   = p.Results.bufferbox;
-makeplot    = p.Results.makeplot;
-%pointinterp = p.Results.pointinterp;
+buffer = p.Results.buffer;
+xbuffer = p.Results.xbuffer;
+ybuffer = p.Results.ybuffer;
+makeplot = p.Results.makeplot;
+bufferbox = p.Results.bufferbox;
 
-% decided it doesn't make sense to have a pointinterp option, instead
-% that is in interpolationPoints
+% Note: buffering the bounding box is much faster for complex polgyons with
+% many vertices which are very slow with polybuffer.
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% feb 2022, new method buffers the bounding box, much faster for complex
-% catchment polgyons with many vertices which are very slow with polybuffer
+%% main
 
 dobuffer = false;
 
 % first determine if any buffering is requested
-if notnan(buffer) || notnan(xbuffer) || notnan(ybuffer)
+if (notnan(buffer) && buffer ~= 0) || notnan(xbuffer) || notnan(ybuffer)
 
    dobuffer = true;
 
@@ -63,7 +70,7 @@ if notnan(buffer) || notnan(xbuffer) || notnan(ybuffer)
 
 end
 
-% the logic is:
+% The bufferbox logic is:
 %  if bufferbox is requested, make a bounding box
 %     if x/y buffer is requested, extend the box in the x-y direction
 %        in this case, set buffer to zero, the box is now buffered
@@ -73,65 +80,65 @@ end
 % deal with the buffer box
 if dobuffer == true && bufferbox == true
 
-   [xb,yb]  =  boundingbox(poly);
+   [xb,yb] = boundingbox(poly);
 
    % if x/ybuffer is requested, buffer the bbox in the x-y directions
    if notnan(xbuffer)
-      xb       =  [xb(1)-xbuffer xb(2)+xbuffer];
-      yb       =  [yb(1)-ybuffer yb(2)+ybuffer];
-      buffer   =  0;
+      xb = [xb(1)-xbuffer xb(2)+xbuffer];
+      yb = [yb(1)-ybuffer yb(2)+ybuffer];
+      buffer = 0;
    end
-   % we set buffer to zero b/c x/ybuffer already applied, this way we can
-   % make xrect/yrect and call polyshape for the x/ybuffer and buffer cases
+   % Set buffer to zero b/c x/ybuffer was already applied. Use xrect/yrect and
+   % call polyshape for the x/ybuffer and buffer cases.
 
    % convert the bbox to a polyshape
-   xrect    =  [xb(1) xb(2) xb(2) xb(1) xb(1)];
-   yrect    =  [yb(1) yb(1) yb(2) yb(2) yb(1)];
+   xrect = [xb(1) xb(2) xb(2) xb(1) xb(1)];
+   yrect = [yb(1) yb(1) yb(2) yb(2) yb(1)];
 
    % buffer the box
-   polyb    =  polybuffer(polyshape(xrect,yrect),buffer);
+   polyb = polybuffer(polyshape(xrect,yrect),buffer);
 
 elseif dobuffer == true && bufferbox == false
 
    % buffer the provided polyshape
-   polyb    =   polybuffer(poly,buffer);
+   polyb = polybuffer(poly,buffer);
 end
 
 % figure; plot(poly); hold on; plot(xrect,yrect);
 
 % find the points in the poly
-xp      =   poly.Vertices(:,1);
-yp      =   poly.Vertices(:,2);
-inp     =   inpolygon(x,y,xp,yp);
+xp = poly.Vertices(:,1);
+yp = poly.Vertices(:,2);
+inp = inpolygon(x,y,xp,yp);
 
 % assign output
-Points.poly       = poly;
-Points.xpoly      = xp;
-Points.ypoly      = yp;
-Points.inpoly     = inp;
+Points.poly = poly;
+Points.xpoly = xp;
+Points.ypoly = yp;
+Points.inpoly = inp;
 
 % find the points in the poly + buffer
 if dobuffer == true
 
-   xpb     =   polyb.Vertices(:,1);
-   ypb     =   polyb.Vertices(:,2);
-   inpb    =   inpolygon(x,y,xpb,ypb);
+   xpb = polyb.Vertices(:,1);
+   ypb = polyb.Vertices(:,2);
+   inpb = inpolygon(x,y,xpb,ypb);
 
    % assign output
-   Points.polyb      = polyb;
-   Points.xpolyb     = xpb;
-   Points.ypolyb     = ypb;
-   Points.inpolyb    = inpb;
+   Points.polyb = polyb;
+   Points.xpolyb = xpb;
+   Points.ypolyb = ypb;
+   Points.inpolyb = inpb;
 
 else
 
    % assign inpoly to inpolyb consistent syntax outside the function i.e.
    % for no buffer, inpolyb = inpoly, but outside the function we can
    % always use inpolyb
-   Points.polyb      = poly;
-   Points.xpolyb     = xp;
-   Points.ypolyb     = yp;
-   Points.inpolyb    = inp;
+   Points.polyb = poly;
+   Points.xpolyb = xp;
+   Points.ypolyb = yp;
+   Points.inpolyb = inp;
 
 end
 
@@ -157,4 +164,3 @@ if makeplot == true
    end
 
 end
-

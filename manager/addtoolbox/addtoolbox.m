@@ -1,4 +1,4 @@
-function toolboxes = addtoolbox(tbname,varargin)
+function varargout = addtoolbox(tbname,varargin)
 % ADDTOOLBOX adds toolbox to toolbox directory and functionsignature file
 %
 %     addtoolbox('tbname') adds toolbox with name 'tbname' to the toolbox
@@ -23,7 +23,7 @@ function toolboxes = addtoolbox(tbname,varargin)
 %     cd into the folder located at:
 %     [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
 %
-%     See also activate deactivate
+%     See also activate deactivate renametoolbox
 % 
 % UPDATES
 % 7 Feb 2023, tbpath method updated to work for both top-level and sublib dirs,
@@ -40,7 +40,7 @@ validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
 validopts = @(x)any(validatestring(x,{'activate'}));
 
 addRequired(p,'tbname',@(x)ischar(x));
-addOptional(p,'library','',validlibs);
+addOptional(p,'library','',validlibs); % default value must be ''
 addOptional(p,'postadd','',validopts);
 
 parse(p,tbname,varargin{:});
@@ -63,7 +63,7 @@ if any(ismember(toolboxes.name,args.tbname))
    
 else
    
-   toolboxes(tbidx,:) = {args.tbname,tbpath};
+   toolboxes(tbidx,:) = {args.tbname,tbpath,false};
    
    disp(['adding ' args.tbname ' to toolbox directory']);
    
@@ -82,6 +82,12 @@ if string(args.postadd)=="activate"
    activate(args.tbname,'goto');
 end
 
+% output
+switch nargout
+   case 1
+      varargout{1} = toolboxes;
+end
+
 
 function addtojsondirectory(toolboxes,tbidx,directoryname)
 
@@ -95,7 +101,6 @@ wholefile   = strrep(wholefile,tbfind,tbreplace);
 
 % write it over again
 writetbjsonfile(jspath,wholefile)
-
 
 % % NOTE on tbpath method - gettbsourcepath with no input returns the matlab
 % source directory so if args.library is empty then the new method in the main

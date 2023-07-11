@@ -18,8 +18,12 @@ else
    projectpath = getprojectfolder(projectname);
 end
 
+withwarnoff({'MATLAB:mpath:nameNonexistentOrNotADirectory', ...
+   'MATLAB:rmpath:DirNotFound'})
+
 addpath(genpath(projectpath));
+
 % remove .git files from path
 if contains(genpath(fullfile(projectpath,'.git')),'.git')
-   warning off; rmpath(genpath(fullfile(projectpath,'.git'))); warning on;
+   rmpath(genpath(fullfile(projectpath,'.git')));
 end

@@ -1,4 +1,4 @@
-function T = replacevars(T,VarNames,NewVars,varargin)
+function T = replacevars(T, VarNames, NewVars, varargin)
 %REPLACEVARS replace vars in table T with new vars.
 % 
 % Syntax
@@ -18,29 +18,11 @@ function T = replacevars(T,VarNames,NewVars,varargin)
 % 
 % See also addvars, removevars
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+% parse inputs
+[T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
+   NewVars, mfilename, varargin{:});
 
-validVarNames  = @(x)all(ismember(x,gettablevarnames(T)));
-
-addRequired(p, 'T',                       @(x)istablelike(x)   );
-addRequired(p, 'VarNames',                validVarNames        );
-addRequired(p, 'NewVars'                                       );
-addParameter(p,'NewVarNames',  VarNames,  @(x)ischarlike(x)    );
-
-parse(p,T,VarNames,NewVars,varargin{:});
-
-NewVarNames = p.Results.NewVarNames;
-
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
-
-
+% replace vars
 T = removevars(T,VarNames);
 V = gettablevarnames(T);
 V = [V NewVarNames];
@@ -48,17 +30,24 @@ V = [V NewVarNames];
 for n = 1:size(NewVars,2)
    T = addvars(T,NewVars(:,n));
 end
-
 T = settablevarnames(T,V);
 
 
+function [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
+   NewVars, funcname, varargin);
 
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
+validVarNames = @(x)all(ismember(x, gettablevarnames(T)));
 
+addRequired(p, 'T', @(x) istablelike(x) );
+addRequired(p, 'VarNames', validVarNames );
+addRequired(p, 'NewVars' );
+addParameter(p,'NewVarNames', VarNames, @(x) ischarlike(x) );
 
+parse(p,T,VarNames,NewVars,varargin{:});
 
-
-
-
-
-
+NewVarNames = p.Results.NewVarNames;

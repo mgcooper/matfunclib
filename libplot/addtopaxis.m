@@ -1,29 +1,30 @@
 function [ ax2 ] = addtopaxis( )
-%UNTITLED24 Summary of this function goes here
-%   Detailed explanation goes here
+%ADDTOPAXIS add a top axis to a figure
    
-ax1                  =  gca;
-axpos                =  plotboxpos(ax1);
-ax2                  =  axes('Position', axpos,'Color', 'none');
-ax2.XAxisLocation    =  'top';
-ax2.YAxisLocation    =  'Right';
-ax2.XLim             =   ax1.XLim;
-ax2.XTick            =   ax1.XTick;
-ax2.XTickLabel       =  '';
+ax1 = gca;
+axpos = plotboxpos(ax1);
+ax2 = axes('Position', axpos,'Color', 'none');
 
-% ax2.XLim                =   ax1.XLim;
-% ax2.YLim                =   ax1.YLim;
-% ax2.XTick               =   ax1.XTick;
-% ax2.YTick               =   ax1.YTick;
-% ax2.XTickLabel          =   ax1.XTickLabel;
-% ax2.YTickLabel          =   '';
+set(ax2, 'XAxisLocation', 'top', 'YAxisLocation', 'Right', ...
+   'XLim', get(ax1, 'XLim'), 'XTick', get(ax1, 'XTick'), 'XTickLabel', '');
+
+% The Y-versions of above and other stuff below were commented out, not sure why
+% set(ax2, 'YLim', get(ax1, 'YLim'), 'YTick', get(ax1, 'YTick'), 'XTickLabel', ...
+%    get(ax1, 'XTickLabel'), 'YTickLabel', '');
 % 
 % set(gcf,'CurrentAxes',ax2);
 
-% mainAxes          =  findobj(gcf,'Type','axes');
-% newAxes           =  copyobj(mainAxes);
-% newAxes.Position  =  mainAxes.Position;
+% mainAxes = findobj(gcf,'Type','axes');
+% newAxes = copyobj(mainAxes);
+% newAxes.Position = mainAxes.Position;
 
+
+% % switched to set for octave compat
+% ax2.XAxisLocation = 'top';
+% ax2.YAxisLocation = 'Right';
+% ax2.XLim = ax1.XLim;
+% ax2.XTick = ax1.XTick;
+% ax2.XTickLabel = '';
 
 end
 

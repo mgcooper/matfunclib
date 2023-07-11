@@ -1,4 +1,4 @@
-function projlist = addproject(projectname,varargin)
+function varargout = addproject(projectname,varargin)
 %ADDPROJECT add project to project directory
 %
 %
@@ -12,48 +12,61 @@ function projlist = addproject(projectname,varargin)
 %  reads the folder from projectdirectory instead of appending projectname to
 %  the MATLABPROJECTPATH environment variable
 
+% NOTE common use case, a project is active but you want to make it another
+% project or branch off to another project without updating the active project
+% file list which would happen with workon/workoff, e.g.
+% addproject('exactremap','setfiles',true,'setactive',true) effectively makes
+% this the active project without updating the activefiles property of the
+% active project
+
 %-------------------------------------------------------------------------------
 p                 = inputParser;
 p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
 p.KeepUnmatched   = true;
 
+validoptions = @(x)~isempty(validatestring(x,{'workon',''}));
+
 addRequired(p,'projectname',@(x)ischar(x));
-addOptional(p,'workon','',@(x)ischar(x));
+addOptional(p,'workon','',validoptions);
+addParameter(p,'setfiles',false,@(x)islogical(x));
+addParameter(p,'setactive',false,@(x)islogical(x));
 
 parse(p,projectname,varargin{:});
-projname = p.Results.projectname;
-workon   = p.Results.workon;
+
+projectname = p.Results.projectname;
+workon = p.Results.workon;
+setfiles = p.Results.setfiles;
+setactive = p.Results.setactive;
 
 % Updates
+% 21 Mar 2023: added setfiles and setactive following mkproject
 % 11 Jan 2023: added support for activefile list, see buildprojectdirectory.
 % 11 Jan 2023: removed addtojsondirectory in favor of new
 % choices=projectdirectorylist option in json files
 %-------------------------------------------------------------------------------
 
-% NOTE: getprjsourcpath is more like 'buildprjsourcepath' - it builds the path,
-% it doesn't check if it alredy exists, like I do below with any(ismember)
-projlist = readprjdirectory(getprjdirectorypath); % read the project directory
-projpath = getprjsourcepath(projname); % get the full path to the project
+projectlist = readprjdirectory(getprjdirectorypath); % read the project directory
+projectpath = fullfile(getenv('MATLABPROJECTPATH'),projectname);
 
-if any(ismember(projlist.name,projname))
+if any(ismember(projectlist.name,projectname))
    
-   msg = ['project already in directory, press ''y'' to add to json signature ' ...
-      'file or any other key to return\n'];
+   msg = ['project already in directory, press ''y'' to add to rebuild project ' ...
+      'directory or any other key to return\n'];
    str = input(msg,'s');
    if string(str) ~= "y"
       return
    end
 end
 
-disp(['adding ' projname ' to project directory']);
+disp(['adding ' projectname ' to project directory']);
 
 % rebuild the project directory
 buildprojectdirectory('rebuild');
 
 % read the project directory into memory
-projlist = readprjdirectory(getprjdirectorypath);
-projindx = getprjidx(projname,projlist);
+projectlist = readprjdirectory(getprjdirectorypath);
+projindx = getprjidx(projectname,projectlist);
 
 % % commented these out - json files use projectdirectorylist instead
 % % add it to the json directory choices for function 'workon'
@@ -62,9 +75,22 @@ projindx = getprjidx(projname,projlist);
 % % repeat for 'workoff'
 % addtojsondirectory(projlist,projindx,'workoff');
 
+% post mk options
+if setfiles
+   setprojectfiles(projectname);
+end
+
+if setactive
+   setprojectactive(projectname)
+end
+
 % activate the toolbox if requested
 if string(workon)=="workon"
    workon(projname);
+end
+
+if nargout == 1
+   varargout{1} = projectlist;
 end
 
 

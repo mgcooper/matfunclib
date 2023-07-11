@@ -56,48 +56,48 @@ p.parseMagically('caller');
 % 31 2000 so most of the water year is in 1999
    
 % define functions to compute annual sums and seasonal averages
-% Fsum     =  @(x) sum(x, 'includenan');
-Favg     =  @(x) mean(x, 'includenan');
-Favg1    =  @(x,y,z,idx)   mean( x(:,idx)-y(:,idx)-z(:,idx),2           );
-Favg2    =  @(x,y,z,s,idx) mean( x(:,idx)-y(:,idx)-z(:,idx)-s(:,idx),2  );
+% Fsum = @(x) sum(x, 'includenan');
+Favg  = @(x) mean(x, 'includenan');
+Favg1 = @(x,y,z,idx)   mean( x(:,idx)-y(:,idx)-z(:,idx),2           );
+Favg2 = @(x,y,z,s,idx) mean( x(:,idx)-y(:,idx)-z(:,idx)-s(:,idx),2  );
 
 % make an annual calendar
-nmonths  =  height(Data);
-nyears   =  nmonths/12;
-T        =  tocol(Data.Time(1):calyears(1):Data.Time(end));
+nmonths = height(Data);
+nyears = nmonths/12;
+T = tocol(Data.Time(1):calyears(1):Data.Time(end));
 
 % make a cell array of months
-months   =  cellstr(datestr(Data.Time(1:12),'mmm'));
+months = cellstr(datestr(Data.Time(1:12),'mmm'));
 
 if wateryear == true
-   seasons  = {'ON','OND','NDJ','DJF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','AS'};   
-   T        = T+calmonths(3); % shift forward to Jan 1 of the water year
+   seasons = {'ON','OND','NDJ','DJF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','AS'};   
+   T = T+calmonths(3); % shift forward to Jan 1 of the water year
 else
-   seasons  = {'JF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','ASO','SON','OND','ND'};
+   seasons = {'JF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','ASO','SON','OND','ND'};
 end
 
 % P-E-R for each month
-P        =  transpose(reshape(Data.P,12,nyears));
-E        =  transpose(reshape(Data.E,12,nyears));
-R        =  transpose(reshape(Data.R,12,nyears));
+P = transpose(reshape(Data.P,12,nyears));
+E = transpose(reshape(Data.E,12,nyears));
+R = transpose(reshape(Data.R,12,nyears));
 
 if snowcorrect == true
    if sum(contains(Data.Properties.VariableNames,'SW')) == 0
       error('no SW variable in provided table')
    else
-      SW =  reshape(Data.SW,12,nyears);
+      SW = reshape(Data.SW,12,nyears);
    end
 end
 
 % init the monthly, seasonal, and annual dS/dt arrays
-dSdtS    =  nan(nyears,12);
-dSdtA    =  nan(nyears,12);
+dSdtS = nan(nyears,12);
+dSdtA = nan(nyears,12);
 
 % init arrays to store trends computed on an annual basis for each month,
 % each 3-month season, and each 12-month period beginning on each month
-abSM     =  nan(2,12);
-abSS     =  nan(2,12);
-abSA     =  nan(2,12);
+abSM = nan(2,12);
+abSS = nan(2,12);
+abSA = nan(2,12);
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % 1. annual timeseries of monthly dSdt for each month
@@ -119,12 +119,12 @@ end
 
 for n = 1:12
    % get the indices to sum over
-   i1    = n;
-   i2    = nmonths;        % use this to include all years
+   i1 = n;
+   i2 = nmonths;        % use this to include all years
    % i2  = nmonths-(13-n); % use this to omit the last year
    
    % annual timeseries of 12-month sums beginning on each month
-   MA    = retime(Data(i1:i2,:),'regular',Favg,'TimeStep',calyears(1));
+   MA = retime(Data(i1:i2,:),'regular',Favg,'TimeStep',calyears(1));
    
    % annual timeseries of annual (12-month sum) dSdt for each month
    if snowcorrect == true

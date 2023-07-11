@@ -1,6 +1,7 @@
 function Rcells = Rpost2cells(Rpost)
 %RPOST2CELLS Rpost2cells converts the geospatial referencing object R from
 %type 'postings' to type 'cells'
+%   
 %   Geographic data referenced to a regular grid spacing can be of type
 %   'postings', corresponding to an interpretation that the
 %   latitude/longitude or planar x/y coordinates represent the location of
@@ -9,25 +10,25 @@ function Rcells = Rpost2cells(Rpost)
 %   x/y coordinates represent  E-W and N-S coordinates of the grid cell
 %   edges, for example as is commonly the case for image-based data (e.g.
 %   MODIS satellite imagery).
-
+% 
 %   This function converts the Matlab spatial referencing object R from
 %   type 'postings' to type 'cells'
-
+% 
 %   Author: Matt Cooper, guycooper@ucla.edu, June 2019
 %   Citation: Matthew Cooper (2019). matrasterlib
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY.
-
 % 
-refmat              =   worldFileMatrixToRefmat(Rpost.worldFileMatrix);
-Zsize               =   Rpost.RasterSize;
+% See also
+
+refmat = worldFileMatrixToRefmat(Rpost.worldFileMatrix);
+Zsize = Rpost.RasterSize;
 
 % determine if the data are planar or geographic and call the appropriate
 % function
 if strcmp(Rpost.CoordinateSystemType,'geographic')
-    Rcells          =   refmatToGeoRasterReference(refmat,Zsize,'cells');
-%     sabatoge
+   Rcells = refmatToGeoRasterReference(refmat,Zsize,'cells');
 elseif strcmp(Rpost.CoordinateSystemType,'planar')
-    Rcells          =   refmatToMapRasterReference(refmat,Zsize,'cells');
+   Rcells = refmatToMapRasterReference(refmat,Zsize,'cells');
 end
 

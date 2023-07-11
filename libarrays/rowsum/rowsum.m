@@ -34,13 +34,16 @@ if wastabular
 end
 
 % compute the row sum
-S = sum(A(rowindex,:),2);
+S = sum(A(rowindex,:),2,'omitnan');
 
 % either add it as a new column or return
 if addcolumn == true
    if wastabular
       A = T;
       A.RowSum = S;
+      if numel(unique(T.Properties.VariableUnits)) == 1
+         A = settableunits(A,unique(T.Properties.VariableUnits));
+      end
    else
       A = cat(2,A,S);
    end

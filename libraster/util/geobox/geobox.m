@@ -1,7 +1,10 @@
 function h = geobox(latlims,lonlims,varargin)
-%GEOBOX h = geobox(latlims,lonlims) draws a box of size latlims lonlims on
-%a geoaxis plot e.g. geoscatter, geoplot, geobubble, 
-%   Detailed explanation goes here
+%GEOBOX draw a box in geographic coordinates
+%
+% h = geobox(latlims,lonlims) draws a box of size latlims lonlims on a geoaxis
+% plot e.g. geoscatter, geoplot, geobubble,
+%
+% See also
 
 hold on;
 
@@ -22,10 +25,10 @@ else
       gb3 = geoplot([latmin latmin],[lonmin lonmax],'r-',varargin{:});
       gb4 = geoplot([latmax latmax],[lonmin lonmax],'r-',varargin{:});
    catch ME
-      
+
       % regular axis - use mapbox
       if strcmp(ME.identifier,'MATLAB:license:checkouterror') || ...
-         strcmp(ME.identifier,'MATLAB:newplot:HoldOnMixingAxesGeneric')
+            strcmp(ME.identifier,'MATLAB:newplot:HoldOnMixingAxesGeneric')
          h = mapbox([lonmin lonmax],[latmin latmax]);
          return;
       end

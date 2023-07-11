@@ -15,11 +15,24 @@ function projfolder = getprojectfolder(varargin)
 % 
 % See also setprojectfolder
 
+%  NOTE: it seems like getprojectfolder(projname) wouldn't work based on the
+%  optionParser section, but it does. This needs to change. It has to do do with
+%  whther or not the options are matched, the confusing this is that 'projname'
+%  isn't in the optionParser list, but it works without it. 
+% 
 %  GREAT EXAMPLE OF WHY INPUTPARSER IS NEEDED! shows how optionParser only works
 %  if we have a fixed number of required args and the opts come after. For
 %  example, it fails if I have varargin and one argument (here projlist) is not
 %  a char. If I did  not allow projlist to come in then it would be much easier 
 %  and in fact I should do that 
+
+% NOTE: need to rewrite this, its incredibly dumb. Ran into an error where a
+% string was passed in for project name, so had to add this:
+for n = 1:numel(varargin)
+   if isstring(varargin{n})
+      varargin{n} = char(varargin{n});
+   end
+end
 
 % set default option to return the activefolder then parse the input
 validopts = {'activefolder','namespace'};

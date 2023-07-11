@@ -6,7 +6,7 @@ function units = gettableunits(T,varargin)
 %  units = gettableunits(T,varnames) returns units for variables specified by
 %  varnames in table T
 % 
-% See also:
+% See also
 
 if nargin == 1
    units = T.Properties.VariableUnits;

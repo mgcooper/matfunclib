@@ -27,6 +27,16 @@
          {"name":"asfiles",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    },
+   "savematfile":
+   {
+      "inputs":
+      [
+         {"name":"filename",  "kind":"required",   "type":["char","string"]},
+         {"name":"variables", "kind":"required",   "type":["char","string"]},
+         {"name":"saveflag",  "kind":"ordered",    "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"version",   "kind":"namevalue",  "type":"choices={'-v7','-v73','-v6','-v4'}"}
+      ]
+   },
    "varlist":
    {
       "inputs":

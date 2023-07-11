@@ -1,16 +1,3 @@
-function varargout = mapping_tricks(varargin)
-%MAPPING_TRICKS mapping tips and tricks
-
-% if called with no input, open this file
-if nargin == 0; open(mfilename('fullpath')); return; end
-
-% just in case this is called by accident
-narginchk(0,0)
-
-% these were in tabletricks, I didn't think of adding these types of calls when
-% I renamed to _tricks
-% cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libspatial'));
-% doc mapping
 
 %% reading polylinez
 
@@ -129,9 +116,18 @@ figure; scatter(X(:),Y(:),12,swsdavg2(:))
 % R = georefcells(latlim,lonlim,cellExtentInLatitude,cellExtentInLongitude)
 % R = georefcells(latlim,lonlim,___,Name,Value)
 
-% I could contruct one of these, for example, if I have a netcdf file or some other grid of geographic data that isn't saved as a geotiff or arcgrid and therefore cannot be read into matlab with geotiffread or arcgridread, but it does have the lat/lon info so I can figure out lat lim, lon lim, etc. Note, however, that the lat/lon values in a netcdf lat and lon matrix are the cell centers, and for georefcells, the latlim/lonlim values are the cell edges, so need to adjust accordingly. I have an example in the Geog 207 folder SWE_extract_daily_region_props 
+% I could contruct one of these, for example, if I have a netcdf file or some
+% other grid of geographic data that isn't saved as a geotiff or arcgrid and
+% therefore cannot be read into matlab with geotiffread or arcgridread, but it
+% does have the lat/lon info so I can figure out lat lim, lon lim, etc. Note,
+% however, that the lat/lon values in a netcdf lat and lon matrix are the cell
+% centers, and for georefcells, the latlim/lonlim values are the cell edges, so
+% need to adjust accordingly. I have an example in the Geog 207 folder
+% SWE_extract_daily_region_props
 % 
-% 4. Do the same as above with regularly spaced samples i.e. 'postings'. The only difference as far as I can tell would be the R.RasterInterpretation field would be set to 'postings' instead of 'cells':
+% 4. Do the same as above with regularly spaced samples i.e. 'postings'. The
+% only difference as far as I can tell would be the R.RasterInterpretation field
+% would be set to 'postings' instead of 'cells':
 
 % R = georefpostings()
 % R = georefpostings(latlim,lonlim,rasterSize)
@@ -219,7 +215,7 @@ f = figure;
 
 % 11. Control the spacing of a worldmap (or axesm) object graticule:
 
-ax1 =   worldmap([latmin latmax],[lonmin lonmax]); hold on;
+ax1 = worldmap([latmin latmax],[lonmin lonmax]); hold on;
 setm(ax1,'PLineLocation',2); % change the Parallel line locations to be 2 degrees apart
 setm(ax1,'PLabelLocation',2) % similarly for the labels
 
@@ -257,9 +253,9 @@ set(h1,'FaceAlpha','texturemap','AlphaData',double(~isnan(Zsmb)));
 % PLOT VECTOR DATA ON SURFACE 
 load('/Users/coop558/mydata/e3sm/topo/ifsar_region_160m');
 load('sag_basin');
-HS      = DEM.HS;
-R       = DEM.R;
-zHS     = zeros(size(HS));
+HS = DEM.HS;
+R = DEM.R;
+zHS = zeros(size(HS));
 
 figure;
 mapshow(zHS,R,'CData',HS,'DisplayType','surface'); hold on;

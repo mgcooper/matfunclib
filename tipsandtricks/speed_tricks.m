@@ -7,6 +7,20 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% JIT 
+
+% From the OCTAVE faq:
+% Matlab includes a "Just-In-Time" compiler. This compiler allows the
+% acceleration of for-loops in Matlab to almost native performance with certain
+% restrictions. The JIT must know the return type of all functions called in the
+% loops and so you can't include user functions in the loop of JIT optimized
+% loop
+
+% If true - I did not know about the restriction on user functions
+
+% Octave links to this which I think I found on my own a while back:
+% https://web.archive.org/web/20140217072457/http://www.stat.cmu.edu/~nmv/2013/07/09/for-faster-r-use-openblas-instead-better-than-atlas-trivial-to-switch-to-on-ubuntu/
+
 %% tips and tricks for speed and performance
 % 
 % Consider the following tips on specific MATLAB functions when writing
@@ -29,6 +43,96 @@ narginchk(0,0)
 % https://www.mathworks.com/matlabcentral/answers/402023-why-are-datetime-operations-so-slow
 
 % See signal processing section of tips book
+
+
+%% library of fast functions
+
+% lightspeed toolbox
+% https://github.com/MarcinKonowalczyk/poly-fast-matlab.git (test shows little
+% to no improvement relative to polyfit in r2022b)
+
+%% tips and tricks
+
+% For some reason this helped it finally click how in place operations work. I
+% can go back to of trisolve notation:
+% https://stackoverflow.com/questions/72207854/matlab-cant-modify-data-in-place
+% The key thing is that the function arguments dont have to share the same name
+% in the calling and function workspace, but the input / output arg names have
+% to be the same wihtin each space
+
+% make everything a function
+
+% preallocate the random number arrays then index into them instead of generating each time
+
+% always put column index as outer loop i.e.:
+% for j = 
+% 	for i = 
+% 		A(i,j) = ...
+% 	end
+% end
+% 
+% parfor should be ok since each photon is independent. i can initialize phi_s
+% as 2_pi.*rand(N,1) and then index into it with ps = phi_s(n), then I should
+% also be able to create initialized vl, uz, uy, and ux since those are also not
+% random and do not depend on prior values    
+% 
+% BUT since wt changes does that matter? I think not because it is within the
+% while loop but should test to confirm 
+% 
+% see this:
+% https://www.mathworks.com/help/parallel-computing/reduction-variable.html
+
+
+% Use 'length' not @length for cellfun see link below for why and other similar
+% https://undocumentedmatlab.com/articles/cellfun-undocumented-performance-boost
+
+% do a find on these:
+% cellfun(@isempty
+% cellfun(@islogical
+% cellfun(@isreal
+% cellfun(@length
+% cellfun(@ndims
+% cellfun(@numel % equivalent is 'prodofsize'
+% cellfun(@size
+% cellfun(@isclass % equivalent 
+
+% also avoid cellfun(@(x) isempty(x), ...) if instead cellfun(@isempty,...) can
+% be used (for any function, not just isempty, which i just used as an example)
+
+% Never put curly braces on rhs if they can go on lhs :
+% https://www.mathworks.com/matlabcentral/answers/873328-speeding-up-using-cellfunction-and-arrayfun-versus-for-loop
+% 
+
+% Every function should operate on it's inputs and return them as outputs. If
+% variables passed in are not modified then Matlab can use pass by reference 
+
+% Use accel off to see if jit matters, didn't look into it much but try this:
+% https://www.mathworks.com/help/simulink/ug/how-the-acceleration-modes-work.html
+
+% this post discusses accel off:
+% https://www.mathworks.com/matlabcentral/answers/99537-which-type-of-function-call-provides-better-performance-in-matlab
+
+% Use try catch instead of if else when if else would just catch an error
+
+% Using int for indexing variables might be faster because of the ceil calc,
+% somewhere i found ceil is much slower with double
+
+% Type checking function inputs, I assumed slows down code, but so expert says
+% no: Recall, however, that Matlab compiles the code before running so even if
+% you need to test many conditions it will be quite fast. Run the profiler to
+% see.   
+
+% check vvar: https://www.mathworks.com/matlabcentral/fileexchange/34276-vvar-class-a-fast-virtual-variable-class-for-matlab?s_tid=answers_rc2-1_p4_Topic
+% also adcarray (and memmapfile in general) https://www.mathworks.com/matlabcentral/fileexchange/11097-adcarray?s_tid=srchtitle
+
+
+% revisit this for caching and/or memoization
+% https://undocumentedmatlab.com/articles/datestr-performance
+
+%% on oop speed
+
+% https://www.mathworks.com/matlabcentral/answers/15533-object-oriented-programming-performance-comparison-handle-class-vs-value-class-vs-no-oop?s_tid=answers_rc1-1_p1_Topic
+% https://www.mathworks.com/matlabcentral/answers/579270-nested-functions-vs-object-oriented-programming-k-d-tree-example-and-relative-performance?s_tid=answers_rc1-3_p3_Topic
 
 %% resources
 
@@ -73,25 +177,6 @@ narginchk(0,0)
 % https://www.mathworks.com/matlabcentral/answers/1672304-how-can-i-use-the-blas-and-lapack-implementations-included-in-amd-optimizing-cpu-libraries-aocl-wi
 
 
-%%
-
-% preallocate the random number arrays then index into them instead of generating each time
-
-% always put column index as outer loop i.e.:
-% for j = 
-% 	for i = 
-% 		A(i,j) = ...
-% 	end
-% end
-% 
-% parfor should be ok since each photon is independent. i can initialize phi_s as 2_pi.*rand(N,1) and then index into it with ps = phi_s(n), then I should also be able to create initialized vl, uz, uy, and ux since those are also not random and do not depend on prior values 
-% 
-% BUT since wt changes does that matter? I think not because it is within the while loop but should test to confirm
-% 
-% see this:
-% https://www.mathworks.com/help/parallel-computing/reduction-variable.html
-
-%% resources
 
 % https://blogs.mathworks.com/loren/2007/03/22/in-place-operations-on-data
 % 
@@ -117,6 +202,50 @@ narginchk(0,0)
 % but magic parser uses evalin, does input parser? Since function signatures
 % don't require input parser afaik, I could stop using it or use it less often,
 % or use optionParser           
+
+% Summary of:
+% https://towardsdatascience.com/5-simple-hacks-to-speed-up-your-matlab-code-f160103b13bf
+% - use jsystem if making system calls
+% - The golden rule for MATLAB is to always assign the index of the faster loop
+% to the most left part of the matrix dimensions and the slowest to the most
+% right part. This rule also applies to tensors.
+% For example: (NOTE: I don't find any difference, but mine is ~0.05 sec, wonder
+% why so much slower?)
+% 
+% n = 1000;
+% A = zeros(n, n);
+% 
+% % Column major assignment
+% tic;
+% for i = 1:n % slow loop
+%     for j = 1:n % fast loop
+%         A(i, j) = i + j;
+%     end
+% end
+% toc % In my computer 0.005984sec
+% 
+% % Column major assignment
+% tic;
+% for j = 1:n % fast loop
+%     for i = 1:n % slow loop
+%         A(i, j) = i + j;
+%     end
+% end
+% toc % In my computer 0.001053sec
+% 
+% - faster 1-d interpolation: interp1qr
+% https://www.mathworks.com/matlabcentral/fileexchange/43325-quicker-1d-linear-interpolation-interp1qr?s_tid=prof_contriblnk
+% NOTE: on fex, test says griddedInterpolant now faster
+% 
+% - dont do large logical temporary arrays:
+% dont do this:
+% a = round(rand(1e4));
+% tic, b = any(a(:)~=0); toc
+% instead do this:
+% tic, c = any(a(:)); toc
+% >> Elapsed time is 0.000188 seconds. (x337 speed up)
+
+
 
 %% random notes
 

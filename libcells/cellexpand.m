@@ -23,6 +23,10 @@ arguments
    C (:,:) cell
 end
 
+% UPDATE jun 2023 - see dealout, it might solve this problem, the key is using
+% nargout on both sides, and passing in all possible outputs as a comma
+% separated list as inputs which goes on the right side 
+
 % NOTE this doesn't work quite as expected b/c the expansion is not storable in
 % a variable it has the format:
 % ans = 

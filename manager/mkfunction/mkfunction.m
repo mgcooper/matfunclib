@@ -1,4 +1,4 @@
-function mkfunction(name,varargin)
+function mkfunction(funcname,varargin)
 %MKFUNCTION make new function file from function template
 %
 %  mkfunction('myfunc') creates a new function file matfunclib/myfunc.m with
@@ -12,47 +12,10 @@ function mkfunction(name,varargin)
 % 
 %  See also
 
-% UPDATES
-% 10 Feb 2023, removed ringfenced funcname folder, instead funcname is appended
-% to .json file and _tmp to funcname to prevent overwriting existing ones, and
-% isfile/isfolder checks are used throughout
+%% parse inputs
+[funcname, library, project, parser] = parseinputs(funcname, mfilename, varargin{:});
 
-% TODO: instead of fencing off functions in parent folders, copy the json file
-% to a filename with the funcname appended
-
-%------------------------------------------------------------------------------
-p              = inputParser;
-p.FunctionName = mfilename;
-
-addRequired(   p,'funcname',              @(x)ischar(x)  );
-addParameter(  p,'library',   'unsorted', @(x)ischar(x)  );
-addParameter(  p,'project',   'unsorted', @(x)ischar(x)  );
-addParameter(  p,'parser',    'MP',       @(x)ischar(x)  );
-   
-% % now that i understand addOptional, this may work:
-% validlib    = @(x)any(validatestring(x,functiondirectorylist));
-% validproj   = @(x)any(validatestring(x,projectdirectorylist));
-% validparser = @(x)any(validatestring(x,{'MP','IP','ArgList','OP','NP'}));
-% 
-% addRequired(   p,'funcname',              @(x)ischar(x)  );
-% addOptional(   p,'library',   'unsorted', validlib       );
-% addOptional(   p,'project',   'unsorted', validproj      );
-% addOptional(   p,'parser',    'MP',       validparser    );
-% 
-% i think inputs and outputs will need to be structures to distinguish
-% required, parameter, optional, etc. but don't have time to sort it out rn
-% addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
-% addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
-   
-parse(p,name,varargin{:});
-
-funcname = p.Results.funcname;
-library  = p.Results.library;
-project  = p.Results.project;
-parser   = p.Results.parser;
-%inputs   = p.Results.inputs;
-%outputs  = p.Results.outputs;
-%------------------------------------------------------------------------------
+%% main function
 
 % keep the library or project parent folder
 parent = library;
@@ -76,7 +39,7 @@ end
 % path doesn't exist, it won't issue an error (but addpath alone, without
 % genpath, will issue an error). NOTE: shouldn't be necessary now that
 % ringfenced folder is not created, but doesn't hurt.
-addpath(genpath(functionpath));
+pathadd(functionpath);
 
 % isfile should be sufficient to catch the case where parseFunctionPath fences
 % off the new function in a parent folder with the same name as the function to
@@ -95,13 +58,14 @@ else
       system(sprintf('mkdir %s',functionpath));
    end
 
-   addpath(genpath(functionpath));
+   pathadd(functionpath);
 
    mknewfunc(functionpath,filenamepath,funcname,parent,parser);
    %mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs);
 end
 
 
+% Make New Function
 function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
 %function mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs)
    
@@ -119,12 +83,24 @@ copyfunctemplate(filenamepath,parser);    % specify path w/file name
 fid = fopen(filenamepath);
 wholefile = fscanf(fid,'%c');     fclose(fid);
 
+% Strip out the license so the strrep commands do not rewrite any content
+license = wholefile(strfind(wholefile, "%% LICENSE"):end);
+wholefile = wholefile(1:strfind(wholefile, "%% LICENSE")-1);
+
 wholefile = strrep(wholefile,'FUNCNAME',upper(funcname));
 wholefile = strrep(wholefile,'funcname',funcname);
 wholefile = strrep(wholefile,'functemplate',funcname);
 
-% REPLACE DD-MMM-YYYY with the data
-wholefile = strrep(wholefile,'DD-MMM-YYYY',date);
+% REPLACE DD-MMM-YYYY on AUTHOR line with the current date
+try %#ok<*TRYNC> 
+   wholefile = strrep(wholefile,'DD-MMM-YYYY',char(datetime("today")));
+end
+
+% REPLACE YYYY on COPYRIGHT line with the current YEAR
+try
+   wholefile = strrep(wholefile,'Copyright (c) YYYY', ...
+      ['Copyright (c) ' num2str(year(datetime('today')))]);
+end
 
 % REPLACE the input varname with default library varnames
 switch parent
@@ -146,7 +122,7 @@ switch parent
       wholefile = strrep(wholefile,'Y','H'); % handle (graphics object array) 
 
    case {'libraster'}
-      wholefile = strrep(wholefile,'X','[Z,R]');
+      wholefile = strrep(wholefile,'X','Z,R');
       wholefile = strrep(wholefile,'Y','[Z,R]');
 
    case {'libspatial'}
@@ -178,6 +154,9 @@ end
 %    requiredinputrepl = inputs{n};
 %    wholefile = '';
 % end
+
+% replace the license
+wholefile = [wholefile license];
 
 % write it over again
 fid = fopen(filenamepath, 'wt');
@@ -240,6 +219,7 @@ else
    return
 end
 
+% Function Path Parser
 function [functionpath,filenamepath] = parseFunctionPath(funcname,library,project)
       
 % parse the function path. if library and project are both default
@@ -293,4 +273,39 @@ end
 
 filenamepath = fullfile(functionpath,[funcname '.m']);
 
+
+% Input Parser
+function [funcname, library, project, parser] = parseinputs(funcname, ...
+   mfilename, varargin)
+
+p = inputParser;
+p.FunctionName = mfilename;
+
+addRequired(   p,'funcname', @(x)ischar(x) );
+addParameter(  p,'library', 'unsorted', @(x)ischar(x) );
+addParameter(  p,'project', 'unsorted', @(x)ischar(x) );
+addParameter(  p,'parser', 'MP', @(x)ischar(x) );
+   
+% % now that i understand addOptional, this may work:
+% validlib    = @(x)any(validatestring(x,functiondirectorylist));
+% validproj   = @(x)any(validatestring(x,projectdirectorylist));
+% validparser = @(x)any(validatestring(x,{'MP','IP','AP','OP','NP'}));
+% 
+% addRequired(   p,'funcname',              @(x)ischar(x)  );
+% addOptional(   p,'library',   'unsorted', validlib       );
+% addOptional(   p,'project',   'unsorted', validproj      );
+% addOptional(   p,'parser',    'MP',       validparser    );
+% 
+% i think inputs and outputs will need to be structures to distinguish
+% required, parameter, optional, etc. but don't have time to sort it out rn
+% addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
+% addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
+   
+parse(p,funcname,varargin{:});
+
+library = p.Results.library;
+project = p.Results.project;
+parser = p.Results.parser;
+%inputs = p.Results.inputs;
+%outputs = p.Results.outputs;
    

@@ -34,19 +34,19 @@ load('merrafilelist.mat','filelist');
 
 % find the files corresponding to requested t1:t2 time period
 if ~isnat(t1)
-   fnames   =  tocol({filelist.name});
-   fdates   =  NaT(size(fnames));
+   fnames = tocol({filelist.name});
+   fdates = NaT(size(fnames));
    for n = 1:numel(fnames)
-      fparts      =  strsplit(fnames{n},'.');
-      fdates(n)   =  datetime(fparts{3},'InputFormat','yyyyMM');
+      fparts = strsplit(fnames{n},'.');
+      fdates(n) = datetime(fparts{3},'InputFormat','yyyyMM');
    end
-   idx      = isbetween(fdates,t1,t2);
+   idx = isbetween(fdates,t1,t2);
    filelist = filelist(idx);
 else
-   d1    = filelist(1).name(28:33);
-   d2    = filelist(end).name(28:33);
-   t1    = datetime(str2double(d1(1:4)),str2double(d1(5:6)),1);
-   t2    = datetime(str2double(d2(1:4)),str2double(d2(5:6)),1);
+   d1 = filelist(1).name(28:33);
+   d2 = filelist(end).name(28:33);
+   t1 = datetime(str2double(d1(1:4)),str2double(d1(5:6)),1);
+   t2 = datetime(str2double(d2(1:4)),str2double(d2(5:6)),1);
 end
 
 % load the basin polygon in equal-area projection to get area in m2

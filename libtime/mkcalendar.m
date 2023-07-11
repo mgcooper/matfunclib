@@ -1,24 +1,15 @@
 function T = mkcalendar(t1,t2,dt,varargin)
 %MKCALENDAR makes a calendar
 %
-%  T = mkcalendar(t1,t2,dt,varargin)
-%
+%  T = mkcalendar(t1,t2,dt)
+%  T = mkcalendar(t1,t2,dt,'noleap')
+%  T = mkcalendar(t1,t2,dt,'TimeZone','UTC')
+%  T = mkcalendar(t1,t2,dt,'noleap','TimeZone','UTC')
+% 
 % See also
 
-%--------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-
-p.addRequired(   't1',                 @(x)isnumeric(x)|isdatetime(x));
-p.addRequired(   't2',                 @(x)isnumeric(x)|isdatetime(x));
-p.addRequired(   'dt',                 @(x)ischar(x)|isduration(x)|iscalendarduration(x));
-p.addParameter(  'TimeZone',  'nan',   @(x)ischar(x));
-%p.addParameter(  'TimeZone',  'UTC',   @(x)ischar(x));
-p.addParameter(  'noleap',    false,   @(x)islogical(x));
-p.parseMagically('caller');
-%--------------------------------------------------------------------------
+% parse inputs
+[t1, t2, dt, CalType, TimeZone] = parseinputs(mfilename, t1, t2, dt, varargin{:});
 
 % parse the timestep if a string was passed in
 if ischar(dt)
@@ -34,6 +25,28 @@ if TimeZone ~= "nan"
 end
 
 % remove leap inds
-if noleap == true
+if CalType == "noleap"
    T = rmleapinds(T);
 end
+
+function [t1, t2, dt, CalType, TimeZone] = parseinputs(funcname, t1, t2, dt, varargin)
+
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+validoption = @(x) ~isempty(validatestring(x, {'noleap', 'leap'}));
+
+p.addRequired('t1', @(x)isnumeric(x)|isdatetime(x));
+p.addRequired('t2', @(x)isnumeric(x)|isdatetime(x));
+p.addRequired('dt', @(x)ischar(x)|isduration(x)|iscalendarduration(x));
+p.addOptional('CalType', 'leap', validoption);
+p.addParameter('TimeZone', 'nan', @(x)ischar(x)); % 'UTC'
+p.parse(t1, t2, dt, varargin{:});
+
+t1 = p.Results.t1;
+t2 = p.Results.t2;
+dt = p.Results.dt;
+CalType = p.Results.CalType;
+TimeZone = p.Results.TimeZone;

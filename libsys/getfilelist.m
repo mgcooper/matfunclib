@@ -22,7 +22,7 @@ p.FunctionName = mfilename;
 p.addRequired('dirpath',@(x)ischarlike(x));
 
 % validation
-validstyles = {'fullpath','filenames'};
+validstyles = {'fullpath','filenames','folders'};
 validoption = @(x)any(validatestring(x,validstyles));
 
 if nargin == 2 
@@ -34,8 +34,8 @@ if nargin == 2
       liststyle = 'fullpath';
    end      
 else
-   p.addOptional(    'pattern',     '*',        @(x)ischarlike(x)    );
-   p.addOptional(    'liststyle',   'fullpath', validoption           );
+   p.addOptional('pattern', '*', @(x)ischarlike(x) );
+   p.addOptional('liststyle', 'fullpath', validoption );
 end
 
 p.parseMagically('caller');
@@ -49,6 +49,13 @@ filelist = fnamefromlist(getlist(dirpath,pattern),'asstring');
 if liststyle == "filenames"
    [~,filenames,fileexts] = fileparts(filelist);
    filelist = strcat(filenames,fileexts);
+elseif liststyle == "folders"
+   filelist = filelist(isfolder(filelist));
+elseif liststyle == "parents" 
+   % note, in some cases filelist may already be a list of sub-folders, and this
+   % will strip the subfolder names and return the parent folder, so I need to
+   % unify getlist, getfilelist, fnamefromlist, etc
+   filelist = fileparts(filelist);
 end
 
 % % prob don't need thi sbut just noting thsee two are equivlane

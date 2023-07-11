@@ -18,29 +18,13 @@ function filelist = getFunctionConflicts(varargin)
 % 
 % See also getFunctionDependencies
 
-%------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = true;
-p.KeepUnmatched   = true;
+[funcpath, funcname, flibrary] = parseinputs(mfilename,varargin{:})
 
-% use contains on funcname b/c listallmfunctions includes .m but it is
-% convenient to pass in a function name w/o .m
-validfuncname     = @(x)any(contains(listallmfunctions,x));
-validlibrary      = @(x)any(ismember(functiondirectorylist,x));
-validfuncpath     = @(x)ischar(x)&&~any(ismember(x,{'library','funcname'}));
-
-p.addOptional(    'funcpath',    '',         validfuncpath     );
-p.addParameter(   'funcname',    '',         validfuncname     );
-p.addParameter(   'library',     '',         validlibrary      );
-
-p.parseMagically('caller');
 %------------------------------------------------------------------------------
 
 isfuncpath = ~isempty(funcpath);
-islibrary = ~isempty(library);
+islibrary = ~isempty(flibrary);
 isfuncname = ~isempty(funcname);
 
 if ~isfuncname && ~islibrary && ~isfuncpath
@@ -53,7 +37,7 @@ if isfuncpath && ~isfolder(funcpath)
    isfuncname = true;
 elseif islibrary
    % if a library is requested, build a full path
-   funcpath = [getenv('MATLABFUNCTIONPATH') library];
+   funcpath = fullfile(getenv('MATLABFUNCTIONPATH'),flibrary);
 elseif isfuncname
    % if a function name is requested, build a full path
    funcpath = which(funcname); % doesn't matter which one is found
@@ -96,3 +80,26 @@ if numel(allfiles) > 1
 else
    filelist(idx).conflicts = [];
 end
+
+function [funcpath, funcname, flibrary] = parseinputs(funcname,varargin)
+
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = true;
+p.KeepUnmatched = true;
+
+% use contains on funcname b/c listallmfunctions includes .m but it is
+% convenient to pass in a function name w/o .m
+validfuncname = @(x)any(contains(listallmfunctions,x));
+validlibrary = @(x)any(ismember(functiondirectorylist,x));
+validfuncpath = @(x)ischar(x)&&~any(ismember(x,{'library','funcname'}));
+
+p.addOptional( 'funcpath', '', validfuncpath );
+p.addParameter('funcname', '', validfuncname );
+p.addParameter('flibrary', '', validlibrary );
+
+p.parse(varargin{:});
+funcpath = p.Results.funcpath;
+funcname = p.Results.funcname;
+flibrary = p.Results.flibrary;
+

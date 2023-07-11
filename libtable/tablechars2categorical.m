@@ -1,18 +1,11 @@
 function T = tablechars2categorical(T)
 
-%    % NOTE: built-in 'vartype' accomplishes this, e.g.:
-%    bikeTbl  = readtable('BicycleCounts.csv');
-%    bikeData = table2timetable(bikeTbl);
-%    counts   =  bikeData{:,vartype('numeric')};
-%    mean(counts,'omitnan')
-   
-   
-   inotnum     =  not(cellfun(@isnumeric,table2cell(T(1,:))));
-   newvars     =  categorical(table2array(T(:,inotnum)));
-   varnames    =  T.Properties.VariableNames(inotnum);
+ichar = find(tablevartypeindices(T,'char'));
+newvars = categorical(table2array(T(:,ichar)));
+varnames = T.Properties.VariableNames(ichar);
 
-   for n = 1:numel(varnames)
-      T.(varnames{n})   = newvars(:,n);
-   end
-   
+for n = 1:numel(varnames)
+   T.(varnames{n}) = newvars(:,n);
+end
+
 end

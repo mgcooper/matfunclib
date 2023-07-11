@@ -1,4 +1,4 @@
-function H = addOnetoOne(varargin)
+function varargout = addOnetoOne(varargin)
 %addOnetoOne adds a one:one line to an open plot
 %   Adds a solid black line of width 1, scales the x and y lims to be
 %   equal, returns the handle to the plot so the user can specify line
@@ -31,8 +31,6 @@ function H = addOnetoOne(varargin)
 % y = x.*(rand(1,100) + .5);
 % h = scatter(x,y);
 % addOnetoOne('k--','linewidth',5)
-%
-% See also: scatterfit
 
 % if nargin==0
 %     posneg = pos;
@@ -43,14 +41,20 @@ function H = addOnetoOne(varargin)
 
 hold on; axis tight;
 
-newlims(1) = min(min(xlim),min(ylim));
-newlims(2) = max(max(xlim),max(ylim));
+xlims       =   xlim;
+ylims       =   ylim;
 
-set(gca,'XLim',newlims,'YLim',newlims);
+newlims(1)  =   min(min(xlims),min(ylims));
+newlims(2)  =   max(max(xlims),max(ylims));
 
+set(gca,'XLim',newlims,'YLim',newlims);   
 delta = (newlims(2) - newlims(1))/100;
 
+
 H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
+
+handle      =   plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2), ...
+                        varargin{:});
 
 % i diabled this b/c it's the reason the exponent isn't showing up on the
 % tick labels anymore, need to come up with a solution

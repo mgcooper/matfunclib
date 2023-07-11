@@ -1,41 +1,44 @@
 function [Z,R,X,Y] = rasterize(x,y,z,varargin)
-%RASTERIZE construct a spatially-referenced raster Z and map/geographic
-%raster reference object R from scattered data z referenced to geo/map
-%coordinates x,y
-%[Z,R] = RASTERIZE(x,y,z,rasterSize)
-%[Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY)
-%[Z,R] = RASTERIZE(___,method). Options: 'linear', 'nearest', 'natural',
-%'cubic', or 'v4'. The default method is 'natural'.
-%[___,X,Y] = RASTERIZE(___) also returns 2-d coordinate arrays X,Y with
-%size equal to size(Z) that specify the x/y map/geographic coordinates of
-%each data value in Z
-
+%RASTERIZE convert x,y,z data to full grids
+%
+% RASTERIZE construct a spatially-referenced raster Z and map/geographic
+% raster reference object R from scattered data z referenced to geo/map
+% coordinates x,y
+% [Z,R] = RASTERIZE(x,y,z,rasterSize)
+% [Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY)
+% [Z,R] = RASTERIZE(___,method). Options: 'linear', 'nearest', 'natural',
+% 'cubic', or 'v4'. The default method is 'natural'.
+% [Z,R] = RASTERIZE(___,method,extrap). Extrapolates to missing values.
+% [___,X,Y] = RASTERIZE(___) also returns 2-d coordinate arrays X,Y with
+% size equal to size(Z) that specify the x/y map/geographic coordinates of
+% each data value in Z
+%
 %   This function is similar to the in-built Matlab function geoloc2grid.m
 %   (Copyright 2016 The MathWorks, Inc.) but adds a bit more functionality.
 %   The function uses griddata instead of TriScatteredInterpolant, and
 %   instead of returning the 1-d refvec object it returns a map/geographic
 %   reference object R, which permits compatibility with the multitude of
 %   other Matlab functions that require it.
-
+%
 %   USAGE
-
+%
 %   [Z,R] = RASTERIZE(x,y,z,rasterSize) constructs spatially referenced
 %   raster Z and map/geographic raster reference object R from scattered
 %   data z with geo/map coordinates x,y with the numbers of rows and
 %   columns specified by rasterSize
-
+%
 %   [Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY) allows the geographic
 %   cell extents to be set precisely. The geographic limits will be
 %   adjusted slightly, if necessary, to ensure an integer number of cells
 %   in each dimenstion.
-
+%
 %   [Z,R] = RASTERIZE(___,method)  specifies the interpolation
 %   method used to compute Z using any of the input arguments in the
 %   previous syntaxes. method can be 'linear', 'nearest', 'natural',
 %   'cubic', or 'v4'. The default method is 'natural'. For more information
 %   on why this option is default, see:
 %   https://blogs.mathworks.com/loren/2015/07/01/natural-neighbor-a-superb-interpolation-method/
-
+%
 %   Notes on griddata vs scatteredInterpolant: This function is designed to
 %   return a single 2-d surface. scatteredInterpolant is faster when
 %   querying multiple values in repeated calls, but is identical when
@@ -47,9 +50,10 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 %   geophysical raster data. A future release might update to file_exchange
 %   function gridfit. More work is needed to determine if that function is
 %   a better choice.
-
+%
 %   EXAMPLES
-
+%
+% See also rasterinterp, rasterref, rastersurf
 
 %% Check inputs
 
@@ -57,19 +61,19 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 narginchk(4,6)
 
 % confirm mapping toolbox is installed
-assert(license('test','map_toolbox')==1, ...
-   'rasterize requires Matlab''s Mapping Toolbox.')
+assert( license('test','map_toolbox')==1, ...
+   [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
 % check if lat/lon or planar and validate attributes accordingly
 tf = islatlon(y,x);
 
 % confirm x, y, and z are 2d numeric arrays of equal size
 validateattributes(x,{'numeric'},{'real','2d','nonempty','size',size(y)}, ...
-   'rasterize', 'x', 1)
+   mfilename, 'x', 1)
 validateattributes(y,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-   'rasterize', 'y', 2)
+   mfilename, 'y', 2)
 validateattributes(z,{'numeric'},{'real','2d','nonempty','size',size(x)}, ...
-   'rasterize', 'z', 3)
+   mfilename, 'z', 3)
 
 % convert to double for compatibility with scatteredInterpolant
 x = double(x);
@@ -86,19 +90,22 @@ if ischar(checkarg) || (isstring(checkarg) && isscalar(checkarg))
    numarg = numarg-1;
 end % else, varargin{numarg} is not method
 
+% check if 'extrap' was provided
+extrap = any(cellfun(@(v) strcmp('extrap', v), varargin));
+if extrap
+   varargin(cellfun(@(v) strcmp('extrap', v), varargin)) = [];
+   numarg = numarg -1;
+end
+
+% parse remaining args
 switch numarg
-   case 1 % user passed in rasterSize, validate it here
+   case 1 % user passed in rasterSize
       inrasterSize = true;
       rasterSize = varargin{1};
-      if tf % x,y are geographic coordinates
-         validateattributes(rasterSize, {'numeric'}, ...
-            {'real','2d','finite','positive'}, ...
-            'rasterize','rasterSize', 4)
-      else % x,y are map coordinates (validation is identical)
-         validateattributes(rasterSize, {'numeric'}, ...
-            {'real','2d','finite','positive'}, ...
-            'rasterize','rasterSize', 4)
-      end
+      % validation is identical for map or geo coordinates
+      validateattributes(rasterSize, {'numeric'}, ...
+         {'real','2d','finite','positive'}, ...
+         mfilename, 'rasterSize', 4)
    case 2 % user passed in cellextentX and cellextentY, validate them here
       inrasterSize = false;
       cellextentX = varargin{1};
@@ -106,17 +113,17 @@ switch numarg
       if tf % x,y are geographic coordinates
          validateattributes(cellextentX, {'numeric'}, ...
             {'real','scalar','finite','positive','<=',360}, ...
-            'rasterize','cellextentX', 4)
+            mfilename, 'cellextentX', 4)
          validateattributes(cellextentY, {'numeric'}, ...
             {'real','scalar','finite','positive','<=',180}, ...
-            'rasterize','cellextentY', 5)
-      else % x,y are map coordinates (validation is identical)
+            mfilename, 'cellextentY', 5)
+      else % x,y are map coordinates
          validateattributes(cellextentX, {'numeric'}, ...
             {'real','scalar','finite','positive'}, ...
-            'rasterize','cellextentX', 4)
+            mfilename, 'cellextentX', 4)
          validateattributes(cellextentY, {'numeric'}, ...
             {'real','scalar','finite','positive'}, ...
-            'rasterize','cellextentY', 5)
+            mfilename, 'cellextentY', 5)
       end
 end
 
@@ -127,34 +134,47 @@ tfreg = isxyregular(x,y);
 if tfreg == true % if so, then simply grid it
    [X,Y] = meshgrid(unique(x(:),'sorted'),flipud(unique(y(:),'sorted')));
    Z = reshape(z,size(X,1),size(Y,2));
-   R = rasterref(x,y,'cell');
+   R = rasterref(x,y,'cellInterpretation','cells');
+
+   % check for missing values
+   if any(isnan(Z(:))) && extrap
+      Z = inpaintn(Z);
+      prec = ceil(log10(Z));
+      prec(prec>0) = 0;
+      Z = round(Z, mode(prec(:)));
+   end
+
 else % build a query grid and interpolate the scattered data onto it
-   % this method attempts to account for both very small and large domains
-   % it might not work all the time
-   xmindif = abs(min(diff(x(:))));
-   ymindif = abs(min(diff(y(:))));
+
+   % Determine the x-y extent of the interpolation query grid. This method
+   % attempts to account for both very small and large domains. It might not
+   % work all the time.
+   xdiffs = abs(diff(x(:)));
+   ydiffs = abs(diff(y(:)));
+   xmindif = min(xdiffs(xdiffs>0.0));
+   ymindif = min(ydiffs(ydiffs>0.0));
    xtol = floor(log10(xmindif))-1;
    ytol = floor(log10(ymindif))-1;
-   xmin = roundn(min(x(:)),xtol);
-   xmax = roundn(max(x(:)),xtol);
-   ymin = roundn(min(y(:)),ytol);
-   ymax = roundn(max(y(:)),ytol);
+   xmin = round(min(x(:)),-xtol);
+   xmax = round(max(x(:)),-xtol); % extending by xmindif can substantially increase the extent
+   ymin = round(min(y(:)),-ytol);
+   ymax = round(max(y(:)),-ytol);
 
-%    This can rectify some issues where rounding to x/ytol fails to
-%    encompass the entire extent, but extending by xmindif can also
-%    substantially increase the extent and therefore slow down the
-%    function because it increases the interpolation below
-%    ymin = roundn(min(y(:)),ytol)-ymindif;
-%    ymax = roundn(max(y(:)),ytol)+ymindif;
-%    xmin = roundn(min(x(:)),xtol)-xmindif;
-%    xmax = roundn(max(x(:)),xtol)+xmindif;
+   % This can rectify some issues where rounding to x/ytol fails to
+   % encompass the entire extent, but extending by xmindif can also
+   % substantially increase the extent and therefore slow down the
+   % function because it increases the interpolation below
 
+   % ymin = round(min(y(:)),-ytol)-ymindif;
+   % ymax = round(max(y(:)),-ytol)+ymindif;
+   % xmin = round(min(x(:)),-xtol)-xmindif;
+   % xmax = round(max(x(:)),-xtol)+xmindif;
    xlims = [xmin xmax];
    ylims = [ymin ymax];
 
-% i could also push the extent outward by 1/10th of its value ...
-%     xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
-%     yoffset = (max(y(:))-min(y(:)))/10;
+   % i could also push the extent outward by 1/10th of its value ...
+   % xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
+   % yoffset = (max(y(:))-min(y(:)))/10;
 
    % determine if the data is planar or geographic and build the R object
 
@@ -202,15 +222,23 @@ else % build a query grid and interpolate the scattered data onto it
    xq = reshape(X,size(X,1)*size(X,2),1);
    yq = reshape(Y,size(Y,1)*size(Y,2),1);
 
-   % update April 10,2020 - convert from geographic/map coordinates to
-   % intrinsic to improve the speed and accuracy of the interpolation
-   if tf % note order of output xq,yq vs input xq,yq
-      [xq,yq] = geographicToIntrinsic(R,yq,xq);
-      [x,y]   = geographicToIntrinsic(R,y,x);
-   else
-      [xq,yq] = worldToIntrinsic(R,xq,yq);
-      [x,y]   = worldToIntrinsic(R,y,x);
-   end
+   % convert from geographic/map coordinates to intrinsic to improve the speed
+   % and accuracy of the interpolation. note the order of output xq,yq vs input
+   % xq,yq for geographicToIntrinsic.
+
+   % Commented this out pending further tests. Does this reduce the precision of
+   % the x,y coordinates, e.g. if you have a scattered coordinate that is within
+   % a grid cell, that scattered coordinate gets converted to an intrinsic grid
+   % cell coordinate, unless worldToIntrinsic has sub-grid cell precision.
+   % Keeping it for refrence.
+
+   % if tf % note order of output xq,yq vs input xq,yq
+   %    [xq,yq] = geographicToIntrinsic(R,yq,xq);
+   %    [x,y] = geographicToIntrinsic(R,y,x);
+   % else
+   %    [xq,yq] = worldToIntrinsic(R,xq,yq);
+   %    [x,y] = worldToIntrinsic(R,y,x);
+   % end
 
    % apply griddata and reshape to a grid
    Z = griddata(x,y,z,xq,yq,method);
@@ -221,129 +249,195 @@ else % build a query grid and interpolate the scattered data onto it
 
 end
 
-
-% this is the logic behind the argin checks
-
-% if rasterize(x,y,z,rasterSize)
-% numarg = 1
-% method = 'natural'
-% ischar test fails
-% numarg = 1
-% need to validate rasterSize
-
-% if rasterize(x,y,z,rasterSize,'method')
-% numarg = 2
-% ischar test passes
-% method = 'method'
-% numarg = 1
-% need to validate rasterSize
-
-% if rasterize(x,y,z,cellextentX,cellextentY)
-% numarg = 2
-% method = 'natural'
-% ischar test fails
-% numarg = 2
-% need to validate cellextentX and cellextentY
-
-% if rasterize(x,y,z,cellextentX,cellextentY,'method')
-% numarg = 3
-% ischar test passes
-% method = 'method'
-% numarg = 2
-% need to validate cellextentX and cellextentY
-
-% so the outcome is either numarg == 1 and we need to validate rasterSize
-% or numarg == 2 and we need to validate cellextentX and cellextentY
-
-% might change to rasterregularize or similar and explain that this
-% function is explicitly for regularizing gridded data. Occasionally,
-% gridded data is on a non-uniform grid, but many mapping functions require
-% a uniform grid. Interpolating from non-uniform grid to uniform grid is
-% fundamentally a problem of interpolation. For geophysical data, a problem
-% arises when there are zero values. For exmaple, you might have a snow
-% depth dataset, with many zeros surrounded by positive values. Depending
-% on the interpolation method, those zeros will acquire non-zero values.
-% Replacing them with zero is tricky due to scale differences. For precise
-% results, one must know that support of the data. For gridded data, the
-% support is the grid spacing. For point measurements, one must estimate
-% the support. The support can then be used to define the areas that should
-% acquire the value "zero" in the output interpolated surface. Dealing with
-% these issues is beyond the scope of this function.
-
-
-%% notes on determining the spatial extent
-
-% this function builds a regular grid on which the scattered data is
-% interpolated, so it needs to know the spatial extent in the x,y direction
-% for that grid, and it needs to do that for geographic and planar
-% coordinates. Sometimes, x,y data provided by netcdf or other datasets
-% have false precision / rounding errors. So the user might pass in x,y
-% coordinates like 60.00001 61.00001 etc. For this reason, simply rounding
-% to some default value could be problematic.
-
-% 1. The first thing I tried was extending the limits to even degrees in
-% lat and lon i.e. the first approach I used in rasterref
-%     ylims           =   [floor(min(y(:))) ceil(max(y(:)))];
-%     xlims           =   [floor(min(x(:))) ceil(max(x(:)))];
-% but for very small spatial extent it does not work e.g. limits of 67.02
-% to 67.08 would become 67 to 68.
-
-% 2. Then I tried to determine a rounding tolerance based on the x/y extent
-%     xextent     =   max(x(:)) - min(x(:));
-%     yextent     =   max(y(:)) - min(y(:));
-%     if xextent < 1; xtol = floor(log10(xextent))-1; else; xtol = 0; end
-%     if yextent < 1; ytol = floor(log10(yextent))-1; else; ytol = 0; end
-%     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
-
+%%
+function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap)
+%GRIDMAPDATA Convert geolocated planar data array to regular data grid.
 %
-%     xdiffs = diff(x);
-%     xmindif = min(xdiffs)
-%     xmaxdif = max(xdiffs)
-%     xmeandif = mean(xdiffs)
+%   [B,R] = GRIDMAPDATA(X, Y, V, CELLSIZE) converts the geolocated data
+%   array, V, given geolocation points in X and Y, to produce a regular
+%   data grid, B, and the corresponding raster reference object R.
+%   CELLSIZE is a scalar that specifies the width and height of data cells
+%   in the regular data grid, using the same map units as X and Y. Data cells
+%   in B falling outside the area covered by V are set to NaN. The default
+%   setting for R.ColumnsStartFrom is 'north' and R.RowsStartFrom is 'west'.
 %
-% This did not work. Conceptually, at one extreme i could have a huge
-% domain with some points separated by a huge distance and some points very
-% close, in which case min/max/mean could give weird output
+%   [B,R] = GRIDMAPDATA(_, METHOD) uses the specified interpolation METHOD to
+%   construct the grid B. Default method is 'linear'.
+% 
+%   [B,R] = GRIDMAPDATA(_, METHOD, EXTRAP) uses the specified extrapolation scheme
+%   EXTRAP to extrapolate values outside the area covered by V.
+% 
+%   NOTE: Unlike the Matlab function GEOLOC2GRID, this function correctly
+%   adjusts the raster XWORLDLIMITS and YWORLDLIMITS by 1/2 cellsize OUTWARD
+%   from the minimum and maximum X, Y coordinates. This is consistent with an
+%   interpretation that X and Y represent the coordinates of grid cell (raster)
+%   CENTERS, not frame edges. 
+% 
+%   Example
+%   -------
+%   % Load the geolocated data array 'map1' and grid it to 1/2-degree cells.
+%   load mapmtx
+%   cellsize = 0.5;
+%   [Z, R] = GRIDMAPDATA(lt1, lg1, map1, cellsize);
+%
+%   % Create a figure
+%   f = figure;
+%   [cmap,clim] = demcmap(map1);
+%   set(f,'Colormap',cmap,'Color','w')
+%
+%   % Define map limits
+%   latlim = [-35 70];
+%   lonlim = [0 100];
+%
+%   % Display 'map1' as a geolocated data array in subplot 1
+%   subplot(1,2,1)
+%   ax = axesm('mercator','MapLatLimit',latlim,'MapLonLimit',lonlim,...
+%              'Grid','on','MeridianLabel','on','ParallelLabel','on');
+%   set(ax,'Visible','off')
+%   geoshow(lt1, lg1, map1, 'DisplayType', 'texturemap');
+%
+%   % Display 'Z' as a regular data grid in subplot 2
+%   subplot(1,2,2)
+%   ax = axesm('mercator','MapLatLimit',latlim,'MapLonLimit',lonlim,...
+%              'Grid','on','MeridianLabel','on','ParallelLabel','on');
+%   set(ax,'Visible','off')
+%   geoshow(Z, R, 'DisplayType', 'texturemap');
+% 
+% See also
 
-% 3. Then I used the minimum difference between points in each direction
-%   xextent     =   max(x(:)) - min(x(:));
-%   yextent     =   max(y(:)) - min(y(:));
-%   xmindif     =   abs(min(diff(x(:))));
-%   ymindif     =   abs(min(diff(y(:))));
-%   if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
-%   if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
-%   xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%   ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
+% Based on GEOLOC2GRID, Copyright 1996-2022 The MathWorks, Inc.
 
-% THis seems to work
+arguments
+   X double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
+   Y double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
+   V {mustBeNumeric, mustBeReal, mustBeNonempty}
+   cellsize (1,1) double {mustBePositive}
+   method (1,1) string {mustBeMember(method, ["linear", "nearest", "natural"])} = "linear"
+   extrap (1,1) string {mustBeMember(extrap, ["linear", "nearest", "none"])} = "none"
+end
 
-% NOTE: this simple approach might also work for the majority of cases
-%     if tf
-%         tol     =   -7; % approximately 1 cm in units of degrees
-%     else
-%         % tol     =   -2; % nearest cm
-%         tol     =   0; % nearest m (changed for MAR)
-%     end
-%     xlims       =   [roundn(min(x(:)),tol) roundn(max(x(:)),tol)];
-%     ylims       =   [roundn(min(y(:)),tol) roundn(max(y(:)),tol)];
+validateGridCoordinates(X, Y, mfilename, 'X', 'Y', 'coordinates')
+if any(size(Y) ~= size(V))
+   error("matfunclib:validate:inconsistentSizes3", mfilename, "X", "Y", "V")
+end
 
-% Finally, one way to get around it completely is to force the user to pass
-% in a query grid, or allow it, and if the output is weird, they can get
-% around it by passing in the grid, add notes to documentation that the
-% function tries to figure it out, but for very sparse or very small
-% domains the output could be weird
+% Use 1/2 cell size to extend the GRID pixels to the MAP LIMITS
+halfcell = cellsize/2;
 
-% after I thought it was fixed I realized there can be a situation where
-% the domain is large but the spacing is very small and so setting tol = 0
-% can cutout some of the data if the limits are rounded inward, so method 3
-% above which I had settled on as final did not work. I think it might be
-% best to use the small-domain method for all domains, then I could add a
-% check where for large domains I round to the nearest whole-integer ...
+% Obtain the minimum and maximum X and Y grid cell center values and adjust them
+% to create map frame limits (X/YWORLDLIMITS).
+xlim = [floor(min(X(:))),ceil(max(X(:)))] + [-halfcell +halfcell];
+ylim = [floor(min(Y(:))),ceil(max(Y(:)))] + [-halfcell +halfcell];
 
-%     xextent     =   max(x(:)) - min(x(:));
-%     yextent     =   max(y(:)) - min(y(:));
-%     if xextent < 1; xtol = floor(log10(xmindif))-1; else; xtol = 0; end
-%     if yextent < 1; ytol = floor(log10(ymindif))-1; else; ytol = 0; end
-%     xlims       =   [roundn(min(x(:)),xtol) roundn(max(x(:)),xtol)];
-%     ylims       =   [roundn(min(y(:)),ytol) roundn(max(y(:)),ytol)];
+% Apply linear interpolation on a triangular lon-lat mesh.
+F = scatteredInterpolant(X(:), Y(:), V(:), method, extrap);
+
+% Interpolate onto a regular grid 
+[xmesh, ymesh] = meshgrid( ...
+   ((xlim(1)+halfcell):cellsize:(xlim(2)-halfcell)),...
+   ((ylim(1)+halfcell):cellsize:(ylim(2)-halfcell))');
+B = F(xmesh, ymesh);
+
+% Create the R object. Note - ColumnsStartFrom is ambiguous.
+R = maprefcells(xlim, ylim, size(B), 'ColumnsStartFrom', 'north');
+
+% For reference:
+% refvec = [1/cellsize, ylim(1) + cellsize*size(V,1), xlim(1)];
+% R = refvecToGeoRasterReference(refvec,size(Z)); % mgc added
+
+%%
+function [B, R] = gridgeodata(lat, lon, V, cellsize, method, extrap)
+%GRIDGEODATA Convert geolocated data array to regular data grid
+%
+%   [B,R] = GRIDGEODATA(LAT,LON,V,CELLSIZE) converts the geolocated data
+%   array, V, given geolocation points in LAT and LON, to produce a regular
+%   data grid, B, and the corresponding raster reference object R.
+%   CELLSIZE is a scalar that specifies the width and height of data cells
+%   in the regular data grid, using the same angular units as LAT and LON.
+%   Data cells in B falling outside the area covered by A are set to NaN.
+%
+%   NOTE: Unlike the Matlab function GEOLOC2GRID, this function correctly
+%   adjusts the raster LATITUDELIMITS and LONGITUDELIMITS by 1/2 cellsize
+%   OUTWARD from the minimum and maximum X, Y coordinates. This is consistent
+%   with an interpretation that X and Y represent the coordinates of grid cell
+%   (raster) CENTERS, not frame edges.
+%
+%   Example
+%   -------
+%   % Load the geolocated data array 'map1' and grid it to 1/2-degree cells.
+%   load mapmtx
+%   cellsize = 0.5;
+%   [Z, R] = GRIDGEODATA(lt1, lg1, map1, cellsize);
+%
+%   % Create a figure
+%   f = figure;
+%   [cmap,clim] = demcmap(map1);
+%   set(f,'Colormap',cmap,'Color','w')
+%
+%   % Define map limits
+%   latlim = [-35 70];
+%   lonlim = [0 100];
+%
+%   % Display 'map1' as a geolocated data array in subplot 1
+%   subplot(1,2,1)
+%   ax = axesm('mercator','MapLatLimit',latlim,'MapLonLimit',lonlim,...
+%              'Grid','on','MeridianLabel','on','ParallelLabel','on');
+%   set(ax,'Visible','off')
+%   geoshow(lt1, lg1, map1, 'DisplayType', 'texturemap');
+%
+%   % Display 'Z' as a regular data grid in subplot 2
+%   subplot(1,2,2)
+%   ax = axesm('mercator','MapLatLimit',latlim,'MapLonLimit',lonlim,...
+%              'Grid','on','MeridianLabel','on','ParallelLabel','on');
+%   set(ax,'Visible','off')
+%   geoshow(Z, R, 'DisplayType', 'texturemap');
+% 
+% See also gridmapdata, griddata, rasterize
+
+% Based on GEOLOC2GRID, Copyright 1996-2022 The MathWorks, Inc.
+
+arguments
+   lat double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
+   lon double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
+   V {mustBeNumeric, mustBeReal, mustBeNonempty}
+   cellsize (1,1) double {mustBePositive}
+   method (1,1) string {mustBeMember(method, ["linear", "nearest", "natural"])} = "linear"
+   extrap (1,1) string {mustBeMember(extrap, ["linear", "nearest", "none"])} = "none"
+end
+
+checklatlon(lat, lon, mfilename, "LAT", "LON", 1, 2);
+if any(size(lat) ~= size(V))
+   error("matfunclib:validate:inconsistentSizes3", mfilename, "LAT", "LON", "A")
+end
+
+loncheck = max(abs(diff(sort(lon(:)))));
+if isempty(loncheck) || (loncheck > 10 * cellsize)
+   warning('matfunclib:GRIDGEODATA:possibleLongitudeWrap', ...
+      'Longitude values may wrap.')
+end
+
+% Use 1/2 cell size to extend the GRID pixels to the MAP LIMITS
+halfcell = cellsize/2;
+
+% Extend limits to even degrees in lat and lon and adjust them to create map
+% frame limits (LATITUDE/LONGITUDELIMITS). 
+latlim = [floor(min(lat(:))),ceil(max(lat(:)))] + [-halfcell +halfcell];
+lonlim = [floor(min(lon(:))),ceil(max(lon(:)))] + [-halfcell +halfcell];
+
+% Apply linear interpolation on a triangular lon-lat mesh.
+F = scatteredInterpolant(lon(:), lat(:), V(:), method, extrap);
+
+% Interpolate onto a regular grid of CELL CENTERS
+[lonmesh, latmesh] = meshgrid( ...
+   ((lonlim(1)+halfcell):cellsize:(lonlim(2)-halfcell)),...
+   ((latlim(1)+halfcell):cellsize:(latlim(2)-halfcell))');
+B = F(lonmesh, latmesh);
+
+% Create the R object. Note - ColumnsStartFrom is ambiguous.
+R = georefcells(latlim, lonlim, size(B), 'ColumnsStartFrom', 'north');
+
+
+
+
+
+

@@ -11,6 +11,9 @@ function mustContainOnlyText(arg)
 % 
 % end
 
+% NOTE: don't use this, see containsOnlyText for why it fails, if needed,
+% replace with ischarlike, see new functionality there.
+
 if ~containsOnlyText(arg)
    eid = 'custom:validators:mustContainOnlyText';
    msg = 'Value must be char, string array, or cell array of chars or strings.';

@@ -1,24 +1,3 @@
-function varargout = plotting_tricks(varargin)
-%PLOTTING_TRICKS plotting tips and tricks
-
-% if called with no input, open this file
-if nargin == 0; open(mfilename('fullpath')); return; end
-
-% just in case this is called by accident
-narginchk(0,0)
-
-%%
-
-
-% % doesn't work but maybe subplot could be edited 
-% % See if this works:
-% f = figure;
-% ax = gca;
-% subplot(f,4,4,1:16,ax); hold on;
-% plot(1:10,1:10)
-% subplot(4,4,4,ax)% to put an inset in position 4
-
-
 
 % see deselectall or deselectfig to get rid of the annoying selection box on a
 % figure
@@ -72,8 +51,7 @@ title('$\mathsf{\alpha_{sub}\, here}$')
 % =====================================================================
 % check if figure exists
 % =====================================================================
-g = groot;
-if isempty(g.Children)
+if isempty(groot().Children)
   f = figure;
 else
   f = gcf;
