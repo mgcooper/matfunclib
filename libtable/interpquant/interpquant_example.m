@@ -23,7 +23,7 @@ data     = removevars(data,{'flag','timezone'});
 newstep  = hours(1/2);
 
 % % continuous fifteen minute calendar - for reference
-Tref     = tocol(data.Time(1):newstep:data.Time(end));
+Tref     = tocolumn(data.Time(1):newstep:data.Time(end));
 
 % interpolate using the tquant method
 t        = data.Time;

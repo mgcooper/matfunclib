@@ -18,7 +18,7 @@ function Merra = merraWaterBalance(basinname,varargin)
 %-------------------------------------------------------------------------------
 p=magicParser;
 p.FunctionName=mfilename;
-p.addRequired('basinname',@(x)ischar(x));
+p.addRequired('basinname',@ischar);
 p.addParameter('t1',NaT,@(x) isdatetime(x)|isnumeric(x));
 p.addParameter('t2',NaT,@(x) isdatetime(x)|isnumeric(x));
 p.parseMagically('caller');
@@ -34,7 +34,7 @@ load('merrafilelist.mat','filelist');
 
 % find the files corresponding to requested t1:t2 time period
 if ~isnat(t1)
-   fnames = tocol({filelist.name});
+   fnames = tocolumn({filelist.name});
    fdates = NaT(size(fnames));
    for n = 1:numel(fnames)
       fparts = strsplit(fnames{n},'.');
@@ -97,9 +97,9 @@ for n = 1:nm
 
 end % data come out in units m/hr or m
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%%--------------------------------------------------------------------------
 % 	clip the merra2 data to the basin
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%%--------------------------------------------------------------------------
 
 % read in the kuparuk basin and find the points in the poly
 Mask     =  pointsInPoly(LON,LAT,poly,'buffer',0.10,'makeplot',true);
@@ -120,23 +120,23 @@ TW       =  reshape(TW,r*c,nm);  TW = TW(inpolyb,:);
 % B      =  P-E-R-S; % in theory this should = -Thaw Rate
 
 % Get Merra R in m3/s for comparison with gage flow, and the rest in cm/year
-Rm3s     =  tocol(cmd2cms(mean(R,1).*24.*aream2));    % m3/day -> m3/s
-P        =  tocol(cf.*mean(P,1));                     % m/hr -> cm/yr
-E        =  tocol(cf.*mean(E,1));                     % m/hr -> cm/yr
-R        =  tocol(cf.*mean(R,1));                     % m/hr -> cm/yr
-S        =  tocol(cf.*mean(S,1));                     % m/hr -> cm/yr
-BF       =  tocol(cf.*mean(BF,1));                    % m/hr -> cm/yr
-SW       =  tocol(100.*mean(SW,1));                   % m    -> cm
-TW       =  tocol(100.*mean(TW,1));                   % m    -> cm
-%  B        =  tocol(cf.*mean(B,1));                     % m/hr -> cm/yr
+Rm3s     =  tocolumn(cmd2cms(mean(R,1).*24.*aream2));    % m3/day -> m3/s
+P        =  tocolumn(cf.*mean(P,1));                     % m/hr -> cm/yr
+E        =  tocolumn(cf.*mean(E,1));                     % m/hr -> cm/yr
+R        =  tocolumn(cf.*mean(R,1));                     % m/hr -> cm/yr
+S        =  tocolumn(cf.*mean(S,1));                     % m/hr -> cm/yr
+BF       =  tocolumn(cf.*mean(BF,1));                    % m/hr -> cm/yr
+SW       =  tocolumn(100.*mean(SW,1));                   % m    -> cm
+TW       =  tocolumn(100.*mean(TW,1));                   % m    -> cm
+%  B        =  tocolumn(cf.*mean(B,1));                     % m/hr -> cm/yr
 
 clear Mask inpolyb data
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%%--------------------------------------------------------------------------
 %    synchronize all the data
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%%--------------------------------------------------------------------------
 
 % build a merra calendar and timetable, then synchronize all the data
-Time  = tocol(t1:calmonths(1):t2);
+Time  = tocolumn(t1:calmonths(1):t2);
 Merra = timetable(Rm3s,P,E,R,S,BF,SW,TW,'RowTimes',Time);
 Merra = settableunits(Merra,{'m3/s','cm/y','cm/y','cm/y','cm/y','cm/y','cm','cm'});
