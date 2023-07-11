@@ -74,15 +74,20 @@ function [R,X,Y] = rasterref(X,Y,varargin)
 
 % confirm mapping toolbox is installed
 assert(license('test','map_toolbox')==1, ...
-   'rasterref requires Matlab''s Mapping Toolbox.')
+   [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
 % parse inputs
-[X, Y, cellType, mapProjection] = parseinputs(X, Y, mfilename, varargin{:});
+[X, Y, cellType, mapProj, geoCoords] = parseinputs(X, Y, mfilename, varargin{:});
 
 % convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and N-S,
 % get an estimate of the grid resolution, and determine if the data is
 % geographic or planar
-[X, Y, cellsizeX, cellsizeY, gridType, tfgeo] = prepareMapGrid(X,Y);
+[X, Y, cellsizeX, cellsizeY, gridType, tfgeo] = prepareMapGrid(X, Y, 'fullgrids');
+
+% override tfgeo if user-specified map coords
+if tfgeo == true && geoCoords == false
+   tfgeo = false;
+end
 
 % extend the lat/lon limits by 1/2 cell in both directions
 halfX = cellsizeX/2;
@@ -102,9 +107,12 @@ else
 end
 
 % if provided, add the projection
-if isa(mapProjection,'projcrs')
-   R.ProjectedCRS = mapProjection;
+if isa(mapProj,'projcrs')
+   R.ProjectedCRS = mapProj;
 end
+
+% Note: to see the intrinsic coordinates:
+% [cq, rq] = worldToIntrinsic(R, xq, yq);
 
 %% apply the appropriate function
 
@@ -205,19 +213,21 @@ elseif strcmp(cellInterpretation,'postings')
 
 end
 
-function [X, Y, cellType, mapProj] = parseinputs(X, Y, funcname, varargin)
+function [X, Y, cellType, mapProj, UseGeoCoords] = parseinputs(X, Y, funcname, varargin)
 
 p = inputParser;
 p.FunctionName = funcname;
-addRequired( p, 'X', @(x)isnumeric(x));
-addRequired( p, 'Y', @(x)isnumeric(x));
-addParameter(p, 'cellInterpretation', 'cells', @(x)ischar(x));
+addRequired( p, 'X', @isnumeric);
+addRequired( p, 'Y', @isnumeric);
+addParameter(p, 'cellInterpretation', 'cells', @ischar);
 addParameter(p, 'projection', 'unknown', @(x)isa(x,'projcrs')||ischar(x));
+addParameter(p, 'UseGeoCoords', false, @islogical);
 
 parse(p,X,Y,varargin{:});
 
 cellType = p.Results.cellInterpretation;
 mapProj = p.Results.projection;
+UseGeoCoords = p.Results.UseGeoCoords;
 
 % % confirm X and Y are 2d numeric grids of equal size
 % validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'rasterref', 'X', 1)

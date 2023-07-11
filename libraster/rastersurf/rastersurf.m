@@ -144,7 +144,7 @@ validateattributes(R, ...
    'map.rasterref.GeographicCellsReference', ...
    'map.rasterref.MapPostingsReference', ...
    'map.rasterref.GeographicPostingsReference'}, ...
-   {'scalar'}, 'rastersurf', 'R', 2)
+   {'scalar'}, mfilename, 'R', 2)
 
 %% convert to double if
 if isa(Z,'double') ~= 1
@@ -152,6 +152,12 @@ if isa(Z,'double') ~= 1
 end
 
 %% apply the function
+
+% NOTE: since this function relies on R, this is a convenient way to get meshm
+% and surfm to display the raster cells correctly using axesm based map
+% figure
+% geomap(R.LatitudeLimits, R.LongitudeLimits)
+% meshm(V, R);
 
 % make a surface of zeros.
 Z0 = zeros(size(Z));
