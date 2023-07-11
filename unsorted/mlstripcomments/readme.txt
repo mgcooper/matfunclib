@@ -1,1 +1,0 @@
-need to incorporate this into toolbox tools, prior to making one public can use this to strip comments, focusing on letting the code be self descriptive
