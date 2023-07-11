@@ -19,7 +19,7 @@ function [R,X,Y] = rasterref(X,Y,varargin)
 %
 %   Author: Matt Cooper, guycooper@ucla.edu, June 2019 Citation: Matthew
 %   Cooper (2019). matrasterlib: a software library for processing
-%   satellite and climate model data in Matlab�
+%   satellite and climate model data in Matlab
 %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
 %   DD, YYYY.
 %

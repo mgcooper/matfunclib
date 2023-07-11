@@ -86,7 +86,7 @@ end
 
 % activate the toolbox if requested
 if string(workon)=="workon"
-   workon(projname);
+   workon(projectname);
 end
 
 if nargout == 1

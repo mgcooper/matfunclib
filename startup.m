@@ -189,11 +189,6 @@ end
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
 
-% open the active project
-workon(getactiveproject('name'))
-
-% cd(getenv('MATLABUSERPATH'));
-
 % don't forget
 disp('BE GRATEFUL')
 
