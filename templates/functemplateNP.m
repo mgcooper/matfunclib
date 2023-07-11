@@ -1,3 +1,43 @@
+function Y = functemplate(X, varargin)
+%FUNCNAME general description of function
+%
+%  Y = FUNCNAME(X) description
+%  Y = FUNCNAME(X,'name1',value1) description
+%  Y = FUNCNAME(X,'name1',value1,'name2',value2) description
+%  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
+%        The default method is 'flag1'.
+%
+% Example
+%
+%
+%
+% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+%
+% See also
+
+%% parse inputs
+
+narginchk(0,Inf)
+
+[varargin{:}] = convertStringsToChars(varargin{:});
+
+% simplest input parsing
+% if (nargin<2) % set default ; end
+% if (nargin<3) % set default ; end
+% if (nargin<4) % set default ; end
+
+%% main code
+
+
+%% parse outputs
+% [varargout{1:nargout}] = dealout(argout1, argout2)
+
+end
+
+%% local functions
+
+
+%% LICENSE
 
 % BSD 3-Clause License
 %

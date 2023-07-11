@@ -31,6 +31,8 @@ function varargout = addOnetoOne(varargin)
 % y = x.*(rand(1,100) + .5);
 % h = scatter(x,y);
 % addOnetoOne('k--','linewidth',5)
+%
+% See also: scatterfit
 
 % if nargin==0
 %     posneg = pos;
@@ -39,13 +41,21 @@ function varargout = addOnetoOne(varargin)
 %     end
 % end
 
-hold on; axis tight;
+narginchk(0,Inf)
 
-xlims       =   xlim;
-ylims       =   ylim;
-
-newlims(1)  =   min(min(xlims),min(ylims));
-newlims(2)  =   max(max(xlims),max(ylims));
+hold on; 
+if nargin < 1
+   axis tight;
+   
+   %pad = pad/100*(newlims(2)-newlims(1));
+   
+   newlims(1) = min(min(xlim),min(ylim)) * 0.98;
+   newlims(2) = max(max(xlim),max(ylim)) * 1.02;
+   
+elseif strcmp(varargin{1},'keeplims')
+   varargin = varargin(2:end);
+   newlims = xlim;
+end
 
 set(gca,'XLim',newlims,'YLim',newlims);   
 delta = (newlims(2) - newlims(1))/100;
@@ -53,8 +63,9 @@ delta = (newlims(2) - newlims(1))/100;
 
 H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
 
-handle      =   plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2), ...
-                        varargin{:});
+if nargout == 1
+   varargout{1} = H;
+end
 
 % i diabled this b/c it's the reason the exponent isn't showing up on the
 % tick labels anymore, need to come up with a solution

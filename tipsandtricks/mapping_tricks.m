@@ -1,3 +1,96 @@
+function varargout = mapping_tricks(varargin)
+%MAPPING_TRICKS mapping tips and tricks
+
+% if called with no input, open this file
+if nargin == 0; open(mfilename('fullpath')); return; end
+
+% just in case this is called by accident
+narginchk(0,0)
+
+% these were in tabletricks, I didn't think of adding these types of calls when
+% I renamed to _tricks
+% cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libspatial'));
+% doc mapping
+
+%% help pages
+
+% Image Coordinate Systems
+% Define World Coordinate System of Image
+
+%%
+
+% Regarding the construction of the grid from the R object. From the
+% documentation for MapCellsReference: "The Mapping Toolbox™ and Image
+% Processing Toolbox™ use the convention for the location of the origin
+% relative to the raster cells or sampling points such that, at a sample
+% location or at the center of a cell, x has an integer value equal to the
+% column index. Likewise, at a sample location or at the center of a cell,
+% y has an integer value equal to the row index.". This is why we construct
+% the grid by adding the cell size /2 to the first X world coordinate, and
+% subtracting the cells size/2 from the last X world coordinate (m+0.5)
+% ____________________
+% HORIZONTAL DIMENSION
+% 
+% center of first cell                 center of last cell
+%           |                                   |
+%           v                                   v
+% 0   0.5   1   1.5   2   2.5  m-1.5 m-1 m-0.5  m  m+0.5
+%       ___________________       ___________________
+%      |         |         |     |         |         |
+% o    |    o    |    o    | ... |    o    |    o    |    o
+%      |         |         |     |         |         | 
+%       -------------------       -------------------
+% ^    ^                                             ^
+% |    |                                             |
+% |     \                                             \
+%  \    raster left edge = R.XWorldLimits(1)           raster right edge = R.XWorldLimits(2)
+%   \
+%    origin
+% __________________
+% VERTICAL DIMENSION
+% 
+%     o <- origin
+%
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of first cell
+% |       |
+%  -------
+%     .
+%     .
+%     .
+%  -------  <- raster top edge ( R.YWorldLimits(1) )
+% |       |
+% |   o   | <- center of last cell
+% |       |
+%  -------  <- raster bottom edge ( R.YWorldLimits(2) )
+%
+%     o <- phantom point mirroring origin on other end
+% 
+% 
+% The default R = maprefcells() is equivalent to:
+% xlimits = [0.5 2.5];
+% ylimits = [0.5 2.5];
+% rasterSize = [2 2];
+% R = maprefcells(xlimits, ylimits, rasterSize)
+% 
+% This defines a 2x2 raster with four grid cells.
+% 
+% This is why when starting with an R object, creating a grid involves adjusting
+% the X/YWorldLimits (or Latitude/LongitudeLimits) INWARD by 1/2 cell size.
+% 
+% If instead, the raster cell centers are used to construct an R object, the
+% opposite is true - the min/max cell centers are adjusted OUTWARD by 1/2 cell
+% size to create the xlimits/ylimits inputs to MAPREFCELLS or GEOREFCELLS
+
+%% resources to revist
+
+% https://github.com/wme7/Aero-matlab
+% https://github.com/Alexander-Barth/GeoMapping.jl
+% https://github.com/kunlz/mapplot/blob/master/plotmap.m
+% https://github.com/kkyyhh96/MapProjectionMatlab
+% https://github.com/IPGP
+% https://github.com/IPGP/a-simple-spatial-database
 
 %% reading polylinez
 

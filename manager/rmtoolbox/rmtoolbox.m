@@ -1,13 +1,24 @@
 function varargout = rmtoolbox(tbname,varargin)
 %RMTOOLBOX removes toolbox from toolboxdir (optional: delete the toolbox)
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-   p                 = inputParser;
-   p.FunctionName    = 'rmtoolbox';
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
-   
-   addRequired(p, 'tbname',@(x)ischar(x));
-   addParameter(p,'removesource',false,@(x)islogical(x));
+%
+%
+% See also renametoolbox addtoolbox
+
+% Note: I have an optional 'libary' option but i don't think it's needed if the
+% tbpath is read from the directory 'source' column, but maybe for backward
+% compatibility with older entries? 
+
+% parse inputs
+p = inputParser;
+p.FunctionName = mfilename;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
+
+validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+
+addRequired(p, 'tbname',@(x)ischar(x));
+addOptional(p, 'library','',validlibs);
+addParameter(p,'removesource',false,@(x)islogical(x));
 
 parse(p,tbname,varargin{:});
 tbname = p.Results.tbname;

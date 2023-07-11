@@ -64,7 +64,12 @@ for m = 1:numaxes
    numchildren = numel(Children);
    linesWithMarkers = false(numchildren,1);
    for mm = 1:numchildren
-      child    = Children(mm);
+      child = Children(mm);
+      
+      if child.Type == "bar" % add more types: || child.Type == ""
+         % continue, leave linesWithMarkers(mm) = false;
+         continue
+      end
 
       % I think this is here in case a child has more than one line, but if
       % only one line per child, it would be sufficient to store the
