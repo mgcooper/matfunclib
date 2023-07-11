@@ -1,4 +1,11 @@
 function varargout = plotraster(Z, varargin)
+%PLOTRASTER
+% 
+% plotraster(Z, R)
+% 
+% plotraster(Z, X, Y)
+% 
+% See also
 
 % Verify the input count
 narginchk(2, Inf)
@@ -19,9 +26,9 @@ if nargs == 1
    
    if R.CoordinateSystemType == "planar"
       
-      [X, Y] = R.intrinsicToWorld([1, R.RasterSize(1)], [1, R.RasterSize(2)]);      
-      XTicks = X(1):R.CellExtentInWorldX:X(2);
-      YTicks = Y(2):R.CellExtentInWorldY:Y(1);
+      [X, Y] = R.intrinsicToWorld([1, R.RasterSize(1)], [1, R.RasterSize(2)]);
+      XTicks = sort(min(X(:)):R.CellExtentInWorldX:max(X(:)), 'ascend');
+      YTicks = sort(min(Y(:)):R.CellExtentInWorldY:max(Y(:)), 'descend');
 
       % This should be equivalent
       % [X, Y] = R.worldGrid;

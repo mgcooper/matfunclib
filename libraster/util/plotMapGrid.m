@@ -8,39 +8,56 @@ function varargout = plotMapGrid(varargin)
 % H = plotMapGrid(fig, X, Y) or H = plotMapGrid(ax, X, Y) plots the grid centroids and
 % grid edges into the specified figure or axis.
 
-% TODO: simplify the input parsing with parsegraphics
 % Parse possible axes input.
-% [H, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
+[H, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
 
-% Parse inputs
-if isnumeric(varargin{1}) && isnumeric(varargin{2}) && ...
-      numel(varargin{1}) > 1 && numel(varargin{2}) > 1 
-    % If the first two inputs are non-scalar numeric, we assume they are X and Y
-    target = gcf;
-    X = varargin{1};
-    Y = varargin{2};
-    if nargin == 3
-        opt = varargin{3};
-    else
-        opt = 'both';
-    end
-elseif (isgraphics(varargin{1}, 'figure') || isgraphics(varargin{1}, 'axes')) && ...
-      numel(varargin{1}) == 1
-    % If the first input is a figure or axes handle, we assume it's the target
-    target = varargin{1};
-    X = varargin{2};
-    Y = varargin{3};
-    if nargin == 4
-        opt = varargin{4};
-    else
-        opt = 'both';
-    end
-else
-    error('Invalid input. Please refer to the function documentation.')
+if isempty(H)
+   target = gcf;
 end
 
+% Parse inputs
+X = args{1};
+Y = args{2};
+
+% Confirm X and Y are non-empty real numeric
+validateGridCoordinates(X, Y, mfilename)
+
+% Remove X and Y and parse remaining arguments
+args = args(3:end);
+nargs = nargin -2;
+   
+% Remove the plotting option if provided
+iopt = cellfun(@ischar, args);
+if any(iopt)
+   opt = args(iopt);
+   args(iopt) = [];
+else
+   opt = 'both';
+end
+
+% Need to pass in the cell size if x,y are scalar
+if nargs < 1
+   if isscalar(X) && isscalar(Y)
+      error('X and Y are scalar, cell size is required')
+   else
+      [gridType, cellsizex, cellsizey, tfGeoCoords] = mapGridInfo(X, Y);
+   end
+elseif nargs == 1
+   cellsizex = args{1};
+   cellsizey = args{1};
+elseif nargs == 2
+   cellsizex = args{1};
+   cellsizey = args{2};
+end
+
+% Confirm cellsize is a scalar numeric
+validateGridCoordinates(cellsizex, cellsizey, mfilename, ...
+   'cellsizex', 'cellsizey', 'point')
+
+% 
+
 % Obtain the grid edges
-[Xedges, Yedges] = gridNodesToEdges(X, Y);
+[Xedges, Yedges] = gridNodesToEdges(X, Y, 'fullgrids', cellsizex, cellsizey);
 
 % TODO: check size of X,Y and if too big, exit. Add optional argument to force.
 
@@ -68,13 +85,13 @@ if isgraphics(target, 'figure')
    % method 1: fails
    % ax = axes(fig);
 
-   % method 2: 
+   % method 2:
    % ax = axes(fig,'NextPlot','add');
 
-   % method 3: 
+   % method 3:
    % ax = ancestor(fig,'Axes');
 
-   % method 4: 
+   % method 4:
    ax = findobj(fig, 'Type', 'axes', 'Tag', 'MapGrid');
    if isempty(ax)
       ax = axes(fig);
@@ -103,12 +120,12 @@ if strcmp(opt, 'centroids') || strcmp(opt, 'both')
    [x,y] = fastgrid(X,Y);
    % p2 = scatter(ax, x(:), y(:), 'ro', 'filled');
    p2 = plot(ax, x(:), y(:), 'o', 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'none');
-   H(4) = p2;   
+   H(4) = p2;
 
    % this produces a graphics handle with one element per column (so does
    % scatter(x,y)), so its easier to create the grid and use scatter(x(:),y(:))
    % which creates a single graphics handle
-   % reason 
+   % reason
    %    p2 = scatter(ax, Xedges(1:end-1,1:end-1) + diff(Xedges(1,:),1,2)./2, ...
    %       Yedges(1:end-1,1:end-1) + diff(Yedges(:,1),1,1)./2, 'ro', 'filled');
 

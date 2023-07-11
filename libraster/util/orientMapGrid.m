@@ -18,24 +18,37 @@ function [X, Y] = orientMapGrid(X, Y, varargin)
 % 
 % See also prepareMapGrid, mapGridInfo, mapGridCellSize
 
+% If scalar coordinates were passed in, return
+if isscalar(X) && isscalar(Y) || strcmp(mapGridFormat(X, Y), 'coordinates')
+   return
+end
+
+% Check for warning off input
+[args, opt, nargs] = parseoptarg(varargin, 'off');
+
 % Check for custom orientation input
-if nargin > 2
+if nargs > 0
    orientation = varargin{1};
 else
    orientation = 'WE_NS';
 end
 
+% If X, Y are vectors, orient them so X is a row and Y is a column
+if iscolumn(X); X = X'; end
+if isrow(Y); Y = Y'; end
+
 % Check and adjust X orientation
+msg = [];
 switch orientation(1:2)
    case 'WE'
       if X(1,1) ~= min(X(:)) || X(1,2) < X(1,1)
          X = fliplr(X);
-         disp('Input argument 1, X, was re-oriented W-E. Ensure the data referenced by X is oriented W-E.');
+         msg = 'Input argument 1, X, was re-oriented W-E. Ensure the data referenced by X is oriented W-E.';
       end
    case 'EW'
       if X(1,1) ~= max(X(:)) || X(1,2) > X(1,1)
          X = fliplr(X);
-         disp('Input argument 1, X, was re-oriented E-W. Ensure the data referenced by X is oriented E-W.');
+         msg = 'Input argument 1, X, was re-oriented E-W. Ensure the data referenced by X is oriented E-W.';
       end
 end
 
@@ -44,12 +57,17 @@ switch orientation(4:5)
    case 'NS'
       if Y(1,1) ~= max(Y(:)) || Y(1,1) < Y(2,1)
          Y = flipud(Y);
-         disp('Input argument 2, Y, was re-oriented N-S. Ensure the data referenced by Y is oriented N-S.');
+         msg = 'Input argument 2, Y, was re-oriented N-S. Ensure the data referenced by Y is oriented N-S.';
       end
    case 'SN'
       if Y(1,1) ~= min(Y(:)) || Y(1,1) > Y(2,1)
          Y = flipud(Y);
-         disp('Input argument 2, Y, was re-oriented S-N. Ensure the data referenced by Y is oriented S-N.');
+         msg = 'Input argument 2, Y, was re-oriented S-N. Ensure the data referenced by Y is oriented S-N.';
       end
 end
+
+if ~strcmp(opt, 'off') && ~isempty(msg)
+   disp(msg)
+end
+   
 end

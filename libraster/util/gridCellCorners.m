@@ -1,4 +1,4 @@
-function [XV, YV] = gridCellCorners(X, Y, cellSizeX, cellSizeY, Orientation);
+function [XV, YV] = gridCellCorners(X, Y, cellSizeX, cellSizeY, Orientation)
 
 if nargin == 4
    Orientation = 'cw';

@@ -1,9 +1,12 @@
 function [tf, pa] = polyorder(x,y,order)
-%POLYORDER check if polygon vertex ordering is clockwise (true) or ccw (false)
+%POLYORDER return polygon vertex ordering (clockwise = 'cw', countercw = 'ccw')
 %
-% tf = polyorder(x,y) returns twice the area of the simple
-% closed polygonal curve with vertices specified by vectors x and y.
-% The result is:
+% vorder = polyorder(x,y) returns 'cw' if the x,y polygon vertex ordering is
+% clockwise and 'ccw' if the ordering is counterclockwise.
+% 
+% [vorder, parea] = polyorder(x,y) also returns the polygon area, twice the area
+% of the simple closed polygonal curve with vertices specified by vectors x and
+% y. The result is:
 %
 %    Positive for clockwise vertex order
 %    Negative for counter-clockwise vertex order
@@ -12,6 +15,13 @@ function [tf, pa] = polyorder(x,y,order)
 % Reference:
 % https://geometryalgorithms.com/Archive/algorithm_0101/algorithm_0101.html
 % (with sign change in order to use clockwise-is-positive convention.)
+
+% TODO: change to:
+% [vorder, parea] = polyorder(x,y) to return the order and area of each polygon
+% [vorder, parea] = polyorder(x,y,'all') to return the order and area of all
+% polygons (i.e., scalar output)
+% 
+% I updated the documentation but 
 
 if nargin < 3
    order = "cw";
@@ -39,7 +49,7 @@ else
       s = first(k);
       e = last(k);
       pa(k) = signedPolyArea(x(s:e), y(s:e));
-      tf(k) =  pa(k) >= 0;
+      tf(k) = pa(k) >= 0;
    end
 end
 

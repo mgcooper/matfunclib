@@ -5,15 +5,10 @@ function [X,Y] = fastgrid(X,Y)
 % 
 % Matt Cooper, 19-Apr-2023, https://github.com/mgcooper
 %
-% See also meshgrid, ndgrid
-
-
-% this converts X,Y to grid vecs that produce full grids oriented N-S, E-W
-% X = reshape(sort(unique(X(:)),'ascend'),1,[]);
-% Y = reshape(sort(unique(Y(:)),'descend'),[],1);
+% See also meshgrid, ndgrid, fullgrid
 
 try
-   X = repmat(full(X(:)).', numel(Y),1);
-   Y = repmat(full(Y(:)),1, size(X,2));
+   X = repmat(full(X(:)).', numel(Y), 1);
+   Y = repmat(full(Y(:)), 1, size(X, 2));
 catch
 end
