@@ -54,7 +54,7 @@ plotmatrix
 posixtime
 quadgk
 RandStream (for mcrt)
-refreshdata
+refreshdata (use this to refresh plot data when workspace data changes)
 rms
 rref
 setxor

@@ -7,6 +7,11 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% Shortcuts
+
+
+
+
 %% new tricks
 
 % column selection is supported by default with option-select
@@ -33,7 +38,7 @@ narginchk(0,0)
 % https://www.mathworks.com/matlabcentral/profile/authors/390839?detail=fileexchange
 % https://github.com/auralius?tab=repositories
 
-%% WOW iterators work differently than I thought ...
+%% iterators work differently than I thought ...
 
 % https://stackoverflow.com/questions/408080/is-there-a-foreach-in-matlab-if-so-how-does-it-behave-if-the-underlying-data-c
 % https://blogs.mathworks.com/loren/2006/07/19/how-for-works/
