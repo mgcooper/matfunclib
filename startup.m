@@ -187,7 +187,7 @@ end
 %% FINAL STEPS
 
 % clear vars but not the screen b/c it deletes error msgs
-clearvars;
+clearvars
 
 % don't forget
 disp('BE GRATEFUL')

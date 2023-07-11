@@ -28,8 +28,10 @@ function workon(varargin)
 % note: all setproject** fucntions write the directory, so each time one of
 % those is called, writeprjdirectory creates a temporary file. need to stop this
 
-% parse inputs
+%% parse inputs
 [projname, updatefiles, force] = parseinputs(mfilename, varargin{:});
+
+%% main
 
 % check if this is a new project (ie it doesn't exist in the project directory)
 ok = verifyprojectexists(projname);
@@ -38,52 +40,18 @@ if ok == false; return; end
 
 % If switching projects, close and save the current project. If not, do nothing. 
 if strcmpi(projname,getactiveproject('name'))
-   % do nothing - the requested project is the active project (not switching)
-   if force == true % unless force is true (not implemented)
-      % continue
-   else
-      % 30 Jan if workoff is in the else block, it should be fine to run workon
-      % for an already active project, it will open the files and configure
-      % openprojectfiles();
-      % warning('the requested project is already active')
-      % return
+   % the requested project is the active project (do nothing)
+   if force == true 
+      % unless force is true (not implemented)
    end
-   
 else
    % close and save the current open project before opening the new one
-   
-   % 30 Jan moved here so on startup the active project is loaded
-   % WARNING: workoff sets the active files  - directory is updated
    workoff(getactiveproject(), 'updatefiles', updatefiles);
+   % NOTE: if for some reason the active files are closed and workon is called
+   % the active file list will be updated and they will be lost, so a backup can
+   % be opened and openprojectfiles called first then workon or workoff but
+   % better to create option here or some other method thats why i added 'force'
 end
-
-% ---------------- to not use workoff to prevent resetting the active file list
-
-% didn't finish this but the problem only occurred b/c interface is linked to
-% e3sm-offline-mode but to the interface branch and i wanted to switch to the
-% icom branch whihc won't work with workon/workoff so i have todo a custom thing
-% whrre i keep interface checked out, do workoff, then do workon ... but the
-% problem is that will update the activefiles list to empty, so i hae to just do
-% the workon then checkout icom branch and missing files won't open but I can do
-% it manually 
-
-% % deactivate the active project
-% disp(['deactivating ' getactiveproject('name')]);
-% 
-% % full path to project folder
-% projpath = getprojectfolder(projname); % use 'namespace' for old behavior
-
-
-% ----------------
-
-% NOTE: if for some reason the active files are closed and workon is called the
-% active file list will be updated and they will be lost, so a backup can be
-% opened and openprojectfiles called first then workon or workoff but better to
-% create option here or some other method thats why i added 'force' 
-
-% % 30 Jan moved this up to else
-% % WARNING: workoff sets the active files  - directory is updated
-% workoff(getactiveproject('name'));
 
 % full path to the project activefolder
 projpath = getprojectfolder(projname);
@@ -120,27 +88,25 @@ configureproject(projpath);
 % functions or somehow controlling onCleanup within writeprjdirectory itself and
 % therefore passing projectlist back and forth in functions like workon
 
-%-------------------------------------------------------------------------------
-function ok = verifyprojectexists(projname)
+%% subfunctions
 
+function ok = verifyprojectexists(projname)
 ok = true;
 if isproject(projname)
    % ok = true
 else
-
    % option to add the project to the directory
    msg = 'project not found in directory, press ''y'' to add it ';
    msg = [msg 'or any other key to return\n'];
    str = input(msg,'s');
-   
    if string(str) == "y"
       addproject(projname);
       % ok = true
    else
       ok = false;
-      return;
    end
 end
+
 
 function [projname, updatefiles, force] = parseinputs(funcname, varargin)
 
@@ -151,9 +117,8 @@ projectnames = cat(1,cellstr(projectdirectorylist),'default');
 validproject = @(x)any(validatestring(x,projectnames));
 
 addOptional(p, 'projectname', getactiveproject, validproject);
-addParameter(p, 'updatefiles', true, @(x)islogical(x));
-addParameter(p, 'force', false, @(x)islogical(x));
-
+addParameter(p, 'updatefiles', true, @islogical);
+addParameter(p, 'force', false, @islogical);
 parse(p,varargin{:});
 
 projname = p.Results.projectname;
