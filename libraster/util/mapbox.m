@@ -25,11 +25,28 @@ yrect = [ylimits(1) ylimits(1) ylimits(2) ylimits(2) ylimits(1)];
 
 switch nargout
    case 1
-      hold on;
-      h = plot(xrect,yrect,varargin{:});
-      varargout{1} = h;
+      if isempty(get(groot,'Children'))
+         withwarnoff('MATLAB:polyshape:repairedBySimplify');
+         varargout{1} = polyshape(xrect, yrect, 'KeepCollinearPoints', true);
+      else
+         hold on;
+         h = plot(xrect,yrect,varargin{:});
+         varargout{1} = h;
+      end
+      
    case 2
       varargout{1} = xrect;
       varargout{2} = yrect;
+      
+   case 3
+      varargout{1} = xrect;
+      varargout{2} = yrect;
+      
+      withwarnoff('MATLAB:polyshape:repairedBySimplify');
+      varargout{3} = polyshape(xrect, yrect, 'KeepCollinearPoints', true);
+      
+      % NOTE: polyshape vertices do not contain the collinear point which
+      % "closes" the polygon, so if they are pulled out of P, this is needed:
+      % [PX, PY] = closePolygonParts(PX, PY);
 end
    
