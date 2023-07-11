@@ -5,7 +5,7 @@ function varargout = plotraster(Z, varargin)
 % 
 % plotraster(Z, X, Y)
 % 
-% See also
+% See also: rastershow, mapshow, geoshow, imagesc, imagscn
 
 % Verify the input count
 narginchk(2, Inf)

@@ -1,7 +1,7 @@
-function [ pctDif,absDif,pctAnom ] = gridAnomaly( normal,sample )
+function [pctDif, absDif, pctAnom] = gridAnomaly(normal, sample)
 %GRIDANOMALY 
 % 
-%   [ pctDif,absDif,pctAnom ] = gridAnomaly( normal,sample )
+%   [pctDif, absDif, pctAnom] = gridAnomaly(normal, sample)
 
 absDif  =   sample - normal;
 ratio   =   absDif./normal;
