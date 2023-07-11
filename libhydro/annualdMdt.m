@@ -22,33 +22,33 @@ nmonths = length(M);
 % instead uses the last monthly value. Can change later if desired.
 
 if mod(nmonths-1,12) == 0
-   nmonths   = nmonths - 1;
+   nmonths = nmonths - 1;
 elseif mod(nmonths,12) ~= 0
    error('input data must be posted monthly, or option to provide +1 month');
 else
    M = [M;nan];
 end
 
-dMdt        =  nan(nmonths,1);
-Mt          =  nan(nmonths,1);
+dMdt = nan(nmonths,1);
+Mt = nan(nmonths,1);
 
 % average bi-monthly mass from start to finish
 for n = 1:nmonths
 
-   Mt(n) =  (M(n)+M(n+1))/2;
+   Mt(n) = (M(n)+M(n+1))/2;
 
    % this is the case where one extra month was not provided. it also
    % works if the first two or more months are nan.
    if isnan(M(n+1))
-      Mt(n) =  (M(n));
+      Mt(n) = (M(n));
    end
 
 end
 
 % annual differences on a monthly basis
 for n = 1:nmonths-12
-   i        =  n;
-   ii       =  n+12;
+   i = n;
+   ii = n+12;
 
    dMdt(ii) = Mt(ii)-Mt(i);
 
@@ -60,51 +60,51 @@ end
 % to build the new yearly time vector, if water year or anything other
 % than Jan-Dec, then datetime(years,1,1) won't work b/c we will have one
 % extra year for the last partial year, so this should work:
-numyears    =  nmonths/12;
-newtimes    =  tocol(Time(1):calyears(1):Time(1)+calyears(numyears-1));
-mvars       =  cellstr(datestr(Time(1:12),'mmm'));
+numyears = nmonths/12;
+newtimes = tocolumn(Time(1):calyears(1):Time(1)+calyears(numyears-1));
+mvars = cellstr(datestr(Time(1:12),'mmm'));
 
 
-dMdt        =  transpose(reshape(dMdt,12,numyears));
-dMdt        =  array2timetable(dMdt,'RowTimes',newtimes);
+dMdt = transpose(reshape(dMdt,12,numyears));
+dMdt = array2timetable(dMdt,'RowTimes',newtimes);
 
 dMdt.Properties.VariableNames = mvars;
 
-Mt          =  transpose(reshape(Mt,12,numyears));
-Mt          =  array2timetable(Mt,'RowTimes',newtimes);
+Mt = transpose(reshape(Mt,12,numyears));
+Mt = array2timetable(Mt,'RowTimes',newtimes);
 
 Mt.Properties.VariableNames = mvars;
 
-%    dGdt        =  array2timetable(dGdt,'RowTimes',datetime(years,1,1), ...
+%    dGdt = array2timetable(dGdt,'RowTimes',datetime(years,1,1), ...
 %                   'VariableNames',{ 'Jan','Feb','Mar','Apr','May','Jun',...
 %                                     'Jul','Aug','Sep','Oct','Nov','Dec'});
 
 % this would return a timetable as a single monthly column
-%dGdt        =  timetable(dGdt,'RowTimes',G.Time);
+%dGdt = timetable(dGdt,'RowTimes',G.Time);
 
 %    % this is the orignal method that uses the Jan + Dec only
 %    for i = 2:numel(years)-1
 %
-%       iyear    =  years(i);
-%       ideci    =  find(Time == datetime(iyear,12,1));
-%       ijanip1  =  find(Time == datetime(iyear+1,1,1));
-%       idecim1  =  find(Time == datetime(iyear-1,12,1));
-%       ijani    =  find(Time == datetime(iyear,1,1));
+%       iyear = years(i);
+%       ideci = find(Time == datetime(iyear,12,1));
+%       ijanip1 = find(Time == datetime(iyear+1,1,1));
+%       idecim1 = find(Time == datetime(iyear-1,12,1));
+%       ijani = find(Time == datetime(iyear,1,1));
 %
-%       dGdt(i)  =  (S(ideci)+S(ijanip1))/2 - (S(idecim1)+S(ijani))/2;
+%       dGdt(i) = (S(ideci)+S(ijanip1))/2 - (S(idecim1)+S(ijani))/2;
 %
 %    end
 
-%    dGdt     =  timetable(dGdt,'RowTimes',datetime(years,1,1));
+%    dGdt = timetable(dGdt,'RowTimes',datetime(years,1,1));
 
 
 % % the ET calculation from Rodel
 % % this is not right but a start
 % % if we have 60 days of daily et, we compute 31 30-day running averages,
 % % i.e., day 1:30, 2:31, 3:32, 4:33, ... 31:60, then average those to get
-% N=30;
-% for n=1:N
-%    for d=1+n:2+n
+% N = 30;
+% for n = 1:N
+%    for d = 1+n:2+n
 %       Sbar(n) = sum(P(1+n)-E(1+n))
 %    end
 % end

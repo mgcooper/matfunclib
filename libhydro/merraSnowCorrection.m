@@ -51,9 +51,9 @@ if bimonthly == true
    if month(M.Time(1)) == 1
       t1    =  datetime(iyear,imonth,1);
       t2    =  datetime(iyear+nyears-1,12,1);
-      T     =  tocol(t1:calmonths(1):t2);
+      T     =  tocolumn(t1:calmonths(1):t2);
    elseif month(M.Time(1)) == 10 % assume water years
-      T     =  tocol(M.Time(1):calmonths(1):M.Time(end));
+      T     =  tocolumn(M.Time(1):calmonths(1):M.Time(end));
    end
 
    % need to reshape carefully

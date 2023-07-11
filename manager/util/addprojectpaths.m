@@ -19,7 +19,7 @@ else
 end
 
 withwarnoff({'MATLAB:mpath:nameNonexistentOrNotADirectory', ...
-   'MATLAB:rmpath:DirNotFound'})
+   'MATLAB:rmpath:DirNotFound'});
 
 addpath(genpath(projectpath));
 

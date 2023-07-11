@@ -64,7 +64,7 @@ Favg2 = @(x,y,z,s,idx) mean( x(:,idx)-y(:,idx)-z(:,idx)-s(:,idx),2  );
 % make an annual calendar
 nmonths = height(Data);
 nyears = nmonths/12;
-T = tocol(Data.Time(1):calyears(1):Data.Time(end));
+T = tocolumn(Data.Time(1):calyears(1):Data.Time(end));
 
 % make a cell array of months
 months = cellstr(datestr(Data.Time(1:12),'mmm'));
@@ -128,15 +128,15 @@ for n = 1:12
    
    % annual timeseries of annual (12-month sum) dSdt for each month
    if snowcorrect == true
-      dSdtA(:,n)  = tocol(MA.P-MA.E-MA.R-MA.SW);
+      dSdtA(:,n)  = tocolumn(MA.P-MA.E-MA.R-MA.SW);
    else
-      dSdtA(:,n)  = tocol(MA.P-MA.E-MA.R);
+      dSdtA(:,n)  = tocolumn(MA.P-MA.E-MA.R);
    end
    
    % to check the effect of snow correction on trends:
    % macfig; trendplot(year(T),dSdt,'leg','dSdt','use',gca);
-   % trendplot(year(T),tocol(SW(n,:)),'leg','SW','use',gca)
-   % trendplot(year(T),dSdt-tocol(SW(n,:)),'leg','dSdt-SW','use',gca)
+   % trendplot(year(T),tocolumn(SW(n,:)),'leg','SW','use',gca)
+   % trendplot(year(T),dSdt-tocolumn(SW(n,:)),'leg','dSdt-SW','use',gca)
 
    % for reference, this accomplishes the same thing as the retime step:
    % PA    = sum(reshape(Merra.P(i1:i2),12,nyears-1));
@@ -227,14 +227,14 @@ PER.readme = ['the PER.annual.PER arrays are 12-month sums where each ' newline 
 
 % macfig;
 % for n = 1:12
-%    dSdt = tocol(P(n,:)-E(n,:)-R(n,:));
+%    dSdt = tocolumn(P(n,:)-E(n,:)-R(n,:));
 %    trendplot(MerraA.Time,dSdt,'leg',months{n},'use',gca)
 %    pause; clf
 % end
 % 
 % macfig;
 % for n = 1:11
-%    dSdt = tocol(mean(P(n:n+1,:))-mean(E(n:n+1,:))-mean(R(n:n+1,:)));
+%    dSdt = tocolumn(mean(P(n:n+1,:))-mean(E(n:n+1,:))-mean(R(n:n+1,:)));
 %    trendplot(MerraA.Time,dSdt,'leg',months{n},'use',gca)
 %    pause; clf
 % end
@@ -245,16 +245,16 @@ PER.readme = ['the PER.annual.PER arrays are 12-month sums where each ' newline 
 % RASO     =  mean(R(8:10,:));
 % SASO     =  PASO-EASO-RASO;
 % 
-% SD       =  tocol(P(12,:)-E(12,:)-R(12,:));
-% SJ       =  tocol(P(1,:)-E(1,:)-R(1,:));
+% SD       =  tocolumn(P(12,:)-E(12,:)-R(12,:));
+% SJ       =  tocolumn(P(1,:)-E(1,:)-R(1,:));
 % 
 % 
 % macfig;
 % trendplot(MerraA.Time,MerraA.S,'leg','dS/dt','use',gca)
-% trendplot(MerraA.Time,tocol(mean(P)-mean(E)-mean(R)),'leg','dS/dt','use',gca)
-% trendplot(MerraA.Time,tocol(P(8,:)-E(8,:)-R(8,:)),'leg','dS/dt (A)','use',gca)
-% trendplot(MerraA.Time,tocol(P(9,:)-E(9,:)-R(9,:)),'leg','dS/dt (S)','use',gca)
-% trendplot(MerraA.Time,tocol(P(10,:)-E(10,:)-R(10,:)),'leg','dS/dt (O)','use',gca)
-% trendplot(MerraA.Time,tocol(P(12,:)-E(12,:)-R(12,:)),'leg','dS/dt (D)','use',gca)
-% trendplot(MerraA.Time,tocol(P(1,:)-E(1,:)-R(1,:)),'leg','dS/dt (J)','use',gca)
+% trendplot(MerraA.Time,tocolumn(mean(P)-mean(E)-mean(R)),'leg','dS/dt','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(8,:)-E(8,:)-R(8,:)),'leg','dS/dt (A)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(9,:)-E(9,:)-R(9,:)),'leg','dS/dt (S)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(10,:)-E(10,:)-R(10,:)),'leg','dS/dt (O)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(12,:)-E(12,:)-R(12,:)),'leg','dS/dt (D)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(1,:)-E(1,:)-R(1,:)),'leg','dS/dt (J)','use',gca)
 % trendplot(MerraA.Time,SASO(:),'leg','dS/dt (ASO)','use',gca)

@@ -123,7 +123,7 @@ data_out = [nan(numpadi,numvars);data_in;nan(numpadf,numvars)];
 dates_out = [missing_datesi';dates;missing_datesf'];
 
 % rebuild the timetable
-Time = tocol(datetime(dates_out,'ConvertFrom','datenum'));
+Time = tocolumn(datetime(dates_out,'ConvertFrom','datenum'));
 T = timetable(Time,data_out(:,1));
 
 if numvars > 1

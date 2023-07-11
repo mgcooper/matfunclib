@@ -46,9 +46,9 @@ if bimonthly == true
    if month(G.Time(1)) == 1
       t1    =  datetime(iyear,imonth,1);
       t2    =  datetime(iyear+nyears-1,12,1);
-      T     =  tocol(t1:calmonths(1):t2);
+      T     =  tocolumn(t1:calmonths(1):t2);
    elseif month(G.Time(1)) == 10 % assume water years
-      T     =  tocol(G.Time(1):calmonths(1):G.Time(end));
+      T     =  tocolumn(G.Time(1):calmonths(1):G.Time(end));
    end
    
    % reshape carefully. this is done so G and SW are compatible with G and

@@ -26,8 +26,10 @@ function workoff(varargin)
 % activeproject is set to 'default'. If matlab is closed, the activefiles are
 % updated for project 'default'.
 
-% parse inputs
+%% parse inputs
 [projname, updatefiles] = parseinputs(mfilename, varargin{:});
+
+%% main
 
 % deactivate the project
 disp(['deactivating ' projname]);
@@ -53,6 +55,7 @@ end
 % unset the active project
 setprojectactive('default');
 
+%% subfunctions
 
 function [projname, updatefiles] = parseinputs(funcname, varargin)
 p = inputParser;
@@ -62,7 +65,7 @@ projectnames = cat(1,cellstr(projectdirectorylist),'default');
 validproject = @(x)any(validatestring(x,projectnames));
 
 addOptional(p,'projectname',getactiveproject,validproject);
-addParameter(p,'updatefiles',true,@(x)islogical(x));
+addParameter(p,'updatefiles',true,@islogical);
 parse(p,varargin{:});
 
 projname = p.Results.projectname;
