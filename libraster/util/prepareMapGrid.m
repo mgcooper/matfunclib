@@ -1,4 +1,5 @@
-function [X,Y,cellSizeX,cellSizeY,gridType,tfGeoCoords] = prepareMapGrid(X,Y,gridOption)
+function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
+   prepareMapGrid( X1, Y1, GridOption)
 %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis
 %
 % [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y)
@@ -43,54 +44,69 @@ function [X,Y,cellSizeX,cellSizeY,gridType,tfGeoCoords] = prepareMapGrid(X,Y,gri
 % 
 % See also: mapGridInfo, orientMapGrid, mapGridCellSize
 
-% parse gridOption 
-if nargin < 3
-   gridOption = "fullgrids";
-end   
+% Determine input grid format.
+GridFormat = mapGridFormat(X1, Y1);
 
-% Determine the grid type, cell size in the X and Y direction, and if the
-% coordinates are geographic
-[gridType, cellSizeX, cellSizeY, tfGeoCoords] = mapGridInfo(X, Y);
+% If GridOption was not provided, use fullgrids (not GridFormat)
+if nargin < 3 || isempty(GridOption)
+   GridOption = 'fullgrids';
+end
+
+% Determine the grid type, X/Y cell size, and if the coordinates are geographic
+[GridType, CellSizeX, CellSizeY, tfGeoCoords] = mapGridInfo(X1, Y1, GridFormat);
 
 % If longitude is wrapped from 0-360, unwrap to -180:180
 if tfGeoCoords == true
-%     X = wrapTo180(X);
+   % X = wrapTo180(X);
 end
 
-% Return the requested gridOption. gridType has no effect as of this time. If
-% gridOption is "unstructured", nothing is done. If gridType is used,
+% Keep the original coordinates to determine 1) if there are missing pixels
+% after X, Y are converted to full grids or grid vectors, and 2) the indices
+% required to remap an external variable the same size as input X,Y onto the
+% output X,Y.
+% [X1, Y1] = dealout(X2, Y2);
+
+% Return the requested GridOption. GridType has no effect as of this time. If
+% GridOption is "unstructured", nothing is done. If GridType is used,
 % "irregular" should be treated the same way, meaning lists of coordinate pairs
 % are provided, and they are assumed to be correct. 
-switch gridOption 
+switch GridOption
    
-   case "gridvectors"
+   case 'gridvectors' % 1d cell-center vectors
       
-      X = reshape(sort(unique(X(:)),'ascend'),1,[]);
-      Y = reshape(sort(unique(Y(:)),'descend'),[],1);
+      [X2, Y2] = gridvec(X1, Y1);
 
-      % X = unique(X(:),'sorted');
-      % Y = unique(Y(:),'sorted');
-      
-   case "fullgrids"
+   case 'fullgrids' % 2d cell-center arrays
 
-      % Convert grid vectors or coordinate pairs to 2-d arrays
-      [X, Y] = meshgrid(unique(X(:), 'sorted'), unique(Y(:), 'sorted'));
+      [X2, Y2] = fullgrid(X1, Y1, GridOption);
       
-      % Ensure the X,Y arrays are oriented W-E and N-S
-      [X, Y] = orientMapGrid(X, Y);
+   case 'gridframes' % 2d cell-edge arrays
       
-   case "gridframes"
+      [X2, Y2] = fullgrid(X1, Y1, GridOption);
+      [X2, Y2] = gridNodesToEdges(X2, Y2);
       
-      [X, Y] = gridNodesToEdges(X, Y);
+   case 'coordinates' % 1d cell center coordinates
       
-   case "unstructured" % inclusive of "irregular"
+      [X2, Y2] = fullgrid(X1, Y1, GridOption);
+      
+      X2 = X2(:);
+      Y2 = Y2(:);
+      
+   case 'unstructured' % inclusive of 'irregular'
       
       % Probably do nothing, but if anything, remove / check for redundant pairs
-      % ok = unique([X(:),Y(:)],'rows');
-      % X = X(ok);
-      % Y = Y(ok);
+      % keep = unique([X1(:), Y1(:)], 'rows');
+      % X = X(keep);
+      % Y = Y(keep);
       
 end
 
+% Ensure the X,Y arrays are oriented W-E and N-S. This should work for all cases
+% above. For coordinates and unstructured, orientMapGrid returns immediately
+[X2, Y2] = orientMapGrid(X2, Y2, 'off');
 
+% Find the mapping between the input X,Y and output X,Y. Suppress this for
+% nargout < 6 so gridmember can call this function. 
+if nargout > 6
+   [I2, LOC1, I1, LOC2] = gridmember(X2, Y2, X1, Y1);
 end
