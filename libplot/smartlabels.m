@@ -1,4 +1,19 @@
-function smartlabels(XData, YData, labels)
+function smartlabels(XData, YData, labels, varargin)
+%SMARTLABELS add labels to plot smartly, using labelpoints
+% 
+% smartlabels(XData, YData, labels)
+% smartlabels(XData, YData, 'FontSize', 12)
+% 
+% Accepts all arguments to labelpoints in varargin
+% 
+% See also labelpoints
+
+% Get default position
+valid_positions = ...
+   {'NE', 'SE', 'NW', 'SW', 'N', 'S', 'E', 'W', 'C', 'center'};
+default_pos = 'NE';
+[args, default_pos, nargs] = parseoptarg(varargin, valid_positions, default_pos);
+
 % Get axis limits
 xlims = xlim();
 ylims = ylim();
@@ -12,14 +27,18 @@ edge_thresh = 0.1 * xrange; % 10% of x range for determining edge proximity
 overlap_thresh = 0.1 * xrange; % 2% of x range for determining overlap with other points
 
 % Initialize label positions to 'NE'
-pos = repmat({'NE'}, size(XData));
+pos = repmat({default_pos}, size(XData));
 
+% 9 Jul 2023, commented this out - not sure why this was even used, but
+% occassionally it is nice to have the edges automatically moved e.g. right edge
+% would be 'E', left edge 'W', top 'N', bottom 'S', so this could form the basis
+% for that
 % Adjust label positions if near right edge
 for i = 1:length(XData)
    x = XData(i);
    y = YData(i);
    if x > xlims(2) - edge_thresh % near right edge
-      pos{i} = 'NW';
+      % pos{i} = 'NW';
    end
 end
 
@@ -40,7 +59,7 @@ end
 
 % Apply labels
 for i = 1:length(XData)
-   labelpoints(XData(i), YData(i), labels(i), pos{i}, 0.1);
+   labelpoints(XData(i), YData(i), labels(i), pos{i}, 0.1, args{:});
 end
 end
 
