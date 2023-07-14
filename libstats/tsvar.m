@@ -1,22 +1,21 @@
 function [ variance,data_monthly ] = tsvar( data,time,scale1,scale2 )
-%TSVAR calculates the variance in a timeseries of data on a timescale
-%specified by 'scale'
+%TSVAR compute the variance of data on specified timescale
 
 % INPUTS:
-%       'DATA' = a mxn matrix of daily timeseries data. 
+%       'DATA' = a mxn matrix of daily timeseries data.
 %       'TIME' = a mx3 matrix. Columns 1:3 must be, in order, YYYY MM DD.
 %       These columns are used to aggregate the data to
-%       the appropriate scale, as specified by 'SCALE'. 
-%       
+%       the appropriate scale, as specified by 'SCALE'.
+%
 % OUTPUTS:
 %       'VARIANCE' = a 1xn matrix of the variance on the scale specified
 %
 % OPTIONS:
 %       'SCALE1' = the initial aggregation of the data to a coarser scale.
-%       For example you might want to aggregate the data to monthly, then 
-%       get the daily variance in each month, so you would set SCALE2 to 
-%       'daily'. Or you might want to aggregate to monthly, then get the 
-%       monthly variance. 
+%       For example you might want to aggregate the data to monthly, then
+%       get the daily variance in each month, so you would set SCALE2 to
+%       'daily'. Or you might want to aggregate to monthly, then get the
+%       monthly variance.
 %       'daily', 'weekly', 'monthly', 'annual'
 %       'SCALE2' = explained above.
 %       'daily', 'weekly', 'monthly', 'annual'
@@ -45,22 +44,16 @@ numyears = endyr - startyr;
 % end
 
 if strcmp(scale1,'monthly') == strcmp(scale2,'daily');
-    for n = 1:b;
-        for m = 1:numyears;
-            year = m + startyr - 1;
-            for j = 1:12;
-                ind = find(time(:,1) == year & time(:,2) == j);
-                data_monthly = data(ind,n);
-                variance(m,j,n) = nanstd(data_monthly)/nanmean(data_monthly);
-               
-            end
-        end
-    end
-end
-        
-        
+   for n = 1:b;
+      for m = 1:numyears;
+         year = m + startyr - 1;
+         for j = 1:12;
+            ind = find(time(:,1) == year & time(:,2) == j);
+            data_monthly = data(ind,n);
+            variance(m,j,n) = nanstd(data_monthly)/nanmean(data_monthly);
 
-    
+         end
+      end
+   end
 end
-
 

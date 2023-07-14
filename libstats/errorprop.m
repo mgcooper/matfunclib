@@ -5,7 +5,9 @@ function sig = errorprop(FofX,X,sigX,varargin)
 %
 % See also
 
-%-------------------------------------------------------------------------------
+error('errorprop is not functional')
+
+% parse inputs
 p = magicParser;
 p.FunctionName = mfilename;
 p.addRequired('FofX',@(x)isa(x,'function_handle'));
@@ -13,8 +15,8 @@ p.addRequired('X',@(x)isnumeric(x));
 p.addRequired('sigX',@(x)isnumeric(x));
 p.addParameter('correlated',false,@(x)islogical(x));
 p.parseMagically('caller');
-%-------------------------------------------------------------------------------
 
+% Notes
 %    this doesn't work b/c if you pass it a function handle and a set of
 %    vectors that the function accepts it then outputs a vector but the
 %    jacobian is computed as though the output was a scalar so i need to

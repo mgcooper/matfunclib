@@ -5,7 +5,7 @@ function [Rho,Pval] = nancorr( X,Y,varargin )
 % 
 %  X is the one series, Y is another.
 % 
-% See also
+% See also nanbias, nansmooth, nanmovmean
 
 X=X(:);
 Y=Y(:);

@@ -5,16 +5,16 @@ function [b,xmin,alpha,D,h0] = myplfit(x,varargin)
 %
 % See also
 
-%-------------------------------------------------------------------------------
-p = magicParser;
-p.addRequired('x',@(x)isnumeric(x));
-p.addParameter('goftest','ks',@(x)ischar(x));
-p.addParameter('makeplot',true,@(x)islogical(x));
-p.parseMagically('caller');
-%-------------------------------------------------------------------------------
+% parse inputs
+p = inputParser;
+p.FunctionName = mfilename;
+p.addRequired('x',@isnumeric);
+p.addParameter('goftest','ks',@ischar);
+p.addParameter('makeplot',true,@islogical);
+p.parse(x, varargin{:});
+
 
 % see ksboot - it's hidden in a weird folder in my fex path:
-
 
 % NOTE: could try fmincon
 % If you have the Optimization Toolbox, type "help fmincon." It does
@@ -22,13 +22,13 @@ p.parseMagically('caller');
 % or log-likelihood function for the problem you're trying to solve
 
 % prep the data
-[x,xmins,M,D,x0] = prepinput(x,goftest);
+[x,xmins,M,D,x0] = prepinput(x,p.goftest);
 
 % find the best-fit xmin
 for m = 1:M
 
    [cx,cf]  = plcdf(x,xmins(m));
-   D(m,:)   = gofdist(cx,cf,goftest); % goodness of fit distance
+   D(m,:)   = gofdist(cx,cf,p.goftest); % goodness of fit distance
 
    % i think here, once xmin,alpha known, bootstrap cf to get pval
 end
@@ -37,7 +37,7 @@ end
 [x,xmin,alpha,D,cx,cf,b,h0] = bestfitdist(x,xmins,D);
 
 % plot the best-fit
-if makeplot == true
+if p.makeplot == true
    % this won't come out quite the same as bfra_gpfitb, i think b/c of
    % gpfit and gpcdf return slightly different results than plplot
 
@@ -49,9 +49,9 @@ if makeplot == true
 end
 
 % if we want to evaluate all the gof tests, do that here
-if strcmp(goftest,'all')
+if strcmp(p.goftest,'all')
 
-   [x,xmin,alpha,D,cx,cf,b,h0] = allbestfit(D,goftest);
+   [x,xmin,alpha,D,cx,cf,b,h0] = allbestfit(D,p.goftest);
 
    if makeplot == true
 

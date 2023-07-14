@@ -74,7 +74,7 @@ SE = setnan(SE,[],isnan(tc));
 
 % for very small N (like 2-3), the stderr is meaningless, so replace
 % with twice the std error for 95%, and 1*stderr for 68%
-notOK = N<5;
+drop = N<5;
 
 % might figure out how to interpolate between 1 and 2, where 1 is for
 % 68% CI's and 2 is for 95% CI's
@@ -88,7 +88,7 @@ else
    warning('sample sizes <5 may have meaningless std errs')
 end
 
-PM(notOK) = sf.*SE(notOK);
+PM(drop) = sf.*SE(drop);
 CI = mu+cat(dim,-PM,PM);
 
 end
@@ -99,12 +99,11 @@ function [data, dim, alpha] = parseinputs(data, funcname, varargin)
 p = inputParser;
 p.FunctionName = funcname;
 
-p.addRequired('data', @(x)isnumeric(x) );
-p.addParameter('alpha', 0.05, @(x)isnumeric(x) );
-p.addParameter('dim', 2, @(x)isnumeric(x) );
+p.addRequired('data', @isnumeric);
+p.addParameter('alpha', 0.05, @isnumeric);
+p.addParameter('dim', 2, @isnumeric);
 
 p.parse(data, varargin{:});
-
 alpha = p.Results.alpha;
 dim = p.Results.dim;
 
