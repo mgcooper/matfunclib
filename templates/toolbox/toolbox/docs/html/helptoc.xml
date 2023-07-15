@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding="utf-8"?>
+
+<toc version="2.0">
+<!-- First tocitem specifies top level in Help browser Contents pane -->
+   <tocitem target="tbx_welcome.html">Example Toolbox
+        <!-- Nest tocitems to create hierarchical entries in  Contents-->
+        <!-- To include icons, use the following syntax for tocitems: -->
+        <!-- <tocitem target="foo.html" image="HelpIcon.NAME"> -->
+        <!-- Title-of-Section </tocitem> -->
+        <!-- where NAME is one of the following (use capital letters): -->
+        <!-- FUNCTION, USER_GUIDE, EXAMPLES, BLOCK, GETTING_STARTED, -->
+        <!-- DEMOS, RELEASE_NOTES --> 
+        <!-- Icon images used for these entries are also stored in -->
+        <!-- matlabroot/toolbox/matlab/icons -->
+  
+      <!-- A Getting Started Guide usually comes first -->
+      <tocitem target="gettingStarted.html" 
+               image="HelpIcon.GETTING_STARTED">
+                  Getting Started
+      </tocitem>
+           
+      <!-- Function reference next -->
+      <!-- First item is page describing function categories, if any -->
+      <!-- mgc I commented out tbx_contents to use m2html function_index -->
+      <!-- <tocitem target="tbx_contents.html" -->
+      <tocitem target="m2html/function_index.html" 
+               image="HelpIcon.FUNCTION">
+                  Function Index
+
+         <!-- Function docs -->
+         <!-- mgc I commented this out b/c m2html function_index has a clickable list -->
+         <!-- but for reference, to generate a unique page for groups, I would define -->
+         <!-- another toc level for the groups, see the template  -->
+         <!-- <tocitem target="m2html/+tbx/funcname.html">funcname</tocitem> -->
+      </tocitem>
+      
+      <!-- User Guide (mgc: changed to Examples) comes next -->
+      <tocitem target="examples_contents.html" image="HelpIcon.USER_GUIDE">
+                  Examples
+         <tocitem target="tbx_example_1.html">Example 1 title</tocitem>
+         <tocitem target="tbx_example_2.html">Example 2 title</tocitem>
+      </tocitem>
+
+      <!-- Optional List of Examples, with hyperlinks to examples in other files -->
+      <!-- <tocitem target="tbx_examples.html" 
+               image="HelpIcon.HelpIcon.EXAMPLES">
+                  Example Toolbox Examples
+      </tocitem> -->
+
+         <!-- Website -->
+      <tocitem target="https://github.com/mgcooper/mtoolbox"> 
+            mtoolbox on GitHub
+      </tocitem>
+   </tocitem> <!-- end of Welcome Page (first tocitem) -->
+</toc>

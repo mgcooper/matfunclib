@@ -1,5 +1,5 @@
 function stats = exploreData(x)
-
+%EXPLOREDATA 
 % see:
 %    https://www.itl.nist.gov/div898/handbook/eda/eda.htm
 

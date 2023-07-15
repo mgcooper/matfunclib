@@ -25,37 +25,34 @@ function a = earthSurfaceArea(lat,lon,in3,in4)
 % standalone functions, also see nanpolyarea at bottom of geoarea
 
 narginchk(2,4)
-switch(nargin)
-    case 2
-	    units = [];
-        ellipsoid = [];
-    case 3
-	    if ischar(in3) || isStringScalar(in3)
-		    units = in3;
-            ellipsoid = [];
-	    else
-		    units = [];
-            ellipsoid = in3;
-	    end
-    case 4
-		ellipsoid = in3;
-        units = in4;
+units = [];
+ellipsoid = [];
+switch nargin
+   case 3
+      if ischar(in3) || isStringScalar(in3)
+         units = in3;
+      else
+         ellipsoid = in3;
+      end
+   case 4
+      ellipsoid = in3;
+      units = in4;
 end
 
 %  Empty argument tests
 
 if isempty(units) || (isStringScalar(units) && strlength(units) == 0)
-    units  = 'degrees';
+   units  = 'degrees';
 end
 
 % Return a result in absolute units when an ellipsoid has been supplied.
 % Otherwise the result is normalized to the surface area of a sphere.
 if isempty(ellipsoid)
-    ellipsoid = [1 0];
-    absolute_units = false;
+   ellipsoid = [1 0];
+   absolute_units = false;
 else
-%     ellipsoid = checkellipsoid(ellipsoid,mfilename,'ELLIPSOID',3);
-%     absolute_units = true;
+   % ellipsoid = checkellipsoid(ellipsoid,mfilename,'ELLIPSOID',3);
+   % absolute_units = true;
 end
 
 % Validate LAT and LON
@@ -76,18 +73,18 @@ radius = rsphere('authalic',ellipsoid);
 %  Ensure at a terminating NaN in the vectors
 
 if ~isnan(lat(end))
-    lat(end+1) = NaN;
+   lat(end+1) = NaN;
 end
 
 if ~isnan(lon(end))
-    lon(end+1) = NaN;
+   lon(end+1) = NaN;
 end
 
 %  Ensure vectors don't begin with NaNs
 
 if isnan(lat(1)) || isnan(lon(1))
-	lat(1) = [];
-	lon(1) = [];
+   lat(1) = [];
+   lon(1) = [];
 end
 
 %  Find segment demarcations
@@ -101,18 +98,18 @@ a(length(indx),1) = 0;
 %  Perform area calculation for each segment
 
 for k = 1:length(indx)
-    if k == 1
-        subs = 1:indx(k)-1;
-    else
-        subs = indx(k-1)+1:indx(k)-1;
-    end
-    a(k) = singleint(lat(subs),lon(subs));
+   if k == 1
+      subs = 1:indx(k)-1;
+   else
+      subs = indx(k-1)+1:indx(k)-1;
+   end
+   a(k) = singleint(lat(subs),lon(subs));
 end
 
 %  Convert to absolute terms if the default radius was not used
 
-if absolute_units
-    a = a * 4*pi*radius^2;
+if absolute_units == true
+   a = a * 4*pi*radius^2;
 end
 
 %----------------------------------------------------------------------

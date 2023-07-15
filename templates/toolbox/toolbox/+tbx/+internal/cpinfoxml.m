@@ -1,7 +1,11 @@
 function cpinfoxml(dstpath)
-%CPINFOXML copies template info.xml file to dstpath without overriding
-%  When publishing a toolbox, the info.xml file is required. It describes the
-%  custom documentation. See help Display Custom Documentation for more info.
+%CPINFOXML copy info.xml and helptoc.xml templates to dstpath without overriding
+%  
+% 
+% When publishing a toolbox, the info.xml file is required. It describes the
+% custom documentation. See help Display Custom Documentation for more info.
+% 
+% See also
 
 
 if nargin == 0

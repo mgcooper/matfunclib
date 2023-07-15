@@ -12,12 +12,11 @@ function [args, optarg, nargs] = parseoptarg(args, validoptargs, defaultopt)
 % 
 % See also parseparampairs
 
-% Note - this is slightly more complex than the inline version I often use
-% because it handles nested cells.
-
+%  PARSE INPUTS
 [args{1:numel(args)}] = convertStringsToChars(args{:});
-
 validoptargs = tocellstr(validoptargs);
+
+%  MAIN
 
 % Find possible char opts and remove the matching one if found.
 for thisarg = transpose(validoptargs(:))
@@ -32,6 +31,8 @@ for thisarg = transpose(validoptargs(:))
       break
    end
 end
+
+%  PARSE OUTPUTS
 
 % Initialize to default arg
 if isempty(optarg)

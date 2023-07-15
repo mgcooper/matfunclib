@@ -3,8 +3,14 @@ function Setup()
 % 
 % See also Config
 
-% temporarily turn off warnings about paths not already being on the path
-withwarnoff('MATLAB:rmpath:DirNotFound')
+% Store the initial warning state
+initialWarningState = warning;
+
+% Create onCleanup object to restore warning state when function terminates
+cleanupObj = onCleanup(@() warning(initialWarningState));
+
+% Turn off warnings about paths not already being on the path
+warning('off', 'MATLAB:rmpath:DirNotFound')
 
 % Get the path to this file, in case Setup is run from some other folder. More
 % robust than pwd(), but assumes the directory structure has not been modified.
@@ -25,7 +31,10 @@ pathadd(thispath)
 % addpref('mytoolbox', 'toolboxdir', thispath);
 
 % run Config, Startup, read .env, etc
-configureproject(thispath, {'startup.m','config.m'});
+try
+   run(fullfile(thispath,'Config'));
+catch
+end
 
 % Notes
 % - toolboxdir returns the full path to mathworks toolboxes, needed for compiler

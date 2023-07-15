@@ -36,16 +36,15 @@ function varargout = parseinputs(funcname, X, varargin)
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 
-% Import the validationModule and add optional argument validation function
-f = validationModule;
-validoptions = {'a','b'};
-f.validOption = @(x)~isempty(validatestring(x,validoptions));
+% Define valid menu of optional arguments
+menu = {'add','multiply'};
 
-% Create the input parser
-p = inputParser;
+% Create the input parser and import the validationModule 
+f = validationModule();
+p = inputParser();
 p.FunctionName = funcname;
 p.addRequired('X', f.validNumericVector );
-p.addOptional('option', 'defaultoption', f.validOption );
+p.addOptional('option', 'add', @(opt) f.validOptionalArgument(opt, menu));
 p.addParameter('namevalue', false, f.validLogicalScalar );
 
 % Parse the arguments
@@ -60,6 +59,12 @@ namevalue = p.Results.namevalue;
 % varargs = namedargs2cell(p.Unmatched);
 % then pass varargs{:} as the last argument. but for autocomplete, copy the
 % json file arguments to the local one.
+
+% note, i thought this was required, but the method above works
+% f = validationModule;
+% menu = {'a','b'};
+% f.validOption = @(opt) ~isempty(validatestring(opt, menu));
+
 end
 
 %% LICENSE

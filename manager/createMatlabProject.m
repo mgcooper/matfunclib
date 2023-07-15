@@ -31,12 +31,22 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
 % projectSubfolders if addChildFiles is true. Finally, it updates the 
 % dependencies of the project.
 
+% TODO: use the second output from getProjectFolders subfunction to recursively
+% call addFiles rather than addFolderIncludingChildFiles b/c the latter adds
+% .DS_Store etc. I decided to use addFolderIncludingChildFiles because in
+% projectfile.m, I set addChildFiles true and addProjectFiles false, and pass in
+% 'toolbox' for projectSubfolders, so addFolderIncludingChildFiles gets called
+% on the toolbox folder, and I don't need the second output from
+% getProjectFolders, which is a cleaner file list w/o the .DS_Store etc.
+% Similarly, in the `if addProjectFiles` section, I use dir with *.m, but this
+% doesn't get used if 'toolbox' is passed in for projectSubfolders.
+
 arguments
    projectFolder (1,1) string {mustBeFolder}
    addProjectFiles logical = false
    addChildFiles logical = false
-   projectSubfolders (:,1) string = string.empty()
-   projectName string = string.empty()
+   projectSubfolders (:,1) string = string(NaN)
+   projectName string = string(NaN)
 end
 
 if isempty(projectName)
@@ -80,7 +90,7 @@ end
 
 
 function [projectSubfolders, projectFiles] = getProjectFolders( ...
-projectFolder, projectSubfolders)
+   projectFolder, projectSubfolders)
 %GETPROJECTFOLDERS Returns a list of subfolders within projectFolder.
 %
 % projectSubfolders: String array. A list of specific subfolders to be 
@@ -109,7 +119,7 @@ allSubfolders = allSubfolders(~contains({allSubfolders.folder},ignore));
 allSubfolders = allSubfolders(~ismember({allSubfolders.name},ignore));
 
 % If no subfolders are specified, use all subfolders (except ignored ones).
-if isempty(projectSubfolders)
+if ismissing(projectSubfolders)
    projectSubfolders = allSubfolders;
 else
    % Use the specified projectSubfolders

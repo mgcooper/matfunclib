@@ -1,4 +1,4 @@
-function configureproject(projpath,varargin)
+function configureproject(projectpath, varargin)
 %CONFIGUREPROJECT run config, setup, install, and startup scripts in projpath
 %
 %  configureproject(projpath) searches projpath (top level only) for Setup.m,
@@ -34,7 +34,7 @@ tryscripts = [tryscripts lower(tryscripts)]; % removed UPPER for now
 ok = false;
 for n = 1:numel(tryscripts)
 
-   fullfilename = fullfile(projpath,tryscripts{n});
+   fullfilename = fullfile(projectpath,tryscripts{n});
 
    if numel(fullfilename) > 63
       filename = tryscripts{n};
@@ -76,6 +76,19 @@ for n = 1:numel(tryscripts)
          end
       end
       ok = true; % log it if we are successful
+   end
+end
+
+% Run user hooks (e.g., config.m, read .env, etc). The dot folder removal should
+% not ever be necessary, but it doesn't hurt to check.
+hookslist = dir(fullfile(projectpath, 'userhooks/*.m'));
+userhooks = fullfile(projectpath, {hookslist.name}.');
+userhooks = userhooks(cellfun(@(p) ~endsWith(p, '.'), userhooks));
+for n = 1:numel(userhooks)
+   try
+      run(userhooks{n});
+      %run(fullfile(projectpath, 'userhooks', 'config'));
+   catch
    end
 end
 

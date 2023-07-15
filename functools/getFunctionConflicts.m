@@ -19,7 +19,7 @@ function filelist = getFunctionConflicts(varargin)
 % See also getFunctionDependencies
 
 % input parsing
-[funcpath, funcname, flibrary] = parseinputs(mfilename,varargin{:})
+[funcpath, funcname, flibrary] = parseinputs(mfilename,varargin{:});
 
 %------------------------------------------------------------------------------
 

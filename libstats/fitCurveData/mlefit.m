@@ -1,5 +1,10 @@
 function [ab,stats] = mlefit(x,y,sigx,sigy)
-    
+%MLEFIT maximum likelihood estimation for linear regression
+% 
+% [ab,stats] = mlefit(x,y,sigx,sigy)
+% 
+% See also: olsfit, pcafit, rmafit, gmafit, yorkfit
+
     % linear regression with known but uncorrelated error variance
     % (maximum likelihood estimation)
     

@@ -11,15 +11,12 @@ function genBigData(numBlocks, numFiles)
 %
 % See also
 
-%-------------------------------------------------------------------------------
-% input parsing
-%-------------------------------------------------------------------------------
 arguments
    numBlocks (:,1) double
    numFiles (:,1) double
 end
-%-------------------------------------------------------------------------------
 
+% GENERATE DATA
 rng("default")
 ds = datastore("airlinesmall.csv", TreatAsMissing="NA", Delimiter=",");
 ds.TextscanFormats([11, 23]) = {'%s'};

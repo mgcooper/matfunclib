@@ -1,6 +1,14 @@
 function varnames = makevalidvarnames(varnames)
 %MAKEVALIDVARNAMES make variable names valid
 %
+% Example
+% 
+%  matlab.lang.makeValidName('test)1')
+%  matlab.lang.makeValidName('test)1', 'ReplacementStyle', 'delete')
+%  matlab.internal.tabular.makeValidVariableNames({'test)1'}, 'silent')
+%  makevalidvarnames('test)1')
+%  
+% 
 % Updates
 % 22 Feb 2023, replaced spaces with no space instead of underscores
 

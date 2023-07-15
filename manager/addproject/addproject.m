@@ -7,6 +7,10 @@ function varargout = addproject(projectname,varargin)
 %
 %
 %  Updates
+%  21 Mar 2023: added setfiles and setactive following mkproject
+%  11 Jan 2023: added support for activefile list, see buildprojectdirectory.
+%  11 Jan 2023: removed addtojsondirectory in favor of new
+%  choices=projectdirectorylist option in json files
 %  23 Nov 2022 added support for USERPROJECTPATH by adding it to
 %  buildprojectdirectory and adding method from activate.m to workon.m that
 %  reads the folder from projectdirectory instead of appending projectname to
@@ -19,33 +23,12 @@ function varargout = addproject(projectname,varargin)
 % this the active project without updating the activefiles property of the
 % active project
 
-%-------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+%% parse inputs
 
-validoptions = @(x)~isempty(validatestring(x,{'workon',''}));
+[projectname, setfiles, setactive] = parseinputs( projectname, ...
+   mfilename, varargin{:});
 
-addRequired(p,'projectname',@(x)ischar(x));
-addOptional(p,'workon','',validoptions);
-addParameter(p,'setfiles',false,@(x)islogical(x));
-addParameter(p,'setactive',false,@(x)islogical(x));
-
-parse(p,projectname,varargin{:});
-
-projectname = p.Results.projectname;
-workon = p.Results.workon;
-setfiles = p.Results.setfiles;
-setactive = p.Results.setactive;
-
-% Updates
-% 21 Mar 2023: added setfiles and setactive following mkproject
-% 11 Jan 2023: added support for activefile list, see buildprojectdirectory.
-% 11 Jan 2023: removed addtojsondirectory in favor of new
-% choices=projectdirectorylist option in json files
-%-------------------------------------------------------------------------------
-
+%% main
 projectlist = readprjdirectory(getprjdirectorypath); % read the project directory
 projectpath = fullfile(getenv('MATLABPROJECTPATH'),projectname);
 
@@ -84,11 +67,6 @@ if setactive
    setprojectactive(projectname)
 end
 
-% activate the toolbox if requested
-if string(workon)=="workon"
-   workon(projectname);
-end
-
 if nargout == 1
    varargout{1} = projectlist;
 end
@@ -115,8 +93,21 @@ writeprjjsonfile(jspath,wholefile)
 %prjreplace  = sprintf('%s,''%s''',prjfind,projects.name{prjidx});
 
 
+%% input parsing
+function [projectname,setfiles,setactive] = parseinputs(projectname, ...
+   funcname, varargin)
 
+p = inputParser;
+p.FunctionName = funcname;
+p.CaseSensitive = false;
+p.KeepUnmatched = true;
 
+addRequired(p,'projectname',@ischar);
+addParameter(p,'setfiles',false,@islogical);
+addParameter(p,'setactive',false,@islogical);
 
+parse(p,projectname,varargin{:});
 
-
+setfiles = p.Results.setfiles;
+setactive = p.Results.setactive;
+projectname = p.Results.projectname;

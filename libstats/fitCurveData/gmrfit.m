@@ -1,6 +1,10 @@
 function [ab,stats] = gmrfit(x,y)
+%GMRFIT geometric mean regression
+% 
+% [ab,stats] = gmrfit(x,y)
+% 
+% See also: mlefit, olsfit, pcafit, rmafit, yorkfit
     
-    % geometric mean regression
     Sxx     = sum((x-mean(x)).^2);
     Syy     = sum((y-mean(y)).^2);
     Sxy     = sum((x-mean(x)).*(y-mean(y)));

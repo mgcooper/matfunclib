@@ -1,7 +1,5 @@
 function opts = optionParser(validopts,calleropts,varargin)
-%OPTIONPARSER parse optional inputs. validopts are the options available within
-%a function. calleropts is the varargin cell array of optional inputs. opts is
-%an optional opts structure that the parsed options are added to
+%OPTIONPARSER parse optional inputs to logical name-value struct
 % 
 %  opts = optionParser(validopts,calleropts) finds elements of calleropts that
 %  are members of validopts and sets them to true in structure opts 
@@ -9,6 +7,11 @@ function opts = optionParser(validopts,calleropts,varargin)
 %  opts = optionParser(validopts,calleropts,opts) adds elements of calleropts
 %  that are members of validopts to provided structure opts and sets them to
 %  true
+% 
+%  Inputs
+%  VALIDOPTS are the options available within a function. 
+%  CALLEROPTS is the varargin cell array of optional inputs. 
+%  OPTS is an optional opts structure that the parsed options are added to.
 % 
 %  Example 1
 % -----------

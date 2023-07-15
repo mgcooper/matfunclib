@@ -1,9 +1,16 @@
 function [ab,stats] = rmafit(x,y,alpha)
-    
-    % reduced major axis. equals mlefit if ab = mlefit(x,y,std(x),std(y))
-    % york, 1966, eq. 3/4
+%RMAFIT reduced major axis regression
+% 
+% [ab,stats] = rmafit(x,y,alpha)
+% 
+% york, 1966, eq. 3/4
+% 
+% equals mlefit if ab = mlefit(x,y,std(x),std(y))
+% 
+% See also: mlefit, olsfit, pcafit, gmrfit, yorkfit
     
     if nargin<3; alpha = 0.05; end
+    
     N       = numel(x);
     
     xstd    = std(x); ystd = std(y); r = corr(x,y);

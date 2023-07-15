@@ -81,47 +81,6 @@ function varargout = boxchartcats(T,datavar,xgroupvar,cgroupvar, ...
 %
 % See also reordergroups, reordercats, boxchart
 
-% BSD 3-Clause License
-%
-% Copyright (c) 2023, Matthew Guy Cooper (mgcooper)
-% All rights reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-% 1. Redistributions of source code must retain the above copyright notice, this
-%    list of conditions and the following disclaimer.
-%
-% 2. Redistributions in binary form must reproduce the above copyright notice,
-%    this list of conditions and the following disclaimer in the documentation
-%    and/or other materials provided with the distribution.
-%
-% 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-% A useful comment from fex:
-% "MATLAB seems to remember that there were additional categories not included":
-% Think about categorical this way: it lets you define the entire universe of
-% possible values. That complete universe is there even if no elements of the
-% categorical array contain some of the possible values. So, e.g., you can count
-% up elements, and find out that while you have 35 smalls and 26 larges, you
-% have no mediums. That's what sets categorical apart form an array of strings.
-%
-% If you want unused categories to go away (and in many cases, you don't) use
-% removecats.
-
 % Note, if notch is off, the mean looks nice as a solid white circle. If notch
 % is on, the mean may fall outside the shaded region, so face color is needed.
 
@@ -698,3 +657,35 @@ end
 %    boxchart(T2.season,T2.Pdiff);
 %    ylabel('Peak Flood Difference (%)'); title('Philadelphia');
 % end
+
+%% LICENSE
+% 
+% BSD 3-Clause License
+%
+% Copyright (c) 2023, Matthew Guy Cooper (mgcooper)
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+% 1. Redistributions of source code must retain the above copyright notice, this
+%    list of conditions and the following disclaimer.
+%
+% 2. Redistributions in binary form must reproduce the above copyright notice,
+%    this list of conditions and the following disclaimer in the documentation
+%    and/or other materials provided with the distribution.
+%
+% 3. Neither the name of the copyright holder nor the names of its
+%    contributors may be used to endorse or promote products derived from
+%    this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

@@ -1,5 +1,11 @@
 function [tf,vi] = isvariable(varname,T)
-%ISVARIABLE determine if variable name is a variable in table T
+%ISVARIABLE determine if VARNAME is a variable in table T
+% 
+%  [TF, VI] = isvariable(VARNAME,T) returns TF = true if VARNAME is a variable
+%  in table T, and the variable (column) index VI.
+% 
+% See also
+
 arguments
    varname (:,1) string
    T (:,:) table

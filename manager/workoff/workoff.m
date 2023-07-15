@@ -34,6 +34,11 @@ function workoff(varargin)
 % deactivate the project
 disp(['deactivating ' projname]);
 
+try
+   close(currentProject);
+catch
+end
+
 % update the active file list
 if updatefiles == true
    setprojectfiles(projname);

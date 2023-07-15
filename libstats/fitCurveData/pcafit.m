@@ -1,5 +1,10 @@
 function [ab,stats] = pcafit(x,y,alpha)
-    
+%PCAFIT principle components analysis regression
+% 
+% [ab,stats] = pcafit(x,y,alpha)
+% 
+% See also: olsfit, mlefit, gmrfit, rmafit, yorkfit
+
     if nargin<3; alpha = 0.05; end
     N       = numel(x);
     

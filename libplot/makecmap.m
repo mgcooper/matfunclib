@@ -19,7 +19,7 @@ function [ nc ] = makecmap( c, n )
 %   
 % WRITTEN BY: M. Dannenberg, 3/26/14
 % 
-% See also
+% See also buildcmap, cmap, cptcmap
 
 [nr,~] = size(c);
 ns = floor((n+nr-2)/ (nr-1));

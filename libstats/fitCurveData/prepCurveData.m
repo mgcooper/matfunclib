@@ -40,9 +40,7 @@ function [varargout] = prepCurveData( varargin )
 % 
 % See also: genCurveData, fitCurveData, plotCurveData
 
-%------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
 p                 = magicParser;
 p.FunctionName    = mfilename;
 p.CaseSensitive   = false;
@@ -57,7 +55,7 @@ p.addOptional(    'w',        ones(size(x)), @(x)isnumeric(x)     );
 p.addOptional(    'modeltype','default',     validoption          );
 
 p.parseMagically('caller');
-%------------------------------------------------------------------------------
+
 
 % I didn't finish this ... inputparser might be too much to deal with
 % defaultCurveData

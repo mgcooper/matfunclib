@@ -1,4 +1,9 @@
 function allFiles = listallfiles(parentFolders)
+% 
+% 
+
+% Note: see tbx.internal.filelist, reconcile all other 'getlist' type functions
+% with that one
 
 % If parentFolders is a struct of directory structs, convert to 
 

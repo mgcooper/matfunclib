@@ -1,5 +1,10 @@
 function [ab,yfit,xfit] = olsfit(x,y,varargin)
-    
+%OLSFIT ordinary least squares regression
+% 
+% [ab,stats] = gmrfit(x,y)
+% 
+% See also: mlefit, pcafit, gmrfit, rmafit, yorkfit
+
    % option to fit log models
    if nargin == 2
       logopt = 'linear'; 

@@ -1,85 +1,86 @@
 function mkproject(projectname,varargin)
-%MKPROJECT general description of function
+%MKPROJECT make a new project in MATLABPROJECTPATH
 %
-%  msg = MKPROJECT(cmd) description
-%  msg = MKPROJECT(cmd,'name1',value1) description
-%  msg = MKPROJECT(cmd,'name1',value1,'name2',value2) description
-%  msg = MKPROJECT(___,method). Options: 'flag1','flag2','flag3'.
-%        The default method is 'flag1'.
+%  MKPROJECT(projectname) creates a new default project in
+%  MATLABPROJECTPATH/projectname
 %
 % Example
 %
 %
 % Matt Cooper, 21-Mar-2023, https://github.com/mgcooper
 %
-% See also
+% See also: copytoolboxtemplate
 
-%-------------------------------------------------------------------------------
-% input parsing
-%-------------------------------------------------------------------------------
-p = inputParser;
-p.FunctionName = mfilename;
+%% parse inputs
+[projectname, setfiles, setactive, maketoolbox] = parseinputs( ...
+   projectname, mfilename, varargin{:});
 
-validoptions = @(x)~isempty(validatestring(x,{'workon'})) | isempty(x);
+%% main
 
-addRequired(p,'projectname',@(x)ischar(x));
-addOptional(p,'workon','',validoptions);
-addParameter(p,'setfiles',false,@(x)islogical(x));
-addParameter(p,'setactive',false,@(x)islogical(x));
-
-parse(p,projectname,varargin{:});
-
-projectname = p.Results.projectname;
-workon = p.Results.workon;
-setfiles = p.Results.setfiles;
-setactive = p.Results.setactive;
-
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%-------------------------------------------------------------------------------
-
-
+% Full path to project
 projectpath = fullfile(getenv('MATLABPROJECTPATH'),projectname);
 
-if isfolder(projectpath)
+% Flag to proceed with making the new project or not
+createproject = false;
+forcecopyflag = false;
+safercopyflag = false;
 
-   msg = sprintf(['\nproject already exists in %s,\n' ...
-      'press ''y'' to add the existing project or any other key to exit\n'],projectpath);
+% Determine if the requested project should be made
+if isfolder(projectpath)
+   % project folder exists
+   msg = sprintf(['\nproject folder exists in %s,\n' ...
+      'press ''y'' to add the project to the project directory or any other key to exit\n'], ...
+      projectpath);
    str = input(msg,'s');
-   
+
    if string(str) == "y"
       % add the existing project to the project directory
-      addproject(projectname,workon);
+      createproject = true;
+   end
+
+   if numel(rmdotfolders(dir(projectpath))) > 0
+      % existing folder is not empty
+      safercopyflag = true;
    else
-      return
+      forcecopyflag = true;
    end
 else
    if isfolder(fileparts(projectpath))
       mkdir(projectpath)
+      createproject = true;
    else
       error('project path parent folder does not exist: %s',fileparts(projectpath));
    end
-
-   % add the new project to the project directory
-   addproject(projectname,workon);
 end
 
-% post mk options
-if setfiles
-   setprojectfiles(projectname);
+% add the new project to the project directory
+if createproject == true
+   
+   % if this is a toolbox, copy the template first
+   if maketoolbox == true
+      copytoolboxtemplate(projectpath, 'forcecopy', forcecopyflag, ...
+         'safecopy', safercopyflag);
+   end
+   addproject(projectname, setfiles, setactive);
 end
 
-if setactive
-   setprojectactive(projectname)
-end
 
+%% input parsing
+function [projectname,setfiles,setactive,maketoolbox] = parseinputs( ...
+   projectname, funcname, varargin)
 
+p = inputParser;
+p.FunctionName = funcname;
 
+addRequired(p,'projectname',@ischar);
+addParameter(p,'setfiles',false,@islogical);
+addParameter(p,'setactive',false,@islogical);
+addParameter(p,'maketoolbox',false,@islogical);
 
+parse(p,projectname,varargin{:});
 
-
-
-
-
-
-
+setfiles = p.Results.setfiles;
+setactive = p.Results.setactive;
+maketoolbox = p.Results.maketoolbox;
+projectname = p.Results.projectname;
 
