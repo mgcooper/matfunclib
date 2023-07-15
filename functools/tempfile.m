@@ -1,10 +1,17 @@
 function filename = tempfile(varargin)
 %TEMPFILE get a temporary file name, or full path to temporary file name
+% 
+%  FILENAME = TEMPFILE()
+%  FILENAME = TEMPFILE('FULLPATH')
+%  FILENAME = TEMPFILE(FILEPATH)
+%  FILENAME = TEMPFILE(FILEPATH,'FULLPATH'))
+% 
+% See also tempname
 
 % this way supports a full tempdir/tempname path, or a user-provided
 % filepath/tempname path, or just tempname
 
-if nargin == 0 || nargin == 1 && strcmp(varargin{1},'fullpath')
+if nargin == 0 || ( nargin == 1 && strcmp(varargin{1},'fullpath') )
    if nargin == 0
       % FILENAME = TEMPFILE()
       [~,filename] = fileparts(tempname);
@@ -15,7 +22,7 @@ if nargin == 0 || nargin == 1 && strcmp(varargin{1},'fullpath')
    
    return
    
-elseif nargin == 1 || nargin == 2 && strcmp(varargin{2},'fullpath') 
+elseif nargin == 1 || ( nargin == 2 && strcmp(varargin{2},'fullpath') )
    % FILENAME = TEMPFILE(FILEPATH)
    % FILENAME = TEMPFILE(FILEPATH,'FULLPATH'))
    

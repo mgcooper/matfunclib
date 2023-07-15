@@ -49,31 +49,28 @@ stack = dbstack('-completenames');
 % early exit if called from command line
 if numel(stack) == 1
    msg = [];
-   return
+
 else
    N = numel(stack);
-end
 
-% parse inputs
-[stacklevel, fileoption] = parseinputs(N, mfilename, varargin{:});
-
-% parse the stack
-switch fileoption
-   case 'fullpath'
-      
-      msg = stack(stacklevel).file;
-      
-   case 'filename'
-      
-      [~, msg, ext] = fileparts(stack(stacklevel).file);
-      msg = [msg ext];
-      
-   case 'funcname'
-      
-      msg = stack(stacklevel).name;
-      
-   otherwise
-      
+   % parse inputs
+   [stacklevel, fileoption] = parseinputs(N, mfilename, varargin{:});
+   
+   % parse the stack
+   switch fileoption
+      case 'fullpath'
+         
+         msg = stack(stacklevel).file;
+         
+      case 'filename'
+         
+         [~, msg, ext] = fileparts(stack(stacklevel).file);
+         msg = [msg ext];
+         
+      otherwise % case 'funcname'
+         
+         msg = stack(stacklevel).name;
+   end
 end
 
 if nargout <= 1

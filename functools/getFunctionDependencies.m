@@ -17,36 +17,12 @@ function Info = getFunctionDependencies(varargin)
 % 
 % See also getFunctionConflicts
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = true;
-p.KeepUnmatched   = true;
 
-% use contains on funcname b/c listallmfunctions includes .m but it is
-% convenient to pass in a function name w/o .m
-validfuncname     = @(x)any(contains(listallmfunctions,x));
-validlibrary      = @(x)any(ismember(functiondirectorylist,x));
-validproject      = @(x)any(ismember(projectdirectorylist,x));
-validfuncpath     = @(x)ischar(x)&&~any(ismember(x,{'library','project','funcname'}));
-% NOTE: this parsing came from getFunctionConflicts which had funcpath as the
-% first optional argument so I htink the validfuncpath check above is the other
-% parameter names b/c I thought parsing might fail, but it seemed to work when I
-% added the project parameter (which isn't in getFunctionConflicts) so maybe it
-% isn't necessary to exclude the parameter names.
+% parse inputs
+[funcname, funcpath, libname, projname, refpath] = parseinputs( ...
+   mfilename, varargin{:});
 
-p.addOptional(    'funcname',    '',         validfuncname     );
-p.addParameter(   'funcpath',    '',         validfuncpath     );
-p.addParameter(   'libname',     '',         validlibrary      );
-p.addParameter(   'projname',    '',         validproject      );
-p.addParameter(   'refpath',     '',         @(x)ischarlike(x) );
-
-p.parseMagically('caller');
-
-%------------------------------------------------------------------------------
-
+% main function
 isfuncpath = ~isempty(funcpath);
 islibrary = ~isempty(libname);
 isproject = ~isempty(projname);
@@ -108,6 +84,7 @@ if isrefpath
    Info.fmissing = checkdependencies(flist,refpath);
 end
 
+%% subfunctions
 
 function [flist,plist] = finddependencies(filelist,idx)
 funcname = filelist(idx).name;
@@ -129,4 +106,40 @@ for n = 1:numel(flist)
 end
 flist = flist(missing);
 
+
+%% input parsing
+function [funcname, funcpath, libname, projname, refpath] = parseinputs( ...
+   mfuncname, varargin)
+
+p = inputParser;
+p.FunctionName = mfuncname;
+p.CaseSensitive = true;
+p.KeepUnmatched = true;
+
+% use contains on funcname b/c listallmfunctions includes .m but it is
+% convenient to pass in a function name w/o .m
+validfuncname = @(x) any(contains(listallmfunctions,x));
+validlibrarys = @(x) any(ismember(functiondirectorylist,x));
+validprojects = @(x) any(ismember(projectdirectorylist,x));
+validfuncpath = @(x) ischar(x)&&~any(ismember(x,{'library','project','funcname'}));
+
+% NOTE: this parsing came from getFunctionConflicts which had funcpath as the
+% first optional argument so I htink the validfuncpath check above is the other
+% parameter names b/c I thought parsing might fail, but it seemed to work when I
+% added the project parameter (which isn't in getFunctionConflicts) so maybe it
+% isn't necessary to exclude the parameter names.
+
+p.addOptional('funcname', '', validfuncname);
+p.addParameter('funcpath', '', validfuncpath);
+p.addParameter('libname', '', validlibrarys);
+p.addParameter('projname', '', validprojects);
+p.addParameter('refpath', '', @ischarlike);
+
+p.parse(varargin{:});
+
+funcname = p.Results.funcname;
+funcpath = p.Results.funcpath;
+libname = p.Results.libname;
+projname = p.Results.projname;
+refpath = p.Results.refpath;
 
