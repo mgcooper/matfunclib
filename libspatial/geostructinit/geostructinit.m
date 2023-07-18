@@ -1,4 +1,4 @@
-function S = geostructinit(geometry,numfeatures,varargin);
+function S = geostructinit(geometry,numfeatures,varargin)
 %geostructinit initializes a geostructure S with geometry
 %
 %  S = geostructinit(geometry,numfeatures);
@@ -12,21 +12,21 @@ function S = geostructinit(geometry,numfeatures,varargin);
 %
 %  Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
 %
-%  See also
+% See also: isgeostruct, updateBoundingBox
 
-%--------------------------------------------------------------------------
-% input parsing
-%--------------------------------------------------------------------------
-p = magicParser;
-p.FunctionName = mfilename;
-p.CaseSensitive = false;
-p.KeepUnmatched = true;
-p.addRequired('geometry', @(x)ischar(x) );
-p.addRequired('numfeatures', @(x)isnumeric(x) );
-p.addParameter('fieldnames', '', @(x)ischar(x)|iscell(x) );
-p.parseMagically('caller');
-fieldnames = p.Results.fieldnames;
-%--------------------------------------------------------------------------
+% parse inputs
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
+   parser.addRequired('geometry', @ischar);
+   parser.addRequired('numfeatures', @isnumeric);
+   parser.addParameter('fieldnames', {''}, @ischarlike);
+end
+parse(parser, geometry, numfeatures, varargin{:});
+fieldnames = parser.Results.fieldnames;
 
 % NOTE: the geostruct will not be a true geostruct until the BoundingBox
 % field is added, which can be achieved with updategeostruct

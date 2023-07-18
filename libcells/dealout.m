@@ -33,4 +33,25 @@ function varargout = dealout(varargin)
 % 
 % See also
 
-[varargout{1:nargout}] = deal(varargin{1:nargout});
+args = varargin;
+if numel(varargin{:}) == 1 && isstruct(varargin{1})
+   try
+      args = struct2cell(args{:});
+   catch
+   end
+end
+
+if nargout > numel(args)
+   error('One input required for each requested output')
+end
+
+try
+   % Syntax is [out1, out2, ..., outN] = dealout(in1, in2, ..., inN]
+   [varargout{1:nargout}] = deal(args{1:nargout});
+   
+   % Note: this syntax is useful for forcing one output
+   % [varargout{1:max(1,nargout)}] = deal(varargin{1:nargout});
+catch
+   % Syntax is [out1, out2, ..., outN] = dealout(CellArray)
+   varargout = args{:};
+end

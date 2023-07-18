@@ -13,23 +13,20 @@ function propval = getgcm(mapax,varargin)
 % 
 % See also 
 
-%-------------------------------------------------------------------------------
-% input parsing
-%-------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.KeepUnmatched   = true;
+% parse inputs
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.KeepUnmatched = true;
+   parser.addRequired('mapax', @isaxis);
+   parser.addOptional('prop', 'MapProjection', @ischarlike);
+end
+parse(parser, mapax, varargin{:});
+prop = parser.Results.prop;
 
-p.addRequired( 'mapax',                   @(x)isaxis(x)     );
-p.addOptional( 'prop',  'MapProjection',  @(x)ischarlike(x) );
-
-p.parseMagically('caller');
-%-------------------------------------------------------------------------------
-
+%% main
 propval = getm(mapax,prop);
-
-
-
 
 
 

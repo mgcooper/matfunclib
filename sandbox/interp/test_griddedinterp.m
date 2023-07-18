@@ -1,15 +1,45 @@
 clean
 
-% Not sure where to put this but one of the most critical lessons from this was
-% the latlims/lonlims property of map/georefcells, which is the map edges, see
-% R2Grid, and how to get a correct rasterref. The mapinterp comparison in this
-% test script shows how I can interpolate a grid correctly. I think i could just
-% use the method from mapinterp which just creates intrinsic coordinates from
-% the R object to adapt it to a non-mapping toolbox function. But, I need to
-% check the coordinates and make sure matlab is interpreting the cell boundaries
-% correctly. IMPORTANT DETAIL - since mapinterp does not support extrapolation,
-% the test confirms that creating the R object by extedning outward 1/2 cell
-% size from the min/max x/y pixel centers is the key.
+% Matlab
+% interp2 (meshgrid)
+% interp3 (meshgrid)
+% interpn (ndgrid)
+% fillmissing
+% scattered interpolant
+% gridded interpolant (ndgrid)
+% griddata
+% map/geointerp
+% 
+% Fex
+% grid fit
+% conservative regrid
+% polynomial remapping
+% 
+% Method comparison
+% mapinterp and geointerp
+% 'nearest'	Nearest neighbor interpolation
+% 'linear'	Bilinear interpolation
+% 'cubic'	Bicubic interpolation
+% 'spline'	Spline interpolatio
+% 
+% Gridded interpolant
+% 'nearest'	Nearest neighbor interpolation
+% 'linear'	Bilinear interpolation
+% 'cubic'	Bicubic interpolation
+% 'spline'	Spline interpolatio
+% 
+
+%%
+% one of the main lessons from this was the latlims/lonlims property of
+% map/georefcells, which is the map edges, see R2Grid, and how to get a correct
+% rasterref. The mapinterp comparison in this test script shows how I can
+% interpolate a grid correctly. I think i could just use the method from
+% mapinterp which just creates intrinsic coordinates from the R object to adapt
+% it to a non-mapping toolbox function. But, I need to check the coordinates and
+% make sure matlab is interpreting the cell boundaries correctly. IMPORTANT
+% DETAIL - since mapinterp does not support extrapolation, the test confirms
+% that creating the R object by extedning outward 1/2 cell size from the min/max
+% x/y pixel centers is the key.
 
 %%
 % % here i was trying to see if griddedInterpolant does in fact accept incomplete
@@ -31,8 +61,7 @@ clean
 % % create a regular grid from them, assign the data, reference the grid, then use
 % % imbedm to set the empty cells NaN. Then I could use griddedInterpolant. Note
 % % that gridgeodata/gridmapdata uses scatteredInterpolant.
-% 
-% % UPDATE UPDAT: ACTUALLY mapinterp may not be ideal b/c it uses the same method
+% %  ... actually mapinterp may not be ideal b/c it uses the same method
 % % for extrapolation and does not allow changing it, and 'linear' extrapolation
 % % appears problematic, esp. since it is sued for the cell edges whcih aren't
 % % even extrapolation, and should be 'nearest' by default

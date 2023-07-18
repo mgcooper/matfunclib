@@ -1,3 +1,4 @@
+function [newimg, trend, coef] = removetrend(img, order, spacing)
 % REMOVETREND - Fit a polynomial trend to a surface and remove it.
 %
 % Usage: [newimg, trend, coef] = removetrend(img, order, spacing)
@@ -40,8 +41,6 @@
 % The Software is provided "as is", without warranty of any kind.
 
 % PK December 2017
-
-function [newimg, trend, coef] = removetrend(img, order, spacing)
     
     if ~exist('spacing', 'var'), spacing = 10; end
     

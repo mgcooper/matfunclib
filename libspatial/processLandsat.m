@@ -1,4 +1,9 @@
 function [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot)
+%PROCESSLANDSAT process landsat image stack to produce RGB true color image
+% 
+% [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot)
+% 
+% See also
 
 if nargin < 4; testplot = false; end
 if nargin < 3; enhanceimage = false; end

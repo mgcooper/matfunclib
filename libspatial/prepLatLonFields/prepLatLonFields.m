@@ -9,26 +9,17 @@ function S = prepLatLonFields(S,newfieldnames)
 % 
 % Matt Cooper, 25-Jan-2023, https://github.com/mgcooper
 % 
-% See also
+% See also: latlonFromGeoStruct, isgeostruct
 
 % NOTE: this mainly exists to convert standard lat/lon names like Latitude
 % Longitude to Lat Lon for compatibility with geopoint. Need to add additional
 % checks around 
 
-%-------------------------------------------------------------------------------
-% input parsing
-%-------------------------------------------------------------------------------
-
+% parse arguments
 arguments
    S (:,:) struct
    newfieldnames (1,2) cell = {'Lat','Lon'}
 end
-
-% inputArg (dim1,dim2) ClassName {valfnc1,valfunc2} = defaultValue
-% doc argument-validation-functions
-% see argumentsTest folder for ppowerful examples of accessing built-in
-% name-value options w/tab completion
-%-------------------------------------------------------------------------------
 
 % set defaults
 latfields = {'LATITUDE','Lat','latitude','lat','LAT','Latitude'};

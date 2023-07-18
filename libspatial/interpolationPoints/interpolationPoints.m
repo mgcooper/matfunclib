@@ -9,17 +9,17 @@ function Points = interpolationPoints(poly,xgrid,ygrid,buffer,newRes,varargin)
 %
 % See also
 
-%% parse
-p = inputParser;
-p.FunctionName = mfilename;
-addParameter(p,'makeplot',false,@islogical);
-addParameter(p,'plotvar',ones(size(xgrid)),@isnumeric);
-addParameter(p,'pointinterp',false,@islogical);
-parse(p,varargin{:});
-
-makeplot = p.Results.makeplot;
-plotvar = p.Results.plotvar;
-pointinterp = p.Results.pointinterp;
+%% parse inputs
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   addParameter(parser,'makeplot',false,@islogical);
+   addParameter(parser,'plotvar',ones(size(xgrid)),@isnumeric);
+   addParameter(parser,'pointinterp',false,@islogical);
+end
+parse(parser,varargin{:});
+opts = parser.Results;
 
 %% main
 
@@ -36,7 +36,7 @@ xmax = max(Mask.xpolyb);
 ymin = min(Mask.ypolyb);
 ymax = max(Mask.ypolyb);
 
-if pointinterp
+if opts.pointinterp
    % interpolate to the centroid of the polygon
    [xq,yq] = poly.centroid;
    Maskq = pointsInPoly(xq,yq,poly,'buffer',0);
@@ -50,14 +50,14 @@ else
 end
 
 % verify by plotting the lakes and the 100-m points inside them
-if makeplot
+if opts.makeplot
 
    idx = Mask.inpolyb;
    h.figure = macfig('size','horizontal');
 
    % plot the entire region
    h.subplot(1) = subplot(1,3,1);
-   h.grid(1) = scatter(xgrid,ygrid,12,plotvar(:),'filled'); hold on;
+   h.grid(1) = scatter(xgrid,ygrid,12,opts.plotvar(:),'filled'); hold on;
    h.poly(1) = plot(poly);
    h.ax(1) = gca;
    title('grid points available for interpolation')
@@ -81,7 +81,7 @@ if makeplot
    legend('grid points','poly');
 
    % if point interpolation is requested, modify the plot
-   if pointinterp
+   if opts.pointinterp
       scatter(h.subplot(1),xq,yq,100,rgb('red'),'filled');
       scatter(h.subplot(2),xq,yq,100,rgb('red'),'filled');
       scatter(h.subplot(3),xq,yq,100,rgb('red'),'filled');

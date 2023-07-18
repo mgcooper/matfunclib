@@ -1,4 +1,8 @@
 function S = updateBoundingBox(S,varargin)
+%UPDATEBOUNDINGBOX update BoundingBox property of geostruct S
+% 
+% 
+% See also: geostructinit, isgeostruct
 
 if nargin > 1
    xfield = varargin{1};

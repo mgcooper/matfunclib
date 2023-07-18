@@ -7,22 +7,17 @@ function tf = isgeostruct(S)
 %
 % See also
 
-%-------------------------------------------------------------------------------
-% input parsing
-%-------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.addRequired(   'S',                     @(x)isstruct(x)      );
-p.parseMagically('caller');
-
-%--------------------------------------------------------------------------
-
-tf    = false;
-
-if    isfield(S,'Geometry')                     && ...
-      isfield(S,'BoundingBox')                  && ...
-      any(isfield(S,{'Lat','Latitude'}))        && ...
-      any(isfield(S,{'Lon','Longitude'}))
-
-   tf = true;
+%% parse inputs
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.addRequired('S',@isstruct);
 end
+parse(parser, S);
+
+%% main
+tf = isfield(S,'Geometry') && ...
+   isfield(S,'BoundingBox') && ...
+   any(isfield(S,{'Lat','Latitude'})) && ...
+   any(isfield(S,{'Lon','Longitude'}));

@@ -9,12 +9,23 @@ function tf = ischarlike(x, varargin)
 %  tf = ISCHARLIKE(X,FALSE) returns true only if S is a non-empty character
 %  vector, cellstr, or string array. 
 % 
-% Example
-%  
+% Examples
+%  ischarlike({"test"})
+%  ischarlike({"test", 1})
+%  ischarlike({"test", 1}, 'all')
+%  ischarlike({"test", 1}, 'any')
+%  ischarlike({2, 1}, 'any')
+%  ischarlike({"test1", "test2", 1})
+%  ischarlike(["test1", "test2", 1])
+%  ischarlike(["test1", "test2", 1], 'any')
+%  ischarlike(["test1", "test2", 1], 'all') % true because [] converts 1 to "1"
+%  ischarlike("test1")
+%  ischarlike(cat(1,'test1','test2')) % 
+%  ischarlike(cat(1,'test1','test2')) % currently returns false b/c not row char
 % 
 % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
 % 
-% See also matlab.internal.datatypes.isCharString
+% See also: matlab.internal.datatypes.isCharString, isStringScalar
 
 % allowEmpty not implemented
 % function tf = ischarlike(x, allowEmpty)
@@ -25,17 +36,21 @@ function tf = ischarlike(x, varargin)
 % arrays e.g. iscellstr({"test"}) vs containsOnlyText({"test"})
 % ischarlike({"test"})
 
-if nargin == 2, opt = varargin{1}; else, opt = 'each'; end
+if nargin == 2, opt = varargin{1}; else, opt = 'all'; end
+
+% if isstring(x) && 
 
 % handle layered cells 
 if iscell(x)
    if strcmp(opt, 'all')
       tf = all(cellfun(@(arg) ischarlike(arg, 'all'), x));
+   elseif strcmp(opt, 'any')
+      tf = any(cellfun(@(arg) ischarlike(arg, 'all'), x));
    elseif strcmp(opt, 'each')
       tf = cellfun(@(arg) ischarlike(arg, 'all'), x);
    end
 else
-   tf = iscellstr(x) | ischar(x) | isstring(x) ;
+   tf = iscellstr(x) | isstring(x) | ( ischar(x) && isrow(x) );
 end
 
 % Note: this is from containsOnlyText, and I found unexpected behavior, e.g. 

@@ -5,20 +5,25 @@ function coords = writeGeoShapefile(S,filename,varargin)
 %
 % See also
 
-%--------------------------------------------------------------------------
-p=magicParser;
-p.FunctionName=mfilename;
-p.CaseSensitive=false;
-p.PartialMatching=true;
-p.addRequired('S',@(x)isstruct(x)|istable(x)|ischar(x)|isa(x,'geopoint')|...
-   isa(x,'mappoint')|isa(x,'geoshape')|isa(x,'mapshape'));
-p.addRequired('filename',@(x)ischar(x));
-p.addParameter('Geometry','Point',@(x)ischar(x));
-p.addParameter('plotshp',false,@(x)islogical(x));
-p.addParameter('lat',nan,@(x)isnumeric(x));
-p.addParameter('lon',nan,@(x)isnumeric(x));
-p.parseMagically('caller');
-%--------------------------------------------------------------------------
+%% parse inputs
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.CaseSensitive=false;
+   parser.PartialMatching=true;
+   parser.addRequired('S',@(x)isstruct(x)|istable(x)|ischar(x)|isa(x,'geopoint')|...
+      isa(x,'mappoint')|isa(x,'geoshape')|isa(x,'mapshape'));
+   parser.addRequired('filename',@ischar);
+   parser.addParameter('Geometry','Point',@ischar);
+   parser.addParameter('plotshp',false,@islogical);
+   parser.addParameter('lat',nan,@isnumeric);
+   parser.addParameter('lon',nan,@isnumeric);
+end
+parse(parser, S, filename, varargin{:});
+[Geometry, plotshp, lat, lon] = dealout(parser.Results);
+
+%% main
 
 saveshp = true;
 

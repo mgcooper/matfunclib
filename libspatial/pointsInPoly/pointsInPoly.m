@@ -25,25 +25,23 @@ function Points = pointsInPoly(x,y,poly,varargin)
 % See also interpolationPoints, resamplingCoords
 
 %% parse
-p = inputParser;
-p.FunctionName = mfilename;
-addRequired(p,'x',@(x)isnumeric(x));
-addRequired(p,'y',@(x)isnumeric(x));
-addRequired(p,'poly',@(x)isa(x,'polyshape'));
-addParameter(p,'buffer',nan,@(x)isnumeric(x));
-addParameter(p,'xbuffer',nan,@(x)isnumeric(x));
-addParameter(p,'ybuffer',nan,@(x)isnumeric(x));
-addParameter(p,'makeplot',false,@(x)islogical(x));
-addParameter(p,'bufferbox',true,@(x)islogical(x));
-%addParameter(p,'pointinterp',false);
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   addRequired(parser, 'x', @isnumeric);
+   addRequired(parser, 'y', @isnumeric);
+   addRequired(parser, 'poly', @(x) isa(x, 'polyshape'));
+   addParameter(parser,'buffer', nan, @isnumeric);
+   addParameter(parser,'xbuffer', nan, @isnumeric);
+   addParameter(parser,'ybuffer', nan, @isnumeric);
+   addParameter(parser,'makeplot', false, @islogical);
+   addParameter(parser,'bufferbox', true, @islogical);
+   %addParameter(p,'pointinterp',false);
+end
+parse(parser,x,y,poly,varargin{:});
 
-parse(p,x,y,poly,varargin{:});
-
-buffer = p.Results.buffer;
-xbuffer = p.Results.xbuffer;
-ybuffer = p.Results.ybuffer;
-makeplot = p.Results.makeplot;
-bufferbox = p.Results.bufferbox;
+[buffer, xbuffer, ybuffer, makeplot, bufferbox] = dealout(parser.Results);
 
 % Note: buffering the bounding box is much faster for complex polgyons with
 % many vertices which are very slow with polybuffer.

@@ -8,7 +8,14 @@ function opts = optionParser(validopts,calleropts,varargin)
 %  that are members of validopts to provided structure opts and sets them to
 %  true
 % 
-%  Inputs
+% optionParser is based on this method: 
+% 
+% varargs = varargin(cellfun(@ischar, convertStringsToChars(varargin)));
+% for arg = validopts(:).'
+%    opts.(arg{:}) = any(ismember(arg, varargs));
+% end
+% 
+% Inputs
 %  VALIDOPTS are the options available within a function. 
 %  CALLEROPTS is the varargin cell array of optional inputs. 
 %  OPTS is an optional opts structure that the parsed options are added to.
@@ -36,10 +43,21 @@ function opts = optionParser(validopts,calleropts,varargin)
 % %  pass that opts struct to another function and set some new opts relevant
 % to the new function
 % 
-%  function c = myfunc(a,b,opts,varargin)
+%  myfunc(1,2,opts,'add')
 % 
+%  function c = myfunc(a,b,opts,varargin)
+%  % make up a fake varargin for demonstration
+%  varargin={'add'}
 %  validopts = {'add','multiply'};
 %  opts = optionParser(validopts,varargin(:),opts);
+% % returns:
+% % opts = 
+% %   struct with fields:
+% % 
+% %     makeplots: 1
+% %     saveplots: 0
+% %           add: 1
+% %      multiply: 0
 % 
 %  if opts.add == true && opts.multiply == true
 %     error('only one options, add or multiply, can be true');
@@ -52,6 +70,20 @@ function opts = optionParser(validopts,calleropts,varargin)
 %  end
 %  
 % 
+% % test the simpler version - this shows how optionParser could be simplified 
+%  opts.makeplots = true;
+%  opts.saveplots = false
+%  validopts = {'add','multiply'};
+% % pretend we also have valid opts in the calling function
+%  newopts = fieldnames(opts);
+%  validopts = {'add','multiply', newopts{:}};
+% % build the calleropts 
+%  calleropts = {'add', newopts{struct2array(opts)}}
+% % add some non-compatible values
+% calleropts = [calleropts, 2, string.empty]
+%  test_optionparser(validopts, calleropts{:})
+% 
+% See also:
 
 narginchk(2,3);
 if nargin == 3
