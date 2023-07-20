@@ -12,7 +12,7 @@ function smartlabels(XData, YData, labels, varargin)
 valid_positions = ...
    {'NE', 'SE', 'NW', 'SW', 'N', 'S', 'E', 'W', 'C', 'center'};
 default_pos = 'NE';
-[args, default_pos, nargs] = parseoptarg(varargin, valid_positions, default_pos);
+[default_pos, args, nargs] = parseoptarg(varargin, valid_positions, default_pos);
 
 % Get axis limits
 xlims = xlim();

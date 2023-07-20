@@ -19,7 +19,7 @@ narginchk(1,3)
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 
-[args, option, nargs] = parseoptarg(varargin, {'each', 'any', 'all'}, 'all');
+[option, args, nargs] = parseoptarg(varargin, {'each', 'any', 'all'}, 'all');
 
 if nargs == 1
    CoordinateSystemType = args{1};

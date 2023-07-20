@@ -24,7 +24,7 @@ if isscalar(X) && isscalar(Y) || strcmp(mapGridFormat(X, Y), 'coordinates')
 end
 
 % Check for warning off input
-[args, opt, nargs] = parseoptarg(varargin, 'off');
+[opt, args, nargs] = parseoptarg(varargin, 'off');
 
 % Check for custom orientation input
 if nargs > 0

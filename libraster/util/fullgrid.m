@@ -28,7 +28,7 @@ function varargout = fullgrid(varargin)
 narginchk(1, 3)
 
 % Check for output format option
-[args, opt, nargs] = parseoptarg(varargin, ...
+[opt, args, nargs] = parseoptarg(varargin, ...
    {'coordinates', 'gridvectors', 'fullgrids'}, 'fullgrids');
 
 % Parse remaining arguments

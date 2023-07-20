@@ -21,7 +21,7 @@ function X = xfullgrid(varargin)
 narginchk(1, 3)
 
 % Check for output format option
-[args, opt, nargs] = parseoptarg(varargin, {'coordinates', 'gridvectors'});
+[opt, args, nargs] = parseoptarg(varargin, {'coordinates', 'gridvectors'});
 
 % Parse remaining arguments
 X = args{1};

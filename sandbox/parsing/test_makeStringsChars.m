@@ -65,13 +65,13 @@ test = test(tf);
 %%
 
 % Mixture, including correct one
-[args, opt] = parseoptarg(test, 'testchar')
+[opt, args] = parseoptarg(test, 'testchar')
 
 % single numeric, not including the right one
-[args, opt] = parseoptarg({1}, 'testchar')
+[opt, args] = parseoptarg({1}, 'testchar')
 
 % Single char, including the right one
-[args, opt] = parseoptarg({'testchar'}, 'testchar')
+[opt, args] = parseoptarg({'testchar'}, 'testchar')
 
 %% 
 
