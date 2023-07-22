@@ -37,6 +37,14 @@
          {"name":"S",   "kind":"required",   "type":["struct"]}
       ]
    },
+   "numfields":
+   {
+      "inputs":
+      [
+         {"name":"S",      "kind":"required",   "type":["struct"]}, 
+         {"name":"depth",  "kind":"ordered",    "type":["choices={'flat','layered'}"]}
+      ]
+   },
    "renamestructfields":
    {
       "inputs":

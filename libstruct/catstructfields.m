@@ -1,5 +1,8 @@
 function S = catstructfields(dim, varargin)
 %CATSTRUCTFIELDS concatenate two or more struct arrays with common field names
+% 
+% 
+% See also:
 
 F = cellfun(@fieldnames,varargin,'uni',0);
 assert(isequal(F{:}),'All structures must have the same field names.')

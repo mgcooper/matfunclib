@@ -19,25 +19,17 @@ function S = addstructfields(S,fields,varargin)
 % its akward, I think it is designed to assign to non-scalar structs, which is
 % tricky, so 
 
-%------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-
-% validstrings      = {''}; % or [""]
-% validoption       = @(x)any(validatestring(x,validstrings));
-
-p.addRequired(    'S',                          @(x)isstruct(x)      );
-% p.addOptional(    'option',      nan,        validoption          );
-p.addParameter(   'newfieldnames',  '',         @(x)ischarlike(x)    );
-
-p.parseMagically('caller');
-
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
+persistent parser
+if isempty(parser)
+   parser = magicParser;
+   parser.FunctionName = mfilename;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
+   parser.addRequired('S', @isstruct);
+   parser.addParameter('newfieldnames', '', @ischarlike);
+end
+parser.parseMagically('caller');
 
 % NOTE: ddin't get far with this
 
