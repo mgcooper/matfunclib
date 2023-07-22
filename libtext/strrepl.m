@@ -10,12 +10,17 @@ function stringthing = strrepl(stringthing, oldstr, newstr)
 % Note: this is *replaced* by the built in function 'replace'. It tries to use
 % that first, and if that fails, uses a backup method. 
 % 
+% Example:
+% strrepl('Hello World!', 'World', 'everyone') % returns 'Hello everyone!'
+% strrepl('Hello World!', 'world', 'everyone') % returns 'Hello World!'
+% strrepl('Hello World!', 'world!', 'everyone') % returns 'Hello World!'
+% 
 % Matt Cooper, 16-Jun-2023, https://github.com/mgcooper
 % 
 % See also replace
 
 arguments
-   stringthing (:, 1) {mustContainOnlyText}
+   stringthing {mustContainOnlyText(stringthing)}
    oldstr (:, 1) string
    newstr (:, 1) string
 end

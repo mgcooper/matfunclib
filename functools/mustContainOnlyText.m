@@ -1,18 +1,15 @@
 function mustContainOnlyText(arg)
-%mustContainOnlyText validates that input contains only text
-%   argument is char, string, or a cell array of strings
-%   Intended for use within arguments block to validate an input
-
-% mgc this would be used in argument block validation in the manner i use
-% ischarlike, eg:
-% arguments
-% 
+%mustContainOnlyText validate that input contains only text
+%   
+% argument is char, string, or a cell array of strings
+% Intended for use within arguments block to validate an input
+%
+% Example use in argument block validation:
+% arguments 
 %     thisarg    { mustContainOnlyText(thisarg) };
-% 
 % end
-
-% NOTE: don't use this, see containsOnlyText for why it fails, if needed,
-% replace with ischarlike, see new functionality there.
+% 
+% See also: containsOnlyText, ischarlike
 
 if ~containsOnlyText(arg)
    eid = 'custom:validators:mustContainOnlyText';

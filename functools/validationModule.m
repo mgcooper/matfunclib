@@ -104,11 +104,12 @@ f = @(x) isstring(x) ;
 end
 
 function f = validCharLike
-f = @(x) ischar(x) | isstring(x) | iscellstr(x) ;
+f = @(x) isstring(x) || iscellstr(x) || ...
+   ( ischar(x) && isrow(x) || isequal(x, '') );
 end
 
 function f = validDateLike
-f = @(x) isdatetime(x) | isnumeric(x) & isvector(x);
+f = @(x) isdatetime(x) || ( isnumeric(x) && isvector(x) );
 end
 
 function f = validDateTime
@@ -175,8 +176,8 @@ function f = validLogicalMatrix
 f = @(x) islogical(x) && ismatrix(x) && ~isvector(x) ;
 end
 
-function f = validTableLike
-f = @(x) istable(x) | istimetable(x) ;
+function f = validTabular
+f = @(x) istable(x) || istimetable(x) ;
 end
 
 function f = validOptionalArgument

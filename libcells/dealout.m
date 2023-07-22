@@ -55,3 +55,11 @@ catch
    % Syntax is [out1, out2, ..., outN] = dealout(CellArray)
    varargout = args{:};
 end
+
+% TODO:
+% Compare with this format:
+% if ~iscell(x), x = num2cell(x); end
+% varargout = cell(1,nargout);
+% [varargout{:}] = deal(x{:});
+
+% Compare with fex function deal2

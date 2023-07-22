@@ -1,6 +1,8 @@
 function texString = latex2tex(latexString)
 %LATEX2TEX 
 
+% see untexlabel on fex
+
 % Initialize the TeX string as the LaTeX string
 texString = latexString;
 

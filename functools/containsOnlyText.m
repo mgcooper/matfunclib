@@ -31,9 +31,12 @@ function tf = containsOnlyText(x)
 % NOTE: this is only needed because mustBeText doesn't check for cell arrays of
 % strings (which i think is b/c iscellstr doesn't perform that check).
 
+% replace with call to ischarlike to avoid type-casting to string in og method
+tf = ischarlike(x);
+
 % Removes outer cell layer and recurses if the passed text is in a cell array
 % Text passed to next version is horizontally concatenated version.
-tf = ischar(x) || ...
-   isstring(x) || ...
-   iscell(x) && ( containsOnlyText( [x{:}] ) ); %If there are layered cells
+% tf = ischar(x) || ...
+%    isstring(x) || ...
+%    iscell(x) && ( containsOnlyText( [x{:}] ) ); %If there are layered cells
 end

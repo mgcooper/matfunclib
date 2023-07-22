@@ -23,6 +23,17 @@ function tf = ischarlike(x, varargin)
 %  ischarlike(cat(1,'test1','test2')) % 
 %  ischarlike(cat(1,'test1','test2')) % currently returns false b/c not row char
 % 
+% nontrival option:
+%  ischarlike('')                               % true
+%  ischarlike('','nontrivial')                  % false
+%  ischarlike("",'nontrivial')                  % true
+%  ischarlike(string.empty,'nontrivial')        % true
+%  ischarlike({},'nontrivial')                  % true
+%  ischarlike({''},'nontrivial')                % false
+%  ischarlike({'', ""},'nontrivial')            % false
+%  ischarlike({'', ""},'each','nontrivial')     % false, true
+%  ischarlike({'', ""},'any','nontrivial')      % true
+% 
 % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
 % 
 % See also: matlab.internal.datatypes.isCharString, isStringScalar
@@ -36,21 +47,26 @@ function tf = ischarlike(x, varargin)
 % arrays e.g. iscellstr({"test"}) vs containsOnlyText({"test"})
 % ischarlike({"test"})
 
-if nargin == 2, opt = varargin{1}; else, opt = 'all'; end
+[opt, args, nargs] = parseoptarg(varargin, {'all', 'any', 'each'}, 'all');
 
-% if isstring(x) && 
+if nargs > 0 && strcmpi(args{1}, 'nontrivial')
+   hastext = @(x) all(strlength(x)>0, 'all');
+else
+   hastext = @(x) true;
+end
 
-% handle layered cells 
+% handle layered cells by passing 'all' to the second argument of ischarlike
 if iscell(x)
    if strcmp(opt, 'all')
-      tf = all(cellfun(@(arg) ischarlike(arg, 'all'), x));
+      tf = all(cellfun(@(arg) ischarlike(arg, 'all', args{:}), x));
    elseif strcmp(opt, 'any')
-      tf = any(cellfun(@(arg) ischarlike(arg, 'all'), x));
+      tf = any(cellfun(@(arg) ischarlike(arg, 'all', args{:}), x));
    elseif strcmp(opt, 'each')
-      tf = cellfun(@(arg) ischarlike(arg, 'all'), x);
+      tf = cellfun(@(arg) ischarlike(arg, 'all', args{:}), x);
    end
 else
-   tf = iscellstr(x) | isstring(x) | ( ischar(x) && isrow(x) );
+   tf = iscellstr(x) || isstring(x) || ...
+      ( ischar(x) && (isrow(x) || isequal(x,'')) ) && hastext(x);
 end
 
 % Note: this is from containsOnlyText, and I found unexpected behavior, e.g. 
