@@ -1,3 +1,2 @@
 function hodl
-    hold on
-end
+hold on

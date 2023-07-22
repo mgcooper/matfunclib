@@ -137,7 +137,7 @@ set(groot                                                      , ...
 
 %% Environment configuration
 beep off
-format shortG % try 'doc format' for examples
+format short % careful with shortG, it truncates to 5 digits
 format compact % use pi to see different formats: pi
 
 %% activate toolboxes and projects

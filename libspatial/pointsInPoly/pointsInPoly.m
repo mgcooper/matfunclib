@@ -41,7 +41,11 @@ if isempty(parser)
 end
 parse(parser,x,y,poly,varargin{:});
 
-[buffer, xbuffer, ybuffer, makeplot, bufferbox] = dealout(parser.Results);
+buffer = parser.Results.buffer;
+xbuffer = parser.Results.xbuffer;
+ybuffer = parser.Results.ybuffer;
+makeplot = parser.Results.makeplot;
+bufferbox = parser.Results.bufferbox;
 
 % Note: buffering the bounding box is much faster for complex polgyons with
 % many vertices which are very slow with polybuffer.

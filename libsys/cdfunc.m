@@ -1,59 +1,41 @@
 function cdfunc(funcname)
-%CDFUNC cd to foldor containing function funcname
+%CDFUNC cd to folder containing function FUNCNAME
+% 
+%  cdfunc(FUNCNAME) finds the folder containing function FUNCNAME and cd's to it
+% 
+% Matt Cooper, 18-NOV-2022, https://github.com/mgcooper
+% 
+% See also cd, cdback, cdenv, cdfex, cdfunc, cdhome, cdproject, cdtb, withcd
 
-% parse inputs
-%------------------------------------------------------------------
+% PARSE INPUTS
+narginchk(0,1)
 
-% converting funcname to string in case of accidentally passing in something
-% like cdfunc(getlist) will fail before getting here because you cannot pass a
-% function name into another function (maybe if it accepts no arguments it works)
-if ~ischar(funcname); funcname = inputname(funcname); end
+% CLEANUP OBJ
+thisdir = pwd();
+cleanup = onCleanup( @() setenv('OLD_CWD', thisdir) );
 
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.PartialMatching = false;
-
-addRequired(p,'funcname',@(x)ischar(x));
-parse(p,'funcname');
-
-% try adding the func path by assuming it's parent folder has same name
-userfuncpath = getenv('MATLABFUNCTIONPATH');
-
-% add all subfolders to the path in case the function was just made
-addpath(genpath(userfuncpath));
-
-% % not sure if this is possible, keeping for reference   
-%    % in case of accidentally not passing in a char
-%    if ~isstr(funcname)
-%       funcname = string(funcname);
-%    end
-
-% if the function name is provided, this finds it's location, including built-ins.
+% MAIN CODE
 if nargin==1
-   if ~contains(funcname,'.m')
+   % Find the function location, including built-ins.
+   funcname = convertStringsToChars(funcname);
+   if ~strncmp(reverse(funcname), 'm.', 2)
       funcname = [funcname '.m'];
    end
-   funcpath = strrep(which(funcname),funcname,'');
+   if ~ismfile(funcname)
+      % add all subfolders to the path in case the function was just made
+      try
+         pathadd(getenv('MATLABFUNCTIONPATH'));
+      catch
+      end
+   end
+   funcpath = fileparts(which(funcname)); % use the first one on the path
+elseif isenv('MATLABFUNCTIONPATH')
+   % Go to the function directory
+   funcpath = getenv('MATLABFUNCTIONPATH');
 else
-% otherwise, go to the function directory
-   funcpath = userfuncpath;
+   error('function not found');
 end
 
 cd(funcpath)
 
-% % this was before I realized i could just add the entire funcpath to the path
-
-%    % if the function name is provided, this finds it's location
-%    if nargin==2
-%       addpath(genpath([mainfuncpath category '/' funcname]));
-%       funcpath = strrep(which([funcname '.m']),[funcname '.m'],'');
-%    elseif nargin==1
-%       addpath(genpath([mainfuncpath funcname '/' funcname '.m']));
-%       funcpath = strrep(which([funcname '.m']),[funcname '.m'],'');
-%    else
-%    % otherwise, go to the function directory
-%       funcpath = mainfuncpath;
-%    end
-%    
-%    cd(funcpath)
 

@@ -1,15 +1,20 @@
 function addprojectpaths(projectname)
-%ADDPROJECTPATHS add all paths in projectpath
+%ADDPROJECTPATHS add all project paths to path
 % 
 %     addprojectpaths(projectname)
-% 
 %     addprojectpaths(projectpath)
 % 
 % projectpath is the full path to the project
+% 
+% See also: workon, workoff
 
-% 26 Jan 2023 hack to get path from project name rather than full path
+% default option to use the active project
 if nargin < 1
-   projectname = getactiveproject();
+   try
+      projectname = getactiveproject();
+   catch
+      error('manager:addpath:noActiveProject', 'no active project found')
+   end
 end
 
 if isfolder(projectname)
@@ -18,12 +23,17 @@ else
    projectpath = getprojectfolder(projectname);
 end
 
-withwarnoff({'MATLAB:mpath:nameNonexistentOrNotADirectory', ...
-   'MATLAB:rmpath:DirNotFound'});
-
-addpath(genpath(projectpath));
-
-% remove .git files from path
-if contains(genpath(fullfile(projectpath,'.git')),'.git')
-   rmpath(genpath(fullfile(projectpath,'.git')));
+% add the paths
+try
+   % use pathadd if its on the path
+   pathadd(projectpath);
+catch ME
+   % use built-ins
+   addpath(genpath(projectpath),'-end');
+   % remove .git files from path
+   try
+      rmpath(genpath(fullfile(projectpath,'.git')));
+      rmpath(genpath(fullfile(projectpath,'.svn')));
+   catch
+   end
 end

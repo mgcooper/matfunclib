@@ -1,5 +1,12 @@
 {
    "_schemaVersion": "1.0.0",
+   "addprojectpaths":
+   {
+      "inputs":
+      [
+         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
+      ]
+   },   
    "cdproject":
    {
       "inputs":
@@ -21,13 +28,6 @@
       [
          {"name":"tbname",  "kind":"required",   "type":["char", "choices=gettbnamelist"]},
          {"name":"goto",    "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
-      ]
-   },
-   "addprojectpaths":
-   {
-      "inputs":
-      [
-         {"name":"projectname","kind":"required","type":["char","choices=projectdirectorylist"],"purpose":"Option"}
       ]
    },
    "getprojectfiles":
