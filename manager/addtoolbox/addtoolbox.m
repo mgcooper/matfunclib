@@ -23,29 +23,17 @@ function varargout = addtoolbox(tbname,varargin)
 %     cd into the folder located at:
 %     [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
 %
-%     See also activate deactivate renametoolbox
+%     See also activate deactivate renametoolbox isactive
 % 
 % UPDATES
 % 7 Feb 2023, tbpath method updated to work for both top-level and sublib dirs,
 % but assumes args.library is empty by default. changed variable names from
 % 'tblibrary' and 'tbactivate' to 'library' and 'postadd'
 
-%-------------------------------------------------------------------------------
-p = inputParser;
-p.FunctionName = mfilename;
-p.CaseSensitive = false;
-p.KeepUnmatched = true;
+% PARSE INPUTS
+args = parseinputs(tbname, mfilename, varargin{:});
 
-validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
-validopts = @(x)any(validatestring(x,{'activate'}));
-
-addRequired(p,'tbname',@(x)ischar(x));
-addOptional(p,'library','',validlibs); % default value must be ''
-addOptional(p,'postadd','',validopts);
-
-parse(p,tbname,varargin{:});
-args = p.Results;
-%-------------------------------------------------------------------------------
+% MAIN
 
 % read the toolbox directory into memory
 toolboxes = readtbdirectory(gettbdirectorypath());
@@ -58,17 +46,13 @@ tbidx = height(toolboxes)+1;
 
 % regardless of sub-libs, we still want to match this
 if any(ismember(toolboxes.name,args.tbname))
-   
    error('toolbox already in directory');
-   
 else
-   
    toolboxes(tbidx,:) = {args.tbname,tbpath,false};
    
    disp(['adding ' args.tbname ' to toolbox directory']);
    
    writetbdirectory(toolboxes);
-   
 end
 
 % add it to the json directory choices for function 'activate'
@@ -88,7 +72,7 @@ switch nargout
       varargout{1} = toolboxes;
 end
 
-
+%% LOCAL FUNCTIONS
 function addtojsondirectory(toolboxes,tbidx,directoryname)
 
 jspath      = gettbjsonpath(directoryname);
@@ -114,6 +98,21 @@ writetbjsonfile(jspath,wholefile)
 %    tbpath = gettbsourcepath(args.tbname);
 % end
 
+%% INPUT PARSER
+function [tbname, args] = parseinputs(tbname, funcname, varargin)
 
-
+validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+validopts = @(x)any(validatestring(x,{'activate'}));
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
+   parser.addRequired('tbname', @ischar);
+   parser.addOptional('library', '', validlibs); % default value must be ''
+   parser.addOptional('postadd', '', validopts);
+end
+parser.parse(tbname,varargin{:});
+args = parser.Results;
 

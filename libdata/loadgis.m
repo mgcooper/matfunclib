@@ -176,7 +176,9 @@ end
 
 function S = m_map_shaperead(fname,namedargs)
 
-activate m_map
+if ~isactive('m_map')
+   activate m_map
+end
 
 if ismember({'BoundingBox'},namedargs(1:2:end)) % elements 1:2:end are parameters
    B = namedargs{find(ismember('BoundingBox',namedargs(1:2:end)))+1};

@@ -144,7 +144,7 @@ format compact % use pi to see different formats: pi
 
 % active toolboxes
 toolboxes = {'magicParser', 'BrewerMap', 'CubeHelix', 'mpm', 'CDT', ...
-   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin'};
+   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin', 'm_map'};
 
 for n = 1:numel(toolboxes)
    try

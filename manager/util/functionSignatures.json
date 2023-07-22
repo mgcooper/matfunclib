@@ -58,6 +58,13 @@
          {"name":"tbname","kind":"ordered","type":["char","choices=gettbnamelist"],"purpose":"Option"}
       ]
    },
+   "isactive":
+   {
+      "inputs":
+      [
+         {"name":"tbname", "kind":"required",   "type":["char","choices=gettbnamelist"]}
+      ]
+   },
    "openprojectfiles":
    {
       "inputs":
