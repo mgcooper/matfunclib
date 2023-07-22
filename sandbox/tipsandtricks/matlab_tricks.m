@@ -16,6 +16,12 @@ narginchk(0,0)
 
 % column selection is supported by default with option-select
 
+%% fex functions to check out
+
+% https://www.mathworks.com/matlabcentral/fileexchange/48233-image-with-non-square-pixels?s_tid=srchtitle
+% https://www.mathworks.com/matlabcentral/fileexchange/61448-nestedbar?s_tid=srchtitle
+% https://www.mathworks.com/matlabcentral/fileexchange/60608-pixelated-contours?s_tid=srchtitle
+
 %% documentation
 
 % rickynite/m2html
@@ -24,6 +30,10 @@ narginchk(0,0)
 % tmxkn1/m2htmlext
 
 %% people worth following
+
+% need to check these contributions:
+% https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:11
+% https://www.mathworks.com/matlabcentral/fileexchange/36209-thomasdeneux-brick?s_tid=srchtitle
 
 % *Douglas Schwarz https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:20355
 % https://www.mathworks.com/matlabcentral/fileexchange/?q=profileid:870202

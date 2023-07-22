@@ -1,4 +1,6 @@
-function test_parsegraphics(varargin)
+% test_parsegraphics
+
+%%
 
 % this will fail: parsegraphics("Parent", gcf) b
 
@@ -7,4 +9,3 @@ function test_parsegraphics(varargin)
 
 plot(1:10, 1:10, '-o', "Parent", ax)
 plot(ax, 1:10, 1:10, '-o')
-end

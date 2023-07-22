@@ -1,4 +1,4 @@
-function Y = functemplate(X,flag,style,opts)
+function varargout = functemplate(X,flag,style,opts)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
@@ -13,7 +13,7 @@ function Y = functemplate(X,flag,style,opts)
 % See also
 
 
-%  PARSE ARGUMENTS
+% PARSE ARGUMENTS
 arguments
    X (:,1) double
    flag (1,1) string {mustBeMember(flag,{'add','multiply'})} = 'add'
@@ -33,16 +33,22 @@ args = optionsToNamedArguments(optsstruct);
 
 % https://www.mathworks.com/matlabcentral/answers/760546-function-argument-validation-from-class-properties-ignores-defaults
 
-%  MAIN
+% MAIN CODE
 
 
-%  PARSE OUTPUTS
-[varargout{1:nargout}] = dealout(argout1, argout2)
+% PARSE OUTPUTS
+[varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
 
-%% local functions
+%% LOCAL FUNCTIONS
 
+
+%% TESTS
+
+%!test
+
+% ## add octave tests here
 
 %% LICENSE
 

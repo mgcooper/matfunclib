@@ -1,31 +1,34 @@
 function mkfunction(funcname,varargin)
 %MKFUNCTION make new function file from function template
 %
-%  mkfunction('myfunc') creates a new function file matfunclib/myfunc.m with
+%  mkfunction('funcname') creates a new function file funcname.m using the
 %  default function template for parser style IP which means inputParser.
 % 
-%  mkfunction('myfunc','library','libdata','parser','IP') creates a new function
-%  file matfunclib/libdata/myfunc.m with default function template for
-%  parser style IP which means inputParser. Other IP options are 'MP' for
-%  magicParser, 'OP' for optionParser, 'NP' for no parser, and 'ArgList' for
-%  arguments-block. 
+%  mkfunction('funcname','library','libdata','parser','IP') creates a new
+%  function file MATLABFUNCTIONPATH/libdata/funcname.m with default function
+%  template for parser style IP which means inputParser. Other IP options are
+%  'MP' for magicParser, 'OP' for optionParser, 'NP' for no parser, and
+%  'AP' for arguments-block parser. MATLABFUNCTIONPATH is defined by the
+%  environment variable MATLABFUNCTIONPATH. If the environment variable
+%  MATLABFUNCTIONPATH does not exist, then MATLABPROJECTPATH and USERPROJECTPATH
+%  are checked and used if found. If none are found, USERPATH is used.
 % 
 %  See also
 
-%% parse inputs
+% TODO: add support for 'inputs' and 'outputs'
+
+% parse inputs
 [funcname, library, project, parser] = parseinputs(funcname, mfilename, varargin{:});
 
-%% main function
-
-% keep the library or project parent folder
-parent = library;
+% main function
+parent = library; % keep the library or project parent folder
 if library == "unsorted" && project == "unsorted"
    parent = "unsorted";
 elseif library == "unsorted"
    parent = project;
 end
 
-% first check if the function exists. NOTE: if this check is ever removed, pay
+% check if the function exists. NOTE: if this check is ever removed, pay
 % attention to how _tmp is appended ot the function name given that the prior
 % behavior that ringfenced the new function in a funcname/ folder was removed
 if ~isempty(which(funcname))
@@ -64,6 +67,7 @@ else
    %mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs);
 end
 
+end
 
 % Make New Function
 function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
@@ -73,32 +77,36 @@ function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
 % copy the function template and edit it
 %---------------------------------------
 
-% copy the function template 
-copyfunctemplate(filenamepath,parser);    % specify path w/file name 
+% copy the function template and the test script template
+testfuncpath = copyfunctemplate(filenamepath,parser);    % specify path w/file name 
 
-% note: check if there's any benefit to fileread vs fscanf
-% wholefile = fileread(filenamepath);
+% read in the testscript template, replace the function name, and write it back
+wholefile = readinfile(testfuncpath);
+wholefile = strpat(wholefile,'FUNCNAME',upper(funcname));
+wholefile = strpat(wholefile,'funcname',funcname);
+rewritefile(testfuncpath, wholefile)
 
-% REPLACE 'funcname' with the actual function name in the function file
-fid = fopen(filenamepath);
-wholefile = fscanf(fid,'%c');     fclose(fid);
+% read in the function template file
+wholefile = readinfile(filenamepath);
 
-% Strip out the license so the strrep commands do not rewrite any content
+% strip out the license so the strrep commands do not rewrite any content
 license = wholefile(strfind(wholefile, "%% LICENSE"):end);
 wholefile = wholefile(1:strfind(wholefile, "%% LICENSE")-1);
 
-wholefile = strrep(wholefile,'FUNCNAME',upper(funcname));
-wholefile = strrep(wholefile,'funcname',funcname);
-wholefile = strrep(wholefile,'functemplate',funcname);
+% replace 'funcname' with the actual function name in the function file
+wholefile = strpat(wholefile,'FUNCNAME',upper(funcname));
+wholefile = strpat(wholefile,'funcname',funcname);
+wholefile = strpat(wholefile,'functemplate',funcname);
+wholefile = strpat(wholefile,'test_funcname',['test_' funcname]);
 
 % REPLACE DD-MMM-YYYY on AUTHOR line with the current date
 try %#ok<*TRYNC> 
-   wholefile = strrep(wholefile,'DD-MMM-YYYY',char(datetime("today")));
+   wholefile = strpat(wholefile,'DD-MMM-YYYY',char(datetime("today")));
 end
 
 % REPLACE YYYY on COPYRIGHT line with the current YEAR
 try
-   wholefile = strrep(wholefile,'Copyright (c) YYYY', ...
+   wholefile = strpat(wholefile,'Copyright (c) YYYY', ...
       ['Copyright (c) ' num2str(year(datetime('today')))]);
 end
 
@@ -106,46 +114,45 @@ end
 switch parent
    
    case {'libarrays'}
-      wholefile = strrep(wholefile,'X','A'); % or M for matrix
-      wholefile = strrep(wholefile,'Y','A');
+      wholefile = strpat(wholefile,'X','A'); % or M for matrix
+      wholefile = strpat(wholefile,'Y','A');
       
    case {'libcells'}
-      wholefile = strrep(wholefile,'X','C');
-      wholefile = strrep(wholefile,'Y','C');
+      wholefile = strpat(wholefile,'X','C');
+      wholefile = strpat(wholefile,'Y','C');
       
    case {'liblogic'}
 
-      wholefile = strrep(wholefile,'Y','TF');
+      wholefile = strpat(wholefile,'Y','TF');
       
    case {'libplot'}
-      wholefile = strrep(wholefile,'X','H');
-      wholefile = strrep(wholefile,'Y','H'); % handle (graphics object array) 
+      wholefile = strpat(wholefile,'X','H');
+      wholefile = strpat(wholefile,'Y','H'); % handle (graphics object array) 
 
    case {'libraster'}
-      wholefile = strrep(wholefile,'X','Z,R');
-      wholefile = strrep(wholefile,'Y','[Z,R]');
+      wholefile = strpat(wholefile,'X','Z,R');
+      wholefile = strpat(wholefile,'Y','[Z,R]');
 
    case {'libspatial'}
-      wholefile = strrep(wholefile,'X','Geom');
-      wholefile = strrep(wholefile,'Y','S');     
+      wholefile = strpat(wholefile,'X','GEOM');
+      wholefile = strpat(wholefile,'Y','S');     
       
    case {'libstruct'}
-      wholefile = strrep(wholefile,'X','S');
-      wholefile = strrep(wholefile,'Y','S');
+      wholefile = strpat(wholefile,'X','S');
+      wholefile = strpat(wholefile,'Y','S');
       
-   case {'libstr'}
-      wholefile = strrep(wholefile,'X','str');
-      wholefile = strrep(wholefile,'Y','str');
+   case {'libtext'}
+      wholefile = strpat(wholefile,'X','STR');
+      wholefile = strpat(wholefile,'Y','STR');
 
    case {'libtable','libtime'}
-      wholefile = strrep(wholefile,'X','T');
-      wholefile = strrep(wholefile,'Y','T');
-      wholefile = strrep(wholefile,'@(x)isnumeric(x)','@(x)istable(x)|istimetable(x)');
+      wholefile = strpat(wholefile,'X','T');
+      wholefile = strpat(wholefile,'Y','T');
+      wholefile = strpat(wholefile,'f.validNumericVector','f.validTabular');
 
    case {'manager','libsys'}
-      wholefile = strrep(wholefile,'X','cmd');
-      wholefile = strrep(wholefile,'Y','msg');
-      
+      wholefile = strpat(wholefile,'X','CMD');
+      wholefile = strpat(wholefile,'Y','MSG');
 end
 
 % % for custom i/o, need to read the first line and replace [Z,R] and x
@@ -159,26 +166,23 @@ end
 wholefile = [wholefile license];
 
 % write it over again
-fid = fopen(filenamepath, 'wt');
-fprintf(fid,'%c',wholefile); fclose(fid);
+rewritefile(filenamepath, wholefile)
 
 %----------------------------------
 % repeat for functionSignature file
 %----------------------------------
 
 % copy the json template for inputParser functions
-if parser == "IP" || parser == "MP" || parser == "OP"
+if ismember(parser, {'IP', 'MP', 'OP', 'NP'})
 
-   % note: copyjsontemplate checks if functionSignatures.json exists, but 
+   % % specify full path for copyjsontemplate
    jsonfilename = ['functionSignatures.json.' funcname];
+   copyjsontemplate(functionpath,jsonfilename);
 
-   copyjsontemplate(functionpath,jsonfilename); % specify full path
-
-   fid = fopen(fullfile(functionpath,jsonfilename));
-   wholefile = fscanf(fid,'%c'); fclose(fid);     
+   % read it in, replace funcname placeholder, and rewrite it
+   wholefile = readinfile(fullfile(functionpath,jsonfilename));
    wholefile = strrep(wholefile,'funcname',funcname);
-   fid = fopen(fullfile(functionpath,jsonfilename),'wt');
-   fprintf(fid,'%c',wholefile); fclose(fid);
+   rewritefile(fullfile(functionpath,jsonfilename), wholefile);
 
    % open the new one. if a functionSignatures.json exists, it is opened below
    if isfile(fullfile(functionpath,jsonfilename))
@@ -187,7 +191,7 @@ if parser == "IP" || parser == "MP" || parser == "OP"
 end
 
 %----------------------------------
-% postmk actions
+% cleanup actions
 %----------------------------------
 
 % go to the new directory and open the new function file and json file
@@ -199,8 +203,7 @@ if isfile(fullfile(functionpath,'functionSignatures.json'))
    edit('functionSignatures.json');
 end
 
-% doc JSON Representation of MATLAB Data Types
-% doc validateattributes
+end
 
 
 function mkappendfunc(functionpath,funcname,parent,parser)
@@ -219,73 +222,124 @@ else
    return
 end
 
+end
+
+
 % Function Path Parser
 function [functionpath,filenamepath] = parseFunctionPath(funcname,library,project)
-      
-% parse the function path. if library and project are both default
-% "unsorted", OR if project is default "unsorted", use default function
-% library. this gets both, and checks whether the function folder in the
-% project dirs is '+projectname', 'func/', 'functions/'
+%PARSEFUNCTIONPATH parse the new function full path      
 
-if project == "unsorted"
+% If the mvenv environment vars are not set, use userpath
+if all(cellfun('isempty', { ...
+      getenv('MATLABFUNCTIONPATH'), ...
+      getenv('MATLABPROJECTPATH'), ...
+      getenv('USERPROJECTPATH') } ...
+      ));
+   functionpath = fullfile(userpath, funcname);
+else
 
-   % 10 Feb 2023, removed function name folder
-   functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library);
-   %functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library,funcname);
-
-elseif project ~= "unsorted" && library == "unsorted"
-
-   % assume the project is a matlab project
-   projectpath = fullfile(getenv('MATLABPROJECTPATH'),project);
+   % If library or project are default "unsorted", use the default function
+   % library. For projects, check some predefined folders in the project
+   % directory to save the new function file.
    
-   if ~isfolder(projectpath)
-      projectpath = fullfile(getenv('USERPROJECTPATH'),project);
+   if project == "unsorted"
+      % library is either a valid sublibrary or is "unsorted"
+      functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library);
+   
+      % this creates the function in a folder of the same name
+      % functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library,funcname);
+   
+   elseif project ~= "unsorted" && library == "unsorted"
+   
+      % assume the project is a matlab project
+      projectpath = fullfile(getenv('MATLABPROJECTPATH'),project);
       
       if ~isfolder(projectpath)
-         error('project path not found')
+         projectpath = fullfile(getenv('USERPROJECTPATH'),project);
+         
+         if ~isfolder(projectpath)
+            error('project path not found')
+         end
+      end
+   
+      % Check for a <project>/+<project> package folder
+      if isfolder(fullfile(projectpath,['+' project]))
+         functionpath = fullfile(projectpath,['+' project]);
+      
+      % Check for a <project>/toolbox/<+project> package folder
+      elseif isfolder(fullfile(projectpath,['toolbox/+' project]))
+         functionpath = fullfile(projectpath,['+' project]);
+   
+      % Check for a '<project>/toolbox/functions folder
+      elseif isfolder(fullfile(projectpath,'toolbox/functions'))
+         functionpath = fullfile(projectpath,'toolbox/functions');
+         
+      % Check for a '<project>/toolbox/internal folder
+      elseif isfolder(fullfile(projectpath,'toolbox/internal'))
+         functionpath = fullfile(projectpath,'toolbox/internal');
+   
+      % Check for a '<project>/sandbox folder
+      elseif isfolder(fullfile(projectpath,'sandbox'))
+         functionpath = fullfile(projectpath,'sandbox');
+   
+      else % otherwise, create a <project>/<funcname> folder
+         functionpath = fullfile(projectpath,funcname);
+   
       end
    end
+end
+filenamepath = fullfile(functionpath,[funcname '.m']);
+end
 
-   % this checks for a package folder
-   if isfolder(fullfile(projectpath,['+' project]))
-      
-      functionpath = fullfile(projectpath,['+' project]);
-   
-   % this makes 'func/' the default which will get created if requested
-   elseif isfolder(fullfile(projectpath,'functions'))
 
-      % 10 Feb 2023, removed function name folder
-      functionpath = fullfile(projectpath,'functions');
-      %functionpath = fullfile(projectpath,'functions',funcname);
-      
-   elseif isfolder(fullfile(projectpath,'func'))
-
-      % 10 Feb 2023, removed function name folder
-      functionpath = fullfile(projectpath,'func');
-      %functionpath = fullfile(projectpath,'func',funcname);
-      
-   else
-
-      % 10 Feb 2023, in this case, use the function name folder
-      functionpath = fullfile(projectpath,funcname);
+function wholefile = readinfile(filenamepath);
+%read in the file
+   fid = fopen(filenamepath);
+   if fid == -1
+      error('Failed to open file %s for reading', filenamepath);
+   end
+   wholefile = fscanf(fid,'%c');
+   status = fclose(fid);
+   if status == -1
+      warning('Failed to close file %s after reading', filenamepath);
    end
 end
 
-filenamepath = fullfile(functionpath,[funcname '.m']);
+function rewritefile(filenamepath, wholefile)
+%rewrite the file
+   fid = fopen(filenamepath, 'wt');
+   if fid == -1
+      error('Failed to open file %s for writing', filenamepath);
+   end
+   fprintf(fid,'%c',wholefile); 
+   status = fclose(fid);
+   if status == -1
+      warning('Failed to close file %s after writing', filenamepath);
+   end
+end
+
+%% INPUT PARSER
+function [name, library, project, whichparser] = parseinputs( ...
+   name, funcname, varargin)
+
+   persistent parser
+   if isempty(parser)
+      parser = inputParser;
+      parser.FunctionName = funcname;
+      addRequired(   parser, 'funcname', @ischar);
+      addParameter(  parser, 'library', 'unsorted', @ischar);
+      addParameter(  parser, 'project', 'unsorted', @ischar);
+      addParameter(  parser, 'parser', 'MP', @ischar);
+   end
+   parse(parser,name,varargin{:});
+   library = parser.Results.library;
+   project = parser.Results.project;
+   whichparser = parser.Results.parser;
+   %inputs = p.Results.inputs;
+   %outputs = p.Results.outputs;
+end
 
 
-% Input Parser
-function [funcname, library, project, parser] = parseinputs(funcname, ...
-   mfilename, varargin)
-
-p = inputParser;
-p.FunctionName = mfilename;
-
-addRequired(   p,'funcname', @(x)ischar(x) );
-addParameter(  p,'library', 'unsorted', @(x)ischar(x) );
-addParameter(  p,'project', 'unsorted', @(x)ischar(x) );
-addParameter(  p,'parser', 'MP', @(x)ischar(x) );
-   
 % % now that i understand addOptional, this may work:
 % validlib    = @(x)any(validatestring(x,functiondirectorylist));
 % validproj   = @(x)any(validatestring(x,projectdirectorylist));
@@ -300,12 +354,4 @@ addParameter(  p,'parser', 'MP', @(x)ischar(x) );
 % required, parameter, optional, etc. but don't have time to sort it out rn
 % addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
 % addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
-   
-parse(p,funcname,varargin{:});
-
-library = p.Results.library;
-project = p.Results.project;
-parser = p.Results.parser;
-%inputs = p.Results.inputs;
-%outputs = p.Results.outputs;
    

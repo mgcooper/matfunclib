@@ -1,0 +1,30 @@
+{
+   "_schemaVersion": "1.0.0",
+   "assertequal":
+   {
+   "inputs":
+      [
+         {"mutuallyExclusiveGroup":
+          [
+             [
+               {"name":"A", "kind":"required"},
+               {"name":"B", "kind":"required"}
+             ],
+             [
+               {"name":"A", "kind":"required"},
+               {"name":"B", "kind":"required"},
+               {"name":"msg", "kind":"ordered", "type":["char","string"]},
+               {"name":"fmt", "kind":"ordered", "repeating":true}
+             ],
+             [
+               {"name":"A", "kind":"required"},
+               {"name":"B", "kind":"required"},
+               {"name":"errID", "kind":"required", "type":"identifier=messageid"},
+               {"name":"msg", "kind":"required", "type":["char","string"]},
+               {"name":"fmt", "kind":"ordered", "repeating":true}
+             ]
+          ]
+         }
+      ]
+   }
+}

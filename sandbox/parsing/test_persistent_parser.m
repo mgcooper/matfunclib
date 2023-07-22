@@ -8,17 +8,33 @@ function varargout = test_persistent_parser(a,b,varargin)
 %% parse inputs
 persistent parser
 if isempty(parser)
-   parser = inputParser;
+   parser = magicParser;
    parser.FunctionName = mfilename;
-   parser.CaseSensitive=false;
-   parser.PartialMatching=true;
-   parser.addRequired('a',@isnumeric);
-   parser.addRequired('b',@isnumeric);
-   parser.addParameter('param',false,@islogical);
+   parser.CaseSensitive = false;
+   parser.PartialMatching = true;
+   parser.addRequired('a', @isnumeric);
+   parser.addRequired('b', @isnumeric);
+   parser.addParameter('param', false, @islogical);
 end
-parse(parser, a, b, varargin{:});
-[a, b, param] = dealout(parser.Results);
+args = struct();
+args = parser.parseMagically(args);
+
+%% parse inputs
+% persistent parser
+% if isempty(parser)
+%    parser = inputParser;
+%    parser.FunctionName = mfilename;
+%    parser.CaseSensitive=false;
+%    parser.PartialMatching=true;
+%    parser.addRequired('a',@isnumeric);
+%    parser.addRequired('b',@isnumeric);
+%    parser.addParameter('param',false,@islogical);
+% end
+% parse(parser, a, b, varargin{:});
+% [a, b, param] = dealout(parser.Results);
+% % [args{1:numfields(parser.Results)}] = dealout(parser.Results);
+
+%%
 
 c = a+b;
-
 [varargout{1:nargout}] = dealout(c);

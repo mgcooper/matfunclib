@@ -1,38 +1,34 @@
-function Y = functemplate(X,varargin)
+function varargout = functemplate(X,varargin)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
 %  Y = FUNCNAME(X,'name1',value1) description
-%  Y = FUNCNAME(X,'name1',value1,'name2',value2) description
 %  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
 %        The default method is 'flag1'.
 %
 % Example
 %
 %
-%
 % Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
 %
 % See also
 
-%% main code
-
-% parse inputs
+% PARSE INPUTS
 [X,option,namevalue] = parseinputs(mfilename, X, varargin{:});
 
-% ... main code
+% MAIN CODE
 
-% Parse outputs
-% [varargout{1:nargout}] = dealout(argout1, argout2)
+
+% PARSE OUTPUTS
+[varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
 
-%% local functions
+%% LOCAL FUNCTIONS
 
-
-%% parse inputs
 
 function varargout = parseinputs(funcname, X, varargin)
+%PARSEINPUTS parse input arguments
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 
@@ -41,31 +37,36 @@ menu = {'add','multiply'};
 
 % Create the input parser and import the validationModule 
 f = validationModule();
-p = inputParser();
-p.FunctionName = funcname;
-p.addRequired('X', f.validNumericVector );
-p.addOptional('option', 'add', @(opt) f.validOptionalArgument(opt, menu));
-p.addParameter('namevalue', false, f.validLogicalScalar );
+persistent parser
+if isempty(parser)
+   parser = inputParser();
+   parser.FunctionName = funcname;
+   parser.addRequired('X', f.validNumericVector );
+   parser.addOptional('option', 'add', @(opt) f.validOptionalArgument(opt, menu));
+   parser.addParameter('namevalue', false, f.validLogicalScalar );
+end
 
 % Parse the arguments
-p.parse(X,varargin{:});
-option = p.Results.option;
-namevalue = p.Results.namevalue;
+parser.parse(X,varargin{:});
+option = parser.Results.option;
+namevalue = parser.Results.namevalue;
 
 % Parse outputs
-[varargout{1:nargout}] = deal(X, option, namevalue);
+[varargout{1:nargout}] = dealout(X, option, namevalue);
 
 % for backdoor default matlab options, use:
 % varargs = namedargs2cell(p.Unmatched);
 % then pass varargs{:} as the last argument. but for autocomplete, copy the
 % json file arguments to the local one.
 
-% note, i thought this was required, but the method above works
-% f = validationModule;
-% menu = {'a','b'};
-% f.validOption = @(opt) ~isempty(validatestring(opt, menu));
-
 end
+
+
+%% TESTS
+
+%!test
+
+% ## add octave tests here
 
 %% LICENSE
 

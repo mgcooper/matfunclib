@@ -1,3 +1,9 @@
+% test_ingeobox
+
+% note; this doesn't test ingeobox, it might be a good start for testing
+% enclosedGridCells 
+
+%%
 function [IB,IX,IY] = ingeobox(X,Y,PX,PY)
 %INGEOBOX 
 % Reduce the cell-search space by finding cells inside a minimum bounding box.

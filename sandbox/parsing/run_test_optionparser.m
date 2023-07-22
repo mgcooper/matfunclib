@@ -5,6 +5,10 @@ validopts = {'opt1', 'opt2', 'opt3'}
 opts = test_optionparser(validopts, 'opt1', 'opt2', 1, {'ts'})
 
 %%
+a = 1; b = 2;
+c = test_persistent_parser(a,b)
+
+%%
 
 a = 1; b = 2;
 c = test_magicparser(a, b, 'param', true)

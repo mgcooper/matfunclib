@@ -1,57 +1,52 @@
-function Y = functemplate(X,varargin)
+function varargout = functemplate(X,varargin)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
 %  Y = FUNCNAME(X,'name1',value1) description
-%  Y = FUNCNAME(X,'name1',value1,'name2',value2) description
 %  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
 %        The default method is 'flag1'.
 %
 % Example
 %
 %
-%
 % Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
 %
 % See also
 
-%% main code
-
-% parse inputs
+% PARSE INPUTS
 [X,option,namevalue] = parseinputs(mfilename, X, varargin{:});
 
-% ... main code
+% MAIN CODE
 
 
-% Parse outputs
-% [varargout{1:nargout}] = dealout(argout1, argout2)
+% PARSE OUTPUTS
+[varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
 
-%% local functions
+%% LOCAL FUNCTIONS
 
-
-%% parse inputs
 
 function varargout = parseinputs(funcname, X, varargin)
+%PARSEINPUTS parse input arguments
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 
-% Import the validationModule and add optional argument validation function
-f = validationModule;
-validoptions = {'a','b'};
-f.validOption = @(x)~isempty(validatestring(x,validoptions));
+% Define valid menu of optional arguments
+menu = {'add','multiply'};
 
-% Create the input parser
-p = magicParser; %#ok<*NODEF,*USENS>
-p.FunctionName = funcname;
-p.CaseSensitive = false;
-p.addRequired('X', f.validNumericVector );
-p.addOptional('option', 'defaultoption', f.validOption );
-p.addParameter('namevalue', false, f.validLogicalScalar );
-
-% Parse the arguments
-p.parseMagically('caller');
+% Create the input parser and import the validationModule 
+f = validationModule();
+persistent parser
+if isempty(parser)
+   parser = magicParser(); %#ok<*NODEF,*USENS>
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.addRequired('X', f.validNumericVector );
+   parser.addOptional('option', 'add', parser.isAny(menu));
+   parser.addParameter('namevalue', false, f.validLogicalScalar );
+end
+parser.parseMagically('caller');
 
 % Parse outputs
 [varargout{1:nargout}] = dealout(X, option, namevalue);
@@ -60,7 +55,14 @@ p.parseMagically('caller');
 % varargs = namedargs2cell(p.Unmatched);
 % then pass varargs{:} as the last argument. but for autocomplete, copy the
 % json file arguments to the local one.
+
 end
+
+%% TESTS
+
+%!test
+
+% ## add octave tests here
 
 %% LICENSE
 
