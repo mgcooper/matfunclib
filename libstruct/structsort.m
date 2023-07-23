@@ -18,6 +18,8 @@ function S = structsort(S,field,varargin)
 % 
 % See also
 
+error('structsort is not functional')
+
 % NOTE ON THE FUNCTIONSIGNATURES - I copied the ones from
 % /Applications/MATLAB_R2021b.app/toolbox/matlab/datafun/sortrows.m 
 % but which -all sortrows returns like eight versions and the one in @tabular is

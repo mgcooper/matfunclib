@@ -15,6 +15,8 @@ function S = addstructfields(S,fields,varargin)
 % 
 % See also
 
+error([mfilename ' is not functional'])
+
 % TODO rename assignNonScalarStructFields, might also be worth abandoning this,
 % its akward, I think it is designed to assign to non-scalar structs, which is
 % tricky, so 
@@ -30,25 +32,6 @@ if isempty(parser)
    parser.addParameter('newfieldnames', '', @ischarlike);
 end
 parser.parseMagically('caller');
-
-% NOTE: ddin't get far with this
-
-% % say fields is a 10x1 array, and S is a 10x1 struct, these put the 10x1 array
-% 'fields' in each row of S:
-% [S.(fieldname)] = deal(fields);
-% [S(:).(fieldname)] = deal(fields);
-% [S(1:numel(fields)).(fieldname)] = deal(fields);
-% [S(:).(fieldname)] = deal(num2cell(fields));
-
-% % whereas this will put the individual values in each row, as desired:
-% C = num2cell(fields);
-% [S(:).(fieldname)] = deal(C{:});
-% 
-% % and these will fail:
-% [S(1:numel(fields)).(fieldname)] = fields;
-% [S.(fieldname)] = fields;
-% S(:).(fieldname) = deal(fields);
-% S.(fieldname) = deal(fields); 
 
 
 % % % % % % % % % % % % % % % % % % % % 

@@ -1,4 +1,4 @@
-function A = catstructs(A, S)
+function A = catstructs(A, S, opts)
 %CATSTRUCTS Concatenates dissimilar structures (i.e. of different fields)
 %   structure S will be appended to structure array A, even if they do not
 %   contain the same fields. Dissimilar fields will be set to an empty array.
@@ -35,21 +35,21 @@ function A = catstructs(A, S)
 arguments
    A(:,:) struct {isvector}
    S(1,1) struct
+   opts.asscalar (:,1) {logical} = false
 end
 
-j = length(A) + 1;
-f = fieldnames(S);
-for i = 1:length(f)
-   A(j).(f{i}) = S.(f{i});
+% cat structs
+if opts.asscalar == true
+
+   % Note: I added this, it only works if A and S have identical fieldnames,
+   % which is not the intention of this fucntion
+   A = cell2struct(cellfun(@vertcat, struct2cell(A),       ...
+      struct2cell(S), 'uni', 0), fieldnames(A));
+else
+   
+   j = length(A) + 1;
+   f = fieldnames(S);
+   for n = 1:length(f)
+      A(j).(f{n}) = S.(f{n});
+   end
 end
-
-
-% % for reference, this is how two struct's would be catted
-% f = fieldnames(S1); % assume fieldnames are identical in S1 and S2
-% S = cell2struct(cellfun(@vertcat,struct2cell(S1),       ...
-%    struct2cell(S2),'uni',0),f);
-% % or like this:
-% for i = 1:numel(f)
-%    S.(f{i}) = [S1.(f{i});S2.(f{i})];
-% end
-

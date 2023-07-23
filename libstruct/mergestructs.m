@@ -1,9 +1,10 @@
 function S = mergestructs(S, T)
 %MERGESTRUCTS Combines fields of both input structures into a single structure
+% 
 %   Output structure will contain all fields and their corresponding values of
 %   the two input structures. If a field is present in both input structures,
 %   the field in S is used, and a warning is produced. This warning can be
-%   turned off using warning('off', "structtools:commonfield")
+%   turned off using warning('off', "mergestructs:commonfield")
 %
 %   Example:
 %   S.one = 1;
@@ -27,10 +28,10 @@ arguments
    T(:,1) struct
 end
 
-% % for octave compatibility, remove arguments block and use this:
-% if ~isstruct(S) || ~isstruct(T)
-%     error('input parameters contain non-struct');
-% end
+% for octave compatibility
+if ~isstruct(S) || ~isstruct(T)
+    error('all inputs must be of type struct');
+end
 
 % try scalar merge, catch non-scalar
 try

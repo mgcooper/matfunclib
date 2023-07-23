@@ -1,8 +1,10 @@
 function f = commonfields(varargin)
 
-% NOTE: not functional, need to decide on the two options which would require an
-% optional argument that would need ot be removed from varargin using isstruct
-% most likely 
+error([mfilename ' is not functional'])
+
+% NOTE: need to decide on the two options which would require an optional
+% argument that would need ot be removed from varargin using isstruct most
+% likely
 
 F = cellfun(@fieldnames,varargin,'uni',0);
 f = cellfun(@(x) intersect(x,F{1}),F,'uni',0);

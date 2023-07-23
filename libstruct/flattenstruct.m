@@ -1,5 +1,6 @@
 function S = flattenstruct(S, delim)
 %FLATTENSTRUCT Converts a structure with substructures to a single-level struct
+%   
 %   All fields in S of type struct will be removed and their fields added to the
 %   parent struct, S. The new field names will be "fieldname_subfieldname". This
 %   process is recursive.
