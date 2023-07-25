@@ -7,6 +7,10 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%% arg parsing
+
+% open scatter.m to see some new built in methods for argument parsing
+
 %% ? syntax for arguments block
 
 % to get the ? syntax, create the object, and call metaclass, e.g. if H is a
