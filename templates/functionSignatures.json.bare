@@ -7,6 +7,8 @@
       "inputs":
       [
          {"name":"A",   "kind":"required",   "type":["char"]},
+         {"name":"B",   "kind":"positional", "type":["choices={''}"]},
+         {"name":"path", "kind":"ordered", "type":["folder"]},
          {"name":"B",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
          {"name":"C",   "kind":"namevalue",  "type":"choices=fieldnames(inputstruct)"},
          {"name":"D",   "kind":"required",   "type":["char","choices={'X','Y'}"]},

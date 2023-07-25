@@ -11,16 +11,31 @@ function varargout = code(cmd)
 %    cmd (:,:) char
 % end
 
-% [~,codesource] = system('which vscode')
+% try to find the vscode source file
+[~, codesrc] = system('which code');
+if isempty(codesrc)
+   try
+      [~, codesrc] = jsystem('which code');
+   catch
+      if ismac()
+         codesrc = '/usr/local/bin/code';
+      elseif ispc()
+         % not sure
+      else
+         % not sure
+      end
+   end
+end
+codesrc = strrep(codesrc, newline, '');
 
 if nargin < 1
    cmd = '.';
 end
 
 try
-   msg = system(['/usr/local/bin/code ' cmd]);
+   msg = system([codesrc ' ' cmd]);
 catch
-   error('attempt to open current folder in vscode failed')
+   error('attempt to open in vscode failed')
 end
 
 if nargout == 1

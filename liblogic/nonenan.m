@@ -1,2 +1,2 @@
 function tf = nonenan(x)
-   tf = ~all(isnan(x));
+tf = none(isnan(x));

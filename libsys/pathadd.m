@@ -1,4 +1,4 @@
-function oldpath = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths)
+function varargout = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths)
 % PATHADD add path(s) to matlab search path
 %
 % This function adds specified paths to MATLAB's search path. By default,
@@ -71,6 +71,9 @@ for n = 1:numel(pathlist)
    addpath(subpaths, pathAppend);
 end
 
+if nargout == 1
+   varargout{1} = oldpath;
+end
 % % Keep this around in case I need a version of this function that does not use
 % an arguments block.
 

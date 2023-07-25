@@ -5,6 +5,7 @@
       "inputs":
       [
          {"name":"A",   "kind":"required",   "type":["char"]},
+         {"name":"B",   "kind":"positional", "type":["choices={''}"]},
          {"name":"goto","kind":"flag",       "type":["char","choices={'goto'}","scalar"], "default":"'no'","purpose":"Option"},
          {"name":"goto","kind":"ordered",    "type":["char","choices={'goto'}"],"default":"'no'","purpose":"Option"},
          {"name":"B",   "kind":"required",   "type":[["numeric","column"],["datetime","column"]]},
@@ -162,3 +163,74 @@ here is another example might be clearer b/c no mutually exclusive groups
 	]
 },
 
+
+-------------------------------------------------------------------------------
+
+Here is an example of mutually-exclusive, where the exclusive options use 
+function handles and/or calls to the function itself. I kept the ones that 
+demonstrate something unique and delted others
+
+{
+    "mpm":
+    {
+        "inputs":[
+            {"name":"command", "kind":"required", "type":"choices={'create', 'develop', 'info', 'install', 'list', 'repo', 'search', 'uninstall'}"}
+        ]
+    },
+    "mpm":
+    {
+        "inputs":[
+            {"name":"command", "kind":"required", "type":"@(x) isequal('create',x)"},
+            {"name":"packageName", "kind":"required", "type":["string"]},
+            {"name":"packageRoot", "kind":"ordered", "type":["folder"]}
+        ]
+    },
+    "mpm":
+    {
+        "inputs":[
+            {"name":"command", "kind":"required", "type":"@(x) isequal('install',x)"},
+            {"name":"yesflag", "kind":"flag", "type":"choices={'-yes'}"},
+            {"name":"packageSpecifier", "repeating":true, "kind":"required",
+             "type":["choices=[mpm('search', '.').Package]"]}
+        ]
+    },
+    "mpm":
+    {
+        "inputs":[
+            {"name":"command", "kind":"required", "type":"@(x) isequal('uninstall',x)"},
+            {"name":"yesflag", "kind":"flag", "type":"choices={'-yes'}"},
+            {"name":"packageSpecifier", "repeating":true, "kind":"positional",
+             "type":"choices=[mpm('list').Package]"}
+        ]
+    },
+    "mpm":
+    {
+        "inputs":[
+            {"name":"command", "kind":"required", "type":"@(x) isequal('develop',x)"},
+            {"name":"subcommand", "kind":"positional", "type":"choices={'on', 'off'}"}
+        ]
+    }
+}
+
+
+-----------------------------------------
+
+This is an example of a function that accepts two different types of optional
+inputs, either a char flag, or a file path
+
+{
+	"userpath":
+	{
+	    "inputs":
+	    [
+			{"name":"flags", "kind":"flag", "type":"choices={'reset','clear'}"}
+	    ]
+	},
+    "userpath":
+	{
+	    "inputs":
+	    [
+			{"name":"path", "kind":"ordered", "type":["folder"]}
+	    ]
+	}
+}

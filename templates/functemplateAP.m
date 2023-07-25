@@ -1,4 +1,4 @@
-function varargout = functemplate(X,flag,style,opts)
+function varargout = functemplate(X,flag,folder,style,opts)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
@@ -17,7 +17,9 @@ function varargout = functemplate(X,flag,style,opts)
 arguments
    X (:,1) double
    flag (1,1) string {mustBeMember(flag,{'add','multiply'})} = 'add'
+   folder (1,:) string {mustBeFolder} = string.empty
    style {mustBeMember(style,["--",":","-"])} = "-"
+   opts.Silent (1,1) logical = false
    opts.LineStyle (1,1) string {mustBeMember(opts.LineStyle,["--","-",":"])} = '-'
    opts.LineWidth (1,1) {mustBeNumeric} = 1
    opts.Color{mustBeMember(opts.Color,{'red','blue'})} = "blue" % restrict options

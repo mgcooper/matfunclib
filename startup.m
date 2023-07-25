@@ -12,27 +12,49 @@ cleanupObj = onCleanup(@() warning(originalWarningState));
 warning("off", "MATLAB:dispatcher:nameConflict");
 warning("off", "MATLAB:rmpath:DirNotFound");
 
-%% custom settings
-
-mSettings = settings;
-
-% Prevent autoformatter from stripping blanks to prevent the cursor from being
-% forced to the first position in indented code blocks (introduced in r2021b)
-if ~verLessThan('matlab','9.11')
-   mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
-elseif verLessThan('matlab','9.14')
-   % Make the desktop display larger. A warning is issued on r2023a.
-   mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
-end
-
-% smartIndentContents (method of class Document) programmatically formats
-% docs = matlab.desktop.editor.getAll
-% smartIndentContents(docs)
-% save(docs)
-
-%% set paths
+%% manage desktop versus command-line settigs
 
 HOMEPATH = getenv('HOME'); % system $HOME
+
+if usejava('desktop') % we're in the desktop
+   
+   % When Matlab is started from the desktop app, it inherits the default system
+   % PATH, i.e., these should match: 
+   % [~, default_path] = system('echo -n $PATH'); 
+   % isequal(default_path, getenv('PATH'))
+   
+   % Add brew and pyenv paths to the default system path.
+   if ismac()
+      setenv('PATH', ...
+         fullfile( ...           each line below should be a path followed by ':'
+         '/usr/local/bin:', ...
+         fullfile(HOMEPATH, '.pyenv:'), ...
+         getenv('PATH') ) ...    end fullfile
+         );
+   end
+
+   % custom desktop settings
+   mSettings = settings;
+
+   % Prevent autoformatter from stripping blanks to prevent the cursor from being
+   % forced to the first position in indented code blocks (introduced in r2021b)
+   if ~verLessThan('matlab','9.11')
+      mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
+   elseif verLessThan('matlab','9.14')
+      % Make the desktop display larger. A warning is issued on r2023a.
+      mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
+   end
+
+   % smartIndentContents (method of class Document) programmatically formats
+   % docs = matlab.desktop.editor.getAll
+   % smartIndentContents(docs)
+   % save(docs)
+else
+   % Matlab was started from the terminal, which inherits the PATH variable set
+   % by the user dotfiles, so there is no need to set PATH. 
+end
+
+%% set user paths
 
 % This path can change, but changing MATLABUSERPATH will break many functions.
 % Unfortunately, I should have used MATLABHOMEPATH for this variable, and
@@ -153,11 +175,17 @@ for n = 1:numel(toolboxes)
    end
 end
 
-% open the active project
-if usejava('desktop')
-   workon(getactiveproject());
+% for mpm, put it at the top of the path so built-in mpm becomes shadowed
+try
+   pathadd(gettbsourcepath('mpm'), true, '-begin')
+catch ME
+   
 end
 
+% open the active project if we're in the desktop
+if usejava('desktop') % 
+   workon(getactiveproject());
+end
 
 %% Python configuration
 
@@ -201,26 +229,4 @@ disp('BE GRATEFUL')
 % fontName = 'Helvetica';
 % fontName = 'Source Sans Pro' (nice and compact also if bold)
 
-% regarding PATH, when matlab is started from command terminal, it inherits
-% the PATH variable (modified in .bashrc), but when started from the gui
-% icon, it inherits the 'default system PATH', which isn't the same as the
-% one modified in .bashrc.
-
-% update PATH (this was recommended online, but I think would not work,
-% because system('echo -n $PATH') returns the system path, as noted above
-% [~,result]=system('echo -n $PATH');
-% setenv('PATH',result)
-% clear result
-
-% instead, i could add this (and any others I would need):
-% setenv('PATH',fullfile(getenv('PATH') ':/usr/local/bin'));
-% I added this below
-
-% %% Put /usr/local/bin on path so we can see things installed by Homebrew.
-% if ismac()
-%     setenv('PATH', ['/usr/local/bin:' getenv('PATH')));
-% end
-
-% % add local paths to default PATH to see Homebrew installs etc.
-% setenv('PATH',fullfile(getenv('PATH') ':/usr/local/bin:/Users/coop558/.pyenv'));
 

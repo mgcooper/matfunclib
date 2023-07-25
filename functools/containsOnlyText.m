@@ -7,7 +7,11 @@ function tf = containsOnlyText(x)
 % "text" means char, string, or cell array of chars or strings
 % "contains" means text by itself, or text contained within an array or cell
 % 
-% Important: Note the following unexpected behavior:
+% This function is used because mustBeText doesn't check for cell arrays of
+% strings (possibly b/c iscellstr doesn't perform that check). Use it in
+% argument blocks instead of mustBeText if that case needs to be supported.
+% 
+% Important: Note the following unexpected behavior (now fixed):
 % 
 % test = {1, 'testchar', "teststring"}
 % containsOnlyText(test)
@@ -26,10 +30,7 @@ function tf = containsOnlyText(x)
 % if X is a cell array of mixed types and each type can be cast
 % to string, this will return true
 % 
-% See also mustContainOnlyText ischarlike
-
-% NOTE: this is only needed because mustBeText doesn't check for cell arrays of
-% strings (which i think is b/c iscellstr doesn't perform that check).
+% See also mustContainOnlyText mustBeText ischarlike 
 
 % replace with call to ischarlike to avoid type-casting to string in og method
 tf = ischarlike(x);

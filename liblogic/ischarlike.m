@@ -41,14 +41,10 @@ function tf = ischarlike(x, varargin)
 % allowEmpty not implemented
 % function tf = ischarlike(x, allowEmpty)
 
-%------------------------------------------------------------------------------
-
-% replaced with call to containsOnlyText which also deals with cells of string
-% arrays e.g. iscellstr({"test"}) vs containsOnlyText({"test"})
-% ischarlike({"test"})
-
+% parse args
 [opt, args, nargs] = parseoptarg(varargin, {'all', 'any', 'each'}, 'all');
 
+% function to determine if the text is "nontrivial"
 if nargs > 0 && strcmpi(args{1}, 'nontrivial')
    hastext = @(x) all(strlength(x)>0, 'all');
 else
@@ -69,24 +65,10 @@ else
       ( ischar(x) && (isrow(x) || isequal(x,'')) ) && hastext(x);
 end
 
-% Note: this is from containsOnlyText, and I found unexpected behavior, e.g. 
-% x = {1, 'test', "test"}
-% containsOnlyText( [test{:}] )
-% ans =
-%   logical
-%    1
-% 
-% This occurs b/c the concatenation step converts the double 1 to a string:
-% [test{:}]
-% 
-% ans = 
-%   1×3 string array
-%     "1"    "test"    "test"
-    
-% 
-% tf = ischar(x) || ...
-%    isstring(x) || ...
-%    iscell(x) && ( containsOnlyText( [x{:}] ) );
+% For catching scalar text, this should work, including '' and "":
+% tf = ( ischar(args) && (isvector(args) || isempty(args)) ) || ... % is char
+%    (isstring(args) && isscalar(args)); % is string scalar
+
 
 % % This is how the allowEmpty would work, might need to add it to
 % containsOnlyText or maybe best to deal with it in this function
