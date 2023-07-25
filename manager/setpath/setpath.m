@@ -6,7 +6,7 @@ function pathstr = setpath(pathstr,varargin)
 %     pathstr = setpath(pathstr,'project') returns the full path to input
 %     pathstr located in MATLABPROJECTPATH
 % 
-%  string (char) 
+% See also: pathadd
 
 
 % parse inputs
@@ -51,70 +51,18 @@ elseif strcmp(postset,'add')
    pathadd(pathstr);
 end
 
-
+%% INPUT PARSER
 function [pathstr, pathtype, postset] = parseinputs(funcname, pathstr, varargin)
 
 validpathtypes = @(x)any(validatestring(x,{'matlab','project','data','user'}));
 validpostset = @(x)any(validatestring(x,{'goto','none','add'}));
 
-p = inputParser;
-p.FunctionName = funcname;
+parser = inputParser;
+parser.FunctionName = funcname;
+parser.addRequired( 'pathstr', @(x)ischar(x)|isstruct(x));
+parser.addOptional( 'pathtype', 'matlab', validpathtypes);
+parser.addOptional( 'postset',  'none', validpostset);
+parser.parse(pathstr, varargin{:});
 
-p.addRequired( 'pathstr', @(x)ischar(x)|isstruct(x));
-p.addOptional( 'pathtype', 'matlab', validpathtypes);
-p.addOptional( 'postset',  'none', validpostset);
-
-p.parse(pathstr, varargin{:});
-
-pathtype = p.Results.pathtype;
-postset  = p.Results.postset;
-
-% March 2023, I decided to always pass back the path that way I can use it in
-% file building statements like fullpath(setpath('/path/to/data','data'))
-% and instead, addpath is an option
-
-% % parse outputs
-% switch nargout
-%    case 1
-%       % return the full path
-%       varargout{1} = pathstr;
-%    case 0
-%       % add the path, don't return it
-%       addpath(genpath(pathstr));
-% end
-
-
-
-
-% the old way that required knowing which computer I was on:
-
-% homepath = pwd;
-%
-% if isstruct(path)
-%     fields = fieldnames(path);
-%
-%     for n = 1:length(fields)
-%
-%         pathname = path.(fields{n});
-%
-%         if strcmp(homepath(8:14),'coop558')
-%             pathname = ['/Users/coop558/Dropbox/MATLAB/' pathname];
-%         elseif strcmp(homepath(8:17),'mattcooper')
-%             pathname = ['/Users/mattcooper/Dropbox/MATLAB/' pathname];
-%         end
-%
-%         path.(fields{n}) = pathname;
-%     end
-%
-% elseif ischar(path)
-%
-%     if strcmp(homepath(8:14),'coop558')
-%             path = ['/Users/coop558/Dropbox/MATLAB/' path];
-%     elseif strcmp(homepath(8:17),'mattcooper')
-%             path = ['/Users/mattcooper/Dropbox/MATLAB/' path];
-%     end
-%
-% end
-%
-%
-%
+pathtype = parser.Results.pathtype;
+postset  = parser.Results.postset;

@@ -11,6 +11,15 @@ elseif nargin == 1
    tbname = char(tbname);
 end
 
+% validate that the toolbox exists
+withwarnoff({'MATFUNCLIB:manager:toolboxAlreadyActive', ...
+   'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
+
+[tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
+if ~isempty(wid)
+   warning(wid, msg); return
+end
+
 % alert 
 disp(['deactivating ' tbname]);
 
@@ -19,9 +28,7 @@ toolboxes = readtbdirectory(gettbdirectorypath());
 tbidx = findtbentry(toolboxes,tbname);
 tbpath = toolboxes.source{tbidx};
 
-% warning off/on suppresses warnings issued when a new folder was
-% created in the active toolbox directory and isn't on the path
-w = withwarnoff('MATLAB:rmpath:DirNotFound'); %#ok<*NASGU> 
+% remove toolbox paths
 rmpath(genpath(tbpath));
 
 % set the active state

@@ -19,8 +19,8 @@ narginchk(0,Inf)
 [varargin{:}] = convertStringsToChars(varargin{:});
 
 % valid options
-validopts = {''}; % can be a single char
-opts = optionParser(validopts,varargin(:));
+menu = {''}; % can be a cellstr array or a single char
+opts = optionParser(menu, varargin(:));
 
 
 % MAIN CODE

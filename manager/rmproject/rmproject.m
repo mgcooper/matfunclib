@@ -14,7 +14,7 @@ function rmproject(projectname,varargin)
 %
 % Matt Cooper, 21-Mar-2023, https://github.com/mgcooper
 %
-% See also 
+% See also: mkproject, workon, workoff
 
 % input parsing
 [projectname, keepsource] = parseinputs(mfilename, projectname, varargin{:});
@@ -42,17 +42,17 @@ if ~keepsource
    % TODO: option to remove the directory
 end
 
+% final step
 writeprjdirectory(projlist);
 
-
+%% INPUT PARSER
 function [projectname, keepsource] = parseinputs(funcname, projectname, varargin);
-p = inputParser;
-p.FunctionName = funcname;
 
-addRequired(p,'projectname',@(x)ischar(x));
-addParameter(p,'keepsource',true,@(x)islogical(x));
+parser = inputParser;
+parser.FunctionName = funcname;
+parser.addRequired('projectname', @ischar);
+parser.addParameter('keepsource', true, @islogical);
+parser.parse(projectname,varargin{:});
 
-parse(p,projectname,varargin{:});
-
-projectname = p.Results.projectname;
-keepsource = p.Results.keepsource;
+projectname = parser.Results.projectname;
+keepsource = parser.Results.keepsource;

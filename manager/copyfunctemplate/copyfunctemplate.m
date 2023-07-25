@@ -6,7 +6,7 @@ function testfuncpath = copyfunctemplate(newfuncpath, parser)
 % test_newfuncname.m or a temporary backup file if test_newfuncname.m exists,
 % and returns the full path to the test script file.
 % 
-% See also
+% See also: copyjsontemplate
 
 % use arguments block by default
 if nargin == 1

@@ -5,7 +5,7 @@
       "inputs":
       [
          {"name":"tbname",    "kind":"required",   "type":["char"]},
-         {"name":"library",   "kind":"positional", "type":["string","choices=gettbdirectorylist"]},
+         {"name":"library",   "kind":"positional", "type":["char","choices=gettbdirectorylist"]},
          {"name":"postadd",   "kind":"flag",       "type":["char","choices={'activate'}"]}
       ]
    }

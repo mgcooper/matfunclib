@@ -1,23 +1,19 @@
-function TF = isactive(tbname, varargin)
+function tf = isactive(tbname, varargin)
 %ISACTIVE check if toolbox TBNAME is active
 %
 %  TF = ISACTIVE(TBNAME) returns TRUE if toolbox TBNAME is active
-%
-% Example
-%
-%
+% 
 % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
 %
-% See also
+% See also: istoolbox
 
 % PARSE INPUTS
 narginchk(0,Inf)
-
-% [varargin{:}] = convertStringsToChars(varargin{:});
+tbname = convertStringsToChars(tbname);
 
 % MAIN CODE
 toolboxes = readtbdirectory(gettbdirectorypath);
-TF = any(toolboxes.active(findtbentry(toolboxes,tbname)));
+tf = any(toolboxes.active(findtbentry(toolboxes,tbname)));
 
 end
 

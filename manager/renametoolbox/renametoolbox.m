@@ -1,66 +1,24 @@
 function varargout = renametoolbox(oldtbname,newtbname,varargin)
 %RENAMETOOLBOX renames toolbox entry in toolboxdir and json files
+% 
+% 
+% 
+% See also
 
-% NOTE!!! Need to add onCleanup and/or other methods to ensure the json file is
-% not overwritten and then fails to rewrite, this happened when i passed in
-% strings not chars, but I was able to copy deactivate version and recover
+% TODO add onCleanup and/or other methods when rewriting the directory
 
 % UPDATES
 % 11 Apr 2023, support for sublibs via 'libary' optional argument
 % 11 Apr 2023, support for moving source to sublib via 'movesource' namevalue
 
-%-------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
+% PARSE INPUTS
+[oldtbname, newtbname, libraryname, renamesource, force] = parseinputs( ...
+   oldtbname, newtbname, mfilename, varargin{:});
 
-validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+% MAIN FUNCTION
 
-addRequired(p,'oldtbname',@(x)ischarlike(x));
-addRequired(p,'newtbname',@(x)ischarlike(x));
-addOptional(p,'library','',validlibs); % default value must be ''
-addParameter(p,'renamesource',false,@(x)islogical(x));
-addParameter(p,'movesource',false,@(x)islogical(x));
-addParameter(p,'force',false,@(x)islogical(x));
-
-parse(p,oldtbname,newtbname,varargin{:});
-oldtbname      = p.Results.oldtbname;
-newtbname      = p.Results.newtbname;
-libraryname    = p.Results.library;
-renamesource   = p.Results.renamesource;
-movesource     = p.Results.movesource;
-force          = p.Results.force;
-
-% 'renaming' is the same as 'moving' so combine them here
-renamesource = movesource | renamesource;
-
-%-------------------------------------------------------------------------
-
-if isstring(oldtbname)
-   if isscalar(oldtbname)
-      oldtbname = char(oldtbname);
-   else
-      error('scalar string or char required')
-   end
-end
-
-if isstring(newtbname)
-   if isscalar(newtbname)
-      newtbname = char(newtbname);
-   else
-      error('scalar string or char required')
-   end
-end
-
-if isstring(libraryname)
-   if isscalar(libraryname)
-      libraryname = char(libraryname);
-   else
-      error('scalar string or char required')
-   end
-end
-
+% confirm the toolbox exists
+oldtbname = validatetoolbox(oldtbname, funcname, 'TBNAME', 1);
 
 % read the toolbox directory into memory
 toolboxes = readtbdirectory(gettbdirectorypath());
@@ -71,32 +29,19 @@ tbidx = findtbentry(toolboxes,oldtbname);
 % set the path to the toolbox source code (works if args.library is empty)
 oldtbpath = gettbsourcepath(oldtbname);
 
-if not(any(tbidx))
+% build the new toolbox path
+newtbpath = fullfile(gettbsourcepath,libraryname,newtbname);
 
-   error('toolbox not in directory');
+% set the toolbox directory entries
+toolboxes.name{tbidx} = newtbname;
+toolboxes.source{tbidx} = newtbpath;
 
-else
+fprintf('\n toolbox %s renamed to %s/%s \n',oldtbname,libraryname,newtbname);
 
-   % new method 11 Apr 2023 to move to sublib
-   %newtbpath = strrep(oldtbpath,oldtbname,newtbname);
-   newtbpath = fullfile(gettbsourcepath,libraryname,newtbname);
-   
-   toolboxes.name{tbidx} = newtbname;
-   toolboxes.source{tbidx} = newtbpath;
+% rewrite the toolbox directory
+writetbdirectory(toolboxes);
 
-   fprintf('\n toolbox %s renamed to %s/%s \n',oldtbname,libraryname,newtbname);
-
-   writetbdirectory(toolboxes);
-
-end
-
-% rename it to the json directory choices for function 'activate'
-renamejsondirectoryentry(oldtbname,newtbname,'activate');
-
-% repeat for 'deactivate'
-renamejsondirectoryentry(oldtbname,newtbname,'deactivate');
-
-% rename the source directory ?
+% rename the source directory if requested
 renametbsourcedir(renamesource,oldtbpath,newtbpath,force)
 
 % output
@@ -105,16 +50,60 @@ switch nargout
       varargout{1} = toolboxes;
 end
 
+%% INPUT PARSER
 
-function renamejsondirectoryentry(oldtbname,newtbname,directoryname)
+function [oldtbname, newtbname, libraryname, renamesource, movesource, force] = ...
+   parseinputs(oldtbname, newtbname, funcname, varargin)
 
-jspath      = gettbjsonpath(directoryname);
-wholefile   = readtbjsonfile(jspath);
-
-% simple find/replace
-wholefile   = strrep(wholefile,oldtbname,newtbname);
-
-% write it over again
-try
-   writetbjsonfile(jspath,wholefile);
+validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
+persistent parser
+if isempty(parser)
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
+   parser.addRequired('oldtbname', @ischarlike);
+   parser.addRequired('newtbname', @ischarlike);
+   parser.addOptional('library', '', validlibs); % default value must be ''
+   parser.addParameter('renamesource', false, @islogical);
+   parser.addParameter('movesource', false, @islogical);
+   parser.addParameter('force', false, @islogical);
 end
+parser.parse(oldtbname, newtbname, varargin{:});
+force = parser.Results.force;
+oldtbname = parser.Results.oldtbname;
+newtbname = parser.Results.newtbname;
+movesource = parser.Results.movesource;
+libraryname = parser.Results.library;
+renamesource = parser.Results.renamesource;
+
+% 'renaming' is the same as 'moving' so combine them here
+renamesource = movesource | renamesource;
+
+% parsing below only needed b/c NEWTBNAME does not exist in toolbox directory,
+% otherwise validateToolbox would do all of this work. If any of the inputs are
+% non-scalar strings, then convertStringsToChars will convert them to cellstr,
+% which is why the iscell check is performed.
+
+% convert strings to chars so path-joining functions work as expected
+[oldtbname, newtbname, libraryname] = convertStringsToChars( ...
+   oldtbname, newtbname, libraryname);
+oldtbname = validatetoolbox(oldtbname,funcname,'OLDTBNAME',1);
+if iscell(oldtbname) || iscell(newtbname) || iscell(libraryname)
+   error('MATFUNCLIB:renametoolbox:nonScalarToolboxName', 'toolbox names must be scalar text')
+end
+
+
+% % DEPRECATED - use gettbnamelist in functionsignatures instead
+% function renamejsondirectoryentry(oldtbname,newtbname,directoryname)
+% 
+% jspath      = gettbjsonpath(directoryname);
+% wholefile   = readtbjsonfile(jspath);
+% 
+% % simple find/replace
+% wholefile   = strrep(wholefile,oldtbname,newtbname);
+% 
+% % write it over again
+% try
+%    writetbjsonfile(jspath,wholefile);
+% end

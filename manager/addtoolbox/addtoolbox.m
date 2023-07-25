@@ -1,20 +1,16 @@
 function varargout = addtoolbox(tbname,varargin)
 % ADDTOOLBOX adds toolbox to toolbox directory and functionsignature file
 %
-%     addtoolbox('tbname') adds toolbox with name 'tbname' to the toolbox
-%     directory and the functionSignatures.json code for function 'activate'. a
-%     check is done that the toolbox source code exists in the user toolbox
-%     source code directory and whether the toolbox already exists in the
-%     directory.
+%     addtoolbox(TBNAME) adds toolbox TBNAME to the toolbox directory. A check
+%     is done that the toolbox source code exists in the user toolbox source
+%     code directory and whether the toolbox already exists in the directory.
 %
-%     addtoolbox('tbname','libname') adds toolbox with name 'tbname' located in
-%     toolbox library with name 'libname' to the toolbox directory, as above.
-%     This option allows toolboxes to be grouped within libraries such as
-%     'stats', 'hydro', etc.
+%     addtoolbox(TBNAME, LIBNAME) adds toolbox TBNAME located in toolbox library
+%     LIBNAME to the toolbox directory, as above. This option allows toolboxes
+%     to be grouped within libraries such as 'stats', 'hydro', etc.
 %
-%     addtoolbox(___,'activate') adds the toolbox to the current path and cd's
+%     addtoolbox(_, 'activate') adds the toolbox to the current path and cd's
 %     into the source code folder.
-%
 %
 %     Examples
 %
@@ -33,7 +29,7 @@ function varargout = addtoolbox(tbname,varargin)
 % PARSE INPUTS
 args = parseinputs(tbname, mfilename, varargin{:});
 
-% MAIN
+% MAIN FUNCTION
 
 % read the toolbox directory into memory
 toolboxes = readtbdirectory(gettbdirectorypath());
@@ -55,12 +51,6 @@ else
    writetbdirectory(toolboxes);
 end
 
-% add it to the json directory choices for function 'activate'
-addtojsondirectory(toolboxes,tbidx,'activate');
-
-% repeat for 'deactivate'
-addtojsondirectory(toolboxes,tbidx,'deactivate');
-
 % activate the toolbox if requested
 if string(args.postadd)=="activate"
    activate(args.tbname,'goto');
@@ -73,18 +63,7 @@ switch nargout
 end
 
 %% LOCAL FUNCTIONS
-function addtojsondirectory(toolboxes,tbidx,directoryname)
 
-jspath      = gettbjsonpath(directoryname);
-wholefile   = readtbjsonfile(jspath);
-
-% replace the most recent entry with itself + the new one
-tbfind      = sprintf('''%s''',toolboxes.name{tbidx-1});
-tbreplace   = sprintf('%s,''%s''',tbfind,toolboxes.name{tbidx});
-wholefile   = strrep(wholefile,tbfind,tbreplace);
-
-% write it over again
-writetbjsonfile(jspath,wholefile)
 
 % % NOTE on tbpath method - gettbsourcepath with no input returns the matlab
 % source directory so if args.library is empty then the new method in the main
@@ -99,10 +78,10 @@ writetbjsonfile(jspath,wholefile)
 % end
 
 %% INPUT PARSER
-function [tbname, args] = parseinputs(tbname, funcname, varargin)
+function args = parseinputs(tbname, funcname, varargin)
 
-validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
-validopts = @(x)any(validatestring(x,{'activate'}));
+validlibs = @(x) any(validatestring(x, cellstr(gettbdirectorylist)));
+validopts = @(x) any(validatestring(x,{'activate'}));
 persistent parser
 if isempty(parser)
    parser = inputParser;
@@ -113,6 +92,27 @@ if isempty(parser)
    parser.addOptional('library', '', validlibs); % default value must be ''
    parser.addOptional('postadd', '', validopts);
 end
+tbname = convertStringsToChars(tbname);
 parser.parse(tbname,varargin{:});
 args = parser.Results;
 
+
+%% removed json signature file option
+
+% % instead of this, use choices=gettbnamelist
+% 
+% % add it to the json directory choices for function 'activate'
+% addtojsondirectory(toolboxes,tbidx,'activate');
+% 
+% % repeat for 'deactivate'
+% addtojsondirectory(toolboxes,tbidx,'deactivate');
+
+% function addtojsondirectory(toolboxes,tbidx,directoryname)
+% jspath      = gettbjsonpath(directoryname);
+% wholefile   = readtbjsonfile(jspath);
+% % replace the most recent entry with itself + the new one
+% tbfind      = sprintf('''%s''',toolboxes.name{tbidx-1});
+% tbreplace   = sprintf('%s,''%s''',tbfind,toolboxes.name{tbidx});
+% wholefile   = strrep(wholefile,tbfind,tbreplace);
+% % write it over again
+% writetbjsonfile(jspath,wholefile)

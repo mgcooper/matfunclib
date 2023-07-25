@@ -1,11 +1,11 @@
 function copyjsontemplate(destpath,destname)
 %COPYJSONTEMPLATE copy the json signature file template to destpath
-% 
+%
 %  copyjsontemplate() copies the template to pwd()
-% 
+%
 %  copyjsontemplate(destpath) copies the template to destpath
-% 
-% See also
+%
+% See also: copyfunctemplate
 
 % UPDATES
 % 10 Feb 2023, added destname input to support appending function name in
@@ -27,16 +27,10 @@ dst = fullfile(destpath,destname);
 if isfile(dst) % the file exists, append a 'tmp' version
    dst = fullfile(destpath,'functionSignatures.json.tmp');
    copyfile(src,dst);
-else 
+else
    copyfile(src,dst);
 end
-   
-% % nov 29, 2022 commented this out, use openjsontemplate.m if needed
-%    % copy the detailed one
-%    src = [getenv('MATLABTEMPLATEPATH') 'functionSignatures.json.template'];
-%    dst = [destpath '/functionSignatures_reference.json'];
-%    copyfile(src,dst);
-   
+
 
 % replace the default function name with the actual one
 % need to get the folder name, can do later if wanted

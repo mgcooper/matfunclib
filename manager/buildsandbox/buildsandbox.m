@@ -1,23 +1,24 @@
 function Info = buildsandbox(funcname,varargin)
-%BUILDSANDBOX build a sandbox folder that contains all functions required to use
-%function funcname
+%BUILDSANDBOX identify and copy all dependencies of FUNCNAME to sandbox folder
 % 
-%  Info = buildsandbox(funcname,varargin)
+%  Info = buildsandbox(funcname)
+%  Info = buildsandbox(funcname, 'dryrun', true)
+%  Info = buildsandbox(funcname, 'pathsave', pathstring)
+%  Info = buildsandbox(funcname, 'strexclude', strexclude)
 % 
-% See also
+% See also: 
 
-%-------------------------------------------------------------------------------
-p              = magicParser;
+% PARSE INPUTS
+p = magicParser;
 p.FunctionName = mfilename;
-p.addRequired( 'funcname',                            @(x)ischar(x)     );
-p.addParameter('dryrun',      false,                  @(x)islogical(x)  );
-p.addParameter('pathsave',    fullfile(pwd,'sandbox'),@(x)ischar(x)     );
-p.addParameter('strexclude',  '',                     @(x)ischar(x)     );
-
+p.addRequired( 'funcname', @ischar);
+p.addParameter('dryrun', false, @islogical);
+p.addParameter('pathsave', fullfile(pwd,'sandbox'),@ischar);
+p.addParameter('strexclude', '', @ischar);
 p.parseMagically('caller');
-
 pathsave = p.Results.pathsave;
-%-------------------------------------------------------------------------------
+
+% MAIN FUNCTION
 
 % initial checks
 %~~~~~~~~~~~~~~~~

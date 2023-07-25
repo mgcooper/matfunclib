@@ -1,10 +1,10 @@
 function tbdir = showtbdirectory()
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dbpath   = gettbdirectorypath;
-tbdir    = readtbdirectory(dbpath);
+%SHOWTBDIRECTORY
+% 
+% tbdir = showtbdirectory() returns the directory and prints it to the console
+% 
+% See also: lstoolboxes, lstbdirectory
+
+dbpath = gettbdirectorypath;
+tbdir = readtbdirectory(dbpath);
 disp(tbdir)
