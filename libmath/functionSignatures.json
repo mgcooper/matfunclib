@@ -1,0 +1,62 @@
+{
+   "_schemaVersion": "1.0.0",
+   "naninterp1":
+   {
+       "inputs":
+       [
+           {"mutuallyExclusiveGroup":
+               [
+                   [
+                       {"name":"X", "kind":"required", "type":"numeric"},
+                       {"name":"V", "kind":"required", "type":"numeric"},
+                       {"name":"method", "kind":"positional", "type":["char", "choices={'linear','makima','nearest','next','previous','pchip','cubic','v5cubic','spline'}"]},
+                       {"name":"extrapolation", "kind":"positional", "type":[["char", "choices={'extrap'}"],["numeric"]]}
+                   ],
+                   [
+                       {"name":"V", "kind":"required", "type":"numeric"},
+                       {"name":"method", "kind":"positional", "type":["char", "choices={'linear','makima','nearest','next','previous','pchip','cubic','v5cubic','spline'}"]},
+                       {"name":"extrapolation", "kind":"positional", "type":[["char", "choices={'extrap'}"],["numeric"]]}
+                   ]
+               ]
+           }
+       ]
+   },
+   "naninterp2":
+   {
+       "inputs":
+       [
+           {"mutuallyExclusiveGroup":
+               [
+                   [
+                       {"name":"X", "kind":"required", "type":"numeric"},
+                       {"name":"Y", "kind":"required", "type":"numeric"},
+                       {"name":"V", "kind":"required", "type":"numeric"},
+                       {"name":"method", "kind":"positional", "type":["char", "choices={'linear','makima','nearest','cubic','spline'}"]},
+                       {"name":"extrapval", "kind":"positional", "type":"numeric"}
+                   ],
+                   [
+                       {"name":"V", "kind":"required", "type":"numeric"},
+                       {"name":"method", "kind":"positional", "type":["char", "choices={'linear','makima','nearest','cubic','spline'}"]},
+                       {"name":"extrapval", "kind":"positional", "type":"numeric"}
+                   ]
+               ]
+           }
+       ]
+   },
+   "powerSpectralDensity":
+   {
+      "inputs":
+      [
+         {"name":"x",   "kind":"required",   "type":["numeric"]},
+         {"name":"t",   "kind":"namevalue",  "type":["numeric"]}
+      ]
+   },
+   "rootmeansquare":
+   {
+      "inputs":
+      [
+         {"name":"x",   "kind":"required",   "type":["numeric"]},
+         {"name":"dim", "kind":"required",   "type":["numeric"]}
+      ]
+   }
+}
