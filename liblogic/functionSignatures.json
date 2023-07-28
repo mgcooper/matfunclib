@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "isdatelike":
+   {
+      "inputs":
+      [
+         {"name":"X", "kind":"required"},
+         {"name":"datetype", "kind":"ordered", "type":["choices={'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate', 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net', 'tt2000', 'epochtime'}"]}
+      ]
+   }
+}

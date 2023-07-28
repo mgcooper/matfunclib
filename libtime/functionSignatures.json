@@ -11,11 +11,19 @@
          {"name":"TimeZone", "kind":"namevalue", "type":[["choices=matlab.internal.datetime.functionSignatures.timezoneChoices()"], ["char","row"]]}
       ]
    },
+   "todatetime":
+   {
+      "inputs":
+      [
+         {"name":"T", "kind":"required"},
+         {"name":"datetype", "kind":"ordered", "type":["choices={'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate', 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net', 'tt2000', 'epochtime'}"]}
+      ]
+   },
    "timespan":
    {
       "inputs":
       [
-         {"name":"T", "kind":"required", "type":["datetime","timetable","duration"]}
+         {"name":"T", "kind":"required", "type":["datetime","timetable","duration","cell"]}
       ]
    }
 }

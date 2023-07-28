@@ -1,87 +1,71 @@
-%TEST_FUNCNAME test funcname
+%TEST_ISDATENUM test isdatelike
 
 % Define test data
-S = struct('field1', 'value1', 'field2', 'value2');
+T = 20000101;
 
 %% Test function accuracy
 
 % Test function accuracy using assert
-expected = [];
-returned = funcname( );
+expected = true;
+returned = isdatelike(T);
 assert(isequal(returned, expected));
 
-% Test function accuracy using assert with tolerance
-tol = 20*eps;
-assert(abs(returned - expected) < tol);
-
 % Test with edge cases (Inf, NaN, very large/small numbers)
-assert(isnan(funcname(NaN)));
-assert(isinf(funcname(Inf)));
-assert(abs(funcname(1e200) - 1e200) < 1e-10); % replace with theoretical result
-
-%% Test error handling
-
-% This uses the custom local functions to mimic the testsuite features like
-% verifyError in a script-based testing framework. See the try-catch versions
-% further down for another way to test error handling.
-
-testdiag = "description of this test";
-eid = 'matfunclib:libname:funcname';
-
-% verify failure
-assertError(@() funcname('inputs that error'), eid, testdiag)
-
-% verify success
-assertSuccess(@() funcname('inputs that dont error'), eid, testdiag)
+assert(isdatelike(NaN) == false);
+assert(isdatelike(Inf) == false);
 
 %% Test type handling
 
-% Test different types, if the function is expected to handle them
+X = now;
 
-expected = []; % add expected value for double type
-assert(isequal(funcname(X), expected));
+expected = true; % double
+assert(isequal(isdatelike(X), expected));
 
-expected = []; % add expected value for single type
-assert(isequal(funcname(single(X)), single(expected)));
+expected = true; % single
+assert(isequal(isdatelike(single(X)), single(expected)));
 
-expected = []; % add expected value for logical type
-assert(isequal(funcname(logical(X)), expected));
+expected = true; % int16
+assert(isequal(isdatelike(int16(X)), expected)); 
 
-expected = []; % add expected value for int16 type
-assert(isequal(funcname(int16(X)), expected)); % int16
+expected = false; % logical 
+assert(isequal(isdatelike(logical(X)), expected));
+
+expected = false; % struct
+assert(isequal(isdatelike(struct()), expected));
+
+expected = false; % cell
+assert(isequal(isdatelike(cell(1)), expected));
 
 %% Test dimension handling
 
 % Test different dimensions
-assert(isequal(funcname([2 3]), [4 6])); % 1D array
-assert(isequal(funcname([2 3; 4 5]), [4 6; 8 10])); % 2D array
+assert(isequal(isdatelike([now; now]), true)); % 1D array
+assert(isequal(isdatelike([now now; now now]), true)); % 2D array
 
 %% Test empty inputs
 try
-   funcname();
+   isdatelike();
    error('Expected an error for empty inputs, but none was thrown');
 catch ME
-   assert(strcmp(ME.identifier, 'MATLAB:minrhs'));
+   assert(strcmp(ME.identifier, 'MATLAB:narginchk:notEnoughInputs'));
 end
 
 %% Test invalid inputs
-try
-   funcname('invalid');
-   error('Expected an error for invalid inputs, but none was thrown');
-catch ME
-   % if arguments block is used:
-   assert(strcmp(ME.identifier, 'MATLAB:validation:UnableToConvert'));
-   % otherwise, might be:
-   % assert(strcmp(ME.identifier, 'MATLAB:invalidInput'));
-end
+% try
+%    isdatelike(struct());
+%    error('Expected an error for invalid inputs, but none was thrown');
+% catch ME
+%    % if arguments block is used:
+%    assert(strcmp(ME.identifier, 'MATLAB:validation:UnableToConvert'));
+%    % otherwise, might be:
+%    % assert(strcmp(ME.identifier, 'MATLAB:invalidInput'));
+% end
 
 %% Test too many input arguments
 try
-   funcname(1,2,3,4,5,6,7);
+   isdatelike(1,2,3,4,5,6,7);
    error('Expected an error for too many inputs, but none was thrown');
 catch ME
-   assert(strcmp(ME.identifier, 'MATLAB:TooManyInputs'));
-   % if narginchk is used:
    assert(strcmp(ME.identifier, 'MATLAB:narginchk:tooManyInputs'));
 end
 

@@ -109,7 +109,8 @@ f = @(x) isstring(x) || iscellstr(x) || ...
 end
 
 function f = validDateLike
-f = @(x) isdatetime(x) || ( isnumeric(x) && isvector(x) );
+f = @(x) isdatetime(x) || iscalendarduration(x) || isduration(x) || ...
+  istimetable(x) || ( isnumeric(x) && isvector(x) && all(x>=0)) ;
 end
 
 function f = validDateTime

@@ -1,77 +1,70 @@
-function tspan = timespan(T,varargin)
-%TIMESPAN return time span of timetable, datetime, or duration object T 
-% 
-% Syntax
-% 
-%  tspan = TIMESPAN(T) returns the time spanned by dates found in T. T can be
-%  any date-like object, such as a datetime vector, timetable, or vector of
-%  datenums or datestr's. If T is a struct or cell array, the function returns
-%  the timespan of the first date-like object contained within the array, or an
-%  empty array if none are found.
-% 
-%  NOTE: only timetables and datetimes are currently supported
-% 
-% Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
-% 
-% See also
+function varargout = todatetime(T, varargin)
+%TODATETIME try to convert input T to a datetime object
+%
+%  [T, TF, DATETYPE] = TODATETIME(T) returns input T converted to datetime
+%  format, logical TF indicating if the conversion was successful, and the
+%  inferred input date type DATETYPE which is the value of the 'ConvertFrom'
+%  property passed to DATETIME(X, 'CONVERTFROM', DATETYPE). If the conversion
+%  was not successful, then DATETYPE = 'none', and T is returned unaltered.
+%
+%  [T, _] = TODATETIME(T, DATETYPE) uses the specified input DATETYPE to try the
+%  conversion.
+%
+% Example
+%
+%
+% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+%
+% See also: isdatelike
 
-% input parsing
-narginchk(1,1)
+% PARSE INPUTS
+narginchk(1,2)
 
-withwarnoff('MATFUNCLIB:libtime:convertToDatetimeFailed');
-
-% main function
-tf = istimetable(T) || isdatetime(T);
-if ~tf
-   % try to convert
-   [T, tf] = todatetime(T);
-end
-
-if tf
-   tspan = gettimespan(T);
+% quick exit if a datetime was passed in
+if isdatetime(T)
+   [varargout{1:nargout}] = dealout(T, true, 'datetime');
    return
 end
 
-% otherwise, search for a datetime or timetable in T 
+% all available options for conversion, sorted by my subjective preference
+alltypes = {'datenum', 'yyyymmdd', 'juliandate', 'modifiedjuliandate', ...
+   'posixtime', 'excel', 'excel1904', 'tt2000', 'epochtime', 'ntp', ...
+   'ntfs', '.net'};
 
-if isstruct(T)
+% simplest input parsing
+if (nargin<2)
+   menu = alltypes;
+else
+   menu = validatestring(lower(varargin{1}), alltypes, mfilename, 'datetype', 2);
+   menu = {menu};
+end
 
-   if isscalar(T)
-      tf = structfun(@(s) isdatetime(s) || istimetable(s), T);
-   else
-      tf = arrayfun(@(s) isdatetime(s) || istimetable(s), T);
+% MAIN CODE
+tf = false;
+
+ii = 0;
+while ~tf && ii <= numel(menu)-1
+   ii = ii+1;
+   try
+      T = datetime(T,'ConvertFrom', menu{ii});
+      tf = true;
+   catch
    end
+end
 
-   if any(tf)
-      fields = fieldnames(T);
-      T = [T(:).(char(fields(tf)))];
+if ~tf
+   wid = 'MATFUNCLIB:libtime:convertToDatetimeFailed';
+   msg = 'unable to convert input T to datetime';
+   warning(wid, msg)
+end
 
-      tspan = gettimespan(T);
-      return
-   end
-   
-elseif iscell(T)
-   tf = cellfun(@(c) isdatetime(c) || istimetable(c), T);
-   
-   if any(tf)
-      tspan = gettimespan(T{tf});
-      return
-   end
-   
+% PARSE OUTPUTS
+[varargout{1:nargout}] = dealout(T, tf, ifelse(tf, menu{ii}, 'none'));
+
 end
 
 %% LOCAL FUNCTIONS
 
-function tspan = gettimespan(T)
-
-if istimetable(T)
-   T = settimetabletimevar(T);
-   Time = T.Time;
-
-elseif isdatetime(T)
-   Time = T;
-end
-tspan = [Time(1) Time(end)];
 
 %% TESTS
 
