@@ -27,6 +27,7 @@ opts = optionParser(menu, varargin(:));
 
 
 % PARSE OUTPUTS
+nargoutchk(0, Inf)
 [varargout{1:nargout}] = dealout(argout1, argout2);
 
 end

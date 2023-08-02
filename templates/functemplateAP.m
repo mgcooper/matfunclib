@@ -39,6 +39,7 @@ args = optionsToNamedArguments(optsstruct);
 
 
 % PARSE OUTPUTS
+nargoutchk(0, Inf)
 [varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
