@@ -126,6 +126,9 @@ end
 varargs = namedargs2cell(BoxChartOpts);
 %--------------------------------------
 
+% import groupstats package
+import gs.groupselect
+import gs.boxchartxdata
 
 %---------------------- validate inputs
 
@@ -555,7 +558,6 @@ end
 
 
 
-
 %% This clarifies the array vs table syntax for calling groupsummary
 
 % % Array format: A and groupvars must have the same number of rows. groupvars can
@@ -623,39 +625,6 @@ end
 %
 %    % this works, using table syntax, but it returns a table
 %    % mu(:,n) = groupsummary(Tplot(idx,:),cgroupvar, 'mean',datavar);
-% end
-
-%% not sure if this is needed for reference
-% cellHist = {'Hist'};
-% cell45 = {'SSP545-COOL-NEAR','SSP545-COOL-FAR', ...
-%    'SSP545-HOT-NEAR','SSP545-HOT-FAR'};
-% cell85 = {'SSP585-COOL-NEAR','SSP585-COOL-FAR', ...
-%    'SSP585-HOT-NEAR','SSP585-HOT-FAR'};
-%
-% catHist = categorical(cellHist);
-% cats45 = categorical(cell45);
-% cats85 = categorical(cell85);
-%
-% T1_45 = T1(ismember(T1.scenario,cats45),:);
-% T1_85 = T1(ismember(T1.scenario,cats85),:);
-%
-% T1_45.scenario = removecats(T1_45.scenario,cell85);
-% T1_45.scenario = removecats(T1_45.scenario,cellHist);
-% T1_85.scenario = removecats(T1_85.scenario,cell45);
-% T1_85.scenario = removecats(T1_85.scenario,cellHist);
-%
-% T1_45.scenario = reordercats(T1_45.scenario,{'SSP545-COOL-NEAR','SSP545-COOL-FAR', ...
-%    'SSP545-HOT-NEAR','SSP545-HOT-FAR'});
-%
-% if plotfigs == true
-%    f1 = macfig;
-%    boxchart(T1_45.scenario,T1_45.Pdiff,'GroupByColor',T1_45.season);
-%    ylabel('Peak Flood Difference (%)'); title('Trenton');
-%    legend('JFM','AMJ','JAS','OND');
-%
-%    f2 = macfig;
-%    boxchart(T2.season,T2.Pdiff);
-%    ylabel('Peak Flood Difference (%)'); title('Philadelphia');
 % end
 
 %% LICENSE
