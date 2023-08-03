@@ -14,9 +14,9 @@ persistent parser
 if isempty(parser)
    parser = inputParser;
    parser.FunctionName = mfilename;
-   addParameter(parser,'makeplot',false,@islogical);
-   addParameter(parser,'plotvar',ones(size(xgrid)),@isnumeric);
-   addParameter(parser,'pointinterp',false,@islogical);
+   parser.addParameter('makeplot',false,@islogical);
+   parser.addParameter('plotvar',ones(size(xgrid)),@isnumeric);
+   parser.addParameter('pointinterp',false,@islogical);
 end
 parse(parser,varargin{:});
 opts = parser.Results;

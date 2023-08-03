@@ -326,12 +326,12 @@ function [name, library, project, whichparser] = parseinputs( ...
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = funcname;
-      addRequired(   parser, 'funcname', @ischar);
-      addParameter(  parser, 'library', 'unsorted', @ischar);
-      addParameter(  parser, 'project', 'unsorted', @ischar);
-      addParameter(  parser, 'parser', 'MP', @ischar);
+      parser.addRequired( 'funcname', @ischar);
+      parser.addParameter('library', 'unsorted', @ischar);
+      parser.addParameter('project', 'unsorted', @ischar);
+      parser.addParameter('parser', 'MP', @ischar);
    end
-   parse(parser,name,varargin{:});
+   parser.parse(name, varargin{:});
    library = parser.Results.library;
    project = parser.Results.project;
    whichparser = parser.Results.parser;

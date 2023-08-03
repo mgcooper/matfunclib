@@ -14,25 +14,21 @@ function borders = loadworldborders(bordername,varargin)
 % 
 % See also
 
-%------------------------------------------------------------------------------
-% input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
 
-validstrings      = {'none','merge'};
-validoption       = @(x)any(validatestring(x,validstrings));
+%% input parsing
 
-p.addRequired(    'bordername',                 @(x)ischarlike(x)    );
-p.addOptional(    'option',         'none',     validoption          );
-% p.addParameter(   'namevalue',   false,      @(x)islogical(x)     );
+validstrings = {'none','merge'};
+validoption = @(x)any(validatestring(x,validstrings));
 
-p.parseMagically('caller');
+parser = inputParser;
+parser.FunctionName = mfilename;
+parser.CaseSensitive = false;
+parser.KeepUnmatched  = true;
+parser.addRequired('bordername', @ischarlike);
+parser.addOptional('option', 'none', validoption);
+parser.parse(bordername, varargin{:});
+option = parser.Results.option;
 
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
 
 % convert bordername to cellstr 
 if ischar(bordername) || isstring(bordername)

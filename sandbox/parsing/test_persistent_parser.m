@@ -6,6 +6,12 @@ function varargout = test_persistent_parser(a,b,varargin)
 % See also
 
 %% parse inputs
+
+% Note: careful with defaults, say default value is size(x) where x is some
+% other variable in the parser, it isn't clear how that size is updated, in at
+% least one case it was not updated and the value from the last call was used,
+% in a test suite though, so maybe a bug
+
 persistent parser
 if isempty(parser)
    parser = magicParser;

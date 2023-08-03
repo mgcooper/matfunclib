@@ -3,14 +3,7 @@ function mFileList = findSubdir(aDir, varargin)
 % mFileList = findSubdir(aDirectory, 'Recurse', tf)
 
 % Parse input.
-persistent parser;
-if isempty(parser)
-    parser = inputParser;
-    parser.addRequired('Directory', @(d)ischar(d) && isvector(d));
-    parser.addParameter('Recurse', false, @(tf)islogical(tf) && isscalar(tf));
-end
-parser.parse(aDir, varargin{:});
-doRecurse = parser.Results.Recurse;
+[aDir, doRecurse] = parseinputs(aDir, mfilename, varargin{:});
 
 % Find M-Files.
 theDir = parser.Results.Directory;
@@ -30,3 +23,15 @@ if doRecurse
         mFileList = vertcat(mFileList, subdirFiles{:});
     end
 end
+
+%% input parser
+function [aDir, doRecurse] = parseinputs(aDir, mfuncname, varargin)
+persistent parser;
+if isempty(parser)
+    parser = inputParser;
+    parser.FunctionName = mfuncname;
+    parser.addRequired('Directory', @(d)ischar(d) && isvector(d));
+    parser.addParameter('Recurse', false, @(tf)islogical(tf) && isscalar(tf));
+end
+parser.parse(aDir, varargin{:});
+doRecurse = parser.Results.Recurse;

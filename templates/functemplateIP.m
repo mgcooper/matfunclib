@@ -28,8 +28,8 @@ end
 %% LOCAL FUNCTIONS
 
 
+%% INPUT PARSER
 function varargout = parseinputs(funcname, X, varargin)
-%PARSEINPUTS parse input arguments
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 

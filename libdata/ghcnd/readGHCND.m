@@ -9,26 +9,9 @@ function [Data,Atts] = readGHCND(varargin)
 % https://www.ncei.noaa.gov/pub/data/ghcn/daily/
 % would be worth it for a larger-scale project
 
-p = magicParser;
-p.CaseSensitive=false;
-p.FunctionName=mfilename;
-p.addParameter('station','USC00505136',@(x)ischarlike(x));
-p.addParameter('name','none',@(x)ischarlike(x));
-p.addParameter('lat',nan,@(x)isnumeric(x));
-p.addParameter('lon',nan,@(x)isnumeric(x));
-p.addParameter('latbuffer',0,@(x)isnumeric(x));
-p.addParameter('lonbuffer',0,@(x)isnumeric(x));
-p.addParameter('t1',NaT,@(x) isdatetime(x)|isnumeric(x));
-p.addParameter('t2',NaT,@(x) isdatetime(x)|isnumeric(x));
-p.parseMagically('caller');
-
-% I had this note in a text file, I think it was in ref to the 'station' param
-% in the json file, so i updated the input parser here with charlike and added
-% it to the json file which before was just "char". UPDATE I think the problem
-% is that ghcnd_stationlist is a cellstr with 118,492 eleements so autocomplete
-% just doesn't work
-% # try this for readGHCND
-% ["char"], ["string"], ["cellstr"]
+% PARSE INPUTS
+[station, name, lat, lon, latbuffer, lonbuffer, t1, t2] = ...
+   parseinputs(varargin{:});
 
 % if lat is provided, make sure lon is too
 if ~isnan(lat) && isnan(lon)
@@ -90,9 +73,28 @@ for n = 1:numel(metavars)
 end
 
 
+%% INPUT PARSER
+function [station, name, lat, lon, latbuffer, lonbuffer, t1, t2] = ...
+   parseinputs(varargin)
 
+p = inputParser;
+p.CaseSensitive = false;
+p.FunctionName = mfilename;
+p.addParameter('station', 'USC00505136', @bfra.validation.ischarlike);
+p.addParameter('name', 'none', @bfra.validation.ischarlike);
+p.addParameter('t1', NaT, @bfra.validation.isdatelike);
+p.addParameter('t2', NaT, @bfra.validation.isdatelike);
+p.addParameter('lat', nan, @isnumeric);
+p.addParameter('lon', nan, @isnumeric);
+p.addParameter('latbuffer', 0, @isnumeric);
+p.addParameter('lonbuffer', 0, @isnumeric);
+p.parse(varargin{:});
 
-
-
-
-
+t1 = p.Results.t1;
+t2 = p.Results.t2;
+lat = p.Results.lat;
+lon = p.Results.lon;
+name = p.Results.name;
+station = p.Results.station;
+latbuffer = p.Results.latbuffer;
+lonbuffer = p.Results.lonbuffer;
