@@ -37,7 +37,7 @@ toolboxes.active(tbidx) = true;
 tbpath = toolboxes.source{tbidx};
 
 % add toolbox paths
-pathadd(tbpath, true, pathloc, except);
+pathadd(tbpath, true, pathloc, except, "addpath", true);
 
 % cd to the activated tb if requested
 if postset == "goto"

@@ -1,4 +1,4 @@
-function varargout = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths)
+function varargout = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths, opts)
 % PATHADD add path(s) to matlab search path
 %
 % This function adds specified paths to MATLAB's search path. By default,
@@ -29,8 +29,11 @@ function varargout = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths)
 arguments
    pathlist (:,1) string = pwd()
    addSubPaths (1,1) logical = true
-   pathAppend (1,1) string = "-end"
+   pathAppend (1,1) string {mustBeMember(pathAppend, ["-end", "-begin"])} = "-end"
    ignorePaths (:, 1) string = ""
+   opts.addpath (1,1) logical = true
+   opts.rmpath (1,1) logical = false
+   % option (1,1) string {mustBeMember(option, ["addpath", "rmpath"])} = "addpath"
 end
 
 % Temporarily turn off warnings about paths not already being on the path
@@ -68,7 +71,19 @@ for n = 1:numel(pathlist)
    end
    
    % Add the paths to the start or end of the path designated by pathAppend
-   addpath(subpaths, pathAppend);
+   if opts.rmpath == true
+      rmpath(subpaths);
+   else
+      addpath(subpaths, pathAppend);
+   end
+   
+%    switch option
+%       case "addpath"
+%          addpath(subpaths, pathAppend);
+%       case "rmpath"
+%          rmpath(subpaths);
+%    end
+   
 end
 
 if nargout == 1
