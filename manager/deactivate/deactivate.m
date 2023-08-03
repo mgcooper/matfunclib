@@ -15,31 +15,47 @@ end
 withwarnoff({'MATFUNCLIB:manager:toolboxAlreadyActive', ...
    'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
 
-[tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
-if ~isempty(wid)
-   warning(wid, msg); return
-end
-
-% alert 
-disp(['deactivating ' tbname]);
-
 % main code
 toolboxes = readtbdirectory(gettbdirectorypath());
-tbidx = findtbentry(toolboxes,tbname);
+
+if strcmp('all', tbname)
+   
+   for tbname = toolboxes.name.'
+      toolboxes = deactivateToolbox(tbname{:}, toolboxes);
+   end
+   
+else
+
+   [tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
+   if ~isempty(wid)
+      warning(wid, msg); return
+   end
+
+   % alert 
+   disp(['deactivating ' tbname]);
+   
+   toolboxes = deactivateToolbox(tbname{:}, toolboxes);
+end
+
+% rewrite the directory
+writetbdirectory(toolboxes);
+   
+
+function toolboxes = deactivateToolbox(tbname, toolboxes)
+
+withwarnoff({'MATFUNCLIB:manager:toolboxAlreadyActive', ...
+   'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
+
+tbidx = findtbentry(toolboxes, tbname);
 tbpath = toolboxes.source{tbidx};
 
 % remove toolbox paths
-rmpath(genpath(tbpath));
+pathadd(tbpath, "rmpath", true);
 
 % set the active state
 toolboxes.active(tbidx) = false;
 
-% rewrite the directory
-writetbdirectory(toolboxes);
-
-% cd(getenv('MATLABUSERPATH'));
-
-
+      
 function tbdir = defaulttbdir
 % if no path was provided, use pwd
 [~,tbdir] = fileparts(pwd);
