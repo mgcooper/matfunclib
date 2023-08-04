@@ -24,6 +24,7 @@ opts = optionParser(menu, varargin(:));
 
 
 % MAIN CODE
+cleanup = onCleanup(@() cleanupfunc());
 
 
 % PARSE OUTPUTS
@@ -33,7 +34,9 @@ nargoutchk(0, Inf)
 end
 
 %% LOCAL FUNCTIONS
+function cleanupfunc
 
+end
 
 %% TESTS
 

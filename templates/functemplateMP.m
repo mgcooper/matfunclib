@@ -17,7 +17,7 @@ function varargout = functemplate(X,varargin)
 [X,option,namevalue] = parseinputs(mfilename, X, varargin{:});
 
 % MAIN CODE
-
+cleanup = onCleanup(@() cleanupfunc());
 
 % PARSE OUTPUTS
 nargoutchk(0, Inf)
@@ -26,7 +26,9 @@ nargoutchk(0, Inf)
 end
 
 %% LOCAL FUNCTIONS
+function cleanupfunc
 
+end
 
 function varargout = parseinputs(funcname, X, varargin)
 %PARSEINPUTS parse input arguments

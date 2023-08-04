@@ -7,6 +7,15 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+% 
+
+% thought the comma separated lists trick might work with p.Results but 1) the
+% default args are included in p.Results, and 2) the fields are sorted
+% alphabetically, not in the order added to the parser, so dealing them out
+% requires specifying the argument on the LHS alphabeticaly which is too error
+% prone to use in practice
+[out1, out2,...,] = P.Results(:)
+
 %%
 
 % might try to implement this. It is not needed for parsegraphics, but might be

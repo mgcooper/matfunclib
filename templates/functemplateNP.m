@@ -24,7 +24,7 @@ narginchk(0,Inf)
 % if (nargin<4) % set default ; end
 
 % MAIN CODE
-
+cleanup = onCleanup(@() cleanupfunc());
 
 % PARSE OUTPUTS
 nargoutchk(0, Inf)
@@ -33,7 +33,9 @@ nargoutchk(0, Inf)
 end
 
 %% LOCAL FUNCTIONS
+function cleanupfunc
 
+end
 
 %% TESTS
 

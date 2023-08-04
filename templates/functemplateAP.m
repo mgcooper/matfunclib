@@ -1,4 +1,4 @@
-function varargout = functemplate(X,flag,folder,style,opts)
+function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
 %FUNCNAME general description of function
 %
 %  Y = FUNCNAME(X) description
@@ -18,14 +18,25 @@ arguments
    X (:,1) double
    flag (1,1) string {mustBeMember(flag,{'add','multiply'})} = 'add'
    folder (1,:) string {mustBeFolder} = string.empty
+   
+   % define local optional argument
    style {mustBeMember(style,["--",":","-"])} = "-"
-   opts.Silent (1,1) logical = false
-   opts.LineStyle (1,1) string {mustBeMember(opts.LineStyle,["--","-",":"])} = '-'
-   opts.LineWidth (1,1) {mustBeNumeric} = 1
-   opts.Color{mustBeMember(opts.Color,{'red','blue'})} = "blue" % restrict options
-   opts.?matlab.graphics.chart.primitive.Line
+   
+   % define local name-value pairs
+   localopts.Silent (1,1) logical = false
+   localopts.LineStyle (1,1) string {mustBeMember(localopts.LineStyle,["--","-",":"])} = '-'
+   localopts.LineWidth (1,1) {mustBeNumeric} = 1
+   localopts.Color{mustBeMember(localopts.Color,{'red','blue'})} = "blue" % restrict options
+   
+   % pull name-value pairs from classdef
+   fromclass.?matlab.graphics.chart.primitive.Line 
    % for ?syntax call metaclass on the object: mc=metaclass(line()),name=mc.Name
 end
+
+
+end
+% get the class defaults
+fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
 
 % use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
 args = namedargs2cell(opts);
@@ -33,10 +44,8 @@ args = namedargs2cell(opts);
 % use this to convert an opts.name = val struct to "name=val" string
 args = optionsToNamedArguments(optsstruct);
 
-% https://www.mathworks.com/matlabcentral/answers/760546-function-argument-validation-from-class-properties-ignores-defaults
-
 % MAIN CODE
-
+cleanup = onCleanup(@() cleanupfunc());
 
 % PARSE OUTPUTS
 nargoutchk(0, Inf)
@@ -45,7 +54,9 @@ nargoutchk(0, Inf)
 end
 
 %% LOCAL FUNCTIONS
+function cleanupfunc
 
+end
 
 %% TESTS
 

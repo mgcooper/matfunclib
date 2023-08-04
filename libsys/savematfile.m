@@ -22,21 +22,20 @@ function msg = savematfile(filename,variables,varargin)
 % parse inputs
 validversion = @(x)~isempty(validatestring(x,{'-v7','-v73','-v6','-v4'}));
 
-p = inputParser;
-p.FunctionName = mfilename;
-
-p.addRequired('filename',           @(x)ischarlike(x) );
-p.addRequired('variables',          @(x)ischarlike(x) );
-p.addOptional('saveflag',  false,   @(x)islogical(x)  );
-p.addParameter('version',  '-v7',   validversion      );
-p.parse(filename,variables,varargin{:});
+parser = inputParser;
+parser.FunctionName = mfilename;
+parser.addRequired('filename', @ischarlike);
+parser.addRequired('variables', @ischarlike);
+parser.addOptional('saveflag', false, @islogical);
+parser.addParameter('version', '-v7', validversion);
+parser.parse(filename,variables,varargin{:});
 
 % use this to figure out if this function is being called from some other
 % function more than one workspace away, in case that affects the ability to run
 % the evalin command
 [~,I] = dbstack;
 
-if p.Results.saveflag == false
+if parser.Results.saveflag == false
    return
 else
    
@@ -45,28 +44,37 @@ else
       % error('savematfile must be called from ')
    end
    
-   % get the version
-   version = p.Results.version;
-   
-   % ensure the inputs are chars
-   if isstring(filename); filename = char(filename); end
-   if isstring(version); version = char(version); end
-   if isstring(variables); error('string arrays of variable names not supported'); end
+   % get the version and ensure the inputs are chars
+   version = convertStringsToChars(parser.Results.version);
+   filename = convertStringsToChars(filename);
+   variables = convertStringsToChars(variables);
 
-
+   % this should not be needed with convertStringsToChars
+   % if isstring(variables); 
+   %    error('string arrays of variable names not supported'); 
+   % end
    
    % append .mat to the filename if necessary
-   [filepath, filebase, ext] = fileparts(filename);
-   if isempty(ext)
-      filename = fullfile(filepath, [filebase '.mat']);
+   [filepath, filebase, fileext] = fileparts(filename);
+   if isempty(fileext)
+      fileext = '.mat';
    end
    
    % validate the filepath
    if isempty(filepath)
-      filepath = pwd;
+      filepath = pwd();
       warning('using pwd for filepath')
    elseif ~isfolder(filepath)
       error('path to filename does not exist')
+   end
+   
+   % rebuild the filename
+   filename = fullfile(filepath, [filebase fileext]);
+   
+   % if the filename exists, back it up before saving the new one
+   if isfile(filename)
+      filename = backupfilename(filename);
+      warning('file exists, backing it up to %s', filename);
    end
    
    % validate that variables is the name of variales in the calling workspace
