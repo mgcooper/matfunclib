@@ -14,10 +14,13 @@ function varargout = functemplate(X,varargin)
 % See also
 
 % PARSE INPUTS
-[X,option,namevalue] = parseinputs(mfilename, X, varargin{:});
+[X, option, namevalue] = parseinputs(mfilename, X, varargin{:});
 
 % MAIN CODE
 cleanup = onCleanup(@() cleanupfunc());
+
+% CHECKS
+assert()
 
 % PARSE OUTPUTS
 nargoutchk(0, Inf)
@@ -36,19 +39,19 @@ function varargout = parseinputs(funcname, X, varargin)
 [varargin{:}] = convertStringsToChars(varargin{:});
 
 % Define valid menu of optional arguments
-menu = {'add','multiply'};
+menu = {'add', 'multiply'};
 
 % Create the input parser and import the validationModule 
 f = validationModule();
 persistent parser
 if isempty(parser)
    parser = magicParser(); %#ok<*NODEF,*USENS>
-   parser.FunctionName = funcname;
    parser.CaseSensitive = false;
    parser.addRequired('X', f.validNumericVector );
    parser.addOptional('option', 'add', parser.isAny(menu));
    parser.addParameter('namevalue', false, f.validLogicalScalar );
 end
+parser.FunctionName = funcname;
 parser.parseMagically('caller');
 
 % Parse outputs

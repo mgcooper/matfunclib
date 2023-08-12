@@ -14,14 +14,13 @@ function varargout = functemplate(X, varargin)
 % See also
 
 % PARSE INPUTS
-narginchk(0,Inf)
+narginchk(0, Inf)
 
 [varargin{:}] = convertStringsToChars(varargin{:});
 
 % simplest input parsing
 % if (nargin<2) % set default ; end
 % if (nargin<3) % set default ; end
-% if (nargin<4) % set default ; end
 
 % MAIN CODE
 cleanup = onCleanup(@() cleanupfunc());

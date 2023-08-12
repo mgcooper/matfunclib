@@ -56,6 +56,8 @@ function [a, b] = fzero_guess_to_bounds(f, x, A, B, varargin) %#codegen
 %           : 22/07/2020 - fix infinite loop in bounded case, arising from machine precision rounding
 
 
+% mgc: rename to fbndsearch
+
 % Geometrically expand from the guess x, until a sign change is found
 sqrttwo = 1.414213562373095;
 

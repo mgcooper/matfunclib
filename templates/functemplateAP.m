@@ -33,8 +33,6 @@ arguments
    % for ?syntax call metaclass on the object: mc=metaclass(line()),name=mc.Name
 end
 
-
-end
 % get the class defaults
 fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
 
@@ -46,6 +44,12 @@ args = optionsToNamedArguments(optsstruct);
 
 % MAIN CODE
 cleanup = onCleanup(@() cleanupfunc());
+
+% To add to functemplate:
+% failures = MException.empty;
+
+% CHECKS
+assert()
 
 % PARSE OUTPUTS
 nargoutchk(0, Inf)

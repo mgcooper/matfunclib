@@ -300,6 +300,21 @@ help(['getFloodPeaks' filemarker 'peaksonref'])
 % validate json notes:
 %--------------------------------------------------------------------------
 
+% new notes:
+% For creating a function that converts inputParser to functionSignatures:
+% required = required
+% optional = ordered
+% parameter = namevalue
+% required followed by required that is followed by an optional = positional 
+% positional is tricky, but is demonstrated in the help page for
+% validateFunctionSignatures. they are technically optional, but "become
+% required" to specify subsequent optional positional arguments. Bottom line,
+% they are (? optional or required in the inputParser? or maybe they don't fit
+% into an input parser neatly ...)
+% flag on the other hand is a char switch at the end
+
+% older notes:
+
 % in json:
 % 
 % flag is something like 'omitnan'
