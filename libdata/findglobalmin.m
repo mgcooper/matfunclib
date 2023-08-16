@@ -1,4 +1,4 @@
-function [ mininds,minvals ] = findglobalmin( indata,k,varargin )
+function [mininds, minvals] = findglobalmin(Data, k, position, iref, varargin)
 %FINDGLOBALMIN Returns the k indici(s) of the min value and the value at those
 % indices. optional arguments follow those of 'min' e.g. 'first','last'
 %   Detailed explanation goes here
@@ -6,16 +6,23 @@ function [ mininds,minvals ] = findglobalmin( indata,k,varargin )
 % NOTE: new function 'mink' does the same thing, I think, and is probably
 % more robust
 
-if nargin == 1 % assume we want the first and only the first
-   k = 1;
-   position = 'first';
-else
-   position = varargin{:};
-end
+narginchk(1,6)
+if nargin < 4, iref = 1; end
+if nargin < 3, position = 'first'; end
+if nargin < 2, k = 1; end
 
-mininds = find(indata == min(indata),k,position);
+% Find the indices of the min
+mininds = find(Data == min(Data, varargin{:}), k, position);
 
 if isempty(mininds); mininds = nan; minvals = nan; return; end
 
-minvals = indata(mininds(:));
+minvals = min(Data(mininds),varargin{:});
+mininds = find(Data == minvals, k, position);
+minvals = Data(mininds(:));
 
+% add iref to mininds. this supports cases where the data are passed in as
+% subsets of a larger dataset and we want to add iref to maxinds so maxinds are
+% relative to the start index of the larger dataset. assume that iref is the
+% indice of the first value in Data relative to the unknown larger dataset,
+% meaning we need to subtract 1, and default iref value is 1. 
+mininds = mininds + iref - 1;

@@ -1,4 +1,5 @@
-function [maxinds,maxvals,maxtimes] = findglobalmax(Data,k,position,iref,varargin)
+function [maxinds, maxvals, maxtimes] = findglobalmax(Data, k, position, ...
+   iref, varargin)
 %FINDGLOBALMAX find k global max values and indici(s) of the max value(s)
 % 
 % Syntax
@@ -48,7 +49,7 @@ if nargin < 2, k = 1; end
 % might want to use peakfinder ... also remember that this isn't a peak finding
 % algo it finds the global max 
 
-maxinds = find(Data == max(Data,varargin{:}),k,position);
+maxinds = find(Data == max(Data, varargin{:}), k, position);
 % maxinds = peakfinder(Data,(max(Data)-min(Data))/100,-Inf,1,false);
 % maxinds = peakfinder(Data,[],-Inf,1,false);
 
