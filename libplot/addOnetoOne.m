@@ -52,6 +52,11 @@ if nargin < 1
    newlims(1) = min(min(xlim),min(ylim)) * 0.98;
    newlims(2) = max(max(xlim),max(ylim)) * 1.02;
    
+   % try this method
+   [xdata, ydata] = getplotdata(gca);
+   newlims(1) = min(min(ydata(:)),min(xdata(:)));
+   newlims(2) = max(max(ydata(:)),max(xdata(:)));
+   
 elseif strcmp(varargin{1},'keeplims')
    varargin = varargin(2:end);
    newlims = xlim;
@@ -59,7 +64,6 @@ end
 
 set(gca,'XLim',newlims,'YLim',newlims);   
 delta = (newlims(2) - newlims(1))/100;
-
 
 H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
 

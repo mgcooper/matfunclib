@@ -1,5 +1,5 @@
 function varargout = getplotdata(varargin)
-
+% 
 % minimal example to build out later
 
 if nargin == 0
