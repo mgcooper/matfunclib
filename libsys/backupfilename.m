@@ -1,5 +1,7 @@
 function fname_bk = backupfilename(fname)
-
+arguments
+   fname (1, :) char
+end
 % back up an existing file
 if isfile(fname)
    [~,~,fext] = fileparts(fname);
