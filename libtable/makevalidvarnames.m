@@ -7,17 +7,18 @@ function varnames = makevalidvarnames(varnames)
 %  matlab.lang.makeValidName('test)1', 'ReplacementStyle', 'delete')
 %  matlab.internal.tabular.makeValidVariableNames({'test)1'}, 'silent')
 %  makevalidvarnames('test)1')
+% 
+% Using a cell array
+%  matlab.internal.tabular.makeValidVariableNames('test)1', 'silent') % fails
+%  matlab.lang.makeValidName({'test)1'}) % works
+%  makevalidvarnames({'test)1'}) % works
 %  
 % 
 % Updates
 % 22 Feb 2023, replaced spaces with no space instead of underscores
-
-% NOTE: there is a built-in but unreported function makeValidVariableNames
-% in /Applications/MATLAB_R2020b.app/toolbox/matlab/datatypes/tabular that
-% is probably better than this one. it does both valid and unique, which i
-% intentionally kept separate but may want to change, or make this a
-% wrapper from makeValidVariableNames. At minimum do not rename this
-% to makeValidVariableNames.
+% 
+% See also: matlab.lang.makeValidName, matlab.lang.makeUniqueStrings,
+% matlab.internal.tabular.makeValidVariableNames 
 
 % NOTE: if a char array is passed in like:
 % 'Var 1'

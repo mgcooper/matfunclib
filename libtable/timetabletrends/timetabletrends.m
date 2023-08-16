@@ -1,36 +1,14 @@
 function [Trends,Tab] = timetabletrends(T,varargin)
 %TIMETABLETRENDS
 
-%--------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.PartialMatching = true;
-
-p.addRequired('T',                        @(x)istimetable(x));
-p.addParameter('Time',        NaT,        @(x)isdatetime(x));
-p.addParameter('timestep',    'unset',    @(x)ischar(x));
-p.addParameter('varnames',    'unset',    @(x)ischarlike(x));
-p.addParameter('method',      'ols',      @(x)ischar(x));
-p.addParameter('anomalies',   true,       @(x)islogical(x)           );
-p.addParameter('quantile',    NaN,        @(x)isnumeric(x)           );
-p.parseMagically('caller');
-
-Time     = p.Results.Time;
-vars     = p.Results.varnames;
-method   = p.Results.method;
-timestep = p.Results.timestep;
-quantile = p.Results.quantile;
-
-if string(method)=="qtl" && isnan(quantile)
-   error('must provide quantile for method ''qtl''')
-end
-
 % Make sure to check trenddecomp once I have R2021b or above
 % see JUST toolbox in mysource
 % see MTA toolbox in mysource
 % see ChangeDetection in mysource
 
-%--------------------------------------------------------------------------------
+% PARSE INPUTS
+[T, Time, vars, method, timestep, quantile] = parseinputs( ...
+   T, mfilename, varargin{:});
 
 % NOTE: The timestep checking produces a regressor TimeX so the regression on
 % time duration, not the actual time, so if the time is year, then the
@@ -43,13 +21,13 @@ end
 
 % if not provided, use the Time variable in the table
 if isnat(Time)
-   T     = renametimetabletimevar(T); % make T time variable T.Time
-   Time  = T.Time;
+   T = renametimetabletimevar(T); % make T time variable T.Time
+   Time = T.Time;
 end
 
 % if not provided, get the variable names in the table (and units)
 if string(vars) == "unset"
-   vars  = gettablevarnames(T);
+   vars = gettablevarnames(T);
    units = gettableunits(T);
 else
    units = gettableunits(T,vars);
@@ -63,16 +41,16 @@ if isempty(units)
    % T.Properties.VariableUnits = units; 
 end
    
-nt    = height(Time);
+ntime = height(Time);
 nvars = numel(vars);
 
 % find nan-indices
-%inan  = isnan(Data);
+% inan = isnan(Data);
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % work in progress
 
-[timestep,TimeX] = settimestep(T,Time,timestep);
+[timestep,TimeX] = settimestep(T, Time, timestep);
 
 % FOR NOW, just use elapsedTime to make a regressor, that way the
 % function returns the trends and timeseries with same units as input
@@ -84,67 +62,70 @@ ab = nan(2,nvars);
 
 for n = 1:nvars
    thisvar  = vars{n};
-   
-   switch method
-      case 'ols'
-         ab(:,n)  = olsfit(TimeX,T.(thisvar));
-      case 'ts'
-         ab(:,n)  = tsregr(TimeX,T.(thisvar));
-      case 'qtl'
-         ab(:,n)  = quantreg(TimeX,T.(thisvar),qtl);
+
+   try
+      switch method
+         case 'ols'
+            ab(:,n)  = olsfit(TimeX,T.(thisvar));
+         case 'ts'
+            ab(:,n)  = tsregr(TimeX,T.(thisvar));
+         case 'qtl'
+            ab(:,n)  = quantreg(TimeX,T.(thisvar),qtl);
+      end
+   catch
    end
 end
 
 % Convert to table
-Tab   = array2table(ab,'VariableNames',vars,'RowNames',{'a','b'});
+Tab = array2table(ab,'VariableNames',vars,'RowNames',{'a','b'});
 
 
 % Part 2 - evaluate the trend timeseries
-tstr     = nan(nt,nvars);
-tvars    = cell(1,nvars);
+tstr = nan(ntime,nvars);
+tvars = cell(1,nvars);
 for n = 1:nvars
    
-   thisvar     = vars{n};
-   thisab      = Tab.(thisvar);
-   tstr(:,n)   = thisab(1) + thisab(2).*TimeX;
-   tstr(:,n)   = setnan(tstr(:,n),[],isnan(T.(thisvar)));
+   thisvar = vars{n};
+   thisab = Tab.(thisvar);
+   tstr(:,n) = thisab(1) + thisab(2).*TimeX;
+   tstr(:,n) = setnan(tstr(:,n),[],isnan(T.(thisvar)));
    
    % to append 'trend' after each variable name, so Trends can be
    % synchronized with input table T, use this, otherwise if sending
    % back Trends without the original data, use the og varnames
    % tvars{n}    = [thisvar 'trend'];
    
-   tvars{n}    = thisvar;
+   tvars{n} = thisvar;
    
 end
 
 % Convert to timetable
-Trends   =  array2timetable(tstr,'VariableNames',tvars,'RowTimes',Time);
+Trends = array2timetable(tstr,'VariableNames',tvars,'RowTimes',Time);
 
 % synchronize with the original table if they are the same size
 % holding off on this for now
 
 % add the ab values as a property
-Trends   =  addprop(Trends,   {  'TrendIntercept', 'TrendSlope'},    ...
-                              {  'variable',       'variable'  }     );
+Trends = addprop(Trends,   {  'TrendIntercept', 'TrendSlope'}, ...
+                           {  'variable',       'variable'  } );
 
 % update the properties
 Trends.Properties.CustomProperties.TrendIntercept    = ab(1,:);
 Trends.Properties.CustomProperties.TrendSlope        = ab(2,:);
 
 % add the regressor
-Trends.TimeX   = TimeX;
+Trends.TimeX = TimeX;
 
 % update units, including TimeX. Trends has same units as the data
-units{end+1}   = timestep.Format;
+units{end+1} = timestep.Format;
 
-Trends.Properties.VariableUnits  = units;
+Trends.Properties.VariableUnits = units;
 
 % now add /timestep to the ab (trend slope) units
 for n = 1:numel(units)-1
    units{n} = [units{n} '/' timestep.Format];
 end
-Tab.Properties.VariableUnits  = units(1:end-1);
+Tab.Properties.VariableUnits = units(1:end-1);
 
 
 function [timestep,TimeX] = settimestep(T,Time,timestep)
@@ -171,15 +152,15 @@ if string(timestep) == "unset" % isnan(timestep) || isnat(timestep)
    % if not, try to infer the timestep
    if isempty(timestep)
       if round(years(median(dTime))) == 1
-         timestep    =  years(1);
+         timestep = years(1);
       elseif round(days(median(dTime))) == 1
-         timestep    =  days(1);
+         timestep = days(1);
       elseif round(hours(median(dTime))) == 1
-         timestep    =  hours(1);
+         timestep = hours(1);
       elseif round(minutes(median(dTime))) == 1
-         timestep    =  minutes(1);
+         timestep = minutes(1);
       elseif round(seconds(median(dTime))) == 1
-         timestep    =  seconds(1);
+         timestep = seconds(1);
       end
       
       % we got the timestep from the timetable, so it is probably a
@@ -191,16 +172,16 @@ if string(timestep) == "unset" % isnan(timestep) || isnat(timestep)
          [y,m,d] = split(timestep,{'years','months','days'});
          
          if y == 1
-            timestep    = years(1);
+            timestep = years(1);
          elseif m == 1
-            timestep    = months(1);
+            timestep = months(1);
          elseif d == 1
-            timestep    = days(1);
+            timestep = days(1);
             
             % I think if the timestep is <1day, it won't be
             % calendarDuration, so I didn't add minutes/seconds
          elseif d*24 == 1
-            timestep    = hours(1);
+            timestep = hours(1);
          end
       end
    end
@@ -209,15 +190,15 @@ else
    % if here, convert user-provided timestep to a duration
    switch timestep
       case 'y'
-         timestep             =  years(1);
+         timestep = years(1);
       case 'd'
-         timestep             =  days(1);
+         timestep = days(1);
       case 'h'
-         timestep             =  hours(1);
+         timestep = hours(1);
       case 'm'
-         timestep             =  minutes(1);
+         timestep = minutes(1);
       case 'seconds'
-         timestep             =  seconds(1);
+         timestep = seconds(1);
    end
    
 end % timestep should be a duration if here
@@ -233,28 +214,56 @@ end
 % now set the format based on the timestep
 switch timestep
    case years(1)
-      dTime.Format         =  'y';
-      elapsedTime.Format   =  'y';
-      TimeX                =  years([0; cumsum(dTime)]);
+      dTime.Format = 'y';
+      elapsedTime.Format = 'y';
+      TimeX = years([0; cumsum(dTime)]);
    case days(1)
-      dTime.Format         =  'd';
-      elapsedTime.Format   =  'd';
-      TimeX                =  days([0; cumsum(dTime)]);
+      dTime.Format = 'd';
+      elapsedTime.Format = 'd';
+      TimeX = days([0; cumsum(dTime)]);
    case hours(1)
-      dTime.Format         =  'h';
-      elapsedTime.Format   =  'h';
-      TimeX                =  hours([0; cumsum(dTime)]);
+      dTime.Format = 'h';
+      elapsedTime.Format = 'h';
+      TimeX = hours([0; cumsum(dTime)]);
    case minutes(1)
-      dTime.Format         =  'm';
-      elapsedTime.Format   =  'm';
-      TimeX                =  minutes([0; cumsum(dTime)]);
+      dTime.Format = 'm';
+      elapsedTime.Format = 'm';
+      TimeX = minutes([0; cumsum(dTime)]);
    case seconds(1)
-      elapsedTime.Format   =  's';
-      dTime.Format         =  's';
-      TimeX                =  seconds([0; cumsum(dTime)]);
+      elapsedTime.Format = 's';
+      dTime.Format = 's';
+      TimeX = seconds([0; cumsum(dTime)]);
 end
 
 % % note, this works directly on dTime, w/o converting format
 % dTime    =  diff(Time);
 % Tdays    =  [0; days(cumsum(dTime))];
 % Tyears   =  [0; years(cumsum(dTime))];
+
+%% INPUT PARSER
+function [T, Time, vars, method, timestep, quantile] = parseinputs( ...
+   T, mfilename, varargin)
+
+parser = inputParser;
+parser.FunctionName = mfilename;
+parser.PartialMatching = true;
+
+parser.addRequired('T', @istimetable);
+parser.addParameter('Time', NaT, @isdatetime);
+parser.addParameter('timestep', 'unset', @ischarlike);
+parser.addParameter('varnames', 'unset', @ischarlike); 
+parser.addParameter('method', 'ols', @ischarlike);
+parser.addParameter('anomalies', true, @islogical);
+parser.addParameter('quantile', NaN, @isnumeric);
+parser.parse(T, varargin{:});
+
+Time = parser.Results.Time;
+vars = parser.Results.varnames;
+method = parser.Results.method;
+timestep = parser.Results.timestep;
+quantile = parser.Results.quantile;
+
+if string(method) == "qtl" && isnan(quantile)
+   error('must provide quantile for method ''qtl''')
+end
+

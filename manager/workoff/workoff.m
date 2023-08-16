@@ -15,16 +15,22 @@ function workoff(varargin)
 % and save help docs? couldn't find a built in or fex method but see
 % gethelpdoclink, it gets the active one.
 
-% UPDATES
-% 10 Mar 2023 set active project to 'default' to prevent losing active files
-% when workoff is called during a session and then matlab is closed.
-% Old behavior: when workoff is called, activefiles are updated, but
-% activeproject is not. If matlab is closed, workoff is called from finish.m and
-% the activefiles are updated, but the activeproject is still set so the
-% activefiles are lost
-% New behavior: when workoff is called, activefiles are updat4ed and
-% activeproject is set to 'default'. If matlab is closed, the activefiles are
-% updated for project 'default'.
+% problematic behavior: workoff updates activefiles but not activeproject
+% - call workoff during session
+% - activefiles are updated and closed, but activeproject is not
+% - close matlab
+% - finish.m calls workoff
+% - workoff sets the activeproject activefiles to the files open in the editor,
+% which are not the files for the activeproject
+% 
+% To fix this, workoff sets the activeproject to 'default', which is the right
+% method, but it is still problematic to call workoff from finish.m, here's why:
+% - close matlab
+% - finish.m calls workoff
+% - workoff updates the activefiles and sets the activeproject to 'default'
+% - reopen matlab
+% - startup.m calls workon
+% - workon
 
 %% parse inputs
 [projname, updatefiles] = parseinputs(mfilename, varargin{:});

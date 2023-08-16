@@ -16,7 +16,8 @@ function T = replacevars(T, VarNames, NewVars, varargin)
 % 
 % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
 % 
-% See also addvars, removevars
+% See also addvars, removevars, renamevars, mergevars, movevars, splitvars,
+% convertvars
 
 % parse inputs
 [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...

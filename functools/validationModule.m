@@ -69,6 +69,10 @@ function f = validationModule(varargin)
 % 
 % See also inputParser
 
+% TODO: review content of functiontests it is relevant to module concept
+% notice the custom validation subfunctions - reminder to see if a single parser
+% per project is possible 
+% if so, prob need a validationModule per project as well
 
 % Main
 
