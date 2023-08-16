@@ -35,16 +35,16 @@ args = parseinputs(tbname, mfilename, varargin{:});
 toolboxes = readtbdirectory(gettbdirectorypath());
 
 % set the path to the toolbox source code (works if args.library is empty)
-tbpath = fullfile(gettbsourcepath,args.library,args.tbname);
+tbpath = fullfile(gettbsourcepath, args.library, args.tbname);
 
 % add the toolbox to the end of directory
-tbidx = height(toolboxes)+1;
+tbidx = height(toolboxes) + 1;
 
 % regardless of sub-libs, we still want to match this
-if any(ismember(toolboxes.name,args.tbname))
+if any(ismember(toolboxes.name, args.tbname))
    error('toolbox already in directory');
 else
-   toolboxes(tbidx,:) = {args.tbname,tbpath,false};
+   toolboxes(tbidx,:) = {args.tbname, tbpath, false, args.library};
    
    disp(['adding ' args.tbname ' to toolbox directory']);
    
@@ -95,7 +95,9 @@ end
 tbname = convertStringsToChars(tbname);
 parser.parse(tbname,varargin{:});
 args = parser.Results;
-
+if isempty(args.library)
+   
+end
 
 %% removed json signature file option
 
