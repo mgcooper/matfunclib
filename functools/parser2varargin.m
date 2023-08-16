@@ -1,15 +1,20 @@
-function namedargs = parser2varargin(p,varargin)
+function namedargs = parser2varargin(p, requiredargs, option)
 %PARSER2VARARGIN convert parser object structs to varargin.
 %
-%  namedargs = parser2varargin(p,'usingdefaults') converts values in p.Results
-%  struct for which p.UsingDefaults is true to a cell in varargin format 
+%  namedargs = parser2varargin(p, requiredargs, 'usingdefaults') converts values
+%  in p.Results struct for which p.UsingDefaults is true to a cell in varargin
+%  format.
 % 
-%  namedargs = parser2varargin(p,'notusingdefaults') converts values in
-%  p.Results struct for which p.UsingDefaults is false to a cell in varargin
-%  format
+%  namedargs = parser2varargin(p, requiredargs, 'notusingdefaults') converts
+%  values in p.Results struct for which p.UsingDefaults is false to a cell in
+%  varargin format
 % 
 % 
 % See also 
+
+% Note: update aug 2023, for this to work I think parser.keepunmatched might
+% need to be true and have values, and then it will parse out those ones which
+% are arguments not added to the parser but valid args to the wrapper function
 
 % so far, this seems to work, but i am not certain the order of namedargs will
 % always be correct, for example with optional args, or multiple required args,
@@ -39,8 +44,8 @@ function namedargs = parser2varargin(p,varargin)
 % parameters were passed into my function, bundle them as a cell array, and then
 % send that to shaperead. This function does that.
 
-option = varargin{1};
-requiredargs = varargin{2};
+% requiredargs = varargin{1};
+% option = varargin{2};
 
 % first find which values of p.Results are optional
 allargs = fieldnames(p.Results);
