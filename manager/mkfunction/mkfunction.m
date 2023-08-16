@@ -18,7 +18,8 @@ function mkfunction(funcname,varargin)
 % TODO: add support for 'inputs' and 'outputs'
 
 % parse inputs
-[funcname, library, project, parser] = parseinputs(funcname, mfilename, varargin{:});
+[funcname, library, project, parser, force] = parseinputs( ...
+   funcname, mfilename, varargin{:});
 
 % main function
 parent = library; % keep the library or project parent folder
@@ -28,15 +29,20 @@ elseif library == "unsorted"
    parent = project;
 end
 
+% get the function directory path and full path to new function filename
+[functionpath, filenamepath] = parseFunctionPath(funcname, library, project);
+
 % check if the function exists. NOTE: if this check is ever removed, pay
 % attention to how _tmp is appended ot the function name given that the prior
 % behavior that ringfenced the new function in a funcname/ folder was removed
 if ~isempty(which(funcname))
-   error(['function exists as ' which(funcname)])
+   if force == true && ~strcmp(which(funcname), filenamepath)
+      warning(['function exists in: ' which(funcname) newline ...
+         'Creating shadowed function in: ' filenamepath])
+   else
+      error(['function exists in: ' which(funcname)])
+   end
 end
-
-% get the function directory path and full path to new function filename
-[functionpath,filenamepath] = parseFunctionPath(funcname,library,project);
 
 % first try adding the path in case it exists but isn't on path - if the
 % path doesn't exist, it won't issue an error (but addpath alone, without
@@ -319,19 +325,21 @@ function rewritefile(filenamepath, wholefile)
 end
 
 %% INPUT PARSER
-function [name, library, project, whichparser] = parseinputs( ...
+function [name, library, project, whichparser, force] = parseinputs( ...
    name, funcname, varargin)
 
    persistent parser
    if isempty(parser)
       parser = inputParser;
-      parser.FunctionName = funcname;
       parser.addRequired( 'funcname', @ischar);
       parser.addParameter('library', 'unsorted', @ischar);
       parser.addParameter('project', 'unsorted', @ischar);
       parser.addParameter('parser', 'MP', @ischar);
+      parser.addParameter('force', false, @islogical);
    end
+   parser.FunctionName = funcname;
    parser.parse(name, varargin{:});
+   force = parser.Results.force;
    library = parser.Results.library;
    project = parser.Results.project;
    whichparser = parser.Results.parser;

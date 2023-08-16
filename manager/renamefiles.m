@@ -20,30 +20,21 @@ function Info = renamefiles(FileList,varargin)
 %
 % See also
 
-%------------------------------------------------------------------------------
 % input parsing
-%------------------------------------------------------------------------------
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
-
-% validstrings      = {''}; % or [""]
-% validoption       = @(x)any(validatestring(x,validstrings));
-
-p.addRequired(    'FileList',                   @(x)islist(x)        );
-p.addParameter(   'NewFileNames',   '',         @(x)islist(x)        );
-p.addParameter(   'Prefix',         '',         @(x)ischar(x)        );
-p.addParameter(   'Suffix',         '',         @(x)ischar(x)        );
-p.addParameter(   'StrFind',        '',         @(x)ischar(x)        );
-p.addParameter(   'StrRepl',        '',         @(x)ischar(x)        );
-p.addParameter(   'dryrun',         false,      @(x)islogical(x)     );
-p.addParameter(   'useGitMove',     false,      @(x)islogical(x)     );
-
-p.parseMagically('caller');
-
-% https://www.mathworks.com/help/matlab/matlab_prog/parse-function-inputs.html
-%------------------------------------------------------------------------------
+parser = inputParser;
+parser.FunctionName = mfilename;
+parser.CaseSensitive = false;
+parser.KeepUnmatched = true;
+parser.addRequired('FileList', @islist);
+parser.addParameter('NewFileNames', '', @islist);
+parser.addParameter('Prefix', '', @ischar);
+parser.addParameter('Suffix', '', @ischar);
+parser.addParameter('StrFind', '', @ischar);
+parser.addParameter('StrRepl', '', @ischar);
+parser.addParameter('dryrun', false, @islogical);
+parser.addParameter('useGitMove', false, @islogical);
+parser.parse(FileList, varargin{:});
+args = parser.Results;
 
 % check if .git exists in the base folder to avoid losing git history
 BasePath = FileList(1).folder;
@@ -61,7 +52,7 @@ end
 options = {'NewFileNames','Prefix','Suffix','StrFind','StrRepl'};
 renameOption = struct();
 for n = 1:numel(options)
-   renameOption.(options{n}) = ~isempty(p.Results.(options{n}));
+   renameOption.(options{n}) = ~isempty(args.(options{n}));
 end
 
 % determine if NewFileNames, Prefix, or Suffix should be used
@@ -83,11 +74,11 @@ elseif renameOption.StrFind + renameOption.StrRepl == 2
 end
 
 % convert NewFileNames and Prefix/Suffix to string/arrays
-NewFileNames = cellstr(NewFileNames);
-Prefix = char(Prefix);
-Suffix = char(Suffix);
-StrFind = char(StrFind);
-StrRepl = char(StrRepl);
+NewFileNames = cellstr(args.NewFileNames);
+Prefix = char(args.Prefix);
+Suffix = char(args.Suffix);
+StrFind = char(args.StrFind);
+StrRepl = char(args.StrRepl);
 
 Info = struct();
 
@@ -95,9 +86,9 @@ Info = struct();
 
 for n = 1:numel(FileList)
    
-   Path    = FileList(n).folder;
-   Name    = FileList(n).name;
-   File    = fullfile(Path, Name);
+   Path = FileList(n).folder;
+   Name = FileList(n).name;
+   File = fullfile(Path, Name);
    
    if useNewFileNames
       newName = NewFileNames{n};

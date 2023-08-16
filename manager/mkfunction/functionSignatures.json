@@ -9,7 +9,8 @@
       [
          {"name":"funcname",  "kind":"required",   "type":["char"]},
          {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"],"purpose":"Option"},
-         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"}
+         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"},
+         {"name":"force",     "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    },
    "mkfunction":
@@ -18,7 +19,8 @@
       [
          {"name":"funcname",  "kind":"required",   "type":["char"]},
          {"name":"project",   "kind":"namevalue",  "type":["char","choices=projectdirectorylist"],"purpose":"Option"},
-         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"}
+         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"},
+         {"name":"force",     "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    }
 }
