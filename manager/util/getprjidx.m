@@ -5,4 +5,9 @@ function prjidx = getprjidx(projectname,projectlist)
 if nargin == 1
    projectlist = readprjdirectory;
 end
-prjidx = ismember(lower(projectlist.name),lower(projectname));
+if isoctave
+   prjidx = ismember(lower({projectlist.name}),lower(projectname));
+else
+   prjidx = ismember(lower(projectlist.name),lower(projectname));
+end
+
