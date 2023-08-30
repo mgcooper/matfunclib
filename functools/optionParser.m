@@ -10,9 +10,10 @@ function opts = optionParser(validopts,calleropts,varargin)
 % 
 % optionParser is based on this method: 
 % 
-% varargs = varargin(cellfun(@ischar, convertStringsToChars(varargin)));
+% optargs = varargin(cellfun(@ischar, convertStringsToChars(varargin)));
+% opts = cell2struct(num2cell(false(size(validopts))), validopts, 2);
 % for arg = validopts(:).'
-%    opts.(arg{:}) = any(ismember(arg, varargs));
+%    opts.(arg{:}) = ismember(arg, optargs);
 % end
 % 
 % Inputs

@@ -9,6 +9,27 @@ function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
 % PARSEOPTARG is intended to isolate a single scalar text value OPT in
 % functions using VARARGIN as the input argument, also known as a "flag".
 % 
+% Example
+% 
+%    function demo_function
+%    % Call the example calling_function
+%    calling_function('option2', 42, 'hello'); % 'option2' is selected
+%    calling_function(42, 'hello'); % 'option1' is selected as the default
+%    end
+% 
+%    function calling_function(varargin)
+%    valid_options = {'option1', 'option2'};
+%    default_option = 'option1';
+% 
+%    [selected_option, remaining_args, nargs] = parseoptarg( ...
+%       varargin, valid_options, default_option);
+% 
+%    disp(['Selected option: ', selected_option]);
+%    disp(['Number of Remaining arguments: ', num2str(nargs)]);
+%    disp('Remaining arguments:');
+%    disp(remaining_args);
+%    end
+% 
 % See also parseparampairs
 
 %  PARSE INPUTS

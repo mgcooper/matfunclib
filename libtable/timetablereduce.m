@@ -4,7 +4,7 @@ function NewData = timetablereduce(Data,varargin)
 % NewData = timetablereduce(Data,'keeptime',true) keeps the time column in the
 % case of single vector input and returns the vector with new header 'mu'
 % 
-% See also
+% See also: stderror
 
 % parse inputs
 [Data, dim, alpha, keeptime] = parseinputs(Data, mfilename, varargin{:});

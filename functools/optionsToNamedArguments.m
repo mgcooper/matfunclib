@@ -5,7 +5,7 @@ function s = optionsToNamedArguments(options)
 % s.name2 = 'val2';
 % args = optionsToNamedArguments(s)
 % 
-% See also
+% See also: struct2nameval, unmatched2varargin, namedargs2cell
 
 names = string(fieldnames(options));
 s = strings(length(names),1);

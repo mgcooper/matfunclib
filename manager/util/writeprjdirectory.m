@@ -8,10 +8,10 @@ projectdirectorypath = getprjdirectorypath();
 
 % temporary backup
 tmpfile = gettmpdirectorypath();
-copyfile(projectdirectorypath,tmpfile);
+copyfile(projectdirectorypath, tmpfile);
 
 % save it
-save(projectdirectorypath,'projectlist')
+save(projectdirectorypath, 'projectlist')
 
 % % old method that saved the directory as a table
 % writetable(projectlist,projectdirectorypath);

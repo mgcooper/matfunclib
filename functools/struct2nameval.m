@@ -21,7 +21,7 @@ function str = struct2nameval(opts)
 %  s.Name3 = 7;%           ->  "Name1=Value1,Name2=Value2,Name3=7"
 %  struct2nameval(s)  
 % 
-% See also optionsToNamedArguments
+% See also: optionsToNamedArguments, unmatched2varargin, namedargs2cell
 
 arguments
    opts (1, 1) struct
