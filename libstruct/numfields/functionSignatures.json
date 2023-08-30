@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "numfields":
+   {
+      "inputs":
+      [
+         {"name":"S",      "kind":"required",   "type":["struct"]}, 
+         {"name":"depth",  "kind":"ordered",    "type":["choices={'flat','layered'}"]}
+      ]
+   }
+}
