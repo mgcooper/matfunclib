@@ -34,7 +34,7 @@ else
    % alert 
    disp(['deactivating ' tbname]);
    
-   toolboxes = deactivateToolbox(tbname{:}, toolboxes);
+   toolboxes = deactivateToolbox(tbname, toolboxes);
 end
 
 % rewrite the directory
