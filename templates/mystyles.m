@@ -120,6 +120,42 @@
 % toolbox/+tbx/+tools
 % toolbox/+tbx/private
 
+%% toolbox design
+% The idea here is based on icemodel. The main user-facing functions aren't in
+% the +toolbox, instead the +toolbox is for toolbox utilities. Standard set of
+% utilites go in the top level +toolbox folder and standard set of utilities for
+% those utilities go in private/. Toolbox specific stuff goes in
+% +toolbox/+internal.
+
+% project
+% - project.toml
+% - tests
+% - demos
+% - toolbox
+%     - toolbox.toml
+%     - functionSignatures.json
+%     - userfacing1.m
+%     - userfacing2.m
+%     ...
+%     - userfacingN.m
+%     - +toolbox
+%        - config.m
+%        - completions.m
+%        - defaults.m
+%        - runtests.m
+%        - privatefunction.m
+%        - setpath.m (and/or projectpath.m)
+%        - private
+%           - basepath.m
+%           - backupfile.m
+%           - dealout.m
+%           - withcd.m
+%           - withwarnoff.m
+%        - +internal
+%           - nonuserfacing.m
+
+%% sandbox
+
 % regarding testbed/ Maybe usr/ is better than testbed but it might conflict
 % with git. Basically anything obvious is problematic for git
 % dev, devel, working is misleading, testing too similar to tests, user too
@@ -165,19 +201,30 @@
 % and keep usr private
 
 %% colors
-
 % 
-% C 0
-% M 160
-% Y 227
-% B 51 
-% Alpha 255
+% Keep track of the ones I settle on here:
 % 
-% R 203
-% G 75
-% B 22
-% Alpha 255
-% Code: CB4B16
+% orange: FF7329 (keywords, strings)
+% grey-blue: 343541 (background)
+% purple: ACB1FF (strings, not bright enough for keywords)
+% blue-cyan: 61C9FF (comments)
+% red-pink: F92672 (strings, keywords)
+% silvery-white: F0F0F0 (text)
+% 
+% 
+% Current:
+% comments: 61C9FF (blue-cyan)
+% keywords: ACB1FF (purple)
+% strings: F92672 (red-pink)
+% code: F0F0F0 (silvery-white)
+% validation: A0522D (brownish-orange)
+% 
+% Change to:
+% comments: 61C9FF (blue-cyan)
+% keywords: F92672 (red-pink)
+% strings: ACB1FF (purple)
+% code: F0F0F0 (silvery-white)
+% validation: FF7329 (orange)
 % 
 % matrix:
 % orange keywords CB4B16
@@ -189,14 +236,14 @@
 % monokai
 % pinkish red keywords: F92672
 % yellowish strings: E6DB74
-% grey brownish background : 272822 (this is what iw ant to change)
+% grey brownish background : 272822 (this is what i want to change)
 % grey comments: 75715E
 % white text: F8F8F0
 % 
 % My combo:
 % matrix background: 002B36
-% monokai keywords: F92672
-% matrix comments: 268BD2 (increased brighter to 4DBEEE then again to 61C9FF
+% monokai keywords: F92672 (changed to brighter FF7329)
+% matrix comments: 268BD2 (increased brighter to 4DBEEE then again to 61C9FF)
 % 
 % 
 % monokai yellowish strings are good: E6DB74
@@ -239,3 +286,15 @@
 % 3A3A50 = pronounced blue tint
 % 343541 = darker version of above (more grey, darker of the two chatgpt backgrounds)
 % 
+
+% purple 6C71C4
+% 7C81D4: Slightly brighter.
+% 8C91E4: A more noticeable increase in brightness.
+% 9CA1F4: Even brighter.
+% ACB1FF: Near the maximum brightness for this shade.
+% Preference: ACB1FF
+
+% I lke the purple but need keywords brighter so trying switching the red
+% strings with purple
+
+

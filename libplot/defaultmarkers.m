@@ -1,4 +1,4 @@
-function symbols = defaultmarkers(markertype)
+function [symbols, sizes] = defaultmarkers(markertype)
 
 arguments
    markertype (1,1) string {mustBeMember(markertype,["all","closed"])} = "all"
@@ -6,8 +6,10 @@ end
 
 switch markertype
    case "all"
-      symbols = {'*','+','.','<','>','^','v','x','diamond','o','pentagram', ...
-         'square','hexagram','|'};
+      symbols = {'s','h','d','o','p','x','+','<','*','>','^','v'};
+      sizes = [10 12 10 10 16 12 12 10 12 10 10 10];
+      % symbols = {'*','+','.','<','>','^','v','x','diamond','o','pentagram', ...
+      %   'square','hexagram','|'};
    case "closed"
       symbols = {'diamond','o','pentagram','square','hexagram'};
 end
