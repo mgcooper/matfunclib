@@ -89,69 +89,69 @@ end
 % -------------------------------------
 % LOCAL FUNCTIONS
 % -------------------------------------
-function assertError(fh, eid, varargin)
-%ASSERTERROR assert error using function handle and error id
-
-   import matlab.unittest.diagnostics.Diagnostic;
-   import matlab.unittest.constraints.Throws;
-   
-   throws = Throws(eid);
-   passed = throws.satisfiedBy(fh);
-   diagText = ""; % set empty string for passed == true
-   if ~passed
-       diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
-       arrayfun(@diagnose, diag);
-       diagText = strjoin({diag.DiagnosticText},[newline newline]);
-   end
-   assert(passed, diagText); 
-end
-
-function assertSuccess(fnc, eid, varargin)
-%ASSERTSUCCESS assert success using function handle and error id
-
-   import matlab.unittest.diagnostics.Diagnostic;
-   import matlab.unittest.constraints.Throws;
-   
-   throws = Throws(eid);
-   passed = throws.satisfiedBy(fnc);
-   diagText = ""; % set empty string for passed == true
-   if passed
-       diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fnc));
-       arrayfun(@diagnose, diag);
-       diagText = strjoin({diag.DiagnosticText},[newline newline]);
-   end
-   assert(~passed, diagText); 
-end
-
-function assertWithAbsTol(returned, expected, tol, varargin)
-%ASSERTWITHABSTOL assert equality within an absolute tolerance.
+% function assertError(fh, eid, varargin)
+% %ASSERTERROR assert error using function handle and error id
 % 
-% assertWithAbsTol(returned, expected) uses tol = 1e-6
-% assertWithAbsTol(returned, expected, tol)
-% assertWithAbsTol(returned, expected, tol, msg)
-% 
-% Helper function to assert equality within an absolute tolerance.
-% Takes two values and an optional message and compares
-% them within an absolute tolerance of 1e-6.
+%    import matlab.unittest.diagnostics.Diagnostic;
+%    import matlab.unittest.constraints.Throws;
+%    
+%    throws = Throws(eid);
+%    passed = throws.satisfiedBy(fh);
+%    diagText = ""; % set empty string for passed == true
+%    if ~passed
+%        diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
+%        arrayfun(@diagnose, diag);
+%        diagText = strjoin({diag.DiagnosticText},[newline newline]);
+%    end
+%    assert(passed, diagText); 
+% end
 
-if nargin < 4 || isempty(tol), tol = 1e-6; end
-   
-   tf = abs(returned-expected) <= tol;
-   assert(tf, varargin{:});
-end
+% function assertSuccess(fnc, eid, varargin)
+% %ASSERTSUCCESS assert success using function handle and error id
+% 
+%    import matlab.unittest.diagnostics.Diagnostic;
+%    import matlab.unittest.constraints.Throws;
+%    
+%    throws = Throws(eid);
+%    passed = throws.satisfiedBy(fnc);
+%    diagText = ""; % set empty string for passed == true
+%    if passed
+%        diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fnc));
+%        arrayfun(@diagnose, diag);
+%        diagText = strjoin({diag.DiagnosticText},[newline newline]);
+%    end
+%    assert(~passed, diagText); 
+% end
 
-function assertWithRelTol(returned, expected, relTol, varargin)
-%ASSERTWITHABSTOL assert equality within a relative tolerance.
+% function assertWithAbsTol(returned, expected, tol, varargin)
+% %ASSERTWITHABSTOL assert equality within an absolute tolerance.
+% % 
+% % assertWithAbsTol(returned, expected) uses tol = 1e-6
+% % assertWithAbsTol(returned, expected, tol)
+% % assertWithAbsTol(returned, expected, tol, msg)
+% % 
+% % Helper function to assert equality within an absolute tolerance.
+% % Takes two values and an optional message and compares
+% % them within an absolute tolerance of 1e-6.
 % 
-%  assertWithRelTol(returned, expected) uses relTol = 0.1%
-%  assertWithRelTol(returned, expected, relTol)
-%  assertWithRelTol(returned, expected, relTol, msg)
-% 
-% Helper function to assert equality within a relative tolerance.
-% Takes two values and an optional message and compares
-% them within a relative tolerance of 0.1%.
-   if nargin < 4 || isempty(relTol), relTol = 0.001; end
-      
-   tf = abs(expected - returned) <= relTol.*abs(expected);
-   assert(tf, varargin{:});
-end
+% if nargin < 4 || isempty(tol), tol = 1e-6; end
+%    
+%    tf = abs(returned-expected) <= tol;
+%    assert(tf, varargin{:});
+% end
+
+% function assertWithRelTol(returned, expected, relTol, varargin)
+% %ASSERTWITHABSTOL assert equality within a relative tolerance.
+% % 
+% %  assertWithRelTol(returned, expected) uses relTol = 0.1%
+% %  assertWithRelTol(returned, expected, relTol)
+% %  assertWithRelTol(returned, expected, relTol, msg)
+% % 
+% % Helper function to assert equality within a relative tolerance.
+% % Takes two values and an optional message and compares
+% % them within a relative tolerance of 0.1%.
+%    if nargin < 4 || isempty(relTol), relTol = 0.001; end
+%       
+%    tf = abs(expected - returned) <= relTol.*abs(expected);
+%    assert(tf, varargin{:});
+% end
