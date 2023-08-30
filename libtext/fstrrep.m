@@ -1,23 +1,23 @@
 function varargout = fstrrep(filename, oldstr, newstr, opts)
-%FSTRREP Replace old string in file with new string and resave the file.
-% 
-%    STR = FSTRREP(FILENAME, OLDSTR, NEWSTR) replaces occurrences of OLDSTR
-%    in the file specified by FILENAME with NEWSTR and saves the modified
-%    content back to the file.
-%    
-%    STR = FSTRREP(FILENAME, OLDSTR, NEWSTR, 'dryrun', true) performs
-%    the replacement but does not save the changes to the file. The modified
-%    content is returned in STR. Default value is FALSE.
-%    
-%    STR = FSTRREP(_, 'backup', true) performs the replacement and creates a
-%    backup of the original file. Default value is FALSE.
-%    
-%    Example:
-%    FSTRREP('example.txt', 'old', 'new');
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-% 
-% See also: STRREP
+   %FSTRREP Replace old string in file with new string and resave the file.
+   %
+   %    STR = FSTRREP(FILENAME, OLDSTR, NEWSTR) replaces occurrences of OLDSTR
+   %    in the file specified by FILENAME with NEWSTR and saves the modified
+   %    content back to the file.
+   %
+   %    STR = FSTRREP(FILENAME, OLDSTR, NEWSTR, 'dryrun', true) performs
+   %    the replacement but does not save the changes to the file. The modified
+   %    content is returned in STR. Default value is FALSE.
+   %
+   %    STR = FSTRREP(_, 'backup', true) performs the replacement and creates a
+   %    backup of the original file. Default value is FALSE.
+   %
+   %    Example:
+   %    FSTRREP('example.txt', 'old', 'new');
+   %
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   %
+   % See also: STRREP
 
 
    % PARSE ARGUMENTS
@@ -28,26 +28,26 @@ function varargout = fstrrep(filename, oldstr, newstr, opts)
       opts.dryrun (1,1) logical = false
       opts.backup (1,1) logical = true
    end
-   
+
    % MAIN CODE
-   
+
    % Read in the file
    wholefile = readinfile(filename);
-   
+
    % Back up the file if requested
    if opts.backup == true
-      rewritefile(backupfilename(filename), wholefile, opts)
+      rewritefile(backupfile(filename), wholefile, opts)
    end
-   
+
    % Replace the string
    wholefile = strpat(wholefile, oldstr, newstr);
-   
+
    % Rewrite the file
    rewritefile(filename, wholefile, opts)
-   
+
    % PARSE OUTPUTS
-    nargoutchk(0, 1)
-    varargout{1} = wholefile;
+   nargoutchk(0, 1)
+   varargout{1} = wholefile;
 end
 
 %% LOCAL FUNCTIONS
@@ -67,11 +67,11 @@ end
 
 function rewritefile(filename, wholefile, opts)
    %rewrite the file
-   
+
    if opts.dryrun == true
       return
    end
-   
+
    fid = fopen(filename, 'wt'); % confirm if 'wt' or 'w' should be used
    if fid == -1
       error('Failed to open file %s for writing', filename);

@@ -73,7 +73,7 @@ else
    
    % if the filename exists, back it up before saving the new one
    if isfile(filename)
-      filename = backupfilename(filename);
+      filename = backupfile(filename);
       warning('file exists, backing it up to %s', filename);
    end
    
