@@ -2,7 +2,7 @@
 
 inoctave = (exist ("OCTAVE_VERSION", "builtin") > 0);
 inmatlab = ~inoctave;
-  
+
 %% manage warnings
 
 % Save the current state of the warnings
@@ -42,7 +42,7 @@ if usejava('desktop') % we're in the desktop (also means we're not in octave)
    if inmatlab
       % custom desktop settings
       mSettings = settings;
-   
+
       if ~verLessThan('matlab','9.11')
          mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
       elseif verLessThan('matlab','9.14')
@@ -116,13 +116,13 @@ keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
 % custom remove for octave compatibility
 if inoctave
-   ignorePaths = [ignorePaths; { 
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'libtext', 'printf'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'iscomplex'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'ifelse'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'libstruct', 'numfields'); ...
-         fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
-         }];
+   ignorePaths = [ignorePaths; {
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'libtext', 'printf'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'iscomplex'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'ifelse'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'libstruct', 'numfields'); ...
+      fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
+      }];
 end
 
 for m = 1:numel(ignorePaths)
@@ -179,7 +179,7 @@ if inmatlab
       'defaultAxesYMinorGridMode'      ,  'manual'             , ...
       'defaultAxesXMinorTickMode'      ,  'manual'             , ...
       'defaultAxesYMinorTickMode'      ,  'manual'             );
-   
+
    beep off
 end
 %% Environment configuration
@@ -225,7 +225,7 @@ if inmatlab
             % pyenv('Version', '/usr/bin/python3')
          end
       end
-   
+
    else
       try
          pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.9.0/bin/python'));
@@ -240,6 +240,9 @@ if inmatlab
 end
 
 %% FINAL STEPS
+
+% launch toolboxes
+checkoutToolboxes()
 
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
@@ -256,4 +259,35 @@ disp('BE GRATEFUL')
 % fontName = 'Helvetica';
 % fontName = 'Source Sans Pro' (nice and compact also if bold)
 
+function checkoutToolboxes()
 
+   home
+
+   try
+      ismap(gca);
+   catch
+   end
+
+   try
+      opts = statset();
+   catch
+   end
+
+   try
+      fitoptions();
+   catch
+   end
+
+   try
+      optimoptions("fminunc");
+   catch
+   end
+
+   try
+      imread('ngc6543a.jpg');
+   catch
+   end
+   close all
+   clearvars
+   clc
+end
