@@ -1,113 +1,180 @@
 function T = stacktables(tbls,opts)
-%STACKTABLES vertically concatenate tables.
-%
-% Author: Matt Cooper
-%
-%
-% Based on tblvertcat by Sterling Baird (2020-09-05)
-%
-% Description: vertically concatenate tables with different
-% variables, filling in dummy values where necessary.
-%
-% Inputs:
-%  tbls - table, where each table can have a different number of rows and
-%  same and/or different variables*
-%
-% Outputs:
-%  tblout - vertically catenated table
-%
-% Usage:
-%  tblout = stacktables(tbl1,tbl2);
-%  tblout = stacktables(tbl1,tbl2,tbl3);
-%
-% Example:
-% 
-% % define table columns
-% nrows = 3;
-% doubles = rand(nrows,1);
-% chars = repelem('a',nrows,1);
-% cells = repelem({rand(10)},nrows,1);
-% structs = repelem(struct('myvar',1),nrows,1);
-% 
-% % make two tables
-% tbl1 = table(doubles,chars,structs);
-% tbl2 = table(chars,cells);
-% 
-% % catenate them
-% tblout = stacktables(tbl1,tbl2)
-% 
-% Notes:
-%  See https://www.mathworks.com/matlabcentral/answers/179290-merge-tables-with-different-dimensions
-%  and https://www.mathworks.com/matlabcentral/answers/410053-outerjoin-tables-with-identical-variable-names-and-unique-non-unique-keys
-%
-%  *variables of the same name must also be of the same datatype.
+   %STACKTABLES vertically concatenate tables.
+   %
+   % Author: Matt Cooper
+   %
+   %
+   % Based on tblvertcat by Sterling Baird (2020-09-05)
+   %
+   % Description: vertically concatenate tables with different
+   % variables, filling in dummy values where necessary.
+   %
+   % Inputs:
+   %  tbls - table, where each table can have a different number of rows and
+   %  same and/or different variables*
+   %
+   % Outputs:
+   %  tblout - vertically catenated table
+   %
+   % Usage:
+   %  tblout = stacktables(tbl1,tbl2);
+   %  tblout = stacktables(tbl1,tbl2,tbl3);
+   %
+   % Example:
+   %
+   % % define table columns
+   % nrows = 3;
+   % doubles = rand(nrows,1);
+   % chars = repelem('a',nrows,1);
+   % cells = repelem({rand(10)},nrows,1);
+   % structs = repelem(struct('myvar',1),nrows,1);
+   %
+   % % make two tables
+   % tbl1 = table(doubles,chars,structs);
+   % tbl2 = table(chars,cells);
+   %
+   % % catenate them
+   % tblout = stacktables(tbl1,tbl2)
+   %
+   % % Add rownames
+   % tbl1.Properties.RowNames = {'a', 'b', 'c'};
+   % tbl2.Properties.RowNames = {'a', 'b', 'c'};
+   %
+   % tblout = stacktables(tbl1,tbl2,"KeepRowNames",true);
+   %
+   % Notes:
+   %  See https://www.mathworks.com/matlabcentral/answers/179290-merge-tables-with-different-dimensions
+   %  and https://www.mathworks.com/matlabcentral/answers/410053-outerjoin-tables-with-identical-variable-names-and-unique-non-unique-keys
+   %
+   %  *variables of the same name must also be of the same datatype.
 
-arguments (Repeating)
-   tbls table
-end
-arguments
-   opts.MergeCustomProps (1,1) logical = true
-end
+   arguments (Repeating)
+      tbls table
+   end
+   arguments
+      opts.MergeCustomProps (1,1) logical = true
+      opts.KeepRowNames (1,1) logical = true
+   end
 
-%% table properties
+   %% table properties
 
-% Get the number of tables and number of rows in each table
-N = length(tbls);
-nrows = cellfun(@height,tbls);
+   % Get the number of tables and number of rows in each table
+   N = length(tbls);
+   nrows = cellfun(@height,tbls);
 
-% assign temporary keys going from 1 to total # rows among all tables
-rowKey = 'tpbedd3216830044debb7fc4c22fe01b92'; % purposefully obscure keyname
-tmpKey = [0 cumsum(nrows)];
-for n = 1:N
-   % assign range to rowKey column for outerjoin
-   tbls{n}.(rowKey) = transpose(tmpKey(n)+1:tmpKey(n+1));
-end
+   % Convert columns of chars to string if the char widths are not identical,
+   % otherwise the join will fail.
+   tbls = cellfun(@tblchars2string, tbls, 'un', 0);
 
-% Concatenate tables
-t1 = tbls{1};
-for n = 2:N
+   % % More explicit
+   % for n = 1:N
+   %    thistbl = tbls{n};
+   %    idxchar = cellfun(@ischar,table2cell(thistbl(1,:)));
+   %    varchar = thistbl.Properties.VariableNames{idxchar};
+   %    thistbl.(varchar) = string(thistbl{:,idxchar});
+   %    tbls{n} = thistbl;
+   % end
 
-   % unpack next table
-   t2 = tbls{n};
+   % Assign temporary keys going from 1 to total # rows among all tables
+   rowKey = 'tpbedd3216830044debb7fc4c22fe01b92'; % purposefully obscure keyname
+   tmpKey = [0 cumsum(nrows)];
+   for n = 1:N
+      % Assign range to rowKey column for outerjoin
+      tbls{n}.(rowKey) = transpose(tmpKey(n)+1:tmpKey(n+1));
+   end
 
-   % find shared variable names
-   t1names = t1.Properties.VariableNames;
-   t2names = t2.Properties.VariableNames;
-   sharednames = intersect(t1names,t2names);
+   % Concatenate tables
+   t1 = tbls{1};
+   for n = 2:N
 
-   % catenation
-   t1 = outerjoin(t1,tbls{n},'Key',[rowKey,sharednames],'MergeKeys',true);
-end
+      % Unpack next table
+      t2 = tbls{n};
 
-% remove temporary ids
-T = removevars(t1,rowKey);
+      % Find shared variable names
+      t1names = t1.Properties.VariableNames;
+      t2names = t2.Properties.VariableNames;
+      sharednames = intersect(t1names,t2names);
 
-% new code to handle custom properties
-if opts.MergeCustomProps
-   customProps = cellfun(@(tbl) tbl.Properties.CustomProperties, tbls, 'un', 0);
-   
-   % merge custom properties if any table has them
-   if any(~cellfun(@(props) isempty(fieldnames(props)), customProps))
-      T.Properties.CustomProperties = mergeCustomProps(tbls{:});
+      % Catenation
+      t1 = outerjoin(t1,tbls{n},'Key',[rowKey,sharednames],'MergeKeys',true);
+   end
+
+   % Remove temporary ids
+   T = removevars(t1,rowKey);
+
+   % Collect rownames, which may or may not exist
+   rownames = cellfun(@(tbl) tbl.Properties.RowNames, tbls, 'Uniform', 0);
+
+   % Merge row names if they exist
+   if opts.KeepRowNames && any(cellfun(@notempty, rownames))
+
+      rownames = vertcat(rownames{:});
+
+      % This will succeed if each table has rownames. If there are duplicates,
+      % they are added as a new variable, otherwise as the RowNames property.
+      try
+         T.Properties.RowNames = rownames;
+      catch e
+         if strcmp(e.identifier, 'MATLAB:table:DuplicateRowNames')
+            % There are duplicate rownames, add them as a new column
+            T.rowNames = string(rownames);
+         end
+
+         if strcmp(e.identifier, 'MATLAB:table:IncorrectNumberOfRowNames')
+
+            % This does not work b/c we need to know which table has them.
+            % Return to this later if needed.
+            rethrow(e)
+
+            % % One or more tables does not have rownames
+            % T.rowNames = ...
+            %    [string(rownames); repelem(missing, height(T)-numel(rownames))'];
+         end
+      end
+
+      % This is true if there are no duplicate rownames
+      % areunique = isempty(setdiff(unique(rownames), rownames));
+
+      % This checks if they're all equal, but not sure it is correct
+      % all(cellfun(@isequal, rownames, rownames))
+   end
+
+   % Merge custom properties
+   if opts.MergeCustomProps
+      customProps = cellfun(@(tbl) tbl.Properties.CustomProperties, tbls, 'un', 0);
+
+      if any(~cellfun(@(props) isempty(fieldnames(props)), customProps))
+         T.Properties.CustomProperties = mergeCustomProps(tbls{:});
+      end
    end
 end
 
+function T = tblchars2string(T)
+   try
+      idxchar = cellfun(@ischar, table2cell(T(1, :)));
+      T.(T.Properties.VariableNames{idxchar}) = string(T{:, idxchar});
+
+      % Using vartype, in case it is more robust
+      % varchar = string(T(1, vartype("char")).Properties.VariableNames);
+      % T.(varchar) = string(T{:, vartype('char')});
+   catch
+   end
 end
 
-% % testing
+%% testing
 % % check table props to see if the "table" or "variable" propertyType is there
 % mprops = metaproperties(t1);
 % for n = 1:numel(mprops)
 %    [num2str(n) ' ' mprops(n).Name]
 % end
-% 
+%
 % %mclass = metaclass(p1);
 % %mprops = mclass.PropertyList;
-% 
+%
 % mprops = metaproperties(p1);
 % mnames = {mprops.Name};
 % mtypes = mclass.PropertyList
-% 
+%
 % % testing
 
 %% CODE GRAVEYARD

@@ -1,60 +1,59 @@
 function TT = struct2timetable(Struct,varargin)
-%------------------------------------------------------------------------------
-p                 = inputParser;
-p.FunctionName    = mfilename;
-p.CaseSensitive   = false;
-p.KeepUnmatched   = true;
 
-defaultRowTimes   = NaT;
-defaultVarNames   = fieldnames(Struct);
-defaultVarUnits   = {};
-defaultRowNames   = {};
+   p                 = inputParser;
+   p.FunctionName    = mfilename;
+   p.CaseSensitive   = false;
+   p.KeepUnmatched   = true;
 
-validStruct    = @(x)validateattributes(x,{'struct'},{'nonempty'},            ...
-   'struct2timetable','Struct',1);
-validTime      = @(x)validateattributes(x,{'datetime'},{'nonempty'},          ...
-   'struct2timetable','RowTimes');
-validVarNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
-   'struct2timetable','VariableNames');
-validVarUnits  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
-   'struct2timetable','VariableUnits');
-validRowNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
-   'struct2timetable','RowNames');
+   defaultRowTimes   = NaT;
+   defaultVarNames   = fieldnames(Struct);
+   defaultVarUnits   = {};
+   defaultRowNames   = {};
 
-addRequired(   p,'Struct',                         validStruct          );
-addParameter(  p,'RowTimes',     defaultRowTimes,  validTime            );
-addParameter(  p,'VariableNames',defaultVarNames,  validVarNames        );
-addParameter(  p,'VariableUnits',defaultVarUnits,  validVarUnits        );
-addParameter(  p,'RowNames',     defaultRowNames,  validRowNames        );
-addParameter(  p,'AsArray',      false,            @(x)islogical(x)     );
+   validStruct    = @(x)validateattributes(x,{'struct'},{'nonempty'},            ...
+      'struct2timetable','Struct',1);
+   validTime      = @(x)validateattributes(x,{'datetime'},{'nonempty'},          ...
+      'struct2timetable','RowTimes');
+   validVarNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+      'struct2timetable','VariableNames');
+   validVarUnits  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+      'struct2timetable','VariableUnits');
+   validRowNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+      'struct2timetable','RowNames');
 
-parse(p,Struct,varargin{:});
+   addRequired(   p,'Struct',                         validStruct          );
+   addParameter(  p,'RowTimes',     defaultRowTimes,  validTime            );
+   addParameter(  p,'VariableNames',defaultVarNames,  validVarNames        );
+   addParameter(  p,'VariableUnits',defaultVarUnits,  validVarUnits        );
+   addParameter(  p,'RowNames',     defaultRowNames,  validRowNames        );
+   addParameter(  p,'AsArray',      false,            @(x)islogical(x)     );
 
-Struct         = p.Results.Struct;
-RowTimes       = p.Results.RowTimes;
-VariableNames  = p.Results.VariableNames;
-VariableUnits  = p.Results.VariableUnits;
-RowNames       = p.Results.RowNames;
-AsArray        = p.Results.AsArray;
-%------------------------------------------------------------------------------
+   parse(p,Struct,varargin{:});
 
-T  = struct2table(Struct,'AsArray',AsArray,'RowNames',RowNames);
+   Struct         = p.Results.Struct;
+   RowTimes       = p.Results.RowTimes;
+   VariableNames  = p.Results.VariableNames;
+   VariableUnits  = p.Results.VariableUnits;
+   RowNames       = p.Results.RowNames;
+   AsArray        = p.Results.AsArray;
 
-% I think I can just let table2timetable handle this
-if isnat(RowTimes)
-   % RowTimes = findRowTimes(T);
-   % TT = table2timetable(T,'RowTimes',RowTimes);
-   TT = table2timetable(T);
-else
-   TT = table2timetable(T,'RowTimes',RowTimes);
-end
+   T  = struct2table(Struct,'AsArray',AsArray,'RowNames',RowNames);
 
-if ~isequal(VariableNames,defaultVarNames)
-   TT.Properties.VariableNames = VariableNames;
-end
+   % I think I can just let table2timetable handle this
+   if isnat(RowTimes)
+      % RowTimes = findRowTimes(T);
+      % TT = table2timetable(T,'RowTimes',RowTimes);
+      TT = table2timetable(T);
+   else
+      TT = table2timetable(T,'RowTimes',RowTimes);
+   end
 
-TT.Properties.VariableUnits = VariableUnits;
-TT = renametimetabletimevar(TT);
+   if ~isequal(VariableNames,defaultVarNames)
+      TT.Properties.VariableNames = VariableNames;
+   end
+
+   TT.Properties.VariableUnits = VariableUnits;
+   TT = renametimetabletimevar(TT);
 
 end
 
