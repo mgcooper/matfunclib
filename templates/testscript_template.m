@@ -1,4 +1,5 @@
 %TEST_FUNCNAME test funcname
+%#ok<*NASGU> 
 
 % Define test data
 S = struct('field1', 'value1', 'field2', 'value2');

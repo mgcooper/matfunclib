@@ -22,8 +22,9 @@ arguments
    foldername (1,:) string = pwd() % fileparts(mfilename('fullpath'));
    opts.subfolders (1,1) logical = false;
    opts.asstruct (1,1) logical = true
-   opts.aspathlist (1,1) logical = false
+   opts.aslist (1,1) logical = false
    opts.asstring (1,1) logical = false
+   opts.fullpath (1,1) logical = false
    opts.mfiles (1,1) logical = false
 end
 
@@ -41,8 +42,13 @@ if opts.mfiles == true
    % list = list(cellfun(@ismfile, {list.name}));
 end
 
-if opts.aspathlist == true
-   list = transpose(fullfile({list.folder},{list.name}));
+if opts.aslist == true
+   
+   if opts.fullpath
+      list = transpose(fullfile({list.folder},{list.name}));
+   else
+      list = transpose(fullfile({list.name}));
+   end
    
    % convert to string array if requested
    if opts.asstring == true

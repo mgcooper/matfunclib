@@ -1,88 +1,95 @@
 function makecontents(varargin)
-%MAKECONTENTS make contents.m for each toolbox folder including packages
-%
-%
-%
-%
-% See also
+   %MAKECONTENTS make contents.m for each toolbox folder including packages
+   %
+   %
+   %
+   %
+   % See also
 
 
-% toolbox path
-tbxpath = tbx.internal.projectpath('toolbox');
+   % toolbox path
+   if nargin < 1
+      tbxpath = tbx.internal.projectpath('toolbox');
+   else
+      tbxpath = varargin{1};
+   end
 
-% toolbox contents
-% tbxlist = what(tbxpath);
+   % toolbox contents
+   % tbxlist = what(tbxpath);
 
-% package and subpackage folders
-pkglist = mpackagefolders(tbxpath, "aspathlist", true, "asstring", true);
+   % package and subpackage folders
+   pkglist = mpackagefolders(tbxpath, "aspathlist", true, "asstring", true);
 
-% traverse package folders and generate a contents report in each one
-for thispkg = pkglist(:).'
-   processOnePackage(thispkg);
+   % traverse package folders and generate a contents report in each one
+   for thispkg = pkglist(:).'
+      processOnePackage(thispkg);
+   end
 end
 
 %% subfunction to handle each package folder individually
 function processOnePackage(thispkg)
 
-filelist = tbx.internal.filelist(thispkg, "aspathlist", true, ...
-   "asstring", true, "mfiles", true);
+   % With "mfiles", true, this will return an empty list for docs/html folders.
+   filelist = tbx.internal.filelist(thispkg, "aslist", true, ...
+      "fullpath", true, "asstring", true, "mfiles", true);
 
-if isempty(filelist)
-   return
-end
-
-if any(strncmp(reverse(filelist), reverse("Contents.m"), 10))
-   % If a Contents.m file exists in this directory, copy it to a temp file so it
-   % is not included in the new Contents.m file.
-   [backupfile, originalfile, tmpfile] = backupContentsFile(filelist, true);
-
-   % If successful, copy the tmpfile to the backupfile.
-   success = true;
-   try
-      cdobj = tbx.internal.withcd(thispkg); %#ok<NASGU> 
-      tbx.internal.updatecontents;
-      
-      % updatecontents works but needs the Contents.m files to already exist
-      % contentsrpt(char(thispkg))
-      % makecontentsfile(char(thispkg))
-      
-      % also revisit the FSDA toolbox function:
-      % makecontentsfileFS
-   catch
-      % otherwise restore the original file
-      success = false;
-      fprintf(2, 'Error occurred while generating contents for package %s. Restoring the original Contents.m\n', thispkg);
+   if isempty(filelist)
+      return
    end
-   
-   if success == true
-      cleanupfun(tmpfile, backupfile)
+
+   if any(strncmp(reverse(filelist), reverse("Contents.m"), 10))
+      % If a Contents.m file exists in this directory, copy it to a temp file so it
+      % is not included in the new Contents.m file.
+      [backupfile, originalfile, tmpfile] = backupContentsFile(filelist, true);
+
+      % If successful, copy the tmpfile to the backupfile.
+      success = true;
+      try
+         cdobj = tbx.internal.withcd(thispkg); %#ok<NASGU>
+         tbx.internal.updatecontents;
+
+         % updatecontents works but needs the Contents.m files to already exist
+         % contentsrpt(char(thispkg))
+         % makecontentsfile(char(thispkg))
+
+         % also revisit the FSDA toolbox function:
+         % makecontentsfileFS
+      catch
+         % otherwise restore the original file
+         success = false;
+         fprintf(2, 'Error occurred while generating contents for package %s. Restoring the original Contents.m\n', thispkg);
+      end
+
+      if success == true
+         cleanupfun(tmpfile, backupfile)
+      else
+         cleanupfun(tmpfile, originalfile)
+      end
    else
-      cleanupfun(tmpfile, originalfile)
-   end
-else
-   % no existing Contents file, try to make one
-   try
-      makecontentsfile(char(thispkg))
-   catch
+      % no existing Contents file, try to make one
+      try
+         makecontentsfile(char(thispkg))
+      catch
+      end
    end
 end
-
 %% local functions
 
 % temporary backup file
 function [bkfile, ogfile, tmpfile] = backupContentsFile(filelist, dobackup)
-if dobackup
-   ifile = strncmp(reverse(filelist), reverse("Contents.m"), 10);
-   tmpfile = tempfile('fullpath');
-   bkfile = ['Contents_' strrep(tbx.internal.getversion(),'.','') '.m'];
-   ogfile = filelist(ifile);
-   bkfile = fullfile(fileparts(ogfile), bkfile);
-   movefile(ogfile, tmpfile)
+   if dobackup
+      ifile = strncmp(reverse(filelist), reverse("Contents.m"), 10);
+      tmpfile = tempfile('fullpath');
+      bkfile = ['Contents_' strrep(tbx.internal.getversion(),'.','') '.m'];
+      ogfile = filelist(ifile);
+      bkfile = fullfile(fileparts(ogfile), bkfile);
+      movefile(ogfile, tmpfile)
+   end
 end
 
 function cleanupfun(tmpfile, destinationfile)
-movefile(tmpfile, destinationfile);
-
+   movefile(tmpfile, destinationfile);
+end
 %% oncleanup object
 
 % To use this, it might work to put the object creation after the try-catch and
