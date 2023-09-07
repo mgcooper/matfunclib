@@ -1,5 +1,5 @@
 function assertSuccess(fnc, eid, varargin)
-%ASSERTSUCCESS assert success using function handle and error id
+%ASSERTSUCCESS Assert success using function handle and error id.
 
    import matlab.unittest.diagnostics.Diagnostic;
    import matlab.unittest.constraints.Throws;

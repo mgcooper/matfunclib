@@ -1,6 +1,5 @@
 function assertError(fh, eid, varargin)
-%ASSERTERROR assert error using function handle and error id
-
+%ASSERTERROR Assert error using function handle and error id.
    import matlab.unittest.diagnostics.Diagnostic;
    import matlab.unittest.constraints.Throws;
    
