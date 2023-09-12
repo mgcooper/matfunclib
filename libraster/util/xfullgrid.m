@@ -1,53 +1,45 @@
 function X = xfullgrid(varargin)
-%XFULLGRID convert vectors to fullgrid (meshgrid) format
-%
-%  X = XFULLGRID(X) convert coordinate vector X to fullgrid (meshgrid) format
-%  X = XFULLGRID(X, Y) convert X, Y coordinates to fullgrid (meshgrid) format
-%  and return X.
-%  [X, Y] = XFULLGRID(X, Y, 'gridvectors') returns X as a grid vector
-%  [X, Y] = XFULLGRID(X, Y, 'coordinates') returns X as a coordinate list
-% 
-% Example
-%
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also gridvec, fastgrid, meshgrid, ndgrid
+   %XFULLGRID Convert vectors to fullgrid (meshgrid) format.
+   %
+   %  X = XFULLGRID(X) convert coordinate vector X to fullgrid (meshgrid) format
+   %  X = XFULLGRID(X, Y) convert X, Y coordinates to fullgrid (meshgrid) format
+   %  and return X.
+   %  [X, Y] = XFULLGRID(X, Y, 'gridvectors') returns X as a grid vector
+   %  [X, Y] = XFULLGRID(X, Y, 'coordinates') returns X as a coordinate list
+   %
+   % See also: gridvec, fastgrid, meshgrid, ndgrid
 
-%% main code
+   % input checks
+   narginchk(1, 3)
 
-% input checks
-narginchk(1, 3)
+   % Check for output format option
+   [opt, args, nargs] = parseoptarg(varargin, {'coordinates', 'gridvectors'});
 
-% Check for output format option
-[opt, args, nargs] = parseoptarg(varargin, {'coordinates', 'gridvectors'});
+   % Parse remaining arguments
+   X = args{1};
+   if nargs > 1
+      Y = args{2};
+   else
+      Y = X;
+   end
 
-% Parse remaining arguments
-X = args{1};
-if nargs > 1
-   Y = args{2};
-else
-   Y = X;
-end
+   % Convert X, Y to fullgrids oriented E-W (ascending) and N-S (descending)
+   X = meshgrid(xgridvec(X), ygridvec(Y));
 
-% Convert X, Y to fullgrids oriented E-W (ascending) and N-S (descending)
-X = meshgrid(xgridvec(X), ygridvec(Y));
-      
-% Convert to requested output format
-if strcmp(opt, 'coordinates')
-   X = X(:);
-elseif strcmp(opt,'gridvectors')
-   X = xgridvec(X);
-end
-      
+   % Convert to requested output format
+   if strcmp(opt, 'coordinates')
+      X = X(:);
+   elseif strcmp(opt,'gridvectors')
+      X = xgridvec(X);
+   end
+
 end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

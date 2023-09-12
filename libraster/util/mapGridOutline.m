@@ -1,47 +1,36 @@
 function varargout = mapGridOutline(X, Y, dX, dY, varargin)
-%MAPGRIDOUTLINE create a polygon representing the outline of a map grid
-%
-%  P = MAPGRIDOUTLINE(X, Y) returns polyshape P corresponding to the outline
-%  (grid frame) of the regular grid defined by coordinates X and Y. The cell
-%  spacing is inferred from the X, Y data, and is used to extend the grid frame
-%  1/2 cell size in each direction from the min/max X/Y coordinates.
-% 
-%  P = MAPGRIDOUTLINE(X, Y, dX, dY) uses dX and dY for the cell spacing.
-% 
-%  [PX, PY] = MAPGRIDOUTLINE(X, Y) returns polygon vertices PX, PY.
-% 
-%  [PX, PY, P] = MAPGRIDOUTLINE(X, Y) also returns a polyshape P.
-% 
-% Example
-%
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also mapbox, geobox
+   %MAPGRIDOUTLINE create a polygon representing the outline of a map grid
+   %
+   %  P = MAPGRIDOUTLINE(X, Y) returns polyshape P corresponding to the outline
+   %  (grid frame) of the regular grid defined by coordinates X and Y. The cell
+   %  spacing is inferred from the X, Y data, and is used to extend the grid
+   %  frame 1/2 cell size in each direction from the min/max X/Y coordinates.
+   %
+   %  P = MAPGRIDOUTLINE(X, Y, dX, dY) uses dX and dY for the cell spacing.
+   %
+   %  [PX, PY] = MAPGRIDOUTLINE(X, Y) returns polygon vertices PX, PY.
+   %
+   %  [PX, PY, P] = MAPGRIDOUTLINE(X, Y) also returns a polyshape P.
+   %
+   % See also: mapbox, geobox
 
-%% main code
+   % input checks
+   narginchk(2,Inf)
 
-% input checks
-narginchk(2,Inf)
+   % simplest input parsing
+   if (nargin<3), [~, dX, dY] = mapGridInfo(X, Y); end
+   if (nargin==3), dY = dX; end
 
-[varargin{:}] = convertStringsToChars(varargin{:});
-
-% simplest input parsing
-if (nargin<3), [~, dX, dY] = mapGridInfo(X, Y); end
-if (nargin==3), dY = dX; end
-
-% create the outline
-[varargout{1:nargout}] = mapbox( ...
-   [min(X(:))-dX/2 max(X(:))+dX/2], [min(Y(:))-dY/2 max(Y(:))+dY/2]);
-
+   % create the outline
+   [varargout{1:nargout}] = mapbox( ...
+      [min(X(:))-dX/2 max(X(:))+dX/2], [min(Y(:))-dY/2 max(Y(:))+dY/2]);
 end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -10,4 +10,3 @@ y = (yll + (rows.*cellsize - .5*cellsize));
 x = (xll + (cols.*cellsize - .5*cellsize));
 
 end
-
