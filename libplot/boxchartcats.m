@@ -1,401 +1,327 @@
-function varargout = boxchartcats(T,datavar,xgroupvar,cgroupvar, ...
-   BoxChartOpts,CustomOpts)
-%BOXCHARTCATS box chart by groups along x-axis and by color within groups
-%
-% Description
-%
-% This function creates a box chart of the data grouped by specified categories.
-%
-% Syntax
-%
-% h = boxchartcats(T, datavar) creates a box chart, or box plot, for column
-% DATAVAR in table T. If T.(DATAVAR) is a vector, then boxchart creates a single
-% box chart. In this mode, BOXCHARTCATS behaves exactly like BOXCHART(ydata)
-% where ydata = T.(datavar).
-%
-% h = boxchartcats(T, datavar, xgroupvar) groups the data in the vector
-% T.(DATAVAR) according to the unique values in T.(xgroupvar) and plots each
-% group of data as a separate box chart. xgroupdata determines the position of each box chart along
-% the x-axis. ydata must be a vector, and xgroupdata must have the same length
-% as ydata.
-%
-% creates a box chart, or box plot, for column
-% DATAVAR in table T. If T.(DATAVAR) is a vector, then boxchart creates a single
-% box chart. In this mode, BOXCHARTCATS behaves exactly like BOXCHART(ydata)
-% where ydata = T.(datavar).
-%
-% h = boxchartcats(T, datavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse)
-% uses color to differentiate between box charts. The software groups the data
-% in the vector ydata according to the unique value combinations in xgroupdata
-% (if specified) and cgroupdata, and plots each group of data as a separate box
-% chart. The vector cgroupdata then determines the color of each box chart.
-% ydata must be a vector, and cgroupdata must have the same length as ydata.
-% Specify the 'GroupByColor' name-value pair argument after any of the input
-% argument combinations in the previous syntaxes.
-%
-% h = boxchartcats(_, Name, Value) specifies additional chart options using one
-% or more name-value pair arguments. For example, you can compare sample medians
-% using notches by specifying 'Notch','on'. Specify the name-value pair
-% arguments after all other input arguments. For a list of properties, see
-% BoxChart Properties.
-%
-% Input Arguments
-%
-% T: A table containing the data to be plotted.
-% datavar: The name of the variable in the table T that contains the data values
-% for the box chart.
-% xgroupvar: The name of the categorical variable in the table T used to define
-% groups along the x-axis.
-% cgroupvar: The name of the categorical variable in the table T used to define
-% groups for the colors of the boxes.
-% xgroupuse: A cell array of categories to be used for the x-axis grouping.
-% cgroupuse: A cell array of categories to be used for the color grouping.
-% varargin: Additional optional arguments for the boxchart function.
-%
-% Output Argument
-%
-% H: A handle to the created box chart.
-%
-% Example
-%
-% This example reads data from a CSV file into a table T, and plots a box chart
-% of the Value variable, grouped by the CategoryX and CategoryC variables. The
-% x-axis grouping includes categories 'Cat1', 'Cat2', and 'Cat3', while the
-% color grouping includes categories 'Group1' and 'Group2'.
-%
-% T = readtable('data.csv');
-% datavar = 'Value';
-% xgroupvar = 'CategoryX';
-% cgroupvar = 'CategoryC';
-% xgroupuse = {'Cat1', 'Cat2', 'Cat3'};
-% cgroupuse = {'Group1', 'Group2'};
-%
-% h = boxchartcats(T, datavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse);
-%
-% Use optional arguments:
-%
-% h = boxchartcats(T, datavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse, ...
-%    'Notch','on','MarkerStyle','none');
-%
-% Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
-%
-% See also reordergroups, reordercats, boxchart
-
-% Note, if notch is off, the mean looks nice as a solid white circle. If notch
-% is on, the mean may fall outside the shaded region, so face color is needed.
-
-% To add custom whiskers:
-% arrayfun(@(n) set(H(n),'WhiskerLineStyle','none'),1:numel(H))
-% then plot custom ones
-
-% Note, the columns need to be categorical, but the 'x/cgroupvar' and
-% 'xgroupuse/c' inputs can be strings/chars/cellstr or categorical. Specifying
-% 'string' in the arguments block performs an implicit conversion to string, and
-% ismember('someCategoricalVariable','someStringVariable') works but iff the
-% string is scalar (or cell array of chars), so the approach taken here is to
-% convert to string. In a few places, attention is needed to convert to string
-% if non-scalar string/categorical comparisons are made. 
-
-%---------------------- parse arguments
-arguments
-   T table
-   datavar (1,1) string { mustBeNonempty(datavar) }
-   xgroupvar (1,1) string { mustBeNonempty(xgroupvar) }
-   cgroupvar (1,1) string = "none"
-   BoxChartOpts.?matlab.graphics.chart.primitive.BoxChart
-   CustomOpts.PlotMeans (1,1) logical = true
-   CustomOpts.ShadeGroups (1,1) logical = true
-   CustomOpts.ConnectMeans (1,1) logical = false
-   CustomOpts.ConnectMedians (1,1) logical = false
-   CustomOpts.Legend (1,1) string = "on"
-   CustomOpts.LegendText (:,1) string = ""
-   CustomOpts.XGroupMembers (:,1) string = "none"
-   CustomOpts.CGroupMembers (:,1) string = "none"
-%    CustomOpts.GroupSelect (:,1) string = "none"
-   CustomOpts.SelectVars (:,1) string = "none"
-end
-
-% Override default BoxChart settings
-ResetFields = {'JitterOutliers','Notch'};
-ResetValues = {true,'on'};
-for n = 1:numel(ResetFields)
-   if ~ismember(ResetFields{n},fieldnames(BoxChartOpts))
-      BoxChartOpts.(ResetFields{n}) = ResetValues{n};
+function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, ...
+      CustomOpts, BoxChartOpts)
+   arguments
+      T tabular
+      ydatavar (1,1) string { mustBeNonempty }
+      xgroupvar (1,1) string { mustBeNonempty }
+      cgroupvar string = string.empty()
+      CustomOpts.XGroupMembers (:, 1) string = groupmembers(T, xgroupvar)
+      CustomOpts.CGroupMembers (:, 1) string = groupmembers(T, cgroupvar)
+      CustomOpts.RowSelectVar string = string.empty()
+      CustomOpts.RowSelectMembers (:, 1) string = groupmembers(T, RowSelectVar)
+      CustomOpts.PlotMeans (1,1) logical = true
+      CustomOpts.ShadeGroups (1,1) logical = true
+      CustomOpts.ConnectMeans (1,1) logical = false
+      CustomOpts.ConnectMedians (1,1) logical = false
+      CustomOpts.Legend (1,1) string = "on"
+      CustomOpts.LegendText string = string.empty()
+      BoxChartOpts.?matlab.graphics.chart.primitive.BoxChart
    end
-end
-varargs = namedargs2cell(BoxChartOpts);
-%--------------------------------------
+   %BOXCHARTCATS  box chart by groups along x-axis and by color within groups
+   %
+   % Description
+   %
+   % This function creates a box chart of the data grouped by specified
+   % categories.
+   %
+   % Syntax
+   %
+   % h = boxchartcats(T, ydatavar) creates a box chart, or box plot, for column
+   % DATAVAR in table T. If T.(DATAVAR) is a vector, then boxchart creates a
+   % single box chart. In this mode, BOXCHARTCATS behaves exactly like
+   % BOXCHART(ydata) where ydata = T.(ydatavar).
+   %
+   % h = boxchartcats(T, ydatavar, xgroupvar) groups the data in the vector
+   % T.(DATAVAR) according to the unique values in T.(xgroupvar) and plots each
+   % group of data as a separate box chart. xgroupdata determines the position
+   % of each box chart along the x-axis. ydata must be a vector, and xgroupdata
+   % must have the same length as ydata.
+   %
+   % creates a box chart, or box plot, for column DATAVAR in table T. If
+   % T.(DATAVAR) is a vector, then boxchart creates a single box chart. In this
+   % mode, BOXCHARTCATS behaves exactly like BOXCHART(ydata) where ydata =
+   % T.(ydatavar).
+   %
+   % h = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse)
+   % uses color to differentiate between box charts. The software groups the
+   % data in the vector ydata according to the unique value combinations in
+   % xgroupdata (if specified) and cgroupdata, and plots each group of data as a
+   % separate box chart. The vector cgroupdata then determines the color of each
+   % box chart. ydata must be a vector, and cgroupdata must have the same length
+   % as ydata. Specify the 'GroupByColor' name-value pair argument after any of
+   % the input argument combinations in the previous syntaxes.
+   %
+   % h = boxchartcats(_, Name, Value) specifies additional chart options using
+   % one or more name-value pair arguments. For example, you can compare sample
+   % medians using notches by specifying 'Notch','on'. Specify the name-value
+   % pair arguments after all other input arguments. For a list of properties,
+   % see BoxChart Properties.
+   %
+   % Input Arguments
+   %
+   % T: A table containing the data to be plotted. ydatavar: The name of the
+   % variable in the table T that contains the data values for the box chart.
+   % xgroupvar: The name of the categorical variable in the table T used to
+   % define groups along the x-axis. cgroupvar: The name of the categorical
+   % variable in the table T used to define groups for the colors of the boxes.
+   % xgroupuse: A cell array of categories to be used for the x-axis grouping.
+   % cgroupuse: A cell array of categories to be used for the color grouping.
+   % varargin: Additional optional arguments for the boxchart function.
+   %
+   % Output Argument
+   %
+   % H: A handle to the created box chart.
+   %
+   % Example
+   %
+   % This example reads data from a CSV file into a table T, and plots a box
+   % chart of the Value variable, grouped by the CategoryX and CategoryC
+   % variables. The x-axis grouping includes categories 'Cat1', 'Cat2', and
+   % 'Cat3', while the color grouping includes categories 'Group1' and 'Group2'.
+   %
+   % T = readtable('data.csv'); ydatavar = 'Value'; xgroupvar = 'CategoryX';
+   % cgroupvar = 'CategoryC'; xgroupuse = {'Cat1', 'Cat2', 'Cat3'}; cgroupuse =
+   % {'Group1', 'Group2'};
+   %
+   % h = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse);
+   %
+   % Use optional arguments:
+   %
+   % h = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse,
+   % ...
+   %    'Notch','on','MarkerStyle','none');
+   %
+   % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
+   %
+   % See also reordergroups, reordercats, boxchart
 
-% import groupstats package
-import gs.groupselect
-import gs.boxchartxdata
+   % Note, if notch is off, the mean looks nice as a solid white circle. If notch
+   % is on, the mean may fall outside the shaded region, so face color is needed.
 
-%---------------------- validate inputs
+   % To add custom whiskers:
+   % arrayfun(@(n) set(H(n),'WhiskerLineStyle','none'),1:numel(H))
+   % then plot custom ones
 
-xgroupuse = CustomOpts.XGroupMembers;
-cgroupuse = CustomOpts.CGroupMembers;
+   % Note, the columns need to be categorical, but the 'x/cgroupvar' and
+   % 'xgroupuse/c' inputs can be strings/chars/cellstr or categorical. Specifying
+   % 'string' in the arguments block performs an implicit conversion to string, and
+   % ismember('someCategoricalVariable','someStringVariable') works but iff the
+   % string is scalar (or cell array of chars), so the approach taken here is to
+   % convert to string. In a few places, attention is needed to convert to string
+   % if non-scalar string/categorical comparisons are made.
 
-% Require at least one grouping variable
-if cgroupvar == "none" && xgroupvar == "none"
-   error('No xgroupvar or cgroupvar provided, try boxchart(T.(datavar))')
-end
-
-% Confirm datavar and xgroupvar are valid variables of table T
-validatestring(datavar,T.Properties.VariableNames,mfilename,'datavar',2);
-validatestring(xgroupvar,T.Properties.VariableNames,mfilename,'xgroupvar',3);
-
-% Downselect the table by rows if requested
-if CustomOpts.SelectVars ~= "none"
-   T = groupselect(T, T.Properties.VariableNames, CustomOpts.SelectVars);
-end
-
-% Confirm each member of xgroupuse/c are members of T.(x/cgroupvars)
-if xgroupuse == "none" % use all unique values in xgroupvar
-   xgroupuse = string(unique(T.(xgroupvar)));
-else
-   arrayfun(@(n) validatestring(xgroupuse(n), ...
-      string(unique(T.(xgroupvar))),mfilename,'xgroupuse',5), 1:numel(xgroupuse));
-end
-inxgroup = ismember(string(T.(xgroupvar)),xgroupuse);
-
-if cgroupvar == "none"
-   % Deal with the case where 
-   incgroup = true(height(T),1);
-else
-   validatestring(cgroupvar,T.Properties.VariableNames,mfilename,'cgroupvar',4);
+   %---------------------- parse arguments
    
-   if cgroupuse == "none" % use all unique values in cgroupvar
-      cgroupuse = string(unique(T.(cgroupvar)));
-   else
-      arrayfun(@(n) validatestring(cgroupuse(n), ...
-         string(unique(T.(cgroupvar))),mfilename,'cgroupuse',6), 1:numel(cgroupuse));
+   % Override default BoxChart settings
+   ResetFields = {'JitterOutliers','Notch'};
+   ResetValues = {true,'on'};
+   for n = 1:numel(ResetFields)
+      if ~ismember(ResetFields{n},fieldnames(BoxChartOpts))
+         BoxChartOpts.(ResetFields{n}) = ResetValues{n};
+      end
    end
-   incgroup = ismember(string(T.(cgroupvar)),cgroupuse);
-end
+   varargs = namedargs2cell(BoxChartOpts);
+   %--------------------------------------
 
-% If xgroupvar/cgroupvar are not categorical, try to convert them
-try T.(xgroupvar) = categorical(T.(xgroupvar)); catch; end
-try T.(cgroupvar) = categorical(T.(cgroupvar)); catch; end
+   % import groupstats package
+   import gs.groupselect
+   import gs.boxchartxdata
+   import gs.prepareTableGroups
 
-%--------------------------------------
+   %---------------------- validate inputs
+   T = prepareTableGroups(T, ydatavar, string.empty(), xgroupvar, cgroupvar, ...
+      CustomOpts.XGroupMembers, CustomOpts.CGroupMembers, ...
+      CustomOpts.RowSelectVar, CustomOpts.RowSelectMembers);
 
-%---------------------- main function
-
-hold off % repeated calls create problems
-
-% Subset the categorical variable columns
-Tcats = T(:,vartype('categorical'));
-
-% Subset rows that are in both xgroupuse and cgroupuse
-Tplot = T(incgroup & inxgroup, :);
-
-% Remove cats that are not in xgroupuse
-allcats = categories(Tcats.(xgroupvar));
-badcats = allcats(~ismember(allcats,xgroupuse));
-Tplot.(xgroupvar) = removecats(Tplot.(xgroupvar),badcats);
-
-% Remove cats that are not in cgroupuse
-if cgroupvar ~= "none"
-   allcats = categories(Tcats.(cgroupvar));
-   badcats = allcats(~ismember(allcats,cgroupuse));
-   Tplot.(cgroupvar) = removecats(Tplot.(cgroupvar),badcats);
-end
-
-% Try to convert YData to double if it is categorical
-if iscategorical(Tplot.(datavar))
+   % Assign the data to plot
+   XData = T.(xgroupvar);
+   YData = T.(ydatavar);
    try
-      Tplot.(datavar) = cat2double(Tplot.(datavar));
+      CData = T.(cgroupvar);
    catch
-      % let the built-in error catching do the work.
+      CData = true(size(YData));
+   end
+   %---------------------- main function
+
+   hold off % repeated calls create problems
+
+   % Add a legend
+   H = categoricalBoxChart(XData, YData, CData, ydatavar, CustomOpts, varargs);
+
+   % If "markerstyle", "none" is in varargin, clip the ylimits to the data
+   setboxchartylim(H);
+
+   % Add the means if requested
+   plotboxchartstats(CustomOpts,H,XData,YData,CData);
+
+   % Add shaded bars to distinguish groups if requested
+   shadeboxchartgroups(CustomOpts,H);
+
+   % for troubleshooting
+   % muTbl = groupsummary(Tplot,{xgroupvar,cgroupvar}, "mean", ydatavar);
+   if CustomOpts.Legend == "off"
+      legend off
+   end
+
+   hold off
+   switch nargout
+      case 1
+         varargout{1} = H;
    end
 end
 
-% Assign the data to plot
-XData = Tplot.(xgroupvar);
-YData = Tplot.(datavar);
-try
-   CData = Tplot.(cgroupvar);
-catch
-   CData = true(size(YData));
-end
+%% Local Functions
+function H = categoricalBoxChart(XData, YData, CData, YDataVar, CustomOpts, varargs)
+   
+   % Create the box chart
+   H = boxchart( XData, YData, 'GroupByColor', CData, varargs{:} );
+   
+   % Add the legend
+   withwarnoff('MATLAB:legend:IgnoringExtraEntries');
+   legendtxt = CustomOpts.LegendText;
+   if isempty(legendtxt)
+      legendtxt = unique(CData);
+   end
+   try
+      legend(legendtxt, ...
+         'Orientation', 'horizontal', ...
+         'Location', 'northoutside', ...
+         'AutoUpdate', 'off', ...
+         'numcolumns', numel(legendtxt) );
+   catch
+   end
 
-% Create the box chart
-H = createCategoricalBoxChart(XData,YData,CData,datavar,CustomOpts,varargs);
+   % Add a ylabel
+   ylabel(YDataVar);
 
-% If "markerstyle", "none" is in varargin, clip the ylimits to the data
-setboxchartylim(H);
-
-% Add the means if requested
-plotboxchartstats(CustomOpts,H,XData,YData,CData);
-
-% Add shaded bars to distinguish groups if requested
-shadeboxchartgroups(CustomOpts,H);
-
-% for troubleshooting
-% muTbl = groupsummary(Tplot,{xgroupvar,cgroupvar}, "mean", datavar);
-if CustomOpts.Legend == "off"
-   legend off
-end
-
-hold off
-switch nargout
-   case 1
-      varargout{1} = H;
-end
-
-end
-
-function H = createCategoricalBoxChart(XData,YData,CData,datavar,CustomOpts,varargs)
-% Create the boxcharts
-H = boxchart( XData, YData, 'GroupByColor', CData, varargs{:} );
-
-% Add the legend
-withwarnoff('MATLAB:legend:IgnoringExtraEntries');
-legendtxt = CustomOpts.LegendText;
-if legendtxt == ""
-   legendtxt = unique(CData);
-end
-try
-   legend(legendtxt, ...
-      'Orientation', 'horizontal', ...
-      'Location', 'northoutside', ...
-      'AutoUpdate', 'off', ...
-      'numcolumns', numel(legendtxt) );
-catch
-end
-
-% Add a ylabel
-ylabel(datavar);
-
-% Format the plot
-set(gca, "YGrid", "off", "XGrid", "off", "XMinorTick", "off", "box", ...
-   "on", "TickLength", [0 0]);
-
+   % Format the plot
+   set(gca, "YGrid", "off", "XGrid", "off", "XMinorTick", "off", "box", ...
+      "on", "TickLength", [0 0]);
 end
 
 function plotboxchartstats(opts,H,XData,YData,CData)
 
-hold on;
+   hold on;
 
-% Load default colors to match the mean symbols to the boxcharts
-colors = defaultcolors;
+   % Load default colors to match the mean symbols to the boxcharts
+   colors = defaultcolors;
 
-% Get the x-coordinate of each boxchart center and the mean of each boxchart
-[mu, med, xlocs] = boxchartstats(H, XData, YData, CData);
+   % Get the x-coordinate of each boxchart center and the mean of each boxchart
+   [mu, med, xlocs] = boxchartstats(H, XData, YData, CData);
 
-% Plot the means
-if opts.PlotMeans
-   arrayfun(@(n) scatter(xlocs(n,:), mu(n,:), 30, colors(n, :), 'filled', 's'), ...
-      1:numel(H));
-end
+   % Plot the means
+   if opts.PlotMeans
+      arrayfun(@(n) scatter(xlocs(n,:), mu(n,:), 30, colors(n, :), 'filled', 's'), ...
+         1:numel(H));
+   end
 
-% Connect the means. This only works for now with single-group cats
-if opts.ConnectMeans == true
-   plot(xlocs, mu, '-', 'Color', [0.5 0.5 0.5],'HandleVisibility','off')
-end
+   % Connect the means. This only works for now with single-group cats
+   if opts.ConnectMeans == true
+      plot(xlocs, mu, '-', 'Color', [0.5 0.5 0.5],'HandleVisibility','off')
+   end
 
-% Connect the medians. 
-if opts.ConnectMedians
-   plot(xlocs, med, '-', 'Color', [0.5 0.5 0.5],'HandleVisibility','off')
-end
+   % Connect the medians.
+   if opts.ConnectMedians
+      plot(xlocs, med, '-', 'Color', [0.5 0.5 0.5],'HandleVisibility','off')
+   end
 
 end
 
 
 function [mumat, medmat, xlocs] = boxchartstats(H, XData, YData, CData);
 
-% Get the x-coordinate of each boxchart center
-[xlocs] = boxchartxdata(H);
+   % Get the x-coordinate of each boxchart center
+   [xlocs] = boxchartxdata(H);
 
-% To get same order as the boxcharts, use [XData CData], not [CData XData]
-try
-   [mu, uv] = groupsummary(YData, [XData CData], "mean"); % uv = [uv{:}];
-   med = groupsummary(YData, [XData CData], "median");
-catch
-   [mu, uv] = groupsummary(YData, XData, "mean"); % uv = [uv{:}];
-   med = groupsummary(YData, XData, "median");
-end
-% Table format: muTbl = groupsummary(Tplot,{xgroupvar,cgroupvar}, "mean", datavar);
+   % To get same order as the boxcharts, use [XData CData], not [CData XData]
+   try
+      [mu, uv] = groupsummary(YData, [XData CData], "mean"); % uv = [uv{:}];
+      med = groupsummary(YData, [XData CData], "median");
+   catch
+      [mu, uv] = groupsummary(YData, XData, "mean"); % uv = [uv{:}];
+      med = groupsummary(YData, XData, "median");
+   end
+   % Table format: muTbl = groupsummary(Tplot,{xgroupvar,cgroupvar}, "mean", ydatavar);
 
-% If there were no missing charts on any xticks:
-% mumat = reshape(mu,size(xlocs));
+   % If there were no missing charts on any xticks:
+   % mumat = reshape(mu,size(xlocs));
 
-% Instead, need to map from xlocs to mu,uv using missing values in xlocs
-mumat = nan(size(xlocs));
-medmat = nan(size(xlocs));
-try
-   mumat(~isnan(xlocs)) = mu(ismember(uv{:,2},unique(CData)));
-   medmat(~isnan(xlocs)) = med(ismember(uv{:,2},unique(CData)));
-catch
-   mumat(~isnan(xlocs)) = mu(ismember(uv,unique(XData)));
-   medmat(~isnan(xlocs)) = med(ismember(uv,unique(XData)));
-end
-   
+   % Instead, need to map from xlocs to mu,uv using missing values in xlocs
+   mumat = nan(size(xlocs));
+   medmat = nan(size(xlocs));
+   try
+      mumat(~isnan(xlocs)) = mu(ismember(uv{:,2},unique(CData)));
+      medmat(~isnan(xlocs)) = med(ismember(uv{:,2},unique(CData)));
+   catch
+      mumat(~isnan(xlocs)) = mu(ismember(uv,unique(XData)));
+      medmat(~isnan(xlocs)) = med(ismember(uv,unique(XData)));
+   end
+
 end
 
 
 function shadeboxchartgroups(CustomOpts, H)
 
-if CustomOpts.ShadeGroups == false
-   return
-end
+   if CustomOpts.ShadeGroups == false
+      return
+   end
 
-% Get the x-coordinate of the bounds of each boxchart group (the left/right-most
-% x-coordinate of each xtick group)
-[~, xleft, xright] = boxchartxdata(H);
+   % Get the x-coordinate of the bounds of each boxchart group (the left/right-most
+   % x-coordinate of each xtick group)
+   [~, xleft, xright] = boxchartxdata(H);
 
-% Get the y-coordinate of the plot bounds
-[ylow, yhigh] = bounds(ylim);
+   % Get the y-coordinate of the plot bounds
+   [ylow, yhigh] = bounds(ylim);
 
-% since we know the data is regular, fill nan's
-xleft = naninterp1(1:numel(xleft),xleft,'linear','extrap');
-xright = naninterp1(1:numel(xright),xright,'linear','extrap');
+   % since we know the data is regular, fill nan's
+   xleft = naninterp1(1:numel(xleft),xleft,'linear','extrap');
+   xright = naninterp1(1:numel(xright),xright,'linear','extrap');
 
-% To extend the shaded region halfway between each group:
-try
-   dx = mean((xleft(2:end) - xright(1:end-1)),'omitnan') / 2;
-catch
-   % This means there is only one box, maybe no shading?
-   dx = (xright - xleft) / 2;
-end
+   % To extend the shaded region halfway between each group:
+   try
+      dx = mean((xleft(2:end) - xright(1:end-1)),'omitnan') / 2;
+   catch
+      % This means there is only one box, maybe no shading?
+      dx = (xright - xleft) / 2;
+   end
 
-xleft = xleft - dx;
-xright = xright + dx;
+   xleft = xleft - dx;
+   xright = xright + dx;
 
-idxodd = 1:2:numel(xleft);
-xpatch = [xleft(idxodd); xright(idxodd); xright(idxodd); xleft(idxodd); xleft(idxodd)];
-ypatch = repmat([ylow; ylow; yhigh; yhigh; ylow], 1, numel(idxodd));
+   idxodd = 1:2:numel(xleft);
+   xpatch = [xleft(idxodd); xright(idxodd); xright(idxodd); xleft(idxodd); xleft(idxodd)];
+   ypatch = repmat([ylow; ylow; yhigh; yhigh; ylow], 1, numel(idxodd));
 
-P = patch(xpatch, ypatch, 'k', ...
-   'FaceColor', [0.5 0.5 0.5], ...
-   'FaceAlpha', 0.1, ...
-   'EdgeColor', 'none' );
+   P = patch(xpatch, ypatch, 'k', ...
+      'FaceColor', [0.5 0.5 0.5], ...
+      'FaceAlpha', 0.1, ...
+      'EdgeColor', 'none' );
 
-% Set up a listener for changes in the YLim property
-ax = gca;
-addlistener(ax, 'YLim', 'PostSet', @(src, evt) updateshadedbounds(P, ax));
+   % Set up a listener for changes in the YLim property
+   ax = gca;
+   addlistener(ax, 'YLim', 'PostSet', @(src, evt) updateshadedbounds(P, ax));
 
    function updateshadedbounds(P, ax)
-   P.YData = repmat([ax.YLim(1); ax.YLim(1); ax.YLim(2); ax.YLim(2); ax.YLim(1)], ...
-      1, size(P.Faces,1));
+      P.YData = repmat([ax.YLim(1); ax.YLim(1); ax.YLim(2); ax.YLim(2); ax.YLim(1)], ...
+         1, size(P.Faces,1));
    end
 
 end
 
 function setboxchartylim(H);
 
-if all({H.MarkerStyle}=="none")
+   if all({H.MarkerStyle}=="none")
 
-   drawnow;
+      drawnow;
 
-   ywhiskers = arrayfun(@(n) transpose(H(n).NodeChildren(4).VertexData(2,:)), ...
-      1:numel(H),'uni',0);
+      ywhiskers = arrayfun(@(n) transpose(H(n).NodeChildren(4).VertexData(2,:)), ...
+         1:numel(H),'uni',0);
 
-   ywhiskers = vertcat(ywhiskers{:});
+      ywhiskers = vertcat(ywhiskers{:});
 
-   % Compute axis limits with padding
-   ylim(minmax(ywhiskers) + [-0.01 0.01]*diff(minmax(ywhiskers)));
-end
+      % Compute axis limits with padding
+      ylim(minmax(ywhiskers) + [-0.01 0.01]*diff(minmax(ywhiskers)));
+   end
 
 end
 
@@ -442,7 +368,7 @@ end
 % end
 
 % % This should not be necessary b/c I set cgroupuse/x to all values in
-% c/xgroupvar for the case where they are "none", 
+% c/xgroupvar for the case where they are "none",
 
 % % Subset the rows for the cgroup and xgroup variables
 % if cgroupuse == "none"
@@ -450,24 +376,24 @@ end
 % else
 %    incgroup = ismember(T.(cgroupvar),cgroupuse);
 % end
-% 
+%
 % if xgroupuse == "none"
 %    inxgroup = true(height(T),1);
 % else
 %    inxgroup = ismember(T.(xgroupvar),xgroupuse);
 % end
-% 
+%
 % iplot = incgroup | inxgroup;
 
 
 % % If both xgroupvar & cgroupvar are "none", there is no grouping variable
 % if xgroupvar == "none" && cgroupvar == "none"
 %    error('No xgroupvar or cgroupvar was specified, use boxchart')
-%    
-%    % Could call createCategoricalBoxChart, or H = boxchart(T.(datavar))
-%    % H = createCategoricalBoxChart(XData,YData,CData,datavar,varargs);
+%
+%    % Could call createCategoricalBoxChart, or H = boxchart(T.(ydatavar))
+%    % H = createCategoricalBoxChart(XData,YData,CData,ydatavar,varargs);
 % end
-% 
+%
 % if cgroupvar == "none" % use all categorical variables
 %    cgroupvar = string(gettablevarnames(T,'categorical'));
 % end
@@ -562,12 +488,12 @@ end
 
 % % Array format: A and groupvars must have the same number of rows. groupvars can
 % % have multiple columns, to create multiple groups
-% A = T.(datavar);
+% A = T.(ydatavar);
 % groupvars = T.(cgroupvar);
 % [mu, uv] = groupsummary(A, groupvars, "mean");
 %
 % % This produces the data needed for boxchartcats
-% A = T.(datavar);
+% A = T.(ydatavar);
 % groupvars = [T.(cgroupvar) T.(xgroupvar)];
 % [mu, uv] = groupsummary(A, groupvars, "mean");
 % uv = horzcat(uv{:});
@@ -580,7 +506,7 @@ end
 %
 % % Table format
 % groupvars = {cgroupvar,xgroupvar};
-% muTbl = groupsummary(T,groupvars, "mean", datavar);
+% muTbl = groupsummary(T,groupvars, "mean", ydatavar);
 %
 % NOTE: none of these scatter/gscatter options seem to give what I want, because
 % they plot the group means
@@ -617,22 +543,21 @@ end
 %
 %    % this works, using YData and CData
 %    % [mu, uv] = groupsummary(A, groupvars, method)
-%    % A = T.(datavar)
+%    % A = T.(ydatavar)
 %    % [mu(:,n), uv] = groupsummary(double(YData(idx)), CData(idx), 'mean');
 %
 %    % this works, using array syntax + indexing into the table
-%    %mu(:,n) = groupsummary(Tplot.(datavar)(idx),Tplot.(cgroupvar)(idx), 'mean');
+%    %mu(:,n) = groupsummary(Tplot.(ydatavar)(idx),Tplot.(cgroupvar)(idx), 'mean');
 %
 %    % this works, using table syntax, but it returns a table
-%    % mu(:,n) = groupsummary(Tplot(idx,:),cgroupvar, 'mean',datavar);
+%    % mu(:,n) = groupsummary(Tplot(idx,:),cgroupvar, 'mean',ydatavar);
 % end
 
 %% LICENSE
-% 
+%
 % BSD 3-Clause License
 %
-% Copyright (c) 2023, Matthew Guy Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) 2023, Matthew Guy Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -645,8 +570,8 @@ end
 %    and/or other materials provided with the distribution.
 %
 % 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
+%    contributors may be used to endorse or promote products derived from this
+%    software without specific prior written permission.
 %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
