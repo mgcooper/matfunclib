@@ -24,7 +24,7 @@ function configureproject(projectpath, varargin)
 % requirements exist 
 
 if nargin == 1
-   tryscripts = {'Config','Setup','Install','Startup'};
+   tryscripts = {'Config','Setup','Install','Startup','configfile','setupfile'};
 else
    tryscripts = cellstr(varargin{1});
 end
