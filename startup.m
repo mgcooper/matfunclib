@@ -207,6 +207,12 @@ catch ME
 
 end
 
+% add projects to the path
+try
+   pathadd(getprjsourcepath('groupstats'), true, '-end')
+catch
+end
+
 % open the active project if we're in the desktop
 if usejava('desktop') && inmatlab
    workon(getactiveproject());
@@ -239,30 +245,8 @@ if inmatlab
    end
 end
 
-%% FINAL STEPS
-
-% launch toolboxes
-checkoutToolboxes()
-
-% clear vars but not the screen b/c it deletes error msgs
-clearvars
-
-% don't forget
-disp('BE GRATEFUL')
-
-%% Notes
-
-% default font is Monospaced. Some good ones include:
-% fontName = 'Verdana';
-% fontName = 'avantgarde';
-% fontName = 'BitstreamSansVeraMono';
-% fontName = 'Helvetica';
-% fontName = 'Source Sans Pro' (nice and compact also if bold)
-
-function checkoutToolboxes()
-
-   home
-
+%% Launch toolboxes
+if inmatlab
    try
       ismap(gca);
    catch
@@ -287,7 +271,22 @@ function checkoutToolboxes()
       imread('ngc6543a.jpg');
    catch
    end
-   close all
-   clearvars
-   clc
 end
+
+%% FINAL STEPS
+
+% clear vars but not the screen b/c it deletes error msgs
+clearvars
+close all
+
+% don't forget
+disp('BE GRATEFUL')
+
+%% Notes
+
+% default font is Monospaced. Some good ones include:
+% fontName = 'Verdana';
+% fontName = 'avantgarde';
+% fontName = 'BitstreamSansVeraMono';
+% fontName = 'Helvetica';
+% fontName = 'Source Sans Pro' (nice and compact also if bold)

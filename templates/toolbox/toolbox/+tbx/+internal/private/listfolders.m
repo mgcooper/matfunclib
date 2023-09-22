@@ -1,16 +1,16 @@
-function folderlist = getfolderlist(toppath, numlevels, option, currentlevel)
-   %GETFOLDERLIST Return a list of folders under a top-level directory.
+function folderlist = listfolders(toppath, numlevels, option, currentlevel)
+   %LISTFOLDERS Return a list of folders under a top-level directory.
    %
-   %  FLIST = GETFOLDERLIST(TOPPATH) Returns a cell array of folder names under
+   %  FLIST = LISTFOLDERS(TOPPATH) Returns a cell array of folder names under
    %  the top-level directory specified by TOPPATH. It does not include
    %  subdirectories.
    %
-   %  FLIST = GETFOLDERLIST(TOPPATH, NUMLEVELS) Specifies the depth of folder
+   %  FLIST = LISTFOLDERS(TOPPATH, NUMLEVELS) Specifies the depth of folder
    %  hierarchy to explore. NUMLEVELS=0 (default) only returns the folders under
    %  TOPPATH. NUMLEVELS=1 returns those folders plus their subfolders, and so
    %  on.
    %
-   %  FLIST = GETFOLDERLIST(TOPPATH, NUMLEVELS, OPTION) Specifies the format of
+   %  FLIST = LISTFOLDERS(TOPPATH, NUMLEVELS, OPTION) Specifies the format of
    %  the output list. Options: 'foldernames' (default) returns only the folder
    %  names, 'relativepaths' returns the relative path from TOPPATH, 'fullpaths'
    %  returns the full path of the folders.
@@ -22,10 +22,10 @@ function folderlist = getfolderlist(toppath, numlevels, option, currentlevel)
    %           - subfolder2/
    %               - subsubfolder1/
    %           - subfolder3/
-   %   getfolderlist('myfolder', 1, 'relativepaths') will return
+   %   listfolders('myfolder', 1, 'relativepaths') will return
    %   {'subfolder1', 'subfolder2', 'subfolder2/subsubfolder1', 'subfolder3'}.
    %
-   % See also dir
+   % See also: dir
 
    % PARSE INPUTS
    narginchk(0,4)
@@ -49,19 +49,16 @@ function folderlist = getfolderlist(toppath, numlevels, option, currentlevel)
    if currentlevel < numlevels
       for thisfolder = toplist(:)'
          nextpath = fullfile(toppath, thisfolder{:});
-         nextlist = getfolderlist(nextpath, numlevels, option, currentlevel+1);
+         nextlist = listfolders(nextpath, numlevels, option, currentlevel+1);
 
          if strcmp(option, 'relativepaths')
             nextlist = strcat(thisfolder{:}, '/', nextlist);
          end
 
-         folderlist = [folderlist; nextlist];
+         folderlist = [folderlist; nextlist]; %#ok<AGROW> 
       end
    end
 end
-
-%% LOCAL FUNCTIONS
-
 
 %% TESTS
 
@@ -70,4 +67,4 @@ end
 % Assume the current working directory is the one contains the script.
 % Make sure you have the folder structure created for testing.
 % In this case, 'folder1' and 'folder1/subfolder1' must exist.
-%! assert(isequal(getfolderlist('folder1', 1, 'relativepaths'), {'subfolder1'}));
+%! assert(isequal(listfolders('folder1', 1, 'relativepaths'), {'subfolder1'}));

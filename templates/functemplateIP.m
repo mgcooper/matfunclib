@@ -1,31 +1,41 @@
-function varargout = functemplate(X,varargin)
-%FUNCNAME general description of function
-%
-%  Y = FUNCNAME(X) description
-%  Y = FUNCNAME(X,'name1',value1) description
-%  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
-%        The default method is 'flag1'.
-%
-% Example
-%
-%
-% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+function varargout = functemplate(X, varargin)
+   %FUNCNAME One line description of function.
+   %
+   % Syntax
+   %  Y = FUNCNAME(X)
+   %  Y = FUNCNAME(X, 'flag')
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Description
+   %  Y = FUNCNAME(X) description.
+   %  Y = FUNCNAME(X,'flag') description.
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Example
+   %
+   %
+   % Input Arguments
+   %
+   %
+   % Output Arguments
+   %
+   %
+   % Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
+   %
+   % See also:
 
-% PARSE INPUTS
-[X, option, namevalue] = parseinputs(mfilename, X, varargin{:});
+   % PARSE INPUTS
+   [X, option, namevalue] = parseinputs(mfilename, X, varargin{:});
 
-% MAIN CODE
-cleanup = onCleanup(@() cleanupfunc());
+   % MAIN CODE
+   cleanup = onCleanup(@() cleanupfunc());
 
-% CHECKS
-assert()
+   % CHECKS
+   assert()
 
-% PARSE OUTPUTS
-nargoutchk(0, Inf)
-[varargout{1:nargout}] = dealout(argout1, argout2);
-
+   % PARSE OUTPUTS
+   nargoutchk(0, Inf)
+   [varargout{1:nargout}] = dealout(argout1, argout2);
 end
 
 %% LOCAL FUNCTIONS
@@ -35,36 +45,36 @@ end
 
 %% INPUT PARSER
 function varargout = parseinputs(funcname, X, varargin)
+   %PARSEINPUTS Parse input arguments.
 
-[varargin{:}] = convertStringsToChars(varargin{:});
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
-% Define valid menu of optional arguments
-menu = {'add', 'multiply'};
+   % Define valid menu of optional arguments
+   menu = {'add', 'multiply'};
 
-% Create the input parser and import the validationModule 
-f = validationModule();
-persistent parser
-if isempty(parser)
-   parser = inputParser();
-   parser.addRequired('X', f.validNumericVector );
-   parser.addOptional('option', 'add', @(opt) f.validOptionalArgument(opt, menu));
-   parser.addParameter('namevalue', false, f.validLogicalScalar );
+   % Create the input parser and import the validationModule
+   f = validationModule();
+   persistent parser
+   if isempty(parser)
+      parser = inputParser();
+      parser.addRequired('X', f.validNumericVector );
+      parser.addOptional('option', 'add', @(opt) f.validOptionalArgument(opt, menu));
+      parser.addParameter('namevalue', false, f.validLogicalScalar );
+   end
+   parser.FunctionName = funcname;
+   parser.parse(X, varargin{:});
+   option = parser.Results.option;
+   namevalue = parser.Results.namevalue;
+
+   % Parse outputs
+   [varargout{1:nargout}] = dealout(X, option, namevalue);
+
+   % for backdoor default matlab options, use:
+   % varargs = namedargs2cell(p.Unmatched);
+   % then pass varargs{:} as the last argument. but for autocomplete, copy the
+   % json file arguments to the local one.
+
 end
-parser.FunctionName = funcname;
-parser.parse(X, varargin{:});
-option = parser.Results.option;
-namevalue = parser.Results.namevalue;
-
-% Parse outputs
-[varargout{1:nargout}] = dealout(X, option, namevalue);
-
-% for backdoor default matlab options, use:
-% varargs = namedargs2cell(p.Unmatched);
-% then pass varargs{:} as the last argument. but for autocomplete, copy the
-% json file arguments to the local one.
-
-end
-
 
 %% TESTS
 
@@ -76,8 +86,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) YYYY, Matt Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -90,8 +99,8 @@ end
 %    and/or other materials provided with the distribution.
 %
 % 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
+%    contributors may be used to endorse or promote products derived from this
+%    software without specific prior written permission.
 %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE

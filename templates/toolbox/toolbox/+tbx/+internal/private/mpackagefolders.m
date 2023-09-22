@@ -13,7 +13,7 @@ function varargout = mpackagefolders(foldername, opts)
    %
    % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
    %
-   % See also: mfilename, mcallername, mfoldername, ismfile
+   % See also: mpackagename, mfilename, mcallername, mfoldername, ismfile
 
    arguments
       foldername (1,:) string = pwd()
@@ -50,23 +50,3 @@ function varargout = mpackagefolders(foldername, opts)
 
    varargout{1} = pkglist;
 end
-
-% The methods below first found the top-level, then traversed the sub-packages,
-% kept it around in case the subpackage traversal is useful
-
-% % top-level package folders
-% pkglist = dir(tbxpath);
-% pkglist(strncmp({pkglist.name}, '.', 1)) = [];
-% pkglist = pkglist([pkglist.isdir]);
-% pkglist = pkglist(strncmp({pkglist.name}, '+', 1));
-%
-% % subpackage folders 
-% for thispkg = tbxlist.packages(:).'
-%    thispkglist = dir(fullfile(tbxpath, ['+' thispkg{:}], '**/*'));
-%    thispkglist(strncmp({thispkglist.name}, '.', 1)) = []; 
-%    thispkglist = thispkglist([thispkglist.isdir]);
-%    thispkglist = thispkglist(strncmp({thispkglist.name}, '+', 1));
-% end
-
-% for testing 
-% thispkg = tbxlist.packages(1)

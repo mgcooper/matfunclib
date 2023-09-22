@@ -7,7 +7,7 @@
 % would override the activefiles list of the project that was active when
 % workoff was called.
 
-% Don't save files if running in terminal
+% Only save files if running in Matlab Editor (not terminal or octave gui)
 if usejava('desktop')
 
    % Update the activefiles list

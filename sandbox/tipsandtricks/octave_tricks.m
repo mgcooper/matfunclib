@@ -40,6 +40,14 @@ narginchk(0,0)
 % - islocalmax / islocalmin
 % - texlabel
 % 
+% Do use:
+% - KeepUnmatched true if passing the entire Results sruct to a subsequent
+% function that takes identical parameters and using StructExpand true. This
+% might also be required in Matlab, but it came up in baseflow wrapevents trying
+% to pass the opts = parser.Results to getevents b/c opts had T,Q,R which octave
+% complained were not valid arguments to the function, which took forever to
+% diagnose. 
+% 
 % Replace:
 % - matlab unit test framework with script-based tests:
 % https://www.mathworks.com/help/matlab/matlab_prog/ways-to-write-unit-tests.html 
