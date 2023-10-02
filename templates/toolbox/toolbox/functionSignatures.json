@@ -1,16 +1,68 @@
 {
-    "_schemaVersion": "1.0.0",
-    "add":
-    {
-        "inputs":
-        [
-           {"name":"num1", "kind":"required", "type":["numeric","scalar"], "purpose":"the first number to be added"},
-           {"name":"num2", "kind":"required", "type":["numeric","scalar"], "purpose":"the second number to be added"}
-        ],
-        "outputs":
-        [
-           {"name":"sum", "type":["numeric","scalar"], "purpose":"the sum of num1 and num2"}
-        ],
-        "purpose":"Adds two scalar numbers together"
-      }
-  }
+   "_schemaVersion": "1.0.0",
+   "_comment": "",
+   "tbx.internal.completions":
+   {
+      "inputs":
+      [
+         {"name":"funcname", "type":["choices=tbx.internal.completions('completions')"]}
+      ],
+      "outputs":
+      [
+         {"name":"proplist", "type":["cell"]}
+      ],
+      "description":"Generate function auto-completions for string literal"
+   },
+   "tbx.internal.buildpath":
+   {
+      "inputs":
+      [
+         {"name":"subfolder", "kind":"ordered", "type":"choices=tbx.internal.completions('folders')", "purpose":"the subfolder to append to the toolbox rootpath"}
+      ],
+      "outputs":
+      [
+         {"name":"fullpath", "type":"char", "purpose":"the full path string"}
+      ],
+      "description":"Build full path to toolbox folder or file"
+   },
+   "tbx.internal.privatefunction":
+   {
+      "inputs":
+      [
+         {"name":"funcname", "type":["choices=tbx.internal.completions('privatefunction')"]}
+      ],
+      "outputs":
+      [
+         {"name":"funchandle", "type":["function_handle"]}
+      ],
+      "description":"Return a handle to a private function within the toolbox"
+   },
+   "tbx.internal.makecontents":
+   {
+      "inputs":
+      [
+         {"name":"option", "type":["choices={'-backup', '-nobackup'}"]}
+      ],
+      "description":"Make contents.m for each toolbox folder including packages"
+   },
+   "tbx.internal.makedocs":
+   {
+      "inputs":
+      [
+         {"name":"option", "type":["choices={'docpages', 'demos', 'functions', 'docsearch'}"]}
+      ],
+      "description":"Publish toolbox documentation as html files"
+   },
+   "tbx.internal.runtests":
+   {
+      "inputs":
+      [
+         {"name":"option", "type":["choices={'debug'}"]}
+      ],
+      "outputs":
+      [
+         {"name":"result", "type":["struct"]}
+      ],
+      "description":"Run all tests in the test suite"
+   }
+}

@@ -35,10 +35,9 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
    if nargin < 4 || isempty(currentlevel), currentlevel = 0; end
 
    % MAIN CODE
-   d = dir(toppath);
+   d = rmdotfolders(dir(toppath));
    isub = [d(:).isdir];
    toplist = {d(isub).name}';
-   toplist(strncmp(toplist, '.', 1)) = [];
 
    if strcmp(option, 'fullpaths')
       folderlist = cellfun(@(x) fullfile(toppath, x), toplist, 'UniformOutput', false);
@@ -46,7 +45,9 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
       folderlist = toplist;
    end
 
-   if currentlevel < numlevels
+   % Recursion
+   if numlevels == -1 || currentlevel < numlevels
+      
       for thisfolder = toplist(:)'
          nextpath = fullfile(toppath, thisfolder{:});
          nextlist = listfolders(nextpath, numlevels, option, currentlevel+1);

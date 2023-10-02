@@ -1,26 +1,46 @@
-function varargout = listfiles(foldername, opts)
+function varargout = listfiles(folderlist, opts)
    %LISTFILES List all files in folder and (optionally) subfolders.
    %
-   % LIST = listfiles(FOLDERNAME) returns a directory structure in the same
-   % format as DIR containing all files in directory FOLDERNAME
+   % FILELIST = LISTFILES(FOLDERNAME)
+   % FILELIST = LISTFILES(FOLDERLIST)
+   % FILELIST = LISTFILES(_, 'ASLIST', TRUE)
+   % FILELIST = LISTFILES(_, 'ASSTRUCT', TRUE)
+   % FILELIST = LISTFILES(_, 'ASSTRING', TRUE)
+   % FILELIST = LISTFILES(_, 'SUBFOLDERS', TRUE)
+   % FILELIST = LISTFILES(_, 'FULLPATH', TRUE)
+   % FILELIST = LISTFILES(_, 'MFILES', TRUE)
+   % [FILELIST, NUMFILES] = LISTFILES(_)
    %
-   % LIST = listfiles(FOLDERNAME, 'aspathlist', true) returns fullpaths to
-   % each file in a cell array rather than the default directory struct.
+   % Description:
    %
-   % LIST = listfiles(FOLDERNAME, 'aspathlist', true, 'asstring', true)
-   % returns a string array rather than cell array.
+   % FILELIST = LISTFILES(FOLDERNAME) Returns a directory structure in the
+   % same format returned by DIR containing all files in directory FOLDERNAME.
    %
-   % LIST = listfiles(_, 'mfiles', true) only returns .m files.
+   % [FILELIST, NUMFILES] = LISTFILES(FOLDERNAME) Also returns the number of
+   % files.
    %
-   % LIST = listfiles(_, 'subfolders', true) returns all files in subfolders.
+   % FILELIST = LISTFILES(_, 'SUBFOLDERS', TRUE) Returns all files in all
+   % subfolders of FOLDERNAME.
+   %
+   % FILELIST = LISTFILES(_, 'MFILES', TRUE) Only returns m-files.
+   %
+   % FILELIST = LISTFILES(_, 'ASLIST', TRUE) Returns a list of
+   % filenames in a cell array rather than the default directory struct.
+   %
+   % FILELIST = LISTFILES(_, 'ASLIST', TRUE, 'ASSTRING', TRUE) Returns
+   % a string array of filenames rather than the default directory struct.
+   %
+   % FILELIST = LISTFILES(_, 'ASLIST', TRUE, 'FULLPATHS', TRUE) Returns
+   % fullpaths to each file in a cell array rather than the default directory
+   % struct.
    %
    % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper.
    %
    % See also: mfilename, mcallername, mfoldername, ismfile
 
    arguments
-      foldername (1,:) string = pwd()
-      opts.subfolders (1,1) logical = false;
+      folderlist (1,:) string = pwd()
+      opts.subfolders (1,1) logical = false
       opts.asstruct (1,1) logical = true
       opts.aslist (1,1) logical = false
       opts.asstring (1,1) logical = false
@@ -28,13 +48,30 @@ function varargout = listfiles(foldername, opts)
       opts.mfiles (1,1) logical = false
    end
 
-   % get all package folders
-   if opts.subfolders == true
-      list = dir(fullfile(foldername, '**/*'));
-   else
-      list = dir(fullfile(foldername));
+   % Create the list of files
+   list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
+   list = vertcat(list{:});
+   
+   % Parse outputs
+   switch nargout
+      case 1
+         varargout{1} = list;
+      case 2
+         varargout{1} = list;
+         varargout{2} = numel(list);
    end
-   list(strncmp({list.name}, '.', 1)) = [];
+end
+
+%% Local Functions
+
+function list = processOneFolder(folder, opts)
+   
+   % Get all sub folders
+   if opts.subfolders == true
+      list = rmdotfolders(dir(fullfile(folder, '**/*')));
+   else
+      list = rmdotfolders(dir(fullfile(folder)));
+   end
    list = list(~[list.isdir]);
 
    if opts.mfiles == true
@@ -44,7 +81,7 @@ function varargout = listfiles(foldername, opts)
    if opts.aslist == true
 
       if opts.fullpath
-         list = transpose(fullfile({list.folder},{list.name}));
+         list = transpose(fullfile({list.folder}, {list.name}));
       else
          list = transpose(fullfile({list.name}));
       end
@@ -54,6 +91,4 @@ function varargout = listfiles(foldername, opts)
          list = string(list);
       end
    end
-
-   varargout{1} = list;
 end

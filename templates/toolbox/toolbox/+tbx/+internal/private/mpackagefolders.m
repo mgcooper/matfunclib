@@ -33,8 +33,7 @@ function varargout = mpackagefolders(foldername, opts)
    else
 
       % get all package folders
-      pkglist = dir(fullfile(foldername, '**/*'));
-      pkglist(strncmp({pkglist.name}, '.', 1)) = [];
+      pkglist = rmdotfolders(dir(fullfile(foldername, '**/*')));
       pkglist = pkglist([pkglist.isdir]);
       pkglist = pkglist(strncmp({pkglist.name}, '+', 1));
    end
