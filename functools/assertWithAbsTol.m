@@ -8,6 +8,8 @@ function assertWithAbsTol(returned, expected, tol, varargin)
    % Helper function to assert equality within an absolute tolerance.
    % Takes two values and an optional message and compares
    % them within an absolute tolerance of 1e-6.
+   %
+   % See also: assertError, assertSuccess, assertEqual, assertWithRelTol
 
    if nargin < 4 || isempty(tol), tol = 1e-6; end
    tf = abs(returned-expected) <= tol;

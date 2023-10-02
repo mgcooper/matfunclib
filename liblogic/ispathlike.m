@@ -1,36 +1,44 @@
-function TF = ispathlike(STR, varargin)
-%ISPATHLIKE check if STR is consistent with a path string on the current machine
-%
-%  TF = ISPATHLIKE(STR) returns TF true if STR contains the filesep character
-%  AND the USER environment variable
-%
-% Example
-%
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+function TF = ispathlike(STR)
+   %ISPATHLIKE Check if STR is consistent with a path string on the current machine
+   %
+   %  TF = ISPATHLIKE(STR) returns TF true if STR contains the filesep character
+   %  AND the USER environment variable
+   %
+   % Example:
+   % TF = ispathlike('C:\Users\file.txt')
+   % % returns true on Windows
+   %   
+   % TF = ispathlike('/home/user/')
+   % % returns true on Linux/Mac
+   %
+   % TF = ispathlike('/home/user/file.txt')
+   % % returns true on Linux/Mac
+   % 
+   % See also: isfullfile, isfullpath
 
-%% parse inputs
+   % Parse inputs
+   narginchk(1, 2)
+   STR = convertStringsToChars(STR);
 
-narginchk(1, 2)
+   % Does the string contain the filesep
+   TF = ismember(filesep, STR) && notempty(fileparts(STR));
 
-[varargin{:}] = convertStringsToChars(varargin{:});
-
-%% main code
-
-TF = ismember(filesep, STR) && ...
-   notempty(fileparts(STR)) && ...
-   all(ismember(getenv('USER'), STR));
-
+   if ispc
+      TF = TF && notempty(regexp(fileparts(STR), '^[a-zA-Z]:\\', 'once'));
+   else
+      TF = TF && startsWith(fileparts(STR), '/');
+   end
+   
+   % Don't use this, b/c not all paths begin with /Users on macos
+   % elseif ismac
+   %    TF = TF && startsWith(fileparts(STR), '/Users');
 end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

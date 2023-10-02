@@ -1,134 +1,124 @@
-function assertequal(A, B, varargin)
-%ASSERTEQUAL wrapper for assert(isequal(A, B), varargin)
-%
-%  ASSERTEQUAL(A, B) throws an error if A and B are not equal
-%  
-%  ASSERTEQUAL(A, B, MSG) also displays the error message, MSG.
-%  
-%  ASSERTEQUAL(A, B, EID, MSG) includes the error identifier EID in the
-%  displayed error message MSG.
-% 
-%  ASSERTEQUAL(_, f1, ..., fN) displays an error message that contains
-%  formatting conversion characters such as those used in sprintf.
-% 
-% Example
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+function assertEqual(A, B, varargin)
+   %ASSERTEQUAL Wrapper for assert(isequal(A, B), varargin)
+   %
+   %  ASSERTEQUAL(A, B) throws an error if A and B are not equal
+   %
+   %  ASSERTEQUAL(A, B, MSG) also displays the error message, MSG.
+   %
+   %  ASSERTEQUAL(A, B, EID, MSG) includes the error identifier EID in the
+   %  displayed error message MSG.
+   %
+   %  ASSERTEQUAL(_, f1, ..., fN) displays an error message that contains
+   %  formatting conversion characters such as those used in sprintf.
+   %
+   % See also: assertError assertSuccess assertWithRelTol assertWithAbsTol
 
-% PARSE INPUTS
-narginchk(0,Inf)
-[varargin{:}] = convertStringsToChars(varargin{:});
+   % PARSE INPUTS
+   narginchk(0,Inf)
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
-% MAIN CODE
-assert(isequal(A, B), varargin{:});
-
+   % MAIN CODE
+   assert(isequal(A, B), varargin{:});
 end
 
-%% LOCAL FUNCTIONS
-
-
 %% TESTS
-
 function test_assertequal()
-%TEST_ASSERTEQUAL test assertequal
+   %TEST_ASSERTEQUAL test assertequal
 
-% Define test data
-A, B = []; %
+   % Define test data
+   [A, B] = deal([]);
 
-% Call sub-functions to perform different types of tests
-test_input_validation();
-test_function_accuracy(A, B);
-test_type_handling(A, B);
-test_dimension_handling(A, B); % passed A, B as parameter to keep it consistent.
+   % Call sub-functions to perform different types of tests
+   test_input_validation();
+   test_function_accuracy(A, B);
+   test_type_handling(A, B);
+   test_dimension_handling(A, B); % passed A, B as parameter to keep it consistent.
 
 end
 
 function test_input_validation()
 
-% Test empty inputs
-try
-   assertequal();
-   error('Expected an error for empty inputs, but none was thrown');
-catch ME
-   assert(strcmp(ME.identifier, 'MATLAB:minrhs'));
-end
+   % Test empty inputs
+   try
+      assertEqual();
+      error('Expected an error for empty inputs, but none was thrown');
+   catch ME
+      assert(strcmp(ME.identifier, 'MATLAB:minrhs'));
+   end
 
-% Test invalid inputs
-% Here 'invalid' is a string, replace it with a more suitable invalid input for your function
-try
-   assertequal('invalid');
-   error('Expected an error for invalid inputs, but none was thrown');
-catch ME
-   assert(strcmp(ME.identifier, 'MATLAB:invalidInput'));
-end
+   % Test invalid inputs
+   % Here 'invalid' is a string, replace it with a more suitable invalid input
+   % for your function
+   try
+      assertEqual('invalid');
+      error('Expected an error for invalid inputs, but none was thrown');
+   catch ME
+      assert(strcmp(ME.identifier, 'MATLAB:invalidInput'));
+   end
 
-% Test too many input arguments
-% The number of arguments here should be more than the function can handle
-try
-   assertequal(1,2,3,4,5,6,7);
-   error('Expected an error for too many inputs, but none was thrown');
-catch ME
-   assert(strcmp(ME.identifier, 'MATLAB:TooManyInputs'));
-end
+   % Test too many input arguments
+   % The number of arguments here should be more than the function can handle
+   try
+      assertEqual(1,2,3,4,5,6,7);
+      error('Expected an error for too many inputs, but none was thrown');
+   catch ME
+      assert(strcmp(ME.identifier, 'MATLAB:TooManyInputs'));
+   end
 
 end
 
 function test_function_accuracy(A, B)
 
-% Define the expected output
-expected = []; % add expected value
-tol = 20*eps;
+   % Define the expected output
+   expected = []; % add expected value
+   tol = 20*eps;
 
-% Test function accuracy using assert
-observed = assertequal(A, B);
-assert(isequal(observed, expected));
+   % Test function accuracy using assert
+   observed = assertEqual(A, B);
+   assert(isequal(observed, expected));
 
-% Test function accuracy using assert with tolerance
-assert(abs(observed - expected) < tol);
+   % Test function accuracy using assert with tolerance
+   assert(abs(observed - expected) < tol);
 
-% Test with edge cases (Inf, NaN, very large/small numbers)
-% The theoretical results here depend on your function's behavior
-assert(isnan(assertequal(NaN)));
-assert(isinf(assertequal(Inf)));
-assert(abs(assertequal(1e200) - 1e200) < 1e-10); % replace with theoretical result
+   % Test with edge cases (Inf, NaN, very large/small numbers)
+   % The theoretical results here depend on your function's behavior
+   assert(isnan(assertEqual(NaN)));
+   assert(isinf(assertEqual(Inf)));
+   assert(abs(assertEqual(1e200) - 1e200) < 1e-10);
 
-% more cases can be added
+   % more cases can be added
 
 end
 
 function test_type_handling(A, B)
 
-% Test different types, if the function is expected to handle them
+   % Test different types, if the function is expected to handle them
 
-expected = []; % add expected value for double type
-assert(isequal(assertequal(A, B), expected));
+   expected = []; % add expected value for double type
+   assert(isequal(assertEqual(A, B), expected));
 
-expected = []; % add expected value for single type
-assert(isequal(assertequal(single(A, B)), single(expected)));
+   expected = []; % add expected value for single type
+   assert(isequal(assertEqual(single(A, B)), single(expected)));
 
-expected = []; % add expected value for logical type
-assert(isequal(assertequal(logical(A, B)), expected));
+   expected = []; % add expected value for logical type
+   assert(isequal(assertEqual(logical(A, B)), expected));
 
-expected = []; % add expected value for int16 type
-assert(isequal(assertequal(int16(A, B)), expected)); % int16
+   expected = []; % add expected value for int16 type
+   assert(isequal(assertEqual(int16(A, B)), expected)); % int16
 
-% Add more as needed
+   % Add more as needed
 end
 
 
 function test_dimension_handling(A, B)
 
-% Test different dimensions
-% Replace with theoretical results here
-assert(isequal(assertequal([2 3]), [4 6])); % 1D array
-assert(isequal(assertequal([2 3; 4 5]), [4 6; 8 10])); % 2D array
-% Add more as needed
+   % Test different dimensions
+   % Replace with theoretical results here
+   assert(isequal(assertEqual([2 3]), [4 6])); % 1D array
+   assert(isequal(assertEqual([2 3; 4 5]), [4 6; 8 10])); % 2D array
+   % Add more as needed
 
 end
-
 
 %!test
 
@@ -138,7 +128,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

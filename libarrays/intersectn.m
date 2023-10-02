@@ -82,7 +82,7 @@ function [I, Lia, Locb] = intersectn(X, opts)
 
       % Confirm the indices are correct by extracting the values of each input
       % array and comparing them to the intersect.
-      assertequal(I, unique(cellflatten( ...
+      assertEqual(I, unique(cellflatten( ...
          arrayfun(@(n) X{n}(Lia{n}), 1:N, 'Uniform', false))));
    end
 end
