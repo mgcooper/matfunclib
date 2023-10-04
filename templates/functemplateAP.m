@@ -1,60 +1,70 @@
 function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
-%FUNCNAME general description of function
-%
-%  Y = FUNCNAME(X) description
-%  Y = FUNCNAME(X,'flag') description
-%  Y = FUNCNAME(_,'opts.name1',opts.value1,'opts.name2',opts.value2)
-%
-% Example
-%
-%
-% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %FUNCNAME One line description of function.
+   %
+   % Syntax
+   %  Y = FUNCNAME(X)
+   %  Y = FUNCNAME(X, 'flag')
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Description
+   %  Y = FUNCNAME(X) description.
+   %  Y = FUNCNAME(X,'flag') description.
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Example
+   %
+   %
+   % Input Arguments
+   %
+   %
+   % Output Arguments
+   %
+   %
+   % Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
+   %
+   % See also:
 
+   % PARSE ARGUMENTS
+   arguments
+      X (:,1) double
+      flag (1,1) string {mustBeMember(flag,{'add','multiply'})} = 'add'
+      folder (1,:) string {mustBeFolder} = string.empty
 
-% PARSE ARGUMENTS
-arguments
-   X (:,1) double
-   flag (1,1) string {mustBeMember(flag,{'add','multiply'})} = 'add'
-   folder (1,:) string {mustBeFolder} = string.empty
-   
-   % define local optional argument
-   style {mustBeMember(style,["--",":","-"])} = "-"
-   
-   % define local name-value pairs
-   localopts.Silent (1,1) logical = false
-   localopts.LineStyle (1,1) string {mustBeMember(localopts.LineStyle,["--","-",":"])} = '-'
-   localopts.LineWidth (1,1) {mustBeNumeric} = 1
-   localopts.Color{mustBeMember(localopts.Color,{'red','blue'})} = "blue" % restrict options
-   
-   % pull name-value pairs from classdef
-   fromclass.?matlab.graphics.chart.primitive.Line 
-   % for ?syntax call metaclass on the object: mc=metaclass(line()),name=mc.Name
-end
+      % define local optional argument
+      style {mustBeMember(style,["--",":","-"])} = "-"
 
-% get the class defaults
-fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
+      % define local name-value pairs
+      localopts.Silent (1,1) logical = false
+      localopts.LineStyle (1,1) string {mustBeMember(localopts.LineStyle,["--","-",":"])} = '-'
+      localopts.LineWidth (1,1) {mustBeNumeric} = 1
+      localopts.Color{mustBeMember(localopts.Color,{'red','blue'})} = "blue" % restrict options
 
-% use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
-args = namedargs2cell(opts);
+      % pull name-value pairs from classdef
+      fromclass.?matlab.graphics.chart.primitive.Line
+      % for ?syntax call metaclass on the object:
+      % mc=metaclass(line()),name=mc.Name
+   end
 
-% use this to convert an opts.name = val struct to "name=val" string
-args = optionsToNamedArguments(optsstruct);
+   % get the class defaults
+   fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
 
-% MAIN CODE
-cleanup = onCleanup(@() cleanupfunc());
+   % use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
+   args = namedargs2cell(opts);
 
-% To add to functemplate:
-% failures = MException.empty;
+   % use this to convert an opts.name = val struct to "name=val" string
+   args = optionsToNamedArguments(optsstruct);
 
-% CHECKS
-assert()
+   % MAIN CODE
+   cleanup = onCleanup(@() cleanupfunc());
 
-% PARSE OUTPUTS
-nargoutchk(0, Inf)
-[varargout{1:nargout}] = dealout(argout1, argout2);
+   % To add to functemplate: failures = MException.empty;
 
+   % CHECKS
+   assert()
+
+   % PARSE OUTPUTS
+   nargoutchk(0, Inf)
+   [varargout{1:nargout}] = dealout(argout1, argout2);
 end
 
 %% LOCAL FUNCTIONS
@@ -72,8 +82,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) YYYY, Matt Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

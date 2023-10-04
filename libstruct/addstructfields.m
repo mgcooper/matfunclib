@@ -1,12 +1,12 @@
-function S = addstructfields(S,fields,varargin)
+function S = addstructfields(S, newfields, varargin)
 %ADDSTRUCTFIELDS general description of function
 % 
 % Syntax
 % 
-%  S = ADDSTRUCTFIELDS(S,fields) adds fields to struct S using inputname(fields)
-%  to name the new fields
-%  S = ADDSTRUCTFIELDS(S,fields,'newfieldnames',fieldnames) uses fieldnames to
-%  name the new fields
+%  S = ADDSTRUCTFIELDS(S, NEWFIELDS) adds NEWFIELDS to struct S using
+%  inputname(NEWFIELDS) to name the new fields.
+%  S = ADDSTRUCTFIELDS(S, NEWFIELDS, 'NEWFIELDNAMES', NAMES) uses NAMES to
+%  name the new fields.
 % 
 % Example
 %  
@@ -15,46 +15,58 @@ function S = addstructfields(S,fields,varargin)
 % 
 % See also
 
-error([mfilename ' is not functional'])
+% aug 2023, commented this out b/c it works and is used in baseflow project
+% error([mfilename ' is not functional'])
 
 % TODO rename assignNonScalarStructFields, might also be worth abandoning this,
 % its akward, I think it is designed to assign to non-scalar structs, which is
 % tricky, so 
 
-% input parsing
+% PARSE INPUTS
+[S, newfields, newnames] = parseinputs(S, newfields, mfilename, varargin{:});
+
+% Assign default new field names
+if isempty(newnames)
+   try
+      newnames = cellstr(inputname(2));
+   catch
+      newnames = cellstr(strcat("field", string(1:numel(newfields))));
+   end
+   
+elseif ischar(newnames) || isstring(newnames)
+   newnames = cellstr(newnames);
+end
+
+% Add non-scalar fields to non-scalar struct with identical # of elements.
+% Assume each element of fields is a row of S. 
+if numel(S) == numel(newfields) && ~isscalar(S)
+   for n = 1:numel(newnames)
+      C = num2cell(newfields);
+      [S(:).(newnames{n})] = deal(C{:});
+   end
+end
+
+%% INPUT PARSER
+function [S, newfields, newfieldnames] = parseinputs(S, newfields, funcname, varargin)
+
 persistent parser
 if isempty(parser)
-   parser = magicParser;
-   parser.FunctionName = mfilename;
+   parser = inputParser;
    parser.CaseSensitive = false;
    parser.KeepUnmatched = true;
    parser.addRequired('S', @isstruct);
+   parser.addRequired('newfields'); % can be any type for now
    parser.addParameter('newfieldnames', '', @ischarlike);
 end
-parser.parseMagically('caller');
+parser.FunctionName = funcname;
+parser.parse(S,newfields,varargin{:});
+newfieldnames = parser.Results.newfieldnames;
 
-
-% % % % % % % % % % % % % % % % % % % % 
-if isempty(newfieldnames)
-   newfieldnames = cellstr(inputname(2));
-   
-elseif ischar(newfieldnames) || isstring(newfieldnames)
-   newfieldnames = cellstr(newfieldnames);
-end
-
-% add a non-scalar field to a non-scalar struct with identical # of elements,
-% assume we want each element of fields to be in a row of S
-if numel(S) == numel(fields) && ~isscalar(S)
-   for n = 1:numel(newfieldnames)
-      C = num2cell(fields);
-      [S(:).(newfieldnames{n})] = deal(C{:});
-   end
-end
+%% working 
 
 % if iscell(fields);
 %    fields = fields{:};
 % end
-
 
 % could go about it like this:
 % switch class(field)

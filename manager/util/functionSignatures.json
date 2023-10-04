@@ -30,6 +30,13 @@
          {"name":"goto",    "kind":"flag",       "type":["char","choices={'goto'}"], "default":"'no'"}
       ]
    },
+   "funclibpath":
+   {
+      "inputs":
+      [
+         {"name":"option", "kind":"ordered", "type":["char","choices={'rmpath', 'addpath', 'which'}"], "purpose":"Option"}
+      ]
+   },
    "getprojectfiles":
    {
       "inputs":

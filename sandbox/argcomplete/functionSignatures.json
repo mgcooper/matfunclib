@@ -1,0 +1,51 @@
+{
+   "_schemaVersion": "1.0.0",
+   "f_argcomplete1":
+   {
+      "inputs":
+      [
+         {"name":"T",         "kind":"required",   "type":["tabular"]},
+         {"name":"ydatavar",  "kind":"required",   "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"}
+      ]
+   },
+   "f_argcomplete2":
+   {
+      "inputs":
+      [
+         {"name":"T",         "kind":"required",   "type":["tabular"]},
+         {"name":"ydatavar",  "kind":"positional", "type":[["char","choices=T.Properties.VariableNames","scalar"], ["string","choices=T.Properties.VariableNames","scalar"]], "purpose":"Option"},
+         {"name":"xgroupvar", "kind":"positional", "type":[["char","choices=T.Properties.VariableNames","scalar"], ["string","choices=T.Properties.VariableNames","scalar"]], "purpose":"Option"},
+         {"name":"cgroupvar", "kind":"positional", "type":[["char","choices=T.Properties.VariableNames","scalar"], ["string","choices=T.Properties.VariableNames","scalar"]], "purpose":"Option"}
+      ]
+   },
+   "f_argcomplete2":
+   {
+      "inputs":
+      [
+         {"name":"T",         "kind":"required",   "type":["tabular"]},
+         {"name":"ydatavar",  "kind":"positional", "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"xgroupvar", "kind":"positional", "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"cgroupvar", "kind":"positional", "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"}
+      ]
+   },
+   "f_argcomplete2":
+   {
+      "inputs":
+      [
+         {"name":"T",         "kind":"required",   "type":["tabular"]},
+         {"name":"ydatavar",  "kind":"positional", "type":["string","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"xgroupvar", "kind":"positional", "type":["string","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"cgroupvar", "kind":"positional", "type":["string","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"}
+      ]
+   },
+   "f_argcomplete2":
+   {
+      "inputs":
+      [
+         {"name":"T",         "kind":"required",   "type":["tabular"]},
+         {"name":"ydatavar",  "kind":"ordered",   "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"xgroupvar", "kind":"ordered",   "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"},
+         {"name":"cgroupvar", "kind":"ordered", "type":["char","choices=T.Properties.VariableNames","scalar"], "purpose":"Option"}
+      ]
+   }
+}

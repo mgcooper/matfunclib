@@ -253,7 +253,7 @@ Selector = p.Results.Selector;
 Attributes = p.Results.Attributes;
 BoundingBox = p.Results.BoundingBox;
 
-namedargs = parser2varargin(p,'notusingdefaults',{'fname'});
+namedargs = parser2varargin(p, {'fname'}, 'notusingdefaults');
 
 % with this, only files returned by getgisfilelist will work, and since fname is
 % required, I don't think we need to be strict like we would with addOptional 

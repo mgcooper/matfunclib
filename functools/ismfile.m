@@ -1,44 +1,40 @@
 function [tf, onpath] = ismfile(filename, varargin)
-%ISMFILE return true if filename has a .m or .p extension
-%
-%  TF = ISMFILE(FILENAME) returns TRUE if FILENAME has a .m or .p extension
-%  [TF, ONPATH] = ISMFILE(FILENAME) also returns TRUE if FILENAME is on the path
-% 
-% Example
-%
-%  tf = ismfile('plot')
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %ISMFILE return true if filename has a .m or .p extension
+   %
+   %  TF = ISMFILE(FILENAME) returns TRUE if FILENAME has a .m or .p extension
+   %  [TF, ONPATH] = ISMFILE(FILENAME) also returns ONPATH where ONPATH is TRUE
+   %  if FILENAME is on the path.
+   %
+   % Example
+   %
+   %  tf = ismfile('plot')
+   %
+   % See also:
 
-% parse inputs
-narginchk(1,Inf)
-[varargin{:}] = convertStringsToChars(varargin{:});
+   % parse inputs
+   narginchk(1,Inf)
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
-% if (nargin<2) % set default ; end
+   % Check 'which' second to allow files off the path to be checked
+   tf = strncmp(reverse(filename), 'm.', 2) || ...
+      strncmp(reverse(which(filename)), 'm.', 2) || ...
+      any(ismember(exist(filename), [5 6])); %#ok<EXIST>
 
-%% main code
-
-% Check which second to allow files off the path to be checked
-tf = strncmp(reverse(filename), 'm.', 2) || ... 
-   strncmp(reverse(which(filename)), 'm.', 2) || ...
-   any(ismember(exist(filename), [5 6])); %#ok<EXIST> 
-    
-onpath = isfile(filename) || ~isempty(which(filename));
-
-
-% parse outputs
-% [varargout{1:max(1, nargout)}] = dealout(tf, onpath)
-
-%% local functions
-
+   % If a full path to a file is provided, the second line below will return
+   % true even if the file is not on path, so strip out the leading path first.
+   if isfullfile(filename)
+      [~, filename, fileext] = fileparts(filename);
+      filename = strcat(filename, fileext);
+   end
+   
+   onpath = isfile(filename) || ~isempty(which(filename));
+end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

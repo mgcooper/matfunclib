@@ -1,74 +1,74 @@
 function TF = isRasterReference(R, varargin)
-%ISRASTERREFERENCE return true if R is a rasterref object
-%
-%  TF = ISRASTERREFERENCE(R)
-%  TF = ISRASTERREFERENCE(R, 'geographic')
-%  TF = ISRASTERREFERENCE(R, 'planar')
-%  TF = ISRASTERREFERENCE(_, 'all')
-%  TF = ISRASTERREFERENCE(_, 'any')
-%  TF = ISRASTERREFERENCE(_, 'each')
-%
-%  R can be a scalar rasterref object or a cell array of R objects.
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also validateRasterReference
+   %ISRASTERREFERENCE Determine if R is a rasterref object.
+   %
+   %  TF = ISRASTERREFERENCE(R)
+   %  TF = ISRASTERREFERENCE(R, 'geographic')
+   %  TF = ISRASTERREFERENCE(R, 'planar')
+   %  TF = ISRASTERREFERENCE(_, 'all')
+   %  TF = ISRASTERREFERENCE(_, 'any')
+   %  TF = ISRASTERREFERENCE(_, 'each')
+   %
+   %  R can be a scalar rasterref object or a cell array of R objects.
+   %
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
+   %
+   % See also: validateRasterReference
 
-%% input checks
-narginchk(1,3)
+   %% input checks
+   narginchk(1,3)
 
-[varargin{:}] = convertStringsToChars(varargin{:});
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
-[option, args, nargs] = parseoptarg(varargin, {'each', 'any', 'all'}, 'all');
+   [option, args, nargs] = parseoptarg(varargin, {'each', 'any', 'all'}, 'all');
 
-if nargs == 1
-   CoordinateSystemType = args{1};
-else
-   CoordinateSystemType = 'unspecified';
-end
-
-if isscalar(R)
-   R = num2cell(R);
-else
-   % validateattributes(R, {'cell'}, {'nonempty'}, mfilename, 'R', 1);
-   if ~iscell(R)
-      TF = false;
-      return
+   if nargs == 1
+      CoordinateSystemType = args{1};
+   else
+      CoordinateSystemType = 'unspecified';
    end
-end
 
-%% main code
-
-for n = 1:numel(R)
-   
-   switch CoordinateSystemType
-      case 'geographic'
-         TF(n) = ...
-            isa(R{n}, 'map.rasterref.GeographicCellsReference') | ...
-            isa(R{n}, 'map.rasterref.GeographicPostingsReference');
-   
-      case 'planar'
-         TF(n) = ...
-            isa(R{n}, 'map.rasterref.MapCellsReference') | ...
-            isa(R{n}, 'map.rasterref.MapPostingsReference');
-   
-      otherwise
-         TF(n) = ...
-            isa(R{n}, 'map.rasterref.GeographicCellsReference') | ...
-            isa(R{n}, 'map.rasterref.GeographicPostingsReference') | ...
-            isa(R{n}, 'map.rasterref.MapCellsReference') | ...
-            isa(R{n}, 'map.rasterref.MapPostingsReference');
+   if isscalar(R)
+      R = num2cell(R);
+   else
+      % validateattributes(R, {'cell'}, {'nonempty'}, mfilename, 'R', 1);
+      if ~iscell(R)
+         TF = false;
+         return
+      end
    end
-end
 
-% Unless each is requested, assume the test is on all of them
-switch option
-   case 'all'
-      TF = all(TF);
-   case 'any'
-      TF = any(TF);
-   case 'each'
-end
+   %% main code
+
+   for n = 1:numel(R)
+
+      switch CoordinateSystemType
+         case 'geographic'
+            TF(n) = ...
+               isa(R{n}, 'map.rasterref.GeographicCellsReference') | ...
+               isa(R{n}, 'map.rasterref.GeographicPostingsReference');
+
+         case 'planar'
+            TF(n) = ...
+               isa(R{n}, 'map.rasterref.MapCellsReference') | ...
+               isa(R{n}, 'map.rasterref.MapPostingsReference');
+
+         otherwise
+            TF(n) = ...
+               isa(R{n}, 'map.rasterref.GeographicCellsReference') | ...
+               isa(R{n}, 'map.rasterref.GeographicPostingsReference') | ...
+               isa(R{n}, 'map.rasterref.MapCellsReference') | ...
+               isa(R{n}, 'map.rasterref.MapPostingsReference');
+      end
+   end
+
+   % Unless each is requested, assume the test is on all of them
+   switch option
+      case 'all'
+         TF = all(TF);
+      case 'any'
+         TF = any(TF);
+      case 'each'
+   end
 
 end
 
@@ -76,7 +76,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

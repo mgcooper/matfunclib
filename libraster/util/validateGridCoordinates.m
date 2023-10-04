@@ -1,62 +1,59 @@
 function validateGridCoordinates(X, Y, funcname, argname1, argname2, gridOption)
-%VALIDATEGRIDCOORDINATES validate raster reference object R and raster grid V
-%
-%  VALIDATEGRIDCOORDINATES(X, Y, mfilename)
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also validateRasterReference, validateGridData
+   %VALIDATEGRIDCOORDINATES Validate grid coordinates X and Y.
+   %
+   %  VALIDATEGRIDCOORDINATES(X, Y, mfilename)
+   %
+   % See also: validateRasterReference, validateGridData
 
-if nargin < 3 || isempty(funcname); funcname = mcallername(); end
-if nargin < 4 || isempty(argname1); argname1 = 'X'; end
-if nargin < 5 || isempty(argname2); argname2 = 'Y'; end
-if nargin < 6 || isempty(gridOption); gridOption = 'unspecified'; end
+   if nargin < 3 || isempty(funcname); funcname = mcallername(); end
+   if nargin < 4 || isempty(argname1); argname1 = 'X'; end
+   if nargin < 5 || isempty(argname2); argname2 = 'Y'; end
+   if nargin < 6 || isempty(gridOption); gridOption = 'unspecified'; end
 
+   switch gridOption
 
-switch gridOption
-   
-   case 'fullgrids'
-      
-      validateattributes(X, {'numeric'}, {'real', '2d', 'size', size(Y)}, ...
-         funcname, argname1, 1)
-      validateattributes(Y, {'numeric'}, {'real', '2d', 'size', size(X)}, ...
-         funcname, argname2, 2)
-      
-   case 'gridvectors'
-      
-      validateattributes(X, {'numeric'}, {'real', 'vector'}, ...
-         funcname, argname1, 1)
-      validateattributes(Y, {'numeric'}, {'real', 'vector'}, ...
-         funcname, argname2, 2)
-      
-   case 'coordinates'
+      case 'fullgrids'
 
-      validateattributes(X, {'numeric'}, {'real', 'vector', 'size', size(Y)}, ...
-         funcname, argname1, 1)
-      validateattributes(Y, {'numeric'}, {'real', 'vector', 'size', size(X)}, ...
-         funcname, argname2, 2)
-      
-   case 'point'
-      
-      validateattributes(X, {'numeric'}, {'real', 'scalar'}, ...
-         funcname, argname1, 1)
-      validateattributes(Y, {'numeric'}, {'real', 'scalar'}, ...
-         funcname, argname2, 2)
+         validateattributes(X, {'numeric'}, {'real', '2d', 'size', size(Y)}, ...
+            funcname, argname1, 1)
+         validateattributes(Y, {'numeric'}, {'real', '2d', 'size', size(X)}, ...
+            funcname, argname2, 2)
 
-   otherwise
-      
-      validateattributes(X, {'numeric'}, {'real', 'nonempty'}, ...
-         funcname, argname1, 1)
-      validateattributes(Y, {'numeric'}, {'real', 'nonempty'}, ...
-         funcname, argname2, 2)
+      case 'gridvectors'
 
+         validateattributes(X, {'numeric'}, {'real', 'vector'}, ...
+            funcname, argname1, 1)
+         validateattributes(Y, {'numeric'}, {'real', 'vector'}, ...
+            funcname, argname2, 2)
+
+      case 'coordinates'
+
+         validateattributes(X, {'numeric'}, {'real', 'vector', 'size', size(Y)}, ...
+            funcname, argname1, 1)
+         validateattributes(Y, {'numeric'}, {'real', 'vector', 'size', size(X)}, ...
+            funcname, argname2, 2)
+
+      case 'point'
+
+         validateattributes(X, {'numeric'}, {'real', 'scalar'}, ...
+            funcname, argname1, 1)
+         validateattributes(Y, {'numeric'}, {'real', 'scalar'}, ...
+            funcname, argname2, 2)
+
+      otherwise
+
+         validateattributes(X, {'numeric'}, {'real', 'nonempty'}, ...
+            funcname, argname1, 1)
+         validateattributes(Y, {'numeric'}, {'real', 'nonempty'}, ...
+            funcname, argname2, 2)
+
+   end
 end
-
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

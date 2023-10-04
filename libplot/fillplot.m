@@ -1,94 +1,162 @@
-function [ h ] = fillplot( x,y_low,y_high,fillC,dir,varargin )
-%FILLPLOT Creates a fill plot, data must be columnwise
-% 
-%   h = fillplot(x,y_low,y_high,fillC,dir,varargin )
+function varargout = fillplot(x, y, err, c, varargin)
+   %FILLPLOT Create a filled (patch) plot.
+   %
+   %  Syntax:
+   %     H = fillplot(X, Y, E, C)
+   %     H = fillplot(X, Y, E, C, dim)
+   %     H = fillplot(X, Y, E, C, Name, Value)
+   %
+   %  Input:
+   %     X - X-axis data points
+   %     Y - Y-axis data points
+   %     E - Error margin(s), can be Nx2 or Nx1 array
+   %     C - Color to use for the fill, can be 1x3 rgb array or char color name
+   %     dim - (Optional) dimension to apply error, 'x' or 'y'
+   %     Name, Value - additional Patch properties
+   %
+   %  Output:
+   %     H - Handle to patch object
+   %
+   %  Example:
+   %    x = sort(randi(100, 100, 1));
+   %    y = 2*x;
+   %    e = 10.*ones(size(x));
+   %    c = rgb('bright blue');
+   %
+   %    % Basic fill plot
+   %    fillplot(x, y, e, c)
+   %
+   %    % Apply error to x instead of default y
+   %    fillplot(x, y, e, c, 'x')
+   %
+   %    % Apply patch properties, and a char specifier for the patch color:
+   %    fillplot(x, y, e, 'r', "FaceAlpha", 0.35, "LineStyle", ':')
+   %
+   %    % Plot data with nan's, including leading and trailing nan's
+   %    y(randi(100, 10, 1)) = nan;
+   %    y(1) = nan;
+   %    y(end) = nan;
+   %    fillplot(x, y, e, c, "FaceAlpha", 0.35)
+   %
+   %    % Plot into the current axes
+   %    figure
+   %    plot(x, y, 'k')
+   %    fillplot(x, y, e, c, "FaceAlpha", 0.35)
+   %
+   %    % Specify an axes or figure to plot into
+   %    f = figure;
+   %    s(1) = subplot(1, 2, 1);
+   %    plot(x, y, 'k'); hold on % without hold on, fillplot resets the axes
+   %    s(2) = subplot(1, 2, 2);
+   %    plot(x, y, 'k'); hold on
+   %    % plot into s(1)
+   %    fillplot(x, y, e, c, s(1), "FaceAlpha", 0.35) % fillplot respects the hold state
+   %    % plot into s(2), using a different patch color
+   %    fillplot(x, y, e, 'orange', s(2), "FaceAlpha", 0.35)
+   %    % plot into s(1) using built-in 'plot'
+   %    plot(s(1), x, y, 'm') % plot respects the hold state
+   %
+   % See also: fill, patch
 
-X = [x,fliplr(x)];
-Y = [y_low,fliplr(y_high)];
+   % Parse possible axes input.
+   [ax, varargin, ~, isfigure] = parsegraphics(varargin{:});
 
-if strcmp(dir,'x')
-    h = fill(X,Y,fillC,varargin{:});
-elseif strcmp(dir,'y')
-    h = fill(Y,X,fillC,varargin{:});
+   % Get handle to either the requested or a new axis.
+   if isempty(ax)
+      ax = gca;
+   elseif isfigure
+      ax = gca(ax);
+   end
+   washeld = get(ax, 'NextPlot');
+   % hold(ax, 'on')
+
+   % Parse optional dim argument
+   [dim, varargin] = parseoptarg(varargin, {'x', 'y'}, 'y');
+
+   % Ensure rows and equal length
+   x = x(:)';
+   y = y(:)';
+   assert(length(x) == length(y), 'Expected X and Y to be the same size')
+
+   % Ensure E is oriented row-wise
+   err = reorientError(err, length(y));
+
+   % Ensure C is a nx3 rgb color matrix. Undocumented: allow char
+   if ischar(c)
+      if isscalar(c)
+         try
+            c = matlabcolor2rgb(c);
+         catch ME
+            rethrow(ME)
+         end
+      else
+         try
+            c = rgb(c);
+         catch ME
+            rethrow(ME);
+         end
+      end
+   end
+
+   % Sort the data
+   [x, order] = sort(x);
+   y = y(order);
+   err = err(:, order);
+
+   % Identify contiguous segments of non-NaN data
+   [s, e] = nonnansegments(x, y, err);
+
+   % Initialize plot handle
+   H = gobjects(0);
+
+   % Loop over each segment, construct patch vertices, and plot
+   for n = 1:length(s)
+
+      X = x(s(n):e(n));
+      Y = y(s(n):e(n));
+      E = err(:, s(n):e(n));
+
+      [X, Y] = constructVertices(X, Y, E, dim);
+
+      H(n) = fill(ax, X, Y, c, 'LineStyle', 'none', varargin{:});
+      hold(ax, 'on')
+   end
+
+   % Restore hold state
+   set(ax, 'NextPlot', washeld);
+
+   if nargout == 1
+      varargout{1} = H;
+   end
 end
 
-% first take care of nans
+%% Local functions
+function e = reorientError(e, n)
+   if isvector(e)
+      e = e(:)';
+      e = [e; e];
+   else
+      [~, m] = size(e);
+      if m == 2
+         e = e.';
+      end
+   end
+   assert(numel(e) == 2 * n, ...
+      'Expected error margin, E, to be an Nx2 or Nx1 array with N=numel(X)')
+end
 
-% if any(isnan(x)) || any(isnan(y_low)) || any(isnan(y_low))
-%     
-%     x       =   [nan 1 7 nan nan 9 5 nan 3 5 nan nan];
-%     y_low   =   [1 4 3 6 4 2 4 5 4 2 1 8];
-%     y_high  =   y_low + 2;
-%       
-%     % if there are naninds in one variable, make them nan in the other
-%     nanindsx        =   find(isnan(x));
-%     nanindsL        =   find(isnan(y_low));
-%     nanindsH        =   find(isnan(y_high));
-%     naninds         =   unique([nanindsx nanindsL nanindsH]);        
-%     x(naninds)      =   nan;
-%     y_low(naninds)  =   nan;
-%     y_high(naninds) =   nan;
-%     
-%     % now proceed
-%     nanindsx        =   isnan(x);
-%     nanindsL        =   isnan(y_low);
-%     nanindsH        =   isnan(y_high);
-% 
-% %     gapsx           =   [0 diff(nanindsx)];
-% %     gapsL           =   [0 diff(nanindsL)];
-% %     gapsH           =   [0 diff(nanindsH)];
-%     
-%     gapsx           =   diff(nanindsx);
-%     gapsL           =   diff(nanindsL);
-%     gapsH           =   diff(nanindsH);
-% %     
-% %     if isnan(x(end))
-% %         gapsx       =   [gapsx -1];
-% %         gapsL       =   [gapsL -1];
-% %         gapsH       =   [gapsH -1];
-% %     else
-% %         gapsx       =   [gapsx 0];
-% %         gapsL       =   [gapsL 0];
-% %         gapsH       =   [gapsH 0];
-% %     end
-%         
-% %     ngapsx          =   sum(gapsx(gapsx==-1));
-% %     ngapsL          =   sum(gapsL(gapsL==-1));
-% %     ngapsH          =   sum(gapsx(gapsx==-1));
-%     starts          =   unique([find(~isnan(x),1,'first') ...
-%                                             find(gapsx == -1) + 1]);
-%     ends            =   find(gapsx == 1);
-%     
-%     % make the first part of the plot
-%     x1              =   x(starts(1):ends(1));
-%     yL1             =   y_low(starts(1):ends(1));
-%     yH1             =   y_high(starts(1):ends(1));
-%     
-%     X1              =   [x1,fliplr(x1)];
-%     Y1              =   [yL1,fliplr(yH1)]
-%     
-%     if strcmp(dir,'x')
-%         p   =   fill(X,Y,fillC,varargin{:});
-%     elseif strcmp(dir,'y')
-%         p   =   fill(YL1,X1,fillC,varargin{:});
-%     end
-%     
-%     for n = 1:length(starts)
-%         X           =   x(1:starts(n));
-%     end % GIVING UP HERE - found boundedline.m
-%     
-%     
-% 
-% X   =   [x,fliplr(x)];
-% Y   =   [y_low,fliplr(y_high)];
-% 
-% else
-%     
-%     if strcmp(dir,'x')
-%         p   =   fill(X,Y,fillC,varargin{:});
-%     elseif strcmp(dir,'y')
-%         p   =   fill(Y,X,fillC,varargin{:});
-%     end
-% 
-% end
+function [x, y] = constructVertices(x, y, e, dim)
+   if strcmp(dim, 'y')
+      x = [x, fliplr(x)];
+      y = [y - e(2, :), fliplr(y + e(1, :))];
+   else
+      x = [x - e(2, :), fliplr(x + e(1, :))];
+      y = [y, fliplr(y)];
+   end
+end
 
+function [s, e] = nonnansegments(x, y, err)
+   ok = ~isnan(x) & ~isnan(y) & ~any(isnan(err), 1);
+   s = find(ok & [true ~ok(1:end-1)]);
+   e = find(ok & [~ok(2:end) true]);
+end

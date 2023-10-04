@@ -1,77 +1,85 @@
 function workoff(varargin)
-%WORKOFF deactivate project and (optionally) update activefiles
-% 
-%  workoff('myproject') removes project paths, unsets env vars, updates the
-%  activefiles property of the projectdirectory to the currently open files, and
-%  sets the 'default' project active. 
-% 
-%  workoff('myproject','updatefiles', false) does not update the activefiles
-%  list associated with MYPROJECT to the current open files. Default is true,
-%  the current open files are saved to the activefiles property for MYPROJECT.
-% 
-% See also: workon, manager, addproject
+   %WORKOFF Deactivate project and (optionally) update activefiles.
+   %
+   %  WORKOFF(PROJECTNAME) removes project paths, unsets env vars, updates the
+   %  activefiles property of the projectdirectory to the currently open files,
+   %  and sets the 'default' project active.
+   %
+   %  WORKOFF(PROJECTNAME,'UPDATEFILES', FALSE) does not update the activefiles
+   %  list associated with MYPROJECT to the current open files. Default is true,
+   %  the current open files are saved to the activefiles property for
+   %  MYPROJECT.
+   %
+   % See also: workon, manager, addproject
 
-% TODO: save open variables in struct then save as .mat file, save open figures,
-% and save help docs? couldn't find a built in or fex method but see
-% gethelpdoclink, it gets the active one.
+   % TODO: save open variables in struct then save as .mat file, save open
+   % figures, and save help docs? couldn't find a built in or fex method but see
+   % gethelpdoclink, it gets the active one.
 
-% UPDATES
-% 10 Mar 2023 set active project to 'default' to prevent losing active files
-% when workoff is called during a session and then matlab is closed.
-% Old behavior: when workoff is called, activefiles are updated, but
-% activeproject is not. If matlab is closed, workoff is called from finish.m and
-% the activefiles are updated, but the activeproject is still set so the
-% activefiles are lost
-% New behavior: when workoff is called, activefiles are updat4ed and
-% activeproject is set to 'default'. If matlab is closed, the activefiles are
-% updated for project 'default'.
+   % problematic behavior: workoff updates activefiles but not activeproject
+   % - call workoff during session
+   % - activefiles are updated and closed, but activeproject is not
+   % - close matlab
+   % - finish.m calls workoff
+   % - workoff sets the activeproject activefiles to the files open in the
+   % editor, which are not the files for the activeproject
+   %
+   % To fix this, workoff sets the activeproject to 'default', which is the
+   % right method, but it is still problematic to call workoff from finish.m,
+   % here's why: 
+   % - close matlab
+   % - finish.m calls workoff
+   % - workoff updates the activefiles and sets the activeproject to 'default'
+   % - reopen matlab
+   % - startup.m calls workon
+   % - workon
 
-%% parse inputs
-[projname, updatefiles] = parseinputs(mfilename, varargin{:});
+   % parse inputs
+   [projname, updatefiles] = parseinputs(mfilename, varargin{:});
 
-%% main
+   % deactivate the project
+   disp(['deactivating ' projname]);
 
-% deactivate the project
-disp(['deactivating ' projname]);
+   try
+      close(currentProject);
+   catch
+   end
 
-try
-   close(currentProject);
-catch
+   % update the active file list
+   if updatefiles == true
+      setprojectfiles(projname);
+   end
+
+   % close all currently open files
+   closeopenfiles();
+
+   % if this is not the default project, remove the project paths
+   if ~strcmpi(projname,'default')
+
+      % full path to project folder
+      projpath = getprojectfolder(projname); % use 'namespace' for old behavior
+
+      % remove project paths
+      rmprojectpaths(projpath);
+   end
+
+   % unset the active project
+   setprojectactive('default');
 end
-
-% update the active file list
-if updatefiles == true
-   setprojectfiles(projname);
-end
-
-% close all currently open files
-closeopenfiles();
-
-% if this is not the default project, remove the project paths
-if ~strcmpi(projname,'default')
-   
-   % full path to project folder
-   projpath = getprojectfolder(projname); % use 'namespace' for old behavior
-
-   % remove project paths
-   rmprojectpaths(projpath);
-end
-
-% unset the active project
-setprojectactive('default');
 
 %% subfunctions
 
 function [projname, updatefiles] = parseinputs(funcname, varargin)
-p = inputParser;
-p.FunctionName = funcname;
+   parser = inputParser;
+   parser.FunctionName = funcname;
 
-projectnames = cat(1,cellstr(projectdirectorylist),'default');
-validproject = @(x)any(validatestring(x,projectnames));
+   projectnames = cat(1,cellstr(projectdirectorylist),'default');
+   validproject = @(x)any(validatestring(x,projectnames));
 
-addOptional(p,'projectname',getactiveproject,validproject);
-addParameter(p,'updatefiles',true,@islogical);
-parse(p,varargin{:});
+   parser.addOptional('projectname',getactiveproject,validproject);
+   parser.addParameter('updatefiles',true,@islogical);
+   parser.parse(varargin{:});
 
-projname = p.Results.projectname;
-updatefiles = p.Results.updatefiles;
+   projname = parser.Results.projectname;
+   updatefiles = parser.Results.updatefiles;
+end

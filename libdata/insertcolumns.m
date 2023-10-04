@@ -1,4 +1,4 @@
-function Data = insertcolumns(Data,DataColumns,varargin)
+function Data = insertcolumns(Data, DataColumns, varargin)
 %INSERTCOLUMNS insert columns into data array
 %
 %  Data = insertcolumns(Data,DataColumns) inserts columns to the end of Data
@@ -10,54 +10,13 @@ function Data = insertcolumns(Data,DataColumns,varargin)
 %
 % See also:
 
-% BSD 3-Clause License
-%
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are met:
-%
-% 1. Redistributions of source code must retain the above copyright notice, this
-%    list of conditions and the following disclaimer.
-%
-% 2. Redistributions in binary form must reproduce the above copyright notice,
-%    this list of conditions and the following disclaimer in the documentation
-%    and/or other materials provided with the distribution.
-%
-% 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 % NOTE: not sure why I don't use 'addvars' for type table. maybe I just spaced
 % it, or maybe I did not finish that part of the code and it was just added to
 % make the function more general, where dealing with arrays was the main goal
 
-%% parse inputs
-f = validationModule;
-p = inputParser;
-p.FunctionName = mfilename;
-p.CaseSensitive = false;
-
-p.addRequired('Data', @(x) f.validTableLike(x) | f.validNumericArray(x) );
-p.addRequired('DataColumns' );
-p.addOptional('ColumnIndices', nan, f.validNumericScalar );
-p.addParameter('ColumnVarNames', '', f.validCharLike );
-
-p.parse(Data,DataColumns,varargin{:}); clear f
-ColumnVarNames = p.Results.ColumnVarNames;
-ColumnIndices = p.Results.ColumnIndices;
+% parse inputs
+[Data, DataColumns, ColumnIndices, ColumnVarNames] = parseinputs( ...
+   Data, DataColumns, mfilename, varargin{:});
 
 %% main code
 % use the variable inputname for the case of table data
@@ -113,11 +72,11 @@ if istable(Data)
       if isempty(ColumnVarNames)
          ColumnVarNames = "NewColumn";
       end
-
-      % this adds the columns to the table and uses the datacolumns
-      % inputname (variable name in calling space) as the new table
-      % variable names
-      Data = addvars(Data,DataColumns,'NewVariableNames',ColumnVarNames);
+      
+      for n = 1:numColumns
+         Data = addvars(Data,DataColumns(:, n), ...
+            'NewVariableNames', ColumnVarNames{n});
+      end
 
       % convert the table to an array
       % tabledata = table2array(dataarray);
@@ -158,3 +117,51 @@ if istable(Data) && istable(DataColumns)
    newnames2 = newnames(width(Data)+1:end);
 end
 
+%% INPUT PARSER
+function [Data, DataColumns, ColumnIndices, ColumnVarNames] = parseinputs( ...
+   Data, DataColumns, mfilename, varargin)
+
+f = validationModule;
+parser = inputParser;
+parser.FunctionName = mfilename;
+parser.CaseSensitive = false;
+parser.addRequired('Data', @(x) f.validTabular(x) | f.validNumericArray(x) );
+parser.addRequired('DataColumns' );
+parser.addOptional('ColumnIndices', nan, f.validNumericScalar );
+parser.addParameter('ColumnVarNames', '', f.validCharLike );
+
+parser.parse(Data, DataColumns, varargin{:}); clear f
+ColumnVarNames = parser.Results.ColumnVarNames;
+ColumnIndices = parser.Results.ColumnIndices;
+
+%% LICENSE
+% 
+% BSD 3-Clause License
+%
+% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+%
+% 1. Redistributions of source code must retain the above copyright notice, this
+%    list of conditions and the following disclaimer.
+%
+% 2. Redistributions in binary form must reproduce the above copyright notice,
+%    this list of conditions and the following disclaimer in the documentation
+%    and/or other materials provided with the distribution.
+%
+% 3. Neither the name of the copyright holder nor the names of its
+%    contributors may be used to endorse or promote products derived from
+%    this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

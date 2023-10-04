@@ -51,4 +51,3 @@ function T = rmnanbygroup(T,groupvars,datavars)
 %     icheck      = sum(i3)-height(i2)*8; %8=nmethods*nderiv;
 
 end
-

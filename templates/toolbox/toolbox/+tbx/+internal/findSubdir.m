@@ -1,37 +1,41 @@
-function mFileList = findSubdir(aDir, varargin)
-% mFileList = findSubdir(aDirectory)
-% mFileList = findSubdir(aDirectory, 'Recurse', tf)
+function mfiles = findSubdir(aDir, varargin)
+   % mFileList = findSubdir(aDirectory)
+   % mFileList = findSubdir(aDirectory, 'Recurse', tf)
 
-% Parse input.
-[aDir, doRecurse] = parseinputs(aDir, mfilename, varargin{:});
+   % Parse input.
+   [thedir, Recurse] = parseinputs(aDir, mfilename, varargin{:});
 
-% Find M-Files.
-theDir = parser.Results.Directory;
-dirStruct = dir(theDir);
-dirIsDir = [dirStruct.isdir];
-fileList = dirStruct(~dirIsDir);
-mFileList = fileList(~cellfun('isempty', regexp({fileList.name}, '\.m$', 'once')));
-mFileList = cellfun(@(f)fullfile(theDir, f), {mFileList.name}, 'UniformOutput', false)';
+   % Find M-Files.
+   dlist = dir(thedir);
+   tfdir = [dlist.isdir];
+   files = dlist(~tfdir);
+   mfiles = files(~cellfun('isempty', regexp({files.name}, '\.m$', 'once')));
+   mfiles = cellfun(@(f) fullfile(thedir, f), {mfiles.name}, 'Uniform', false)';
 
-% If Recurse was specified, find subdirectories.
-if doRecurse
-    subdirs = dirStruct(dirIsDir & cellfun('isempty', regexp({dirStruct.name}, '^\.{1,2}$', 'once')));
-    subdirList = {subdirs.name}';
-    if ~isempty(subdirList)
-        subdirList = strcat(theDir, filesep, subdirList);
-        subdirFiles = cellfun(@(d)tbx.internal.findSubdir(d, 'Recurse', doRecurse), subdirList, 'UniformOutput', false);
-        mFileList = vertcat(mFileList, subdirFiles{:});
-    end
+   % If Recurse was specified, find subdirectories.
+   if Recurse
+      pat = '^\.{1,2}$';
+      subdirs = dlist(tfdir & cellfun('isempty', regexp({dlist.name}, pat, 'once')));
+      subdirList = {subdirs.name}';
+      if ~isempty(subdirList)
+         subdirList = strcat(thedir, filesep, subdirList);
+         subdirFiles = cellfun(@(d) tbx.internal.findSubdir(d, 'Recurse', Recurse), ...
+            subdirList, 'Uniform', false);
+         mfiles = vertcat(mfiles, subdirFiles{:});
+      end
+   end
 end
 
 %% input parser
-function [aDir, doRecurse] = parseinputs(aDir, mfuncname, varargin)
-persistent parser;
-if isempty(parser)
-    parser = inputParser;
-    parser.FunctionName = mfuncname;
-    parser.addRequired('Directory', @(d)ischar(d) && isvector(d));
-    parser.addParameter('Recurse', false, @(tf)islogical(tf) && isscalar(tf));
+function [FullPath, Recurse] = parseinputs(FullPath, mfuncname, varargin)
+   persistent parser;
+   if isempty(parser)
+      parser = inputParser;
+      parser.FunctionName = mfuncname;
+      parser.addRequired('FullPath', @(d) ischar(d) && isvector(d));
+      parser.addParameter('Recurse', false, @(tf) islogical(tf) && isscalar(tf));
+   end
+   parser.parse(FullPath, varargin{:});
+   thedir = parser.Results.FullPath;
+   Recurse = parser.Results.Recurse;
 end
-parser.parse(aDir, varargin{:});
-doRecurse = parser.Results.Recurse;

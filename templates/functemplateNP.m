@@ -1,34 +1,47 @@
 function varargout = functemplate(X, varargin)
-%FUNCNAME general description of function
-%
-%  Y = FUNCNAME(X) description
-%  Y = FUNCNAME(X,'name1',value1) description
-%  Y = FUNCNAME(___,method). Options: 'flag1','flag2','flag3'.
-%        The default method is 'flag1'.
-%
-% Example
-%
-%
-% Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %FUNCNAME One line description of function.
+   %
+   % Syntax
+   %  Y = FUNCNAME(X)
+   %  Y = FUNCNAME(X, 'flag')
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Description
+   %  Y = FUNCNAME(X) description.
+   %  Y = FUNCNAME(X,'flag') description.
+   %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
+   %
+   % Example
+   %
+   %
+   % Input Arguments
+   %
+   %
+   % Output Arguments
+   %
+   %
+   % Copyright (c) YYYY, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
+   %
+   % See also:
 
-% PARSE INPUTS
-narginchk(0, Inf)
+   % PARSE INPUTS
+   narginchk(0, Inf)
 
-[varargin{:}] = convertStringsToChars(varargin{:});
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
-% simplest input parsing
-% if (nargin<2) % set default ; end
-% if (nargin<3) % set default ; end
+   % simplest input parsing
+   % if (nargin<2) % set default ; end
+   % if (nargin<3) % set default ; end
 
-% MAIN CODE
-cleanup = onCleanup(@() cleanupfunc());
+   % MAIN CODE
+   cleanup = onCleanup(@() cleanupfunc());
 
-% PARSE OUTPUTS
-nargoutchk(0, Inf)
-[varargout{1:nargout}] = dealout(argout1, argout2);
+   % CHECKS
+   assert()
 
+   % PARSE OUTPUTS
+   nargoutchk(0, Inf)
+   [varargout{1:nargout}] = dealout(argout1, argout2);
 end
 
 %% LOCAL FUNCTIONS
@@ -46,8 +59,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) YYYY, Matt Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:

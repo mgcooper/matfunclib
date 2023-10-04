@@ -1,5 +1,5 @@
 function makedocs(varargin)
-%MAKEDOCS publish toolbox documentation as html.
+%MAKEDOCS Publish toolbox documentation as html files.
 % 
 % 
 % 

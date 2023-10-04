@@ -1,4 +1,4 @@
-function tspan = timespan(T,varargin)
+function tspan = timespan(timeLikeObject,varargin)
 %TIMESPAN return time span of timetable, datetime, or duration object T 
 % 
 % Syntax
@@ -21,40 +21,43 @@ narginchk(1,1)
 withwarnoff('MATFUNCLIB:libtime:convertToDatetimeFailed');
 
 % main function
-tf = istimetable(T) || isdatetime(T);
+tf = istimetable(timeLikeObject) || isdatetime(timeLikeObject);
 if ~tf
    % try to convert
-   [T, tf] = todatetime(T);
+   [timeLikeObject, tf] = todatetime(timeLikeObject);
 end
 
 if tf
-   tspan = gettimespan(T);
+   tspan = gettimespan(timeLikeObject);
    return
 end
 
 % otherwise, search for a datetime or timetable in T 
 
-if isstruct(T)
+if isstruct(timeLikeObject)
 
-   if isscalar(T)
-      tf = structfun(@(s) isdatetime(s) || istimetable(s), T);
+   if isscalar(timeLikeObject)
+      tf = structfun(@(s) isdatetime(s) || istimetable(s), timeLikeObject);
    else
-      tf = arrayfun(@(s) isdatetime(s) || istimetable(s), T);
+      tf = arrayfun(@(s) isdatetime(s) || istimetable(s), timeLikeObject);
    end
 
+   % obtain the time span of all time-like objects in the struct
    if any(tf)
-      fields = fieldnames(T);
-      T = [T(:).(char(fields(tf)))];
-
-      tspan = gettimespan(T);
+      structFields = fieldnames(timeLikeObject);
+      structFields = structFields(tf);
+      tspan = NaT(numel(structFields), 2);
+      for n = 1:numel(structFields)
+         tspan(n, :) = gettimespan([timeLikeObject(:).(structFields{n})]);
+      end
       return
    end
    
-elseif iscell(T)
-   tf = cellfun(@(c) isdatetime(c) || istimetable(c), T);
+elseif iscell(timeLikeObject)
+   tf = cellfun(@(c) isdatetime(c) || istimetable(c), timeLikeObject);
    
    if any(tf)
-      tspan = gettimespan(T{tf});
+      tspan = gettimespan(timeLikeObject{tf});
       return
    end
    

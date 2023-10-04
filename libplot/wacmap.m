@@ -1,11 +1,13 @@
 function [rgb] = wacmap(film)
-%Wes Anderson color palettes for MATLAB
-%   Via https://wesandersonpalettes.tumblr.com/
+   %WACMAP Wes Anderson color palettes for MATLAB
+   %
+   %  [rgb] = wacmap(film)
+   %   
+   % Via https://wesandersonpalettes.tumblr.com/
+   % 
+   % See also:
 
-load(localfile(mfilename,'wacmaps'),'wacmaps')
-
-idx = strcmp(film, {wacmaps.Film});
-
-rgb = hex2rgb(wacmaps(idx).Hex);
-
+   load(localfile(mfilename,'wacmaps'),'wacmaps')
+   idx = strcmp(film, {wacmaps.Film});
+   rgb = hex2rgb(wacmaps(idx).Hex);
 end

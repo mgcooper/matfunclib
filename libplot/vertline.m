@@ -1,18 +1,46 @@
 function h = vertline(x,varargin)
-%VERTLINE puts a vertical line on the plot at point x
+   %VERTLINE Draw a vertical line on a plot at a specified x-coordinate.
+   %
+   % This function creates a vertical line on a plot at a given x-coordinate.
+   % The line adjusts its position when the axes limits change, ensuring
+   % that it spans the entire height of the plot.
+   %
+   % Syntax:
+   %    h = vertline(x)
+   %    h = vertline(x, Name, Value)
+   %
+   % Inputs:
+   %    x - x-coordinate of the vertical line
+   %
+   % Name-Value pairs:
+   %    Line properties can be passed as name-value pairs.
+   %
+   % Outputs:
+   %    h - handle to the line object
+   %
+   % Example:
+   %    vertline(5, 'Color', 'r', 'LineStyle', '--');
+   %
+   % See also: HORZLINE, LINE, PLOT
 
-% nov 2022 renamed to vertline to avoid conflict with built-in stats/private
-% dec 2022 removed input parsing
-%------------------------------------------------------------------------------
-% p = magicParser;
-% p.FunctionName=mfilename;
-% p.addRequired('x',@(x)isnumeric(x));
-% p.addOptional('ax',gca,@(x)isaxis(x));
-% p.parseMagically('caller');
-%------------------------------------------------------------------------------
+   washeld = ishold();
+   hold on
 
-% todo: make the line adjust if the limits change / zoom etc.
-hold on; ax = gca;
-ylims = ax.YLim;
-h = plot(ax,[x x],ylims,':k',varargin{:});
-% hold off;
+   ax = gca;
+   ylims = get(ax, 'YLim');
+
+   h = plot(ax, [x x], ylims, varargin{:});
+
+   if ~isoctave()
+      addlistener(ax, 'MarkedClean', @(src, event) redrawLine(src, event, h));
+   end
+
+   if ~washeld
+      hold off
+   end
+end
+
+function redrawLine(ax, ~, lineHandle)
+   newYLim = get(ax, 'YLim');
+   set(lineHandle, 'YData', newYLim);
+end

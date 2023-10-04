@@ -1,60 +1,55 @@
 function [V, R] = validateRasterReference(V, R, funcname, varargin)
-%VALIDATERASTERREFERENCE validate raster reference object R and raster grid V
-%
-%  [V,R] = VALIDATERASTERREFERENCE(V,R) description
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also validateGridCoordinates, validateGridData
+   %VALIDATERASTERREFERENCE Validate raster reference object R and grid data V.
+   %
+   %  [V,R] = VALIDATERASTERREFERENCE(V,R) description
+   %
+   % See also: validateGridCoordinates, validateGridData
 
-%% input checks
+   % Input parsing
+   narginchk(0,Inf)
+   [varargin{:}] = convertStringsToChars(varargin{:});
+   if nargin < 3 || isempty(funcname); funcname = mcallername(); end
 
-narginchk(0,Inf)
-[varargin{:}] = convertStringsToChars(varargin{:});
-if nargin < 3 || isempty(funcname); funcname = mcallername(); end
+   if nargin == 4
+      CoordinateSystemType = varargin{1};
+   else
+      CoordinateSystemType = 'unspecified';
+   end
 
-if nargin == 4
-   CoordinateSystemType = varargin{1};
-else
-   CoordinateSystemType = 'unspecified';
+   % Main function
+   switch CoordinateSystemType
+      case 'geographic'
+         validateattributes(R, ...
+            {'map.rasterref.GeographicCellsReference', ...
+            'map.rasterref.GeographicPostingsReference'}, ...
+            {'scalar'}, funcname, 'R')
+
+      case 'planar'
+         validateattributes(R, ...
+            {'map.rasterref.MapCellsReference', ...
+            'map.rasterref.MapPostingsReference'}, ...
+            {'scalar'}, funcname, 'R')
+
+      otherwise
+         validateattributes(R, ...
+            {'map.rasterref.MapCellsReference', ...
+            'map.rasterref.GeographicCellsReference', ...
+            'map.rasterref.MapPostingsReference', ...
+            'map.rasterref.GeographicPostingsReference'}, ...
+            {'scalar'}, funcname, 'R')
+   end
+
+   if ~isempty(V)
+      validateattributes(V, {'numeric', 'logical'}, ...
+         {'size', R.RasterSize}, funcname, 'V')
+   end
 end
-
-%% main code
-
-switch CoordinateSystemType
-   case 'geographic'
-      validateattributes(R, ...
-         {'map.rasterref.GeographicCellsReference', ...
-         'map.rasterref.GeographicPostingsReference'}, ...
-         {'scalar'}, funcname, 'R')
-
-   case 'planar'
-      validateattributes(R, ...
-         {'map.rasterref.MapCellsReference', ...
-         'map.rasterref.MapPostingsReference'}, ...
-         {'scalar'}, funcname, 'R')
-
-   otherwise
-      validateattributes(R, ...
-         {'map.rasterref.MapCellsReference', ...
-         'map.rasterref.GeographicCellsReference', ...
-         'map.rasterref.MapPostingsReference', ...
-         'map.rasterref.GeographicPostingsReference'}, ...
-         {'scalar'}, funcname, 'R')
-end
-
-if ~isempty(V)
-   validateattributes(V, {'numeric', 'logical'}, ...
-      {'size', R.RasterSize}, funcname, 'V')
-end
-
-
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

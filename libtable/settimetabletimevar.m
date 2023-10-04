@@ -1,2 +1,3 @@
 function T = settimetabletimevar(T)
-T = renametimetabletimevar(T);
+   T = renametimetabletimevar(T);
+end

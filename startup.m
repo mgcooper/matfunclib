@@ -1,5 +1,8 @@
 % Matlab startup configuration
 
+inoctave = (exist ("OCTAVE_VERSION", "builtin") > 0);
+inmatlab = ~inoctave;
+
 %% manage warnings
 
 % Save the current state of the warnings
@@ -17,13 +20,13 @@ warning("off", "MATFUNCLIB:manager:toolboxAlreadyActive")
 
 HOMEPATH = getenv('HOME'); % system $HOME
 
-if usejava('desktop') % we're in the desktop
-   
+if usejava('desktop') % we're in the desktop (also means we're not in octave)
+
    % When Matlab is started from the desktop app, it inherits the default system
-   % PATH, i.e., these should match: 
-   % [~, default_path] = system('echo -n $PATH'); 
+   % PATH, i.e., these should match:
+   % [~, default_path] = system('echo -n $PATH');
    % isequal(default_path, getenv('PATH'))
-   
+
    % Add brew and pyenv paths to the default system path.
    if ismac()
       setenv('PATH', ...
@@ -34,16 +37,18 @@ if usejava('desktop') % we're in the desktop
          );
    end
 
-   % custom desktop settings
-   mSettings = settings;
-
    % Prevent autoformatter from stripping blanks to prevent the cursor from being
    % forced to the first position in indented code blocks (introduced in r2021b)
-   if ~verLessThan('matlab','9.11')
-      mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
-   elseif verLessThan('matlab','9.14')
-      % Make the desktop display larger. A warning is issued on r2023a.
-      mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
+   if inmatlab
+      % custom desktop settings
+      mSettings = settings;
+
+      if ~verLessThan('matlab','9.11')
+         mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
+      elseif verLessThan('matlab','9.14')
+         % Make the desktop display larger. A warning is issued on r2023a.
+         mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
+      end
    end
 
    % smartIndentContents (method of class Document) programmatically formats
@@ -52,7 +57,7 @@ if usejava('desktop') % we're in the desktop
    % save(docs)
 else
    % Matlab was started from the terminal, which inherits the PATH variable set
-   % by the user dotfiles, so there is no need to set PATH. 
+   % by the user dotfiles, so there is no need to set PATH.
 end
 
 %% set user paths
@@ -109,6 +114,17 @@ subpaths = strsplit(genpath(getenv('MATLABUSERPATH')), pathsep);
 ignorePaths = {'.git'; '.svn'; '.'; '..'; };
 keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
+% custom remove for octave compatibility
+if inoctave
+   ignorePaths = [ignorePaths; {
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'libtext', 'printf'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'iscomplex'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'ifelse'); ...
+      fullfile(getenv('MATLABFUNCTIONPATH'), 'libstruct', 'numfields'); ...
+      fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
+      }];
+end
+
 for m = 1:numel(ignorePaths)
    subpaths = subpaths(keep(subpaths, ignorePaths{m}));
 end
@@ -118,7 +134,8 @@ subpaths = strcat(subpaths, pathsep);
 subpaths = horzcat(subpaths{:});
 
 % Add the paths to the path
-addpath(subpaths);
+addpath(subpaths, '-end');
+
 
 %% Figure defaults
 
@@ -126,6 +143,7 @@ addpath(subpaths);
 % such as 'line', but may not apply to high-level functions such as 'plot'
 % (e.g., defaultAxesBox off). However, if 'hold on' is used prior to plot, these
 % properties apply. So, in custom plotting functions, begin with 'hold on'.
+
 set(groot                                                      , ...
    'defaultAxesFontName'            ,  'SF Pro Text'           , ...
    'defaultTextFontName'            ,  'SF Pro Text'           , ...
@@ -151,15 +169,21 @@ set(groot                                                      , ...
    'defaultAxesYMinorGrid'          ,  'off'                   , ...
    'defaultAxesYMinorTick'          ,  'on'                    , ...
    'defaultAxesTickDirMode'         ,  'manual'                , ...
-   'defaultAxesXMinorGridMode'      ,  'manual'                , ...
-   'defaultAxesXMinorTickMode'      ,  'manual'                , ...
-   'defaultAxesYMinorGridMode'      ,  'manual'                , ...
-   'defaultAxesYMinorTickMode'      ,  'manual'                , ...
    'defaultAxesMinorGridAlpha'      ,  0.075                   , ...
    'defaultAxesMinorGridLineStyle'  ,  '-'                     );
 
+% xminorgridmode
+if inmatlab
+   set(groot                                                   , ...
+      'defaultAxesXMinorGridMode'      ,  'manual'             , ...
+      'defaultAxesYMinorGridMode'      ,  'manual'             , ...
+      'defaultAxesXMinorTickMode'      ,  'manual'             , ...
+      'defaultAxesYMinorTickMode'      ,  'manual'             );
+
+   beep off
+end
 %% Environment configuration
-beep off
+
 format short % careful with shortG, it truncates to 5 digits
 format compact % use pi to see different formats: pi
 
@@ -180,36 +204,72 @@ end
 try
    pathadd(gettbsourcepath('mpm'), true, '-begin')
 catch ME
-   
+
+end
+
+% add projects to the path
+try
+   pathadd(getprjsourcepath('groupstats'), true, '-end')
+catch
 end
 
 % open the active project if we're in the desktop
-if usejava('desktop') % 
+if usejava('desktop') && inmatlab
    workon(getactiveproject());
 end
 
 %% Python configuration
 
-if verLessThan('matlab','9.11') % <r2021b use 3.8
-   try
-      pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.8.5/bin/python'));
-   catch ME
+if inmatlab
+   if verLessThan('matlab','9.11') % <r2021b use 3.8
       try
-         pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.8'));
+         pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.8.5/bin/python'));
       catch ME
-         % pyenv('Version', '/usr/bin/python3')
+         try
+            pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.8'));
+         catch ME
+            % pyenv('Version', '/usr/bin/python3')
+         end
+      end
+
+   else
+      try
+         pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.9.0/bin/python'));
+      catch ME
+         try
+            pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.9'));
+         catch ME
+            % pyenv('Version', '/usr/bin/python3')
+         end
       end
    end
+end
 
-else
+%% Launch toolboxes
+if inmatlab
    try
-      pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.9.0/bin/python'));
-   catch ME
-      try
-         pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.9'));
-      catch ME
-         % pyenv('Version', '/usr/bin/python3')
-      end
+      ismap(gca);
+   catch
+   end
+
+   try
+      opts = statset();
+   catch
+   end
+
+   try
+      fitoptions();
+   catch
+   end
+
+   try
+      optimoptions("fminunc");
+   catch
+   end
+
+   try
+      imread('ngc6543a.jpg');
+   catch
    end
 end
 
@@ -217,6 +277,7 @@ end
 
 % clear vars but not the screen b/c it deletes error msgs
 clearvars
+close all
 
 % don't forget
 disp('BE GRATEFUL')
@@ -229,5 +290,3 @@ disp('BE GRATEFUL')
 % fontName = 'BitstreamSansVeraMono';
 % fontName = 'Helvetica';
 % fontName = 'Source Sans Pro' (nice and compact also if bold)
-
-

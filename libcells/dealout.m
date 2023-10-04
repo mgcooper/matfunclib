@@ -34,7 +34,7 @@ function varargout = dealout(varargin)
 % See also
 
 args = varargin;
-if numel(varargin{:}) == 1 && isstruct(varargin{1})
+if numel(varargin) == 1 && isstruct(varargin{1})
    try
       args = struct2cell(args{:});
    catch

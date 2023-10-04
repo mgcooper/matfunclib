@@ -1,98 +1,109 @@
 function varargout = addOnetoOne(varargin)
-%addOnetoOne adds a one:one line to an open plot
-%   Adds a solid black line of width 1, scales the x and y lims to be
-%   equal, returns the handle to the plot so the user can specify line
-%   properties on the 1:1 line. Alternatively, the line properties can be
-%   passed in i.e. "varargin"
-%
-% INPUTS:
-% optional, can be left blank, or any standard line property can be used as
-% an input to modify the 1:1 line. See examples.
-%
-% OUTPUTS:
-% handle = handle to the 1:1 line object
-%
-% AUTHOR: Matthew Guy Cooper, UCLA, guycooper@ucla.edu
-%
-% EXAMPLE 1: simplest case, just add the one to one line
-% x = 1:1:100;
-% y = x.*(rand(1,100) + .5);
-% h = scatter(x,y);
-% addOnetoOne;
-%
-% EXAMPLE 2: change the default 1:1 line to a black dashed line
-% x = 1:1:100;
-% y = x.*(rand(1,100) + .5);
-% h = scatter(x,y);
-% addOnetoOne('k--')
-%
-% EXAMPLE 3: change the default 1:1 line to very thick line;
-% x = 1:1:100;
-% y = x.*(rand(1,100) + .5);
-% h = scatter(x,y);
-% addOnetoOne('k--','linewidth',5)
-%
-% See also: scatterfit
+   %addOnetoOne adds a one:one line to an open plot
+   %   Adds a solid black line of width 1, scales the x and y lims to be
+   %   equal, returns the handle to the plot so the user can specify line
+   %   properties on the 1:1 line. Alternatively, the line properties can be
+   %   passed in i.e. "varargin"
+   %
+   % INPUTS:
+   % optional, can be left blank, or any standard line property can be used as
+   % an input to modify the 1:1 line. See examples.
+   %
+   % OUTPUTS:
+   % handle = handle to the 1:1 line object
+   %
+   % AUTHOR: Matthew Guy Cooper, UCLA, guycooper@ucla.edu
+   %
+   % EXAMPLE 1: simplest case, just add the one to one line
+   % x = 1:1:100;
+   % y = x.*(rand(1,100) + .5);
+   % h = scatter(x,y);
+   % addOnetoOne;
+   %
+   % EXAMPLE 2: change the default 1:1 line to a black dashed line
+   % x = 1:1:100;
+   % y = x.*(rand(1,100) + .5);
+   % h = scatter(x,y);
+   % addOnetoOne('k--')
+   %
+   % EXAMPLE 3: change the default 1:1 line to very thick line;
+   % x = 1:1:100;
+   % y = x.*(rand(1,100) + .5);
+   % h = scatter(x,y);
+   % addOnetoOne('k--','linewidth',5)
+   %
+   % See also: scatterfit
 
-% if nargin==0
-%     posneg = pos;
-% elseif nargin>0
-%     if strcmp(posneg,'positive')
-%     end
-% end
+   % TODO: reconcile with padone2one
 
-narginchk(0,Inf)
+   % Parse optional keeplims argument
+   [keeplims, varargin] = parseoptarg(varargin, {'keeplims'}, 'keeplims');
 
-hold on; 
-if nargin < 1
-   axis tight;
-   
-   %pad = pad/100*(newlims(2)-newlims(1));
-   
-   newlims(1) = min(min(xlim),min(ylim)) * 0.98;
-   newlims(2) = max(max(xlim),max(ylim)) * 1.02;
-   
-elseif strcmp(varargin{1},'keeplims')
-   varargin = varargin(2:end);
-   newlims = xlim;
+   % Parse possible axes input.
+   [ax, varargin, ~, isfigure] = parsegraphics(varargin{:});
+
+   % Get handle to either the requested or a new axis.
+   if isempty(ax)
+      ax = gca;
+   elseif isfigure
+      ax = gca(ax);
+   end
+   washeld = get(ax, 'NextPlot');
+   hold(ax, 'on');
+
+   if strcmp(keeplims, 'keeplims')
+      newlims = xlim;
+   else
+      axis tight;
+
+      % Get the limits based on the current limits
+      % pad = pad/100*(newlims(2)-newlims(1));
+      % newlims(1) = min(min(xlim),min(ylim)) * 0.98;
+      % newlims(2) = max(max(xlim),max(ylim)) * 1.02;
+
+      % Get the limits based on the data range
+      [xdata, ydata] = getplotdata(ax);
+
+      % If multiple data series exist on the plot, cat them to vectors
+      if iscell(xdata)
+         xdata = Cell2Vec(xdata);
+      end
+      if iscell(ydata)
+         ydata = Cell2Vec(ydata);
+      end
+
+      newlims(1) = min(min(ydata(:)), min(xdata(:)));
+      newlims(2) = max(max(ydata(:)), max(xdata(:)));
+   end
+
+   set(ax, 'XLim', newlims, 'YLim', newlims);
+   delta = (newlims(2) - newlims(1)) / 100;
+
+   plotdata = newlims(1):delta:newlims(2);
+   H = plot(plotdata, plotdata, varargin{:});
+
+   axis square
+
+   % i diabled this b/c it's the reason the exponent isn't showing up on the
+   % tick labels anymore, need to come up with a solution
+   % % now update the ticks and labels
+   % xticks = get(gca,'Xtick');
+   % yticks = get(gca,'Ytick');
+   % if length(xticks) >= length(yticks)
+   %     ticks = xticks;
+   %     ticklabels = get(gca,'XTickLabel');
+   % else
+   %     ticks = yticks;
+   %     ticklabels = get(gca,'YTickLabel');
+   % end
+   %
+   % set(gca,'XTick',ticks,'XTickLabel',ticklabels,'YTick',ticks, ...
+   %         'YTickLabel',ticks);
+
+   % Restore hold state
+   set(ax, 'NextPlot', washeld);
+
+   if nargout == 1
+      varargout{1} = H;
+   end
 end
-
-set(gca,'XLim',newlims,'YLim',newlims);   
-delta = (newlims(2) - newlims(1))/100;
-
-
-H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
-
-if nargout == 1
-   varargout{1} = H;
-end
-
-% i diabled this b/c it's the reason the exponent isn't showing up on the
-% tick labels anymore, need to come up with a solution
-% % now update the ticks and labels
-% xticks      =   get(gca,'Xtick');
-% yticks      =   get(gca,'Ytick');
-% if length(xticks) >= length(yticks)
-%     ticks       =   xticks;
-%     ticklabels  =   get(gca,'XTickLabel');
-% else
-%     ticks       =   yticks;
-%     ticklabels  =   get(gca,'YTickLabel');
-% end
-%
-% set(gca,'XTick',ticks,'XTickLabel',ticklabels,'YTick',ticks, ...
-%         'YTickLabel',ticks);
-
-axis square
-hold off
-
-% this is the original version:
-% hold on;
-%
-% xlims       =       get(gca,'XLim');
-% ylims       =       get(gca,'YLim');
-% newlims(1)  =       min(xlims(1),ylims(1));
-% newlims(2)  =       max(xlims(2),ylims(2));
-%                     set(gca,'XLim',newlims,'YLim',newlims);
-% handle      =       plot(newlims(1):.1:newlims(2),newlims(1):.1:newlims(2),varargin{:});
-% axis square

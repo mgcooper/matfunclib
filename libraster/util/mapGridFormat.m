@@ -1,70 +1,72 @@
 function gridFormat = mapGridFormat(X, Y)
-%MAPGRIDFORMAT determine if grid format is fullgrid, gridvectors, or coordinates
-% 
-% 
-%
-% 
-% 
-% See also mapGridInfo mapGridCellSize prepareMapGrid
+   %MAPGRIDFORMAT Determine map grid format.
+   %
+   %  gridFormat = mapGridFormat(X, Y) Determines if X, Y define a fullgrid,
+   %  gridvectors, or grid point coordinates.
+   %
+   %
+   % See also: mapGridInfo, mapGridCellSize, prepareMapGrid
 
-% Require X and Y be numeric and non-empty
-validateGridCoordinates(X, Y, mfilename)
+   % Require X and Y be numeric and non-empty
+   validateGridCoordinates(X, Y, mfilename)
 
-% Convert sparse to full
-X = full(X);
-Y = full(Y);
+   % Convert sparse to full
+   X = full(X);
+   Y = full(Y);
 
-% Determine grid format. Check for fullgrids must come after check for
-% gridvectors/coordinates, since matrices are also vectors.
-if isscalar(X) && isscalar(Y)
-   gridFormat = "point";
-elseif isvector(X) && isvector(Y)
-   
-   % If X and Y have the same number of elements, they are coordinate pairs,
-   % unless they have no repeat elements, in which case they are gridvectors. If
-   % they are coordinate pairs with the same number of elements and no unique
-   % elements, then they are effectively grid vectors.
-   if numel(X) == numel(Y)
-      if numel(unique(X)) == numel(X) && numel(unique(Y)) == numel(Y)
-         gridFormat = "gridvectors";
+   % Determine grid format. Check for fullgrids must come after check for
+   % gridvectors/coordinates, since matrices are also vectors.
+   if isscalar(X) && isscalar(Y)
+      gridFormat = "point";
+
+   elseif ~customIsUniform(unique(X(:))) && ~customIsUniform(unique(Y(:)))
+      gridFormat = 'irregular';
+
+   elseif isvector(X) && isvector(Y)
+
+      % If X and Y have the same number of elements, they are coordinate pairs,
+      % unless they have no repeat elements, in which case they are gridvectors.
+      % If they are coordinate pairs with the same number of elements and no
+      % unique elements, then they are effectively grid vectors.
+      if numel(X) == numel(Y)
+         if numel(unique(X)) == numel(X) && numel(unique(Y)) == numel(Y)
+            gridFormat = "gridvectors";
+         else
+            gridFormat = "coordinates";
+         end
       else
-         gridFormat = "coordinates";
+         gridFormat = "gridvectors";
       end
+
+      % I think above could be simplified to:
+
+      % if numel(unique(X)) == numel(X) && numel(unique(Y)) == numel(Y)
+      %    gridFormat = "gridvectors";
+      % elseif numel(X) == numel(Y)
+      %    gridFormat = "coordinates";
+      % else
+      %    gridFormat = "unrecognized";
+      % end
+
+   elseif ismatrix(X) && ismatrix(Y) && all(size(X) == size(Y))
+      gridFormat = "fullgrids";
    else
-      gridFormat = "gridvectors";
+      gridFormat = "unrecognized";
    end
-   
-   % I think above could be simplified to:
-   
-   % if numel(unique(X)) == numel(X) && numel(unique(Y)) == numel(Y)
-   %    gridFormat = "gridvectors";
-   % elseif numel(X) == numel(Y)
-   %    gridFormat = "coordinates";
-   % else
-   %    gridFormat = "unrecognized";
-   % end
-   
-elseif ismatrix(X) && ismatrix(Y) && all(size(X) == size(Y))
-   gridFormat = "fullgrids";
-else
-   gridFormat = "unrecognized";
-end
 
-% If coordinate pairs, confirm nan elements are equal
-if gridFormat == "coordinates"
-   assert(isequal(isnan(X), isnan(Y)), ...
-      'NaN elements do not match in coordinate pairs' , mfilename, 'X', 'Y')
+   % If coordinate pairs, confirm nan elements are equal
+   if gridFormat == "coordinates"
+      assert(isequal(isnan(X), isnan(Y)), ...
+         'NaN elements do not match in coordinate pairs' , mfilename, 'X', 'Y')
+   end
+   % dx = unique(diff(X(:))); max(diff(dx))
 end
-
-end
-
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) 2023, Matt Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -77,8 +79,8 @@ end
 %    and/or other materials provided with the distribution.
 %
 % 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
+%    contributors may be used to endorse or promote products derived from this
+%    software without specific prior written permission.
 %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE

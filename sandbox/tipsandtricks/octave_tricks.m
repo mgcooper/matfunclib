@@ -19,12 +19,17 @@ narginchk(0,0)
 
 %% notable incompatibilities
 
+% UPDATE: I am getting warnings that cannot be suppressed if a function that
+% shadows an octave built in has an arguments block, which make octave
+% unuseable, so i've moved any such functions to folders and removed them from
+% path on startup e.g. ifelse, see startup.m
 % looks like arguments block might be supported (passed over i.e. no error) in
 % octave 7+: 
 % https://hg.savannah.gnu.org/hgweb/octave/rev/c19f8cbe0fd5
 
 % accessing private/ folders in package namespaces
 % https://savannah.gnu.org/bugs/?45444
+% also see: https://github.com/amroamroamro/test_functions_scope
 
 % Octave tips
 % 
@@ -34,6 +39,14 @@ narginchk(0,0)
 % - PartialMatching w/ inputParser
 % - islocalmax / islocalmin
 % - texlabel
+% 
+% Do use:
+% - KeepUnmatched true if passing the entire Results sruct to a subsequent
+% function that takes identical parameters and using StructExpand true. This
+% might also be required in Matlab, but it came up in baseflow wrapevents trying
+% to pass the opts = parser.Results to getevents b/c opts had T,Q,R which octave
+% complained were not valid arguments to the function, which took forever to
+% diagnose. 
 % 
 % Replace:
 % - matlab unit test framework with script-based tests:

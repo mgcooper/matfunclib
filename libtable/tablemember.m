@@ -1,4 +1,6 @@
-function member = tablemember(T,varname,value)
+function T = tablemember(T, varname, member)
+   %TABLEMEMBER Subset table rows by all members of group defined by variable.
 
-member = T(ismember(T.(varname),value),:);
-% member = T(contains(T.(varname),value),:);
+   % Note: could rename to rowselect or similar
+   T = T(ismember(T.(varname), member), :);
+end

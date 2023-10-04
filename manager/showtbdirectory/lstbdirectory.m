@@ -1,2 +1,3 @@
 function lstbdirectory
-showtbdirectory
+   showtbdirectory
+end

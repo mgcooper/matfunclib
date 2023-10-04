@@ -1,30 +1,28 @@
-function [ ax2 ] = addtopaxis( )
-%ADDTOPAXIS add a top axis to a figure
-   
-ax1 = gca;
-axpos = plotboxpos(ax1);
-ax2 = axes('Position', axpos,'Color', 'none');
+function topax = addtopaxis(ax)
+   %ADDTOPAXIS Add a top axis to a figure
+   %
+   %  topax = addtopaxis()
+   %  topax = addtopaxis(ax)
+   %
+   % See also:
 
-set(ax2, 'XAxisLocation', 'top', 'YAxisLocation', 'Right', ...
-   'XLim', get(ax1, 'XLim'), 'XTick', get(ax1, 'XTick'), 'XTickLabel', '');
+   if nargin < 1
+      ax = gca;
+   end
+   axpos = plotboxpos(ax);
+   topax = axes('Position', axpos, 'Color', 'none');
 
-% The Y-versions of above and other stuff below were commented out, not sure why
-% set(ax2, 'YLim', get(ax1, 'YLim'), 'YTick', get(ax1, 'YTick'), 'XTickLabel', ...
-%    get(ax1, 'XTickLabel'), 'YTickLabel', '');
-% 
-% set(gcf,'CurrentAxes',ax2);
+   set(topax, 'XAxisLocation', 'top', 'YAxisLocation', 'Right', ...
+      'XLim', get(ax, 'XLim'), 'XTick', get(ax, 'XTick'), 'XTickLabel', '');
 
-% mainAxes = findobj(gcf,'Type','axes');
-% newAxes = copyobj(mainAxes);
-% newAxes.Position = mainAxes.Position;
+   % The Y-versions of above and stuff below were commented out, not sure why
+   % set(topax, 'YLim', get(ax, 'YLim'), 'YTick', get(ax, 'YTick'), 'XTickLabel', ...
+   %    get(ax, 'XTickLabel'), 'YTickLabel', '');
+   %
+   % set(gcf, 'CurrentAxes', topax);
 
-
-% % switched to set for octave compat
-% ax2.XAxisLocation = 'top';
-% ax2.YAxisLocation = 'Right';
-% ax2.XLim = ax1.XLim;
-% ax2.XTick = ax1.XTick;
-% ax2.XTickLabel = '';
-
+   % mainAxes = findobj(gcf, 'Type', 'axes');
+   % newAxes = copyobj(mainAxes);
+   % newAxes.Position = mainAxes.Position;
 end
 
