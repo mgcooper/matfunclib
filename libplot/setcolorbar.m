@@ -1,37 +1,43 @@
 function varargout = setcolorbar(C, CbOpts, CustomOpts)
-%SETCOLORBAR set colorbar properties
+   %SETCOLORBAR set colorbar properties
+   %
+   % [C, climits] = setcolorbar(C)
+   % [C, climits] = setcolorbar(C, Name, Value)
+   %
+   % See also: getcolorbar
 
-arguments
-   C (:,1) = getcolorbar
-   CbOpts.?matlab.graphics.illustration.ColorBar
-   CustomOpts.AutoColorLimits (1,1) logical = false % Add this line
-end
-
-% apply the property-value pairs
-cellfun(@(prop, val) set(C, prop, val), fieldnames(CbOpts), struct2cell(CbOpts))
-
-% Get color limits based on all data associated with the colorbars
-try
-   climits = cell2mat(get(C, 'Limits')); % multiple colorbar
-catch
-   climits = get(C, 'Limits'); % one colorbar
-end
-climits = [min(climits(:,1)), max(climits(:,2))];
-
-% Set color limits
-if CustomOpts.AutoColorLimits
-   for n = 1:numel(C)
-      C(n).Limits = climits;
+   arguments
+      C (:,1) = getcolorbar
+      CbOpts.?matlab.graphics.illustration.ColorBar
+      CustomOpts.AutoColorLimits (1,1) logical = false % Add this line
    end
-   % look for objects with cdata
-   % scatterobj = findobj(gcf, 'Type', 'Scatter');
-   % set(scatterobj, 'CData') problem is we don't want to reset the CData, we
-   % want it mapped to the colorbar limits
+
+   % apply the property-value pairs
+   cellfun(@(prop, val) set(C, prop, val), ...
+      fieldnames(CbOpts), struct2cell(CbOpts))
+
+   % Get color limits based on all data associated with the colorbars
+   try
+      climits = cell2mat(get(C, 'Limits')); % multiple colorbar
+   catch
+      climits = get(C, 'Limits'); % one colorbar
+   end
+   climits = [min(climits(:,1)), max(climits(:,2))];
+
+   % Set color limits
+   if CustomOpts.AutoColorLimits
+      for n = 1:numel(C)
+         C(n).Limits = climits;
+      end
+      % look for objects with cdata
+      % scatterobj = findobj(gcf, 'Type', 'Scatter');
+      % set(scatterobj, 'CData') problem is we don't want to reset the CData, we
+      % want it mapped to the colorbar limits
+   end
+
+   % send back the legend object if requested
+   [varargout{1:nargout}] = dealout(C, climits);
 end
-
-% send back the legend object if requested
-[varargout{1:nargout}] = dealout(C, climits);
-
 
 % function c = setcolorbar( width,height,location,title,label )
 % %SETCOLORBAR add a colorbar or set properties of a colorbar. adjust width by

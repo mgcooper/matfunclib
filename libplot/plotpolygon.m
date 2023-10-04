@@ -1,5 +1,11 @@
 function varargout = plotpolygon(P, PlotOpts)
-   %PLOTPOLYGON plot polygon data
+   %PLOTPOLYGON Plot polyshape or polygon data.
+   % 
+   % plotpolygon(P)
+   % H = plotpolygon(P)
+   % H = plotpolygon(P, Name, Value)
+   % 
+   % See also: 
    arguments
       P
       PlotOpts.?matlab.graphics.primitive.Polygon

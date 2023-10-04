@@ -3,12 +3,12 @@ function setlogticks(ax,varargin)
    %
    %  setlogticks(ax,varargin)
    %
-   % See also
+   % See also:
 
-   % --------------- parse inputs
+   % parse inputs
    [ax, opts] = parseinputs(ax, mfilename, varargin{:});
 
-   % --------------- get axis limits
+   % get axis limits
    xlims = get(ax, 'XLim');
    ylims = get(ax, 'YLim');
    xticks = get(ax, 'XTick');

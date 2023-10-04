@@ -1,5 +1,5 @@
-function varargout = mytextbox(textstr, xpct, ypct, varargin)
-   %TEXTBOX place text box at x,y percent distance from lower left figure corner
+function varargout = textbox(textstr, xpct, ypct, varargin)
+   %TEXTBOX Place text box at x,y percent distance from lower left figure corner
    %
    %  [h, x, y] = textbox(textstr, xpct, ypct)
    %
@@ -10,7 +10,7 @@ function varargout = mytextbox(textstr, xpct, ypct, varargin)
    %  [h, x, y] = textbox(_, varargin) where varargin is any name-value pair
    %  compatibile with text function
    %
-   % See also
+   % See also: textcoords
 
    % note: this function is ready to be converted to this notation where instead
    % of xpct,ypct, either pass in [xpct ypct] or a char 'best' for textbp or
@@ -30,25 +30,11 @@ function varargout = mytextbox(textstr, xpct, ypct, varargin)
    end
 
    % parse remaining input
-   parser = inputParser;
-   parser.KeepUnmatched = true;
-   parser.FunctionName = mfilename;
-   parser.addRequired('textstr', @(x)ischar(x) | iscell(x));
-   parser.addRequired('xpct', @isnumeric);
-   parser.addRequired('ypct', @isnumeric);
-   parser.addOptional('location', 'user', @(x)isnumeric(x) | validatePosition(x));
-   parser.parse(textstr, xpct, ypct, args{:});
-   unmatched = unmatched2varargin(parser.Unmatched);
-   location = parser.Results.location;
-
-   % could replace xpct,ypct with location then parse for either a 1x2 numeric
-   % vector or a char, see prctile function for
-   % p.addOptional('location','best',@(x)isnumeric(x)||validatePosition(x));
-   %-------------------------------------------------------------------------------
+   [location, args] = parseinput(textstr, xpct, ypct, mfilename, args{:});
 
    % if 'best' is requested, use textbp function
    if strcmpi(location, 'best') && (ischar(location) || isstring(location))
-      h = textbp(textstr,unmatched{:});
+      h = textbp(textstr,args{:});
       % [x,y] = textpos(h);
       % for now just return empty x,y, but should be simple to get the x,y
       % position from the h.Position property if they're ever needed
@@ -87,16 +73,16 @@ function varargout = mytextbox(textstr, xpct, ypct, varargin)
       axpos = get(gca,'Position');
       xtext = axpos(1) + xpct/100 .* axpos(3);
       ytext = axpos(2) + ypct/100 .* axpos(4);
-      
+
       % Create the text object
-      h = text(ax, xtext, ytext, textstr, 'Units', 'normalized',unmatched{:});
+      h = text(ax, xtext, ytext, textstr, 'Units', 'normalized',args{:});
    else
       % Set the x/y text coordinates using data units
       xtext = xlims(:,1) + xpct/100 .* (xlims(:,2) - xlims(:,1));
       ytext = ylims(:,1) + ypct/100 .* (ylims(:,2) - ylims(:,1));
-   
+
       % Create the text object
-      h = text(ax, xtext, ytext, textstr, unmatched{:});
+      h = text(ax, xtext, ytext, textstr, args{:});
    end
 
    % handle output
@@ -109,4 +95,23 @@ function tf = validatePosition(location)
    tf = ((ischar(location) && isrow(location)) || ...
       (isstring(location) && isscalar(location) && (strlength(location) > 0))) && ...
       strncmpi(location,'best',max(strlength(location), 1));
+end
+
+%% Input Parser
+function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, args)
+   
+   parser = inputParser;
+   parser.KeepUnmatched = true;
+   parser.FunctionName = mfilename;
+   parser.addRequired('textstr', @(x)ischar(x) | iscell(x));
+   parser.addRequired('xpct', @isnumeric);
+   parser.addRequired('ypct', @isnumeric);
+   parser.addOptional('location', 'user', @(x)isnumeric(x) | validatePosition(x));
+   parser.parse(textstr, xpct, ypct, args{:});
+   unmatched = unmatched2varargin(parser.Unmatched);
+   location = parser.Results.location;
+
+   % could replace xpct,ypct with location then parse for either a 1x2 numeric
+   % vector or a char, see prctile function for
+   % p.addOptional('location','best',@(x)isnumeric(x)||validatePosition(x));
 end

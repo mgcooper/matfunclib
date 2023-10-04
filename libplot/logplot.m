@@ -1,5 +1,14 @@
 function [h,ax] = logplot(x,y,dim,varargin)
-   %LOGPLOT plot x vs y with 'dim' axis set to log
+   %LOGPLOT Plot x vs y with 'dim' axis set to log
+   %
+   %  [h, ax] = logplot(x,y,dim)
+   %
+   % Inputs
+   % x - x-data
+   % y - y-data
+   % dim - which dimension to log. Options are 'x', 'y', 'xy'
+   %
+   % See also:
 
    if strcmp(dim,'x')
       h = plot(x,y,varargin{:}); ax = gca;
@@ -13,5 +22,4 @@ function [h,ax] = logplot(x,y,dim,varargin)
    else
       warning('Specify dimension ''x'' ''y'' or ''xy''');
    end
-
 end

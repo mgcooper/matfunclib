@@ -1,43 +1,35 @@
 function varargout = scatterc(x,y,sz,c,opts)
-%SCATTERC scatter plot with filled face colors
-%
-%  H = SCATTERC(X,Y) makes a scatter plot of x,y with filled face colors
-%  H = SCATTERC(X,Y,SZ) sets the circle size to sz
-%  H = SCATTERC(X,Y,SZ,C) maps the face colors to data in C
-%  H = SCATTERC(_,'flag') description
-%  H = SCATTERC(_,'opts.name1',opts.value1,'opts.name2',opts.value2) applies any
-%  option available to built-in SCATTER function.
-%
-% Example
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also scatter
+   %SCATTERC scatter plot with filled face colors
+   %
+   %  H = SCATTERC(X,Y) makes a scatter plot of x,y with filled face colors
+   %  H = SCATTERC(X,Y,SZ) sets the circle size to sz
+   %  H = SCATTERC(X,Y,SZ,C) maps the face colors to data in C
+   %  H = SCATTERC(_,'flag') description
+   %  H = SCATTERC(_,'opts.name1',opts.value1,'opts.name2',opts.value2) applies
+   %  any option available to built-in SCATTER function.
+   %
+   % Example
+   %
+   %
+   % See also: scatter
 
-% Did not finish, idea was to formalize the stuff in demo_colorbar to ensure
-% scatter face colors are linked across subplots
+   % Did not finish, idea was to formalize the stuff in demo_colorbar to ensure
+   % scatter face colors are linked across subplots
 
-% PARSE ARGUMENTS
-arguments
-   x (:,1) double
-   y (:,1) double
-   sz (:,1) double
-   c (:,1) double
-   opts.?matlab.graphics.chart.primitive.Scatter
-end
+   % PARSE ARGUMENTS
+   arguments
+      x (:,1) double
+      y (:,1) double
+      sz (:,1) double
+      c (:,1) double
+      opts.?matlab.graphics.chart.primitive.Scatter
+   end
 
-% use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
-% args = namedargs2cell(opts);
-
-% use this to convert an opts.name = val struct to "name=val" string
-% args = optionsToNamedArguments(optsstruct);
-
-% MAIN CODE
+   % MAIN CODE
 
 
-% PARSE OUTPUTS
-[varargout{1:nargout}] = dealout(argout1, argout2);
+   % PARSE OUTPUTS
+   [varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
 
@@ -51,10 +43,10 @@ end
 % ## add octave tests here
 
 %% LICENSE
-
+% 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

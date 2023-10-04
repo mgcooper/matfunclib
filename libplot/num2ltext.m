@@ -1,4 +1,9 @@
 function ltxt = num2ltext(prfx, sym, num, unit, precision)
+   %NUM2LTEXT Convert number to formatted text for legend
+   %
+   %  ltxt = num2ltext(prfx, sym, num, unit, precision)
+   %
+   % See also:
 
    if ~isoctave
       [prfx, sym, num, unit, precision] = convertStringsToChars( ...
@@ -11,7 +16,7 @@ function ltxt = num2ltext(prfx, sym, num, unit, precision)
    if isoctave
       ltxt = latex2tex(ltxt);
    end
-   
+
    % for reference, this would convert exponential ticklabels to fixed point
    % set(gca, "YTickLabels", compose('%s', string(get(gca, "YTick"))))
 end
