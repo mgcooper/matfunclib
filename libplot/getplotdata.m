@@ -1,8 +1,11 @@
 function varargout = getplotdata(varargin)
-   %GETPLOTDATA
-
-
-   % This was a minimal example to build out later, might be functional now
+   %GETPLOTDATA Get the data plotted in the current axes
+   %
+   %  xdata = getplotdata()
+   %  [xdata, ydata] = getplotdata(ax)
+   %  [xdata, ydata, zdata] = getplotdata(ax)
+   %
+   % See also: getlegend
 
    if nargin == 0
       ax = gca;
@@ -10,10 +13,10 @@ function varargout = getplotdata(varargin)
       ax = varargin{1};
    end
 
-   childs = get(ax,'Children');
-   xdata = get(childs, 'XData');
-   ydata = get(childs, 'YData');
-   zdata = get(childs, 'ZData');
+   children = get(ax,'Children');
+   xdata = get(children, 'XData');
+   ydata = get(children, 'YData');
+   zdata = get(children, 'ZData');
 
    switch nargout
       case 1

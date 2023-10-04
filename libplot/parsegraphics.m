@@ -39,7 +39,8 @@ function [H,args,nargs,isfigure] = parsegraphics(varargin)
 
    if ~isfigure && nargs > 0
       % Detect 'Parent' or "Parent" (case insensitive).
-      inds = find(cellfun(@(x) (isStringScalar(x) || ischar(x)) && strcmpi('parent', x), args));
+      inds = find(cellfun(@(x) (isStringScalar(x) || ...
+         ischar(x)) && strcmpi('parent', x), args));
       if ~isempty(inds)
          inds = unique([inds inds+1]);
          pind = inds(end);
@@ -48,7 +49,8 @@ function [H,args,nargs,isfigure] = parsegraphics(varargin)
          % graphics objects. If the argument is passed using the 'Parent' P/V
          % pair, then we will catch any graphics handle(s), and not just Axes.
          if nargs >= pind && ...
-               ((isnumeric(args{pind}) && isscalar(args{pind}) && isgraphics(args{pind})) ...
+               ((isnumeric(args{pind}) && isscalar(args{pind}) && ...
+               isgraphics(args{pind})) ...
                || isa(args{pind},'matlab.graphics.Graphics'))
             H = handle(args{pind});
             args(inds) = [];
@@ -60,23 +62,45 @@ function [H,args,nargs,isfigure] = parsegraphics(varargin)
    % Make sure that the graphics handle found is a scalar handle, and not an
    % empty graphics array or non-scalar graphics array.
    if (nargs < nargin) && ~isscalar(H)
-      throwAsCaller(MException('MATFUNCLIB:libplot:parsegraphics', 'NonScalarHandle'));
+      error('MATFUNCLIB:libplot:parsegraphics:NonScalarHandle', ...
+         'Non-scalar handle detected by parsegraphics');
    end
 
    % Throw an error if a deleted graphics handle is detected.
    if ~isempty(H) && ~isvalid(H)
-      % It is possible for a non-Axes graphics object to get through the code
-      % above if passed as a Name/Value pair. Throw a different error message
-      % for Axes vs. other graphics objects.
-      if isa(H,'matlab.graphics.axis.AbstractAxes')
-         throwAsCaller(MException('MATFUNCLIB:libplot:parsegraphics', ...
-            'deleted axis detected'));
+      if isa(H, 'matlab.graphics.axis.AbstractAxes')
+         error('MATFUNCLIB:libplot:parsegraphics:DeletedAxes', ...
+            'Deleted axes detected by parsegraphics');
+
+         % This is here as an example of how error is better than throwAsCaller,
+         % because error prints the name and line number of the calling function
+         % Using mcallername to achieve it is not necessary b/c error does it by
+         % default. I think it might depend on whether the function is a user
+         % function or a Mathworks function. MException might construct a
+         % more-meaningful error message in the latter case.
+
+         % [funcname, linenum] = mcallername();
+         % throwAsCaller(MException('MATFUNCLIB:libplot:parsegraphics', ...
+         %    sprintf('deleted axes detected by PARSEGRAPHICS in %s at line %d', ...
+         %    upper(funcname), linenum)));
       else
-         throwAsCaller(MException('MATFUNCLIB:libplot:parsegraphics', ...
-            'deleted object detected'));
+         % It is possible for a non-Axes graphics object to get through the code
+         % above if passed as a Name/Value pair. Throw a different error message
+         % for Axes vs. other graphics objects.
+         error('MATFUNCLIB:libplot:parsegraphics:DeletedObject', ...
+            'Deleted object detected by parsegraphics');
       end
    end
 
    % add a final check on H
    isfigure = isfig(H);
+
+   % I thought this would allow calling this function with varargin instead of
+   % varargin{:} but the former returns a cell array of cell arrays. This fixes
+   % the case where an empty varargin is passed in, but not otherwise.
+   % This ensures an empty input args (0x0 cell array) is returned as an empty
+   % 0x0 cell array rather than a 1x1 cell array containing an empty cell array.
+   % if all(cellfun(@isempty, args))
+   %    args = args{:};
+   % end
 end

@@ -18,15 +18,12 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
    % function [ h,x,y ] = mytextbox( textstr,location,varargin)
 
    % parse axis input
-   [h, args, ~, isfigure] = parsegraphics(varargin{:});
+   [ax, args, ~, isfigure] = parsegraphics(varargin{:});
 
-   if isempty(h)
+   if isempty(ax)
       ax = gca;
    elseif isfigure
-      f = h;
-      ax = axes('Parent', f);
-   else
-      ax = h;
+      ax = gca(ax);
    end
 
    % parse remaining input
@@ -99,7 +96,7 @@ end
 
 %% Input Parser
 function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, args)
-   
+
    parser = inputParser;
    parser.KeepUnmatched = true;
    parser.FunctionName = mfilename;

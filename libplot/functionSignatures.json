@@ -4,6 +4,7 @@
    {
       "inputs":
       [
+         {"name":"keeplims", "kind":"ordered", "type":["char", "scalar", "choices={'keeplims'}"], "purpose":"option to keep the existing axes limits"},
          {"name":"opts", "kind":"properties", "type":"matlab.graphics.chart.primitive.Line"}
       ],
       "outputs":
@@ -11,11 +12,38 @@
          {"name":"h", "type":"matlab.graphics.chart.primitive.Line"}
       ]
    },
+   "fillplot":
+   {
+      "inputs":
+      [
+         {"name":"x", "kind":"required", "type":"numeric", "purpose":"the x data coordinates"},
+         {"name":"y", "kind":"required", "type":"numeric", "purpose":"the y data coordinates"},
+         {"name":"err", "kind":"required", "type":"numeric", "purpose":"the y-data error margin"},
+         {"name":"c", "kind":"required", "type":"numeric", "purpose":"the patch color"},
+         {"name":"opts", "kind":"properties", "type":"matlab.graphics.primitive.Patch"}
+      ],
+      "outputs":
+      [
+         {"name":"H", "type":"matlab.graphics.chart.primitive.Line"}
+      ]
+   },
    "horzline":
    {
       "inputs":
       [
          {"name":"y", "kind":"required", "type":"numeric"},
+         {"name":"opts", "kind":"properties", "type":"matlab.graphics.chart.primitive.Line"}
+      ],
+      "outputs":
+      [
+         {"name":"h", "type":"matlab.graphics.chart.primitive.Line"}
+      ]
+   },
+   "padone2one":
+   {
+      "inputs":
+      [
+         {"name":"pad", "kind":"ordered", "type":["numeric", "scalar"], "purpose": "scalar percentage used to pad the axes limits"},
          {"name":"opts", "kind":"properties", "type":"matlab.graphics.chart.primitive.Line"}
       ],
       "outputs":

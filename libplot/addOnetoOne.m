@@ -34,73 +34,76 @@ function varargout = addOnetoOne(varargin)
    %
    % See also: scatterfit
 
-   % if nargin==0
-   %     posneg = pos;
-   % elseif nargin>0
-   %     if strcmp(posneg,'positive')
-   %     end
-   % end
+   % TODO: reconcile with padone2one
 
-   narginchk(0,Inf)
+   % Parse optional keeplims argument
+   [keeplims, varargin] = parseoptarg(varargin, {'keeplims'}, 'keeplims');
 
-   washeld = get(gca, 'NextPlot');
-   hold on;
-   
-   if nargin < 1
+   % Parse possible axes input.
+   [ax, varargin, ~, isfigure] = parsegraphics(varargin{:});
+
+   % Get handle to either the requested or a new axis.
+   if isempty(ax)
+      ax = gca;
+   elseif isfigure
+      ax = gca(ax);
+   end
+   washeld = get(ax, 'NextPlot');
+   hold(ax, 'on');
+
+   if strcmp(keeplims, 'keeplims')
+      newlims = xlim;
+   else
       axis tight;
 
-      %pad = pad/100*(newlims(2)-newlims(1));
+      % Get the limits based on the current limits
+      % pad = pad/100*(newlims(2)-newlims(1));
+      % newlims(1) = min(min(xlim),min(ylim)) * 0.98;
+      % newlims(2) = max(max(xlim),max(ylim)) * 1.02;
 
-      newlims(1) = min(min(xlim),min(ylim)) * 0.98;
-      newlims(2) = max(max(xlim),max(ylim)) * 1.02;
+      % Get the limits based on the data range
+      [xdata, ydata] = getplotdata(ax);
 
-      % try this method
-      [xdata, ydata] = getplotdata(gca);
-      newlims(1) = min(min(ydata(:)),min(xdata(:)));
-      newlims(2) = max(max(ydata(:)),max(xdata(:)));
+      % If multiple data series exist on the plot, cat them to vectors
+      if iscell(xdata)
+         xdata = Cell2Vec(xdata);
+      end
+      if iscell(ydata)
+         ydata = Cell2Vec(ydata);
+      end
 
-   elseif strcmp(varargin{1},'keeplims')
-      varargin = varargin(2:end);
-      newlims = xlim;
+      newlims(1) = min(min(ydata(:)), min(xdata(:)));
+      newlims(2) = max(max(ydata(:)), max(xdata(:)));
    end
 
-   set(gca,'XLim',newlims,'YLim',newlims);
-   delta = (newlims(2) - newlims(1))/100;
+   set(ax, 'XLim', newlims, 'YLim', newlims);
+   delta = (newlims(2) - newlims(1)) / 100;
 
-   H = plot(newlims(1):delta:newlims(2),newlims(1):delta:newlims(2),varargin{:});
+   plotdata = newlims(1):delta:newlims(2);
+   H = plot(plotdata, plotdata, varargin{:});
 
-   if nargout == 1
-      varargout{1} = H;
-   end
+   axis square
 
    % i diabled this b/c it's the reason the exponent isn't showing up on the
    % tick labels anymore, need to come up with a solution
    % % now update the ticks and labels
-   % xticks      =   get(gca,'Xtick');
-   % yticks      =   get(gca,'Ytick');
+   % xticks = get(gca,'Xtick');
+   % yticks = get(gca,'Ytick');
    % if length(xticks) >= length(yticks)
-   %     ticks       =   xticks;
-   %     ticklabels  =   get(gca,'XTickLabel');
+   %     ticks = xticks;
+   %     ticklabels = get(gca,'XTickLabel');
    % else
-   %     ticks       =   yticks;
-   %     ticklabels  =   get(gca,'YTickLabel');
+   %     ticks = yticks;
+   %     ticklabels = get(gca,'YTickLabel');
    % end
    %
    % set(gca,'XTick',ticks,'XTickLabel',ticklabels,'YTick',ticks, ...
    %         'YTickLabel',ticks);
 
-   axis square
-   
-   hold(gca, washeld); % restore held state
+   % Restore hold state
+   set(ax, 'NextPlot', washeld);
 
-   % this is the original version:
-   % hold on;
-   %
-   % xlims       =       get(gca,'XLim');
-   % ylims       =       get(gca,'YLim');
-   % newlims(1)  =       min(xlims(1),ylims(1));
-   % newlims(2)  =       max(xlims(2),ylims(2));
-   %                     set(gca,'XLim',newlims,'YLim',newlims);
-   % handle      =       plot(newlims(1):.1:newlims(2),newlims(1):.1:newlims(2),varargin{:});
-   % axis square
+   if nargout == 1
+      varargout{1} = H;
+   end
 end

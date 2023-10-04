@@ -24,7 +24,7 @@ function h = horzline(y,varargin)
    % See also: VERTLINE, LINE, PLOT
 
    washeld = ishold();
-   hold on;
+   hold on
 
    ax = gca;
    xlims = get(ax, 'XLim');
@@ -35,10 +35,8 @@ function h = horzline(y,varargin)
       addlistener(ax, 'MarkedClean', @(src, event) redrawLine(src, event, h));
    end
 
-   if washeld
-      hold on;
-   else
-      hold off;
+   if ~washeld
+      hold off
    end
 end
 

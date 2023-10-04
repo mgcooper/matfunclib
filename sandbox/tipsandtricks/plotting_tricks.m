@@ -11,6 +11,25 @@ narginchk(0,0)
 
 % open scatter.m to see some new built in methods for argument parsing
 
+%%
+
+% see myplotTEMPLATE for more discussion
+
+% for restoring hold state:
+% washeld = get(gca, 'NextPlot');
+% ... plotting commands
+% set(gca, 'NextPlot', washeld);
+% 
+%
+% or:
+% washeld = ishold();
+% ... plotting commands
+% if washeld
+%    hold on;
+% else
+%    hold off;
+% end
+
 %% ? syntax for arguments block
 
 % to get the ? syntax, create the object, and call metaclass, e.g. if H is a
@@ -48,7 +67,21 @@ mc = metaclass(H);
 
 %% plotting into an open figure/axis
 
+% see myplotTEMPLATE.m
 
+% look for provided axes or figure
+[h, args, ~, isfigure] = parsegraphics(varargin{:});
+
+if isempty(h) % no figure or axes was provided
+   f = figure;
+   ax = axes('Parent', f);
+elseif isfigure % h is a figure
+   f = h;
+   ax = axes('Parent', f);
+else % h is an axes object
+   ax = h;
+   f = get(ax, 'Parent');
+end
 
 %% best practice for passing around figures/axes
 
