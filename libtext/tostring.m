@@ -1,21 +1,25 @@
 function varargout = tostring(stringlike)
-% 
-% Examples
-% str = tostring({'1','2'})
-% [str1,str2] = tostring({'1','2'})
-% [str1,str2] = tostring({'1'},{'2'})
+   %TOSTRING Cast to string.
+   %
+   % Examples
+   % str = tostring({'1','2'})
+   % [str1,str2] = tostring({'1','2'})
+   % [str1,str2] = tostring({'1'},{'2'})
+   %
+   % See also: string, char, makeStringsChars
 
-% Notes
-% if string.empty() is passed in it will come out as 1x0 empty string
-% if stringlike contains non-string-like values, they will be converted to
-% strings e.g. numbers will become their string equivalent.
+   % Notes
+   % if string.empty() is passed in it will come out as 1x0 empty string
+   % if stringlike contains non-string-like values, they will be converted to
+   % strings e.g. numbers will become their string equivalent.
 
-% might be enough to just cast to string in arguments block?
-arguments (Repeating)
-   stringlike (1,:) string
+   % might be enough to just cast to string in arguments block?
+   arguments (Repeating)
+      stringlike (1,:) string
+   end
+
+   [varargout{1:nargout}] = stringlike{:};
 end
-
-[varargout{1:nargout}] = stringlike{:};
 
 % NOTE: This makes it work as in the examples, where the behavior varies based
 % on how many outputs are requeested, it makes it flexible, so I can request all
@@ -30,14 +34,14 @@ end
 
 
 % function stringlike = tostring(stringlike)
-% 
+%
 % % might be enough to just cast to string in arguments block?
 % arguments (Repeating)
 %    stringlike (1,:) string
 % end
-% 
+%
 % % for calling syntax like this: stringlike = tostring('1',"2",{'3'}), the output
-% % will be: {["1"]}    {["2"]}    {["3"]}, so this  
+% % will be: {["1"]}    {["2"]}    {["3"]}, so this
 % try
 %    stringlike = string(stringlike{:});
 % catch
@@ -48,7 +52,7 @@ end
 
 
 % function varargout = tostring(varargin)
-% 
+%
 % for n = 1:numel(nargout)
 %    var = varargin{n};
 %    if ischar(var) || iscellstr(var)

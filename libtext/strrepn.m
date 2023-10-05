@@ -27,7 +27,8 @@ function out = strrepn(str,varargin)
       str = 'Hello World!';
       varargin = {'World', 'everyone', 'Hello', 'Goodbye'};
    else
-      assert(iseven(nargin-1), ['Invalid number of input arguments: ', num2str(nargin)]);
+      assert(iseven(nargin-1), ...
+         ['Invalid number of input arguments: ', num2str(nargin)]);
    end
 
    for n = 1 : length(varargin)/2

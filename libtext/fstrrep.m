@@ -15,8 +15,6 @@ function varargout = fstrrep(filename, oldstr, newstr, opts)
    %    Example:
    %    FSTRREP('example.txt', 'old', 'new');
    %
-   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-   %
    % See also: STRREP
 
 
@@ -52,7 +50,7 @@ end
 
 %% LOCAL FUNCTIONS
 
-function wholefile = readinfile(filename);
+function wholefile = readinfile(filename)
    %read in the file
    fid = fopen(filename, 'r');
    if fid == -1
@@ -94,7 +92,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
