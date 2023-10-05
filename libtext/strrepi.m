@@ -1,58 +1,61 @@
 function out = strrepi(str,old,new)
-%STRREPI Performs a case-insensitive replacement of a substring within a string
-%
-%   OUT = STRREPI(STR,OLD,NEW) replaces all occurrences of the string OLD within
-%   the string STR with the string NEW. The comparison is case-insensitive.
-%   The function returns the result as the output OUT.
-%
-%   Inputs:
-%   STR - a string or character array where replacements are to be made
-%   OLD - the target string or character array to be replaced
-%   NEW - the string or character array to replace OLD
-%
-%   Output:
-%   OUT - the output string after replacements
-%
-%   Example:
-%   strrepi('Hello World!', 'World', 'everyone') % returns 'Hello everyone!'
-%
-%   Note: If STR, OLD or NEW are not provided, the function uses default values.
-% 
-% See also: strrep, replace, strrepn, strrepin
+   %STRREPI Case-insensitive replacement of a substring within a string
+   %
+   %   OUT = STRREPI(STR,OLD,NEW) replaces all occurrences of the string OLD
+   %   within the string STR with the string NEW. The comparison is
+   %   case-insensitive. The function returns the result as the output OUT.
+   %
+   %   Inputs:
+   %   STR - a string or character array where replacements are to be made
+   %   OLD - the target string or character array to be replaced
+   %   NEW - the string or character array to replace OLD
+   %
+   %   Output:
+   %   OUT - the output string after replacements
+   %
+   %   Example:
+   %   strrepi('Hello World!', 'World', 'everyone') % returns 'Hello everyone!'
+   %
+   %   Note: If STR, OLD or NEW are not provided, default values are used.
+   %
+   % See also: strrep, replace, strrepn, strrepin
 
-if ~nargin
-    str = 'Hello World!';
-    old = 'World';
-    new = 'everyone';
-else
-   narginchk(3,3)
-end
+   if ~nargin
+      str = 'Hello World!';
+      old = 'World';
+      new = 'everyone';
+   else
+      narginchk(3,3)
+   end
 
-ileft = strfind(lower(str),lower(old));
+   ileft = strfind(lower(str),lower(old));
 
-if isempty(ileft)
-    out = str; % return the original string if no matches found
+   if isempty(ileft)
+      out = str; % return the original string if no matches found
 
-else
-   iright = ileft + length(old) - 1;
+   else
+      iright = ileft + length(old) - 1;
 
-   newCell = arrayfun(@(x,y) x+1:y-1,[0,iright(1:end)],[ileft,length(str)+1],'uni',0);
-   strCell = cellfun(@(x) str(x), newCell, 'uni', 0);
-   
-   out = strjoin(strCell,new);
+      newCell = arrayfun(@(x,y) ...
+         x+1:y-1,[0,iright(1:end)],[ileft,length(str)+1], 'uni', 0);
+      
+      strCell = cellfun(@(x) str(x), newCell, 'uni', 0);
+
+      out = strjoin(strCell,new);
+   end
 end
 
 %% LICENSE
-% 
+%
 % Copyright (c) 2019, raym
 % All rights reserved.
-% 
+%
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
-% 
+%
 % * Redistributions of source code must retain the above copyright notice, this
 %   list of conditions and the following disclaimer.
-% 
+%
 % * Redistributions in binary form must reproduce the above copyright notice,
 %   this list of conditions and the following disclaimer in the documentation
 %   and/or other materials provided with the distribution
