@@ -1,47 +1,51 @@
 function TF = isodd(X, varargin)
-%ISODD Check if a number is odd
-%
-%  TF = ISODD(X) returns 1 (true) if X is odd, and 0 (false) otherwise.
-%
-%  TF = ISODD(X,'tol',TOL) allows for a tolerance in the check. This is useful for
-%  checking if floating point numbers are effectively integers. TOL defaults to 1e-6.
-%
-%  TF = ISODD(X,'tol',TOL,'method',METHOD) allows specifying the method used to
-%  determine oddness. Options: 'mod','bitwise'. The default method is 'mod'.
-%
-% Example
-%  assert(isodd(3))
-%  assert(isodd(4))
-%  assert(isodd(3.00000001, 'tol', 1e-5))
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-% 
-% See also iseven
+   %ISODD Check if a number is odd
+   %
+   %  TF = ISODD(X) returns 1 (true) if X is odd, and 0 (false) otherwise.
+   %
+   %  TF = ISODD(X,'tol',TOL) allows for a tolerance in the check. This is
+   %  useful for checking if floating point numbers are effectively integers.
+   %  TOL defaults to 1e-6.
+   %
+   %  TF = ISODD(X,'tol',TOL,'method',METHOD) allows specifying the method used
+   %  to determine oddness. Options: 'mod','bitwise'. The default method is
+   %  'mod'.
+   %
+   % Example
+   %  assert(isodd(3))
+   %  assert(isodd(4))
+   %  assert(isodd(3.00000001, 'tol', 1e-5))
+   %
+   % See also: iseven
 
-%% parse inputs
-p = inputParser;
-addRequired(p,'X',@isnumeric);
-addParameter(p,'tol',1e-10,@isnumeric);
-addParameter(p,'method','mod',@(x) any(validatestring(x,{'mod','bitwise'})));
-parse(p,X,varargin{:});
-tol = p.Results.tol;
-method = p.Results.method;
-%% main code
+   % parse inputs
+   persistent parser
+   if isempty(parser)
+      parser = inputParser;
+      parser.FunctionName = mfilename;
+      parser.addRequired('X', @isnumeric);
+      parser.addParameter('tol', 1e-10, @isnumeric);
+      parser.addParameter('method', 'mod', @(x) ...
+         any(validatestring(x, {'mod', 'bitwise'})));
+   end
+   parser.parse(X, varargin{:});
+   tol = parser.Results.tol;
+   method = parser.Results.method;
 
-switch method
-   case 'mod'
-      TF = abs(X - round(X)) <= tol & mod(round(X),2) == 1;
-   case 'bitwise'
-      TF = abs(X - round(X)) <= tol & bitget(round(X),1) == 1;
-end
-
+   % main code
+   switch method
+      case 'mod'
+         TF = abs(X - round(X)) <= tol & mod(round(X),2) == 1;
+      case 'bitwise'
+         TF = abs(X - round(X)) <= tol & bitget(round(X),1) == 1;
+   end
 end
 
 %% LICENSE
-
+%
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -1,5 +1,5 @@
 function [isFile, isFolder] = isfullpath(str)
-   %ISFULLPATH Checks if a string represents a full file or folder path.
+   %ISFULLPATH Check if a string represents a full file or folder path.
    %
    % [isFile, isFolder] = isfullpath(str) returns isFile true if the string str
    % appears to represent a full file path, and isFolder true if it appears to

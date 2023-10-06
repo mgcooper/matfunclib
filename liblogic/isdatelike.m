@@ -1,101 +1,95 @@
 function varargout = isdatelike(X, varargin)
-%ISDATELIKE return TRUE if X can be converted to a datetime array
-%
-%  [TF, DATETYPE] = ISDATELIKE(X) returns logical TF indicating if input X can
-%  be converted to a DATETIME object, and the inferred input date type DATETYPE
-%  which is the value of the 'ConvertFrom' property passed to DATETIME(X,
-%  'CONVERTFROM', DATETYPE). If the conversion was not successful, then 
-%  DATETYPE = 'none'. 
-% 
-%  [TF, DATETYPE] = ISDATELIKE(X, DATETYPE) uses the specified input date
-%  DATETYPE to try the conversion.
-%
-% Example
-% 
-% [tf, datetype] = isdatelike(now)
-% tf =
-%   logical
-%    1
-% datetype =
-%     'datenum'
-% 
-% [tf, datetype] = isdatelike(1, 'datenum')
-% tf =
-%   logical
-%    1
-% datetype =
-%     'datenum'
-% 
-% [tf, datetype] = isdatelike(1, 'posixtime')
-% tf =
-%   logical
-%    1
-% datetype =
-%     'posixtime'
-% 
-% [tf, datetype] = isdatelike(now, 'dum')
-% Error using isdatelike
-% Expected input number 2, datetype, to match one of these values:
-% 'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate', 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net',
-% 'tt2000', 'epochtime'
-% 
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %ISDATELIKE return TRUE if X can be converted to a datetime array
+   %
+   %  [TF, DATETYPE] = ISDATELIKE(X) returns logical TF indicating if input X
+   %  can be converted to a DATETIME object, and the inferred input date type
+   %  DATETYPE which is the value of the 'ConvertFrom' property passed to
+   %  DATETIME(X, 'CONVERTFROM', DATETYPE). If the conversion was not
+   %  successful, then DATETYPE = 'none'.
+   %
+   %  [TF, DATETYPE] = ISDATELIKE(X, DATETYPE) uses the specified input date
+   %  DATETYPE to try the conversion.
+   %
+   % Example
+   %
+   % [tf, datetype] = isdatelike(now)
+   % tf =
+   %   logical
+   %    1
+   % datetype =
+   %     'datenum'
+   %
+   % [tf, datetype] = isdatelike(1, 'datenum')
+   % tf =
+   %   logical
+   %    1
+   % datetype =
+   %     'datenum'
+   %
+   % [tf, datetype] = isdatelike(1, 'posixtime')
+   % tf =
+   %   logical
+   %    1
+   % datetype =
+   %     'posixtime'
+   %
+   % [tf, datetype] = isdatelike(now, 'dum')
+   % Error using isdatelike
+   % Expected input number 2, datetype, to match one of these values:
+   % 'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate', 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net',
+   % 'tt2000', 'epochtime'
+   %
+   % See also:
 
-% PARSE INPUTS
-narginchk(1,2)
+   % PARSE INPUTS
+   narginchk(1,2)
 
-% % fallback to false
-tf = false;
-notStructOrCell = false;
-try 
-   notStructOrCell = ~isstruct(X) && ~iscell(X);
-catch
-end
-
-notInfinite = false;
-try
-   notInfinite = ~isinf(X);
-catch
-end
-
-if notStructOrCell & notInfinite
-
+   % % fallback to false
+   tf = false;
+   notStructOrCell = false;
    try
-      tf = isnat(X);
+      notStructOrCell = ~isstruct(X) && ~iscell(X);
    catch
    end
-   
-   if tf
-      whichtype = class(X);
-   
-   elseif isdatetime(X) || isduration(X) || iscalendarduration(X)
-      % if the input is a datetime, timetable, or duration, return true
-      tf = true;
-      whichtype = class(X);
-      
-   elseif ismissing(X)
-      % if the input is missing, return false (unless it is NaT)
-      tf = false;
-      
-   else
-      [~, tf, whichtype] = todatetime(X);
+
+   notInfinite = false;
+   try
+      notInfinite = ~isinf(X);
+   catch
    end
+
+   if notStructOrCell && notInfinite
+
+      try
+         tf = isnat(X);
+      catch
+      end
+
+      if tf
+         whichtype = class(X);
+
+      elseif isdatetime(X) || isduration(X) || iscalendarduration(X)
+         % if the input is a datetime, timetable, or duration, return true
+         tf = true;
+         whichtype = class(X);
+
+      elseif ismissing(X)
+         % if the input is missing, return false (unless it is NaT)
+         tf = false;
+
+      else
+         [~, tf, whichtype] = todatetime(X);
+      end
+   end
+
+   if ~tf
+      whichtype = 'none';
+   end
+
+   % PARSE OUTPUTS
+   [varargout{1:max(1,nargout)}] = dealout(tf, whichtype);
+
 end
-
-if ~tf
-   whichtype = 'none';
-end
-
-% PARSE OUTPUTS
-[varargout{1:max(1,nargout)}] = dealout(tf, whichtype);
-
-end
-
-%% LOCAL FUNCTIONS
-
 
 %% TESTS
 
@@ -107,7 +101,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
