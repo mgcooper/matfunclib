@@ -1,45 +1,44 @@
 function tf = isscalartext(X)
-%ISSCALARTEXT general description of function
-%
-%  TF = ISSCALARTEXT(X) returns TF = true if X is a row char or a scalar string
-%
-% Examples
-% tf = isscalartext('')
-% tf =
-% logical
-%  1
-% 
-% tf = isscalartext('scalar')
-% tf =
-% logical
-%  1
-% 
-% tf = isscalartext("scalar")
-% tf =
-% logical
-%  1
-%
-% tf = isscalartext(["scalar", "nonscalar"])
-% tf =
-% logical
-%  0
-%
-% tf = isscalartext({'scalar'})
-% tf =
-% logical
-%  0
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also: ischarlike
+   %ISSCALARTEXT Return true if input is scalar text
+   %
+   %  TF = ISSCALARTEXT(X) returns TF = true if X is a row char or a scalar string
+   %
+   % Examples
+   % tf = isscalartext('')
+   % tf =
+   % logical
+   %  1
+   %
+   % tf = isscalartext('scalar')
+   % tf =
+   % logical
+   %  1
+   %
+   % tf = isscalartext("scalar")
+   % tf =
+   % logical
+   %  1
+   %
+   % tf = isscalartext(["scalar", "nonscalar"])
+   % tf =
+   % logical
+   %  0
+   %
+   % tf = isscalartext({'scalar'})
+   % tf =
+   % logical
+   %  0
+   %
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   %
+   % See also: ischarlike
 
-% PARSE INPUTS
-narginchk(1,1)
+   % PARSE INPUTS
+   narginchk(1,1)
 
-% MAIN CODE
-tf = ( ischar(X) && (isrow(X) || isequal(X, '')) ) || ...
-   (isstring(X) && isscalar(X));
-
+   % MAIN CODE
+   tf = ( ischar(X) && (isrow(X) || isequal(X, '')) ) || ...
+      (isstring(X) && isscalar(X));
 end
 
 %% TESTS
@@ -52,7 +51,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

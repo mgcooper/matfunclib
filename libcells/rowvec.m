@@ -1,4 +1,10 @@
-function x=rowvec(x)
-x = transpose(x(:));
+function x = rowvec(x)
+   %ROWVEC Convert array to row vector.
+   %
+   % x = rowvec(x)
+   %
+   % See also: vec, tocolumn, torow
 
-% x=reshape(x,[],1)
+   x = transpose(x(:));
+   % x=reshape(x,[],1)
+end

@@ -16,7 +16,6 @@ function Column = cell2col(CellArray, ColumnNumber)
 %    test = vertcat(test{:});
 % end
 
-
 Column = [];
 a = length(CellArray);
 for n = 1:a

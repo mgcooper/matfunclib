@@ -1,13 +1,12 @@
 function tf = isfig(varargin)
-%ISFIG return true for any inputs that are figures
-% 
-% tf = isfig(fig)
-% tf = isfig(fig, ax)
-% tf = isfig(fig1, fig2)
-% 
-% See also isaxis
+   %ISFIG Return true for any inputs that are figures
+   %
+   % tf = isfig(fig)
+   % tf = isfig(fig, ax)
+   % tf = isfig(fig1, fig2)
+   %
+   % See also isaxis
 
-%% main code
 
    % Check if any values in varargin are figures
    inoctave = exist ("OCTAVE_VERSION", "builtin") > 0;
@@ -21,5 +20,4 @@ function tf = isfig(varargin)
             isgraphics(varargin{k}, 'figure'));
       end
    end
-
 end

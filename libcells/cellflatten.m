@@ -28,6 +28,9 @@ function V = cellflatten(C, dim, shape)
    %   - V: concatenated array.
    %
    % See also: CAT, CELL2MAT, HORZCAT, VERTCAT
+   
+   % NOTE: this will fail if the elements of C are oriented inconsistently i.e.
+   % if some are rows and others are columns.
 
    % Validate 'shape' input or set default
    if nargin < 3
@@ -46,6 +49,16 @@ function V = cellflatten(C, dim, shape)
       validateattributes(dim, {'numeric'}, {'scalar', 'positive', 'integer'}, ...
          mfilename, 'DIM', 2);
       V = cat(dim, C{:});
+      
+      % Note: Above will fail if the elements of C are oriented differently.
+      % Below might be enough to fix it, but maybe a recursive call to this
+      % function would work too? 
+      % if dim == 1
+      %    V = cellfun(@(x) x(:), xdata, 'UniformOutput', false);
+      % elseif dim == 2
+      %    V = cellfun(@(x) x(:)', xdata, 'UniformOutput', false);
+      % end
+      % V = cat(dim, V{:});
    end
 
    % Reshape output according to the 'shape' parameter
