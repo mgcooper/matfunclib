@@ -1,0 +1,9 @@
+{
+   "demoSignatureFileInheritance":
+   {
+      "inputs":
+      [
+         {"name":"Props", "kind":"properties", "type":"DemoPropertyInheritance"}
+      ]
+   }
+}
