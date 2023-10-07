@@ -1,4 +1,9 @@
 function copygeoprjtemplate(geoshpfname)
+   %COPYGEOPRJTEMPLATE Copy .prj file to shapefile destination.
+   %
+   %  copygeoprjtemplate(geoshpfname)
+   % 
+   % See also:
 
    if contains(geoshpfname,'.shp')
       geoshpfname = strrep(geoshpfname,'.shp','.prj');
