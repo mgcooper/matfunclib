@@ -5,7 +5,7 @@ function [tf, hasfolder] = istoolbox(tbxname)
    %  entry in the toolbox directory, and HASFOLDER = TRUE if the toolbox folder
    %  MATLABSOURCEPATH/tbxname exists.
    %
-   % See also isproject
+   % See also: isproject isactive
 
    tf = sum(findtbentry(readtbdirectory(gettbdirectorypath),tbxname)) > 0;
 

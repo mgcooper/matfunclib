@@ -13,6 +13,9 @@ function texString = latex2tex(latexString)
    %
    % See also: untexlabel
 
+   % see:
+   % https://docs.octave.org/v7.1.0/tex-interpreter.html
+
    % Initialize the TeX string as the LaTeX string
    texString = latexString;
 

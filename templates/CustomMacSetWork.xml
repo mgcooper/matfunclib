@@ -8,6 +8,9 @@
          <Stroke code="VK_F7" shift="on"/>
       </Action>
       <Action id="shift-insert-break"/>
+      <Action id="exit-matlab">
+         <Stroke alt="on" code="VK_Q" meta="on" sysctrl="on"/>
+      </Action>
       <Action id="drop-line"/>
       <Action id="go-until-cursor">
          <Stroke code="VK_R" meta="on" shift="on" sysctrl="on"/>

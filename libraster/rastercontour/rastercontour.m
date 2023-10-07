@@ -1,4 +1,4 @@
-function [ h, ax, cb ] = rastercontour( Z, R, varargin )
+function varargout = rastercontour(Z, R, varargin)
 %RASTERCONTOUR contour plot raster
 %
 % RASTERCONTOUR rastercontour(Z, R, varargin) project and display spatially
@@ -76,6 +76,8 @@ function [ h, ax, cb ] = rastercontour( Z, R, varargin )
 %   case-insensitive. Refer to the MATLAB Graphics documentation on surface
 %   for a complete description of these properties and their values.
 %
+%   Example
+% 
 %   See also geoshow, mapshow, rastersurf, rastersurf3, rastercontour3
 
 %% parse inputs
@@ -159,6 +161,7 @@ end
 %% arrange the outputs
 
 switch nargout
+   case 0
    case 1
       varargout{1} = h;
 

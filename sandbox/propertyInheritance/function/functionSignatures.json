@@ -1,0 +1,14 @@
+{
+   "testhistogram":
+   {
+      "inputs":
+      [
+         {"name":"X", "kind":"required", "type":[["numeric"],["logical"]]},
+         {"name":"opts", "kind":"properties", "type":"matlab.graphics.chart.primitive.Histogram"}
+      ],
+      "outputs":
+      [
+         {"name":"h", "type":"matlab.graphics.chart.primitive.Histogram"}
+      ]
+   }
+}

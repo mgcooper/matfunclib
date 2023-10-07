@@ -1,5 +1,5 @@
 function stats = bootstrapci(x,y,ab0,Fcost,Nboot,alpha,opts)
-%BOOTSTRAPCI calculate confidence intervals by bootstrap resampling residuals
+%BOOTSTRAPCI Calculate confidence intervals by bootstrap resampling residuals.
 % 
 %  stats = bootstrapci(x,y,ab0,Fcost,Nboot,alpha,opts) computes standard errors,
 %  confidence levels, and mean values for parameters a and b of two-parameter

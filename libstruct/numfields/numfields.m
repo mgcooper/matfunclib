@@ -1,41 +1,36 @@
 function varargout = numfields(S, depth)
-%NUMFIELDS count the number of fields in a struct
-%
-%  N = NUMFIELDS(S) returns the number of fields in struct S
-%  S = NUMFIELDS(S,'layered') counts all fields in sub-structs
-%
-% Example
-%
-% S = struct('field1', 'value1', 'field2', 'value2'); % 
-% numfields(S)
-% 
-% S.S2 = S;
-% numfields(S)
-% numfields(S, 'layered')
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %NUMFIELDS Count the number of fields in a struct
+   %
+   %  N = NUMFIELDS(S) returns the number of fields in struct S
+   %  S = NUMFIELDS(S,'layered') counts all fields in sub-structs
+   %
+   % Example
+   %
+   % S = struct('field1', 'value1', 'field2', 'value2'); %
+   % numfields(S)
+   %
+   % S.S2 = S;
+   % numfields(S)
+   % numfields(S, 'layered')
+   %
+   % See also
 
+   % PARSE ARGUMENTS
+   arguments
+      S (:,1) struct
+      depth (1,1) string {mustBeMember(depth,{'layered','flat'})} = 'flat'
+   end
 
-% PARSE ARGUMENTS
-arguments
-   S (:,1) struct
-   depth (1,1) string {mustBeMember(depth,{'layered','flat'})} = 'flat'
+   % MAIN CODE
+   if strcmp(depth, 'flat')
+      N = numel(fieldnames(S));
+   elseif strcmp(depth, 'layered')
+      N = numel(fieldnames(flattenstruct(S)));
+   end
+
+   % PARSE OUTPUTS
+   [varargout{1:max(1,nargout)}] = dealout(N);
 end
-
-% MAIN CODE
-if strcmp(depth, 'flat')
-   N = numel(fieldnames(S));
-elseif strcmp(depth, 'layered')
-   N = numel(fieldnames(flattenstruct(S)));
-end
-
-% PARSE OUTPUTS
-[varargout{1:max(1,nargout)}] = dealout(N);
-
-end
-
 
 %% TESTS
 
@@ -48,7 +43,7 @@ end
 %! catch ME
 %!    assert(strcmp(ME.identifier, 'MATLAB:minrhs'));
 %! end
-%! 
+%!
 %! ## Test invalid inputs
 %! try
 %!    numfields('char');
@@ -56,7 +51,7 @@ end
 %! catch ME
 %!    assert(strcmp(ME.identifier, 'MATLAB:validation:UnableToConvert'));
 %! end
-%! 
+%!
 %! ## Test too many input arguments
 %! try
 %!    numfields(1,2,3,4,5,6,7);
@@ -64,18 +59,18 @@ end
 %! catch ME
 %!    assert(strcmp(ME.identifier, 'MATLAB:TooManyInputs'));
 %! end
-%! 
+%!
 
 %! test function accuracy
-%! 
+%!
 %! ## Define test data
 %! S = struct('field1', 'value1', 'field2', 'value2');
-%! 
+%!
 %! ## Test function accuracy using test struct
 %! expected = 2;
 %! observed = numfields(S);
 %! assert(isequal(observed, expected));
-%! 
+%!
 %! ## Test function accuracy using nested structs
 %! S.S2 = S;
 %! expected = 4;
@@ -86,7 +81,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

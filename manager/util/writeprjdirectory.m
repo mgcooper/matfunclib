@@ -3,12 +3,12 @@ function writeprjdirectory(projectlist)
    if isoctave
       error('writeprjdirectory is not supported in Octave.')
    end
-   
+
    if nargin < 1
       % will be struct in octave, table in matlab
       projectlist = readprjdirectory();
    end
-   
+
    % get the full path to projectdirectory.mat
    projectdirectorypath = getprjdirectorypath();
 
@@ -24,7 +24,7 @@ function writeprjdirectory(projectlist)
    % else
    %    projectstruct = table2struct(projectlist);
    % end
-   
+
    % Save it
    save(projectdirectorypath, 'projectlist')
 

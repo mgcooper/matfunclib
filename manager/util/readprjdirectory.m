@@ -1,4 +1,10 @@
 function projectlist = readprjdirectory(projectdirectorypath)
+   %READPRJDIRECTORY Read the project directory into memory
+   %
+   %  projectlist = readprjdirectory(projectdirectorypath)
+   %
+   % See also: openprojectdirectory
+
    if nargin == 0
       % returns the path to projectdirectory.mat including the filename.
       projectdirectorypath = getprjdirectorypath();
@@ -9,5 +15,5 @@ function projectlist = readprjdirectory(projectdirectorypath)
       load(projectdirectorypath, 'projectlist');
    end
 end
-   % % old method that saved the directory as a table
-   % projects = readtable(prjpath,'Delimiter',',','ReadVariableNames',true);
+% % old method that saved the directory as a table
+% projects = readtable(prjpath,'Delimiter',',','ReadVariableNames',true);

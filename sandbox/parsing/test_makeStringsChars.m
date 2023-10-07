@@ -14,6 +14,12 @@ containsOnlyText(test)
 %   1×5 string array
 %     "1"    "testchar"    "teststring"    "1"    "testcellstr"
 
+%% compare with matlab.graphics.internal.convertStringToCharArgs
+
+ret = convertStringsToChars(test)
+[ret{:}] = convertStringsToChars(test{:})
+ret = matlab.graphics.internal.convertStringToCharArgs(test)
+
 %% ischarlike
 
 ischarlike(test)

@@ -33,6 +33,17 @@ function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
    %
    % See also parseparampairs
 
+   % Note: this function requires the input args to be passed in as 'varargin'
+   % rather than 'varargin{:}'. Although I prefer varargin, most parsing
+   % functions require csl expansion, so I might require/support it too. For
+   % now, if the calling function passes in varargin{:} which comes in here as
+   % args, and it contains a single char, the patch below will cast it to a
+   % cell, but if varargin{:} is passed in, the function will error b/c of too
+   % many inputs.
+   if ischar(args) && isrow(args)
+      args = {args};
+   end
+   
    %  PARSE INPUTS
    [args{1:numel(args)}] = convertStringsToChars(args{:});
    validopts = tocellstr(validopts);

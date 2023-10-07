@@ -6,7 +6,7 @@
       "inputs":
       [
          {"name":"mapax",  "kind":"required",   "type":["matlab.graphics.axis.Axes"]},
-         {"name":"prop",   "kind":"ordered",    "type":"choices=axesmproplist"}
+         {"name":"prop",   "kind":"ordered",    "type":"choices=getgcm('proplist')"}
       ]
    }
 }

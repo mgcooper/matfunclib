@@ -1,26 +1,25 @@
 function y = nanmedian(varargin)
-%NANMEDIAN Compute the sample median, ignoring NaNs. 
-% 
-% This function is a wrapper for built-in function median with flag 'omitnan'
-% i.e., mean(varargin{:}, 'omitnan').
-%  
-% Y = NANMEDIAN(X) returns the sample median of X ignoring NaNs.
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also MEAN, NANMEAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
+   %NANMEDIAN Compute the sample median, ignoring NaNs.
+   %
+   % This function is a wrapper for built-in function median with flag 'omitnan'
+   % i.e., mean(varargin{:}, 'omitnan').
+   %
+   % Y = NANMEDIAN(X) returns the sample median of X ignoring NaNs.
+   %
+   % See also MEAN, NANMEAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
 
-% PARSE INPUTS
-narginchk(1,2);
+   % PARSE INPUTS
+   narginchk(1,2);
 
-% MAIN CODE
-y = median(varargin{:},'omitnan');
+   % MAIN CODE
+   y = median(varargin{:},'omitnan');
+end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

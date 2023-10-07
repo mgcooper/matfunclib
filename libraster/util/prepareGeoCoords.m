@@ -132,13 +132,9 @@ function [lat,lon] = prepareGeoCoords(lat, lon, func_name, ...
       %latcheck(n)  = dd + mm/60 + ss/3600;
 
    end
-
-
-
 end
 
 function dmsstrs = preprocessdmsstrs(dmsstrs)
-
 
 
 end
@@ -146,7 +142,7 @@ end
 
 % this is exactly how it's done in kuparuk_met-coords
 
-function latorlon = cleanllstr(llstr)
+function latorlon = cleanllstr1(llstr)
    degchars    = [176,111];
    minchars    = [8217,39];
    secchars    = [8221,34];   % also need to check for [39 39] which is ''
@@ -198,7 +194,7 @@ end
 
 
 % this is exactly how it's done in save_calm_alt
-function latorlon = cleanllstr(llstr)
+function latorlon = cleanllstr2(llstr)
 
 
    idd     = strfind(llstr,'°');

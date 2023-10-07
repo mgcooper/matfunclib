@@ -1,18 +1,19 @@
-function [H,args,nargs,isfigure] = parsegraphics(varargin)
+function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
    %PARSEGRAPHICS Parse graphics handles / objects from varargin-type cell array
    %
-   %   [H,ARGS,NARGS,ISFIGURE] = PARSEGRAPHICS(ARG1,ARG2,...) looks for Figure
-   %   or Axes provided in the input arguments. If the first argument is a
-   %   figure or axes handle, it is removed from the list in ARGS and the count
-   %   in NARGS. ISFIGURE is set to true if a Figure handle is detected, and
-   %   false otherwise. If the first argument is an axes handle, PARSEGRAPHICS
-   %   then checks the arguments for Name, Value pairs with the name 'Parent'.
-   %   If a graphics object is found following the last occurance of 'Parent',
-   %   then all 'Parent', Value pairs are removed from the list in ARGS and the
-   %   count in NARGS. ARG1 (if it is an Axes), or the value following the last
-   %   occurance of 'Parent', is returned in AX. Double handles to graphics
-   %   objects are converted to graphics objects. If the handle is determined to
-   %   be a handle to a deleted graphics object, an error is thrown.
+   %   [H,ARGS,NARGS,ISFIGURE,ISIMAGE] = PARSEGRAPHICS(ARG1,ARG2,...) looks for
+   %   Figure or Axes provided in the input arguments. If the first argument is
+   %   a figure or axes handle, it is removed from the list in ARGS and the
+   %   count in NARGS. ISFIGURE is set to true if a Figure handle is detected,
+   %   and false otherwise. If the first argument is an axes handle,
+   %   PARSEGRAPHICS then checks the arguments for Name, Value pairs with the
+   %   name 'Parent'. If a graphics object is found following the last occurance
+   %   of 'Parent', then all 'Parent', Value pairs are removed from the list in
+   %   ARGS and the count in NARGS. ARG1 (if it is an Axes), or the value
+   %   following the last occurance of 'Parent', is returned in AX. Double
+   %   handles to graphics objects are converted to graphics objects. If the
+   %   handle is determined to be a handle to a deleted graphics object, an
+   %   error is thrown.
    %
    % See also: isaxis, isfig, axescheck
 
@@ -24,6 +25,7 @@ function [H,args,nargs,isfigure] = parsegraphics(varargin)
    args = varargin;
    nargs = nargin;
    isfigure = false;
+   isimage = false;
    H = [];
 
    % Check for either a scalar numeric Figure or Axes handle, or any size array
@@ -59,6 +61,25 @@ function [H,args,nargs,isfigure] = parsegraphics(varargin)
       end
    end
 
+   % Check for image
+   if isempty(H) && isa(args{1}, 'matlab.graphics.primitive.Image')
+      isimage = true;
+      try
+         % Passing the Image object to imgca does not work. imgca expects the
+         % figure handle, which can be retrieved with imgcf, but since we want
+         % to return the axes, just use imgca with no argument.
+         % H = imgca(handle(args{1}));
+         H = imgca;
+      catch e
+         if strcmp(e.identifier, 'MATLAB:license:checkouterror')
+            error('MATFUNCLIB:libplot:parsegraphics:ImageToolboxRequired', ...
+            'Image axes detected by parsegraphics. Image Processing Toolbox licensing error.');
+         end
+      end
+      args = args(2:end);
+      nargs = nargs-1;
+   end
+   
    % Make sure that the graphics handle found is a scalar handle, and not an
    % empty graphics array or non-scalar graphics array.
    if (nargs < nargin) && ~isscalar(H)

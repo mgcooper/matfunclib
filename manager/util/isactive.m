@@ -1,20 +1,19 @@
 function tf = isactive(tbname, varargin)
-%ISACTIVE check if toolbox TBNAME is active
-%
-%  TF = ISACTIVE(TBNAME) returns TRUE if toolbox TBNAME is active
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also: istoolbox
+   %ISACTIVE check if toolbox TBNAME is active
+   %
+   %  TF = ISACTIVE(TBNAME) returns TRUE if toolbox TBNAME is active
+   %
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   %
+   % See also: istoolbox
 
-% PARSE INPUTS
-narginchk(0,Inf)
-tbname = convertStringsToChars(tbname);
+   % PARSE INPUTS
+   narginchk(0,Inf)
+   tbname = convertStringsToChars(tbname);
 
-% MAIN CODE
-toolboxes = readtbdirectory(gettbdirectorypath);
-tf = any(toolboxes.active(findtbentry(toolboxes,tbname)));
-
+   % MAIN CODE
+   toolboxes = readtbdirectory(gettbdirectorypath);
+   tf = any(toolboxes.active(findtbentry(toolboxes,tbname)));
 end
 
 %% tests
@@ -27,7 +26,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
