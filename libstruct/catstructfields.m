@@ -10,12 +10,12 @@ function S = catstructfields(dim, varargin)
    % See also: catstructs
 
    % dim = varargin(cellfun(@(s) ~isstruct(s), varargin));
-   
+
    if isstruct(dim) && all(cellfun(@isstruct, varargin))
       varargin = [{dim}, varargin];
       dim = 1;
    end
-   
+
    if isscalar(varargin) && isstruct(varargin{1})
       S = varargin{1};
       return
