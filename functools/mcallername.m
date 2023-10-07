@@ -5,6 +5,9 @@ function varargout = mcallername(varargin)
    %  on the stack. If called from the base workspace, MSG is returned as an
    %  empty array [].
    %
+   %  [MSG, LINE] = MCALLERNAME() also returns the line number of the function
+   %  call.
+   %  
    %  MSG = MCALLERNAME(FILEOPTION) returns the full path to the function for
    %  the prior calling syntaxes if FILEOPTION 'fullpath', the filename without
    %  the full path but including the .m extension if FILEOPTION 'filename', and
@@ -68,7 +71,10 @@ function varargout = mcallername(varargin)
 
    if nargout <= 1
       varargout{1} = msg;
-   elseif nargout > 1
+   elseif nargout == 2
+      varargout{1} = msg;
+      varargout{2} = stack(strcmp(msg, {stack.name})).line; % line number
+   else
       error([mfilename ' expected at most one output argument'])
    end
 end

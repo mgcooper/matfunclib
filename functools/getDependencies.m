@@ -40,7 +40,7 @@ function Info = getDependencies(target, varargin)
       Info.missingFiles = 'unknown';
    else
       Info.missingFiles = setdiff(requiredFiles, referenceList);
-   end
+   end   
 end
 
 
