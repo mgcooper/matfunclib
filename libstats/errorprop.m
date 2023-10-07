@@ -8,13 +8,13 @@ function sig = errorprop(FofX,X,sigX,varargin)
 error('errorprop is not functional')
 
 % parse inputs
-p = magicParser;
-p.FunctionName = mfilename;
-p.addRequired('FofX',@(x)isa(x,'function_handle'));
-p.addRequired('X',@(x)isnumeric(x));
-p.addRequired('sigX',@(x)isnumeric(x));
-p.addParameter('correlated',false,@(x)islogical(x));
-p.parseMagically('caller');
+parser = inpuParser();
+parser.FunctionName = mfilename;
+parser.addRequired('FofX',@(x)isa(x,'function_handle'));
+parser.addRequired('X',@(x)isnumeric(x));
+parser.addRequired('sigX',@(x)isnumeric(x));
+parser.addParameter('correlated',false,@(x)islogical(x));
+parser.parse(FofX, X, sigX, varargin{:});
 
 % Notes
 %    this doesn't work b/c if you pass it a function handle and a set of

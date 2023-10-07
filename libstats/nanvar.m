@@ -1,26 +1,25 @@
 function y = nanvar(varargin)
-%NANVAR Compute the sample var value, ignoring NaNs. 
-% 
-% This function is a wrapper for built-in function var with flag 'omitnan'
-% i.e., var(varargin{:}, 'omitnan').
-%  
-% Y = NANVAR(X) returns the sample var of X ignoring NaNs.
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also VAR, NANMEDIAN, NANSTD, NANMEAN, NANMIN, NANMAX, NANSUM.
+   %NANVAR Compute the sample var value, ignoring NaNs.
+   %
+   % This function is a wrapper for built-in function var with flag 'omitnan'
+   % i.e., var(varargin{:}, 'omitnan').
+   %
+   % Y = NANVAR(X) returns the sample var of X ignoring NaNs.
+   %
+   % See also VAR, NANMEDIAN, NANSTD, NANMEAN, NANMIN, NANMAX, NANSUM.
 
-% PARSE INPUTS
-narginchk(1,3)
+   % PARSE INPUTS
+   narginchk(1,3)
 
-% MAIN CODE
-y = var(varargin{:},'omitnan');
+   % MAIN CODE
+   y = var(varargin{:},'omitnan');
+end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

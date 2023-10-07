@@ -1,36 +1,34 @@
 function y = nanmean(varargin)
-%NANMEAN Compute the sample mean value, ignoring NaNs. 
-% 
-% This function is a wrapper for built-in function mean with flag 'omitnan'
-% i.e., mean(varargin{:}, 'omitnan').
-%  
-% Y = NANMEAN(X) returns the sample mean of X ignoring NaNs.
-% Y = NANMEAN(X, DIM) operates along dimension DIM.
-% Y = NANMEAN(X, 'all') uses all values in X.
-% Y = NANMEAN(X, VECDIM) operates along dimensions in the vector VECDIM.
-% Y = NANMEAN(_, OUTTYPE) specifies the type in which the mean is performed,
-%     and the type of Y. Available options are 'double', 'native', and
-%     'default'. If OUTTYPE is 'double', Y has class double for any input X. If
-%     OUTTYPE is 'native', Y has the same class as X. If OUTTYPE is 'default', Y
-%     has the same class as X if X is floating point, otherwise Y has class
-%     double. Default option is 'default'.
-% 
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
+   %NANMEAN Compute the sample mean value, ignoring NaNs.
+   %
+   % This function is a wrapper for built-in function mean with flag 'omitnan'
+   % i.e., mean(varargin{:}, 'omitnan').
+   %
+   % Y = NANMEAN(X) returns the sample mean of X ignoring NaNs.
+   % Y = NANMEAN(X, DIM) operates along dimension DIM.
+   % Y = NANMEAN(X, 'all') uses all values in X.
+   % Y = NANMEAN(X, VECDIM) operates along dimensions in the vector VECDIM.
+   % Y = NANMEAN(_, OUTTYPE) specifies the type in which the mean is performed,
+   %     and the type of Y. Available options are 'double', 'native', and
+   %     'default'. If OUTTYPE is 'double', Y has class double for any input X.
+   %     If OUTTYPE is 'native', Y has the same class as X. If OUTTYPE is
+   %     'default', Y has the same class as X if X is floating point, otherwise
+   %     Y has class double. Default option is 'default'.
+   %
+   % See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
 
-% PARSE INPUTS
-narginchk(1,3);
+   % PARSE INPUTS
+   narginchk(1,3);
 
-% MAIN CODE
-y = mean(varargin{:},'omitnan');
+   % MAIN CODE
+   y = mean(varargin{:},'omitnan');
+end
 
 %% LICENSE
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
-% All rights reserved.
+% Copyright (c) 2023, Matt Cooper (mgcooper) All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
 % modification, are permitted provided that the following conditions are met:
@@ -43,8 +41,8 @@ y = mean(varargin{:},'omitnan');
 %    and/or other materials provided with the distribution.
 %
 % 3. Neither the name of the copyright holder nor the names of its
-%    contributors may be used to endorse or promote products derived from
-%    this software without specific prior written permission.
+%    contributors may be used to endorse or promote products derived from this
+%    software without specific prior written permission.
 %
 % THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 % AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
