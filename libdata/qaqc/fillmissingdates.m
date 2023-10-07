@@ -1,25 +1,26 @@
-function [ data_new, dates_new, inds ] = fillmissingdates( data, dates, dt )
-%FILLMISSINGDATES Finds missing dates in a timeseries of 'data' given a 
-%vector 'time' of matlab formatted datenums and returns the filled data and
-%indices 'inds' of missing data
-%   Detailed explanation goes here
+function [newdata, newtime, timeidx] = fillmissingdates(data, time, dt)
+   %FILLMISSINGDATES Fill missing values of regular timeseries with nan
+   % 
+   % Finds missing dates in a timeseries of 'data' given a vector 'time' of
+   % matlab formatted datenums and returns the filled data and indices 'inds' of
+   % missing data 
+   %
+   % See also: 
 
-% Make sure the dates are datenums (could be a vector of years)
-t           =   datenum(dates); 
-y           =   data;
+   if nargin < 3
+      dt = time(2) - time(1);
+   end
+   
+   % Make sure the dates are datenums (could be a vector of years)
+   time = datenum(time);
 
-% dt          =   t(2) - t(1); doesn't work if the second value is missing
+   % Find the indexes of the times
+   timeidx = round((time-time(1))/dt) + 1;
 
-dates_new   =   (t(1):dt:t(end))';
+   % Generate the new data and time vectors
+   newtime = (time(1):dt:time(end))';
+   newdata = NaN(length(newtime),1);
 
-% 3. Find the indexes of your times:
-inds        =   round((t-t(1))/dt) + 1;
-
-% 4. Generate the new data vector:
-data_new    =   NaN(length(dates_new),1);
-
-% 5. Insert the non NaN data into the new vector
-data_new(inds)  =   y;
-
+   % Insert the non NaN data into the new vector
+   newdata(timeidx) = data;
 end
-
