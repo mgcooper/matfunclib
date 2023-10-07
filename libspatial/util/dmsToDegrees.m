@@ -1,74 +1,66 @@
 function Degrees = dmsToDegrees(dms)
-%DMSTODEGREES general description of function
-%
-%  S = DMSTODEGREES(GEOM) description
-%  S = DMSTODEGREES(GEOM,'flag') description
-%  S = DMSTODEGREES(_,'opts.name1',opts.value1,'opts.name2',opts.value2)
-%
-% Example
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also
+   %DMSTODEGREES general description of function
+   %
+   %  S = DMSTODEGREES(GEOM) Convert degrees minutes seconds to decimal degrees
+   %
+   % See also: degreesToDms
 
+   arguments
+      dms (:,:) {mustBeReal, mustHaveColumns(dms, 3)}
+   end
 
-% PARSE ARGUMENTS
-arguments
-   dms (:,:) {mustBeReal, mustHaveColumns(dms, 3)}
-end
-
-% MAIN CODE
-dms(any(isinf(dms(:, 2:end)))) = nan;
-for n = 1:3
-   assert(none(dms(:, n)~=0 & any(dms(:, n+1:end) < 0, 2)), ...
+   dms(any(isinf(dms(:, 2:end)))) = nan;
+   for n = 1:3
+      assert(none(dms(:, n)~=0 & any(dms(:, n+1:end) < 0, 2)), ...
+         'matfunclib:dmsToDegrees:badMinutesOrSeconds', ...
+         'bad minutes or seconds values');
+   end
+   check = notnan(dms(:, 1));
+   if none(check)
+      Degrees = nan;
+      return
+   end
+   assert(all(all(abs(dms(:, 2:3)) < 60)), ...
       'matfunclib:dmsToDegrees:badMinutesOrSeconds', ...
       'bad minutes or seconds values');
-end
-check = notnan(dms(:, 1));
-if none(check)
-   Degrees = nan;
-   return
-end
-assert(all(all(abs(dms(:, 2:3)) < 60)), ...
-      'matfunclib:dmsToDegrees:badMinutesOrSeconds', ...
-      'bad minutes or seconds values');
-assert(all(abs(dms(check,1)-round(dms(check,1)))<= eps), ...
+   assert(all(abs(dms(check,1)-round(dms(check,1)))<= eps), ...
       'matfunclib:dmsToDegrees:badMinutesOrSeconds', ...
       'bad minutes or seconds values');
 
-Degrees = (1-2*any(dms<0, 2)) .* (abs(dms(:,1)) + ...
-   (abs(dms(:,2)) + abs(dms(:,3))/60)/60);
+   Degrees = (1-2*any(dms<0, 2)) .* (abs(dms(:,1)) + ...
+      (abs(dms(:,2)) + abs(dms(:,3))/60)/60);
+end
 
 %% LOCAL FUNCTIONS
 
 function mustHaveColumns(dms, numColumns)
-% Test for number of columns
-if ~isequal(size(dms, 2), numColumns)
-   eid = 'matfunclib:dmsToDegrees:wrongNumberofColumns';
-   msg = ['Input must have ',num2str(numColumns),' column(s).'];
-   throwAsCaller(MException(eid,msg))
+   % Test for number of columns
+   if ~isequal(size(dms, 2), numColumns)
+      eid = 'matfunclib:dmsToDegrees:wrongNumberofColumns';
+      msg = ['Input must have ',num2str(numColumns),' column(s).'];
+      throwAsCaller(MException(eid,msg))
+   end
 end
 
 %% TESTS
 
 %!test
-%! 
+%!
 %! ## Define test data
 %! dms = [0, -30, 30; 30, 30, 30; 0, 30, 59];
 %! expected = [0+ -30/60 + -30/3600; 30 + 30/60 + 30/3600; 0 + 30/60 + 59/3600];
-%! 
+%!
 %! ## Test function accuracy using assert
 %! for n = 1:size(dms, 1)
-%!    
+%!
 %!    returned = dmsToDegrees(dms(n, :));
 %!    assert(isequal(returned, expected(n)));
-%!    
+%!
 %!    % Test function accuracy using assert with tolerance
 %!    tol = 20*eps;
 %!    assert(abs(returned - expected(n)) < tol);
 %! end
-%! 
+%!
 %! ## Test with edge cases (Inf, NaN, very large/small numbers)
 %! assert(isnan(dmsToDegrees([NaN, NaN, NaN])));
 %! assert(isnan(dmsToDegrees([Inf, Inf, Inf])));
@@ -77,7 +69,7 @@ end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2023, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without
