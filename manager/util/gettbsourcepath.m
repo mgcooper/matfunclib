@@ -1,5 +1,10 @@
 function tbpath = gettbsourcepath(tbname)
    %GETTBSOURCEPATH Get full path to toolbox source directory.
+   %
+   % tbpath = gettbsourcepath(tbname)
+   % 
+   % See also: gettbdirectorylist gettbdirectorypath
+   
    if nargin == 0
       tbpath = getenv('MATLABSOURCEPATH');
    elseif nargin == 1

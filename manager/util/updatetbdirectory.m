@@ -89,8 +89,6 @@ function varargout = updatetbdirectory(option, varargin)
       case 1
          varargout{1} = toolboxes;
    end
-
-
    %       % found or not, remove the toolbox from the directory
    %       % if found, re-add it
    %       if found

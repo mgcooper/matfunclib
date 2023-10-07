@@ -85,6 +85,8 @@ setenv('TBJSONDEACTIVATEPATH',fullfile(MATLABPATH,'matfunclib/manager/deactivate
 setenv('PRJJSONWORKONPATH',fullfile(MATLABPATH,'matfunclib/manager/workon'));
 setenv('PRJJSONWORKOFFPATH',fullfile(MATLABPATH,'matfunclib/manager/workoff'));
 
+setenv('GITHUB_USER_NAME', 'mgcooper');
+
 % file exchange
 setenv('FEXFUNCTIONPATH',fullfile(MATLABPATH,'fexfunclib'));
 setenv('FEXPACKAGEPATH',fullfile(MATLABPATH,'fexpackages'));

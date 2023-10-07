@@ -5,7 +5,7 @@ function [tf, hasfolder] = isproject(projectname)
    %  an entry in the projectdirectory, and HASFOLDER true if the project folder
    %  MATLABPROJECTPATH/projectname exists.
    %
-   % See also
+   % See also: istoolbox
 
    tf = sum(getprjidx(projectname,readprjdirectory(getprjdirectorypath()))) ~= 0;
 

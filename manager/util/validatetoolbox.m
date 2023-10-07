@@ -30,7 +30,6 @@ function [tbname, wid, msg] = validatetoolbox(tbname,funcname,argname,argnum)
       eid = 'MATFUNCLIB:manager:toolboxNotFound';
       msg = 'toolbox not found in directory, use addtoolbox to add it';
       throwAsCaller(MException(eid, msg));
-
    end
 
    % check active state

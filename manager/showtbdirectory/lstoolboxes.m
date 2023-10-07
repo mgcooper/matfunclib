@@ -10,7 +10,7 @@ function varargout = lstoolboxes(varargin)
    %
    % lstoolboxes('stats')
    %
-   % See also: 
+   % See also: lsprojects
 
    narginchk(0,1)
 
@@ -42,9 +42,8 @@ function varargout = lstoolboxes(varargin)
    end
 
    % output, send back the list if requested
-   switch nargout
-      case 1
-         varargout{1} = tbdirectory;
+   if nargout == 1
+      varargout{1} = tbdirectory;
    end
 end
 
