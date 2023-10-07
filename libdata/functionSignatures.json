@@ -5,9 +5,9 @@
    {
       "inputs":
       [
-         {"name":"Data",         "kind":"required",   "type":["numeric"]},
-         {"name":"DataColumns",  "kind":"required",   "type":[["numeric"],["categorical"],["string"],["char"]]},
-         {"name":"ColumnIndices","kind":"ordered",    "type":["numeric"]},
+         {"name":"Data", "kind":"required", "type":["numeric"]},
+         {"name":"DataColumns", "kind":"required", "type":[["numeric"],["categorical"],["string"],["char"]]},
+         {"name":"ColumnIndices","kind":"ordered", "type":["numeric"]},
          {"name":"ColumnVarNames","kind":"namevalue", "type":[["char"],["string"],["cell"]]}
       ]
    },
@@ -15,10 +15,10 @@
    {
       "inputs":
       [
-         {"name":"datapath",   "kind":"required",   "type":["char"]},
-         {"name":"filename",   "kind":"required",   "type":["char"]},
-         {"name":"loadvars",   "kind":"namevalue",  "type":[["char"],["string"],["cell"]]},
-         {"name":"renamevars", "kind":"namevalue",  "type":[["char"],["string"],["cell"]]},
+         {"name":"datapath", "kind":"required", "type":["char"]},
+         {"name":"filename", "kind":"required", "type":["char"]},
+         {"name":"loadvars", "kind":"namevalue", "type":[["char"],["string"],["cell"]]},
+         {"name":"renamevars", "kind":"namevalue", "type":[["char"],["string"],["cell"]]},
          {"name":"unpackstructs","kind":"namevalue","type":["logical"],"purpose":"Option"}
       ]
    },
