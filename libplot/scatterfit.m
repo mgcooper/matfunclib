@@ -43,12 +43,12 @@ function H = scatterfit(varargin)
    % look for provided axes or figure
    [h, args, ~, isfigure] = parsegraphics(varargin{:});
 
-   if isempty(h) % no figure or axes was provided
+   if isempty(h)
       f = figure;
-      ax = axes('Parent', f);
+      ax = gca(f);
    elseif isfigure % h is a figure
       f = h;
-      ax = axes('Parent', f);
+      ax = gca(f);
    else % h is an axes object
       ax = h;
       f = get(ax, 'Parent');
