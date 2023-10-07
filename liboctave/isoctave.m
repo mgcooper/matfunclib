@@ -1,11 +1,13 @@
-function tf = isoctave
-%ISOCTAVE return TF = true if the environment is Octave.
+function tf = isoctave()
+   %ISOCTAVE Return logical true if the environment is Octave otherwise false.
+   %
+   %  tf = isoctave()
+   %
+   % See also: ishg2, isinteractive
 
-  persistent cacheval;  % speeds up repeated calls
-
-  if isempty (cacheval)
-    cacheval = (exist ("OCTAVE_VERSION", "builtin") > 0);
-  end
-
-  tf = cacheval;
+   persistent cacheval;
+   if isempty (cacheval)
+      cacheval = (exist ("OCTAVE_VERSION", "builtin") > 0);
+   end
+   tf = cacheval;
 end
