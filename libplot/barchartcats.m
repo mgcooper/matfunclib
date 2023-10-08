@@ -38,22 +38,29 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    % one or more name-value pair arguments. For a list of properties, see
    % BarChart Properties.
    %
-   % Input Arguments
+   % Input Arguments:
    %
-   % T: A table containing the data to be plotted. ydatavar: The name of the
-   % variable in the table T that contains the data values for the bar chart.
-   % xgroupvar: The name of the categorical variable in the table T used to
-   % define groups along the x-axis. cgroupvar: The name of the categorical
-   % variable in the table T used to define groups for the colors of the bares.
-   % method: the method used in the call to groupsummary to compute the values
+   % T - A table containing the data to be plotted.
+   %
+   % ydatavar - The name of the variable in the table T that contains the data
+   % values for the bar chart.
+   %
+   % xgroupvar - The name of the categorical variable in the table T used to
+   % define groups along the x-axis.
+   %
+   % cgroupvar - The name of the categorical variable in the table T used to
+   % define groups for the colors of the bares.
+   %
+   % method - the method used in the call to groupsummary to compute the values
    % plotted as bars. The default method is 'mean'. For 'mean', the standard
    % deviation is also computed in the call to groupsummary to support the
    % addition of whiskers to the bars. If 'median' is passed in as the method,
    % the whiskers represent the interquartile range. Note: whiskers are not
-   % currently supported. xgroupuse: A cell array of categories to be used for
-   % the x-axis grouping. cgroupuse: A cell array of categories to be used for
-   % the color grouping. varargin: Additional optional arguments for the
-   % barchart function.
+   % currently supported.
+   %
+   % xgroupuse - A cell array of categories to be used for the x-axis grouping.
+   %
+   % cgroupuse - A cell array of categories to be used for the color grouping.
    %
    % Output Argument
    %
@@ -66,16 +73,19 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    % variables. The x-axis grouping includes categories 'Cat1', 'Cat2', and
    % 'Cat3', while the color grouping includes categories 'Group1' and 'Group2'.
    %
-   % T = readtable('data.csv'); ydatavar = 'Value'; xgroupvar = 'CategoryX';
-   % cgroupvar = 'CategoryC'; xgroupuse = {'Cat1', 'Cat2', 'Cat3'}; cgroupuse =
-   % {'Group1', 'Group2'};
+   % T = readtable('data.csv');
+   % ydatavar = 'Value';
+   % xgroupvar = 'CategoryX';
+   % cgroupvar = 'CategoryC';
+   % xgroupuse = {'Cat1', 'Cat2', 'Cat3'};
+   % cgroupuse = {'Group1', 'Group2'};
    %
    % h = barchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse);
    %
    % Use optional arguments:
    %
-   % h = barchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, cgroupuse,
-   % ... 'Notch','on','MarkerStyle','none');
+   % h = barchartcats(T, ydatavar, xgroupvar, cgroupvar, xgroupuse, ...
+   %    cgroupuse, 'Notch','on','MarkerStyle','none');
    %
    % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
    %
@@ -89,13 +99,16 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    % an option to use piechart instead of barchart. Or, this type of
    % functionality could go to piechartcats, and that function could have a
    % "DisplayType" option that uses bars instead of pies.
-   
-   %---------------------- parse arguments
+
    arguments
       T table
-      ydatavar (1,1) string { mustBeNonempty(ydatavar) }
-      xgroupvar (1,1) string { mustBeNonempty(xgroupvar) }
-      cgroupvar (1,1) string = "none"
+      ydatavar (1,1) string {mustBeNonempty}
+      xgroupvar (1,1) string {mustBeNonempty}
+      cgroupvar string = string.empty()
+      opts.XGroupMembers string = string.empty()
+      opts.CGroupMembers string = string.empty()
+      opts.RowSelectVar string = string.empty()
+      opts.RowSelectMembers string = string.empty()
       opts.method (:,1) string { mustBeMember(opts.method, ...
          ["mean", "median"]) } = "mean"
       opts.SortBy (1,1) string { mustBeMember(opts.SortBy, ...
@@ -116,37 +129,25 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
       opts.MergeGroups (:,1) = []
       opts.XGroupOrder (:,1) string = "none"
       opts.CGroupOrder (:,1) string = "none"
-      opts.XGroupMembers string = string.empty()
-      opts.CGroupMembers string = string.empty()
-      opts.RowSelectVar string = string.empty()
-      opts.RowSelectMembers string = string.empty()
       opts.LegendText (:,1) string = ""
       opts.LegendOrientation (1, 1) string = "vertical"
       % opts.PlotMeans (1,1) logical = true
       % opts.ConnectMeans (1,1) logical = false
       barProps.?matlab.graphics.chart.primitive.Bar
    end
-      
-   % % Override default BoxChart settings
-   % ResetFields = {'JitterOutliers','Notch'};
-   % ResetValues = {true,'on'};
-   % for n = 1:numel(ResetFields)
-   %    if ~ismember(ResetFields{n},fieldnames(barProps))
-   %       barProps.(ResetFields{n}) = ResetValues{n};
-   %    end
-   % end
-   varargs = namedargs2cell(barProps);
 
    % import groupstats package
    import groupstats.groupselect
    import groupstats.boxchartxdata
    import groupstats.prepareTableGroups
    
-   %---------------------- validate inputs
+   varargs = namedargs2cell(barProps);
+
+   % validate inputs
    T = prepareTableGroups(T, ydatavar, string.empty(), xgroupvar, cgroupvar, ...
       opts.XGroupMembers, opts.CGroupMembers, ...
       opts.RowSelectVar, opts.RowSelectMembers);
-   
+
    % barchartcats requires summarizing the data, unlike boxchart
    if istable(T)
       [XData, YData, CData, ~] = summarizeTableGroups( ...
@@ -156,17 +157,9 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
          T, ydatavar, xgroupvar, cgroupvar, opts.method);
    end
 
-   %---------------------- main function
+   % main function
 
-   % barchartcats appears to work fine with repeated calls, but that might change
-   % if the xdata is found and used to plot on top
-   % hold off % repeated calls create problems
-
-   % creating a figure means it is difficult to put into subplots, so I added
-   % "Parent" option
-   % figure;
-   
-   % I think I need to adapt the boxchartxdata method to plot the error whiskers
+   % Todo: adapt the boxchartxdata method to plot the error whiskers
 
    % Note: right now group merging and group sorting are incompatible, e.g. if
    % merging is requested, then we effectively have new xgroups, so we don't
@@ -198,18 +191,12 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
       opts, varargs);
 
    hold off
-   switch nargout
-      case 1
-         varargout{1} = H;
-      case 2
-         varargout{1} = H;
-         varargout{2} = L;
-   end
+   [varargout{1:nargout}] = dealout(H, L);
 end
 
 
 function [XData, YData, CData, EData] = summarizeTableGroups(T, ydatavar, ...
-      xgroupvar, cgroupvar, method);
+      xgroupvar, cgroupvar, method)
    %SUMMARIZETABLEGROUPS
 
    % cgroupvar complicates this when it is "none" adn I don't think we need
@@ -237,7 +224,7 @@ function [XData, YData, CData, EData] = summarizeTableGroups(T, ydatavar, ...
    XData = unique(XData);
    YData = reshape(YData, numel(XData), []);
    EData = reshape(EData, numel(XData), []);
-   
+
    % Aug 18, 2023, Moved this from the main function when prepareTableGroups
    try
       CData = T.(cgroupvar);
@@ -306,7 +293,6 @@ function [NewYData, opts] = mergeGroupColumns(opts, YData, CData)
    end
 end
 
-
 function [XData, YData] = reorderGroups(opts, XData, YData)
    %REORDERGROUPS
 
@@ -324,11 +310,8 @@ function [XData, YData] = reorderGroups(opts, XData, YData)
       XData = reordercats(XData, string(XData(idx)));
       YData = YData(idx, :);
    end
-   
    % TODO: reorder the legend entries if custom ones provided
-
 end
-
 
 function [H, L] = createCategoricalBarChart(XData,YData,CData, ...
       ydatavar,opts,varargs)
@@ -337,7 +320,6 @@ function [H, L] = createCategoricalBarChart(XData,YData,CData, ...
    % Note that "grouped" is default, use "BarLayout","stacked" for stacked
    H = bar( XData, YData, 'FaceColor', 'flat', varargs{:}, ...
       'Parent', opts.Parent);
-
 
    % For colors, if there are more bars than default colors, need to generate
    % colors, so I switched to the method below that uses n=1:length(H)
@@ -441,8 +423,6 @@ function YData = mergecolumns_average(opts, YData)
    YData = NewYData;
 
 end
-
-
 
 
 % % I moved anything out of here that was immediately applicable to above, whats
