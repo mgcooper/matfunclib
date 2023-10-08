@@ -1,59 +1,64 @@
 function h = cumulplot(t,y,varargin)
-%CUMULPLOT cumulative plot
-%
-%  h = cumulplot(t,y,varargin)
-%
-% See also
+   %CUMULPLOT cumulative plot
+   %
+   %  h = cumulplot(t,y,varargin)
+   %
+   % See also
 
-p                 = magicParser;
-p.FunctionName    = mfilename;
-p.PartialMatching = true;
+   [t, y, useax, figpos, ytext, xtext, titletext, legendtext, varargs] = ...
+      parseinputs(t, y, mfilename, varargin{:})
 
-dpos  = [321 241 512 384]; % default figure size
+   % for now, convert to datenums
+   if isdatetime(t)
+      %t = datenum(t);
+      t = year(t);
+   end
 
-p.addRequired('t',                  @(x)isnumeric(x) || isdatetime(x));
-p.addRequired('y',                  @(x)isnumeric(x)                 );
-p.addParameter('ylabeltext',  '',   @(x)ischar(x)                    );
-p.addParameter('xlabeltext',  '',   @(x)ischar(x)                    );
-p.addParameter('titletext',   '',   @(x)ischar(x)                    );
-p.addParameter('legendtext',  '',   @(x)ischar(x)                    );
-p.addParameter('figpos',      dpos, @(x)isnumeric(x)                 );
-p.addParameter('useax',       nan,  @(x)isaxis(x)                    );
+   inan = isnan(y);
+   ycumul = cumsum(y,'omitnan');
+   ycumul = setnan(ycumul,inan);
+   ycumul = ycumul-ycumul(1,:);
 
-p.parseMagically('caller');
+   % if an axis was provided, use it, otherwise make a new figure
+   if not(isaxis(useax))
+      h.figure = figure('Position',figpos);
+      useax = gca;
+   end
 
-useax       = p.Results.useax;
-plotvarargs = unmatched2varargin(p.Unmatched);
+   if isempty(varargs)
+      h.plot = plot(useax,t,ycumul,'-o'); hold on;
+      %h.scatter = myscatter(t,ycumul,rgb('green'));
+   else
+      h.plot = plot(useax,t,ycumul,varargs{:});
+   end
 
-% for now, convert to datenums
-if isdatetime(t)
-   %t = datenum(t);
-   t = year(t);
+   formatPlotMarkers; hold on; axis tight
+   ylabel(ytext); xlabel(xtext); title(titletext); legend(legendtext);
+   h.ax = gca;
 end
 
-inan        = isnan(y);
-ycumul      = cumsum(y,'omitnan');
-ycumul      = setnan(ycumul,inan);
-ycumul      = ycumul-ycumul(1,:);
+function [t, y, useax, figpos, ytext, xtext, titletext, legendtext, varargs] = ...
+      parseinputs(t, y, mfilename, varargin)
 
-% if an axis was provided, use it, otherwise make a new figure
-if not(isaxis(useax))
-   h.figure = figure('Position',figpos);
-   useax    = gca;
+   dpos = [321 241 512 384]; % default figure size
+   parser = inputParser();
+   parser.FunctionName = mfilename;
+   parser.PartialMatching = true;
+   parser.addRequired('t', @isdatelike);
+   parser.addRequired('y', @isnumeric);
+   parser.addParameter('ylabeltext', '', @ischar);
+   parser.addParameter('xlabeltext', '', @ischar);
+   parser.addParameter('titletext', '', @ischar);
+   parser.addParameter('legendtext', '', @ischar);
+   parser.addParameter('figpos', dpos, @isnumeric);
+   parser.addParameter('useax', nan, @isaxis);
+   parser.parse(t, y, varargin{:});
+
+   useax = parser.Results.useax;
+   figpos = parser.Results.figpos;
+   ytext = parser.Results.ylabeltext;
+   xtext = parser.Results.xlabeltext;
+   titletext = parser.Results.titletext;
+   legendtext = parser.Results.legendtext;
+   varargs = unmatched2varargin(parser.Unmatched);
 end
-
-if isempty(plotvarargs)
-   h.plot      = plot(useax,t,ycumul,'-o'); hold on;
-   %h.scatter   = myscatter(t,ycumul,rgb('green'));
-else
-   h.plot      = plot(useax,t,ycumul,plotvarargs{:});
-end
-
-formatPlotMarkers; hold on;
-
-
-axis tight
-
-ylabel(ylabeltext); xlabel(xlabeltext); title(titletext);
-
-h.ax = gca;
