@@ -8,6 +8,5 @@ function cms = cmd2cms(cmd)
    %   cms = array of flow values in cubic meters/second
    %
    % See also:
-
    cms = cmd./86400;
 end

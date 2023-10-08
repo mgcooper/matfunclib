@@ -1,2 +1,3 @@
 function inches = cm2inch(cm)
-    inches=cm.*0.393702;
+   inches=cm.*0.393702;
+end
