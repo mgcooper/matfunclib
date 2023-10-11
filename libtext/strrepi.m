@@ -38,7 +38,7 @@ function out = strrepi(str,old,new)
 
       newCell = arrayfun(@(x,y) ...
          x+1:y-1,[0,iright(1:end)],[ileft,length(str)+1], 'uni', 0);
-      
+
       strCell = cellfun(@(x) str(x), newCell, 'uni', 0);
 
       out = strjoin(strCell,new);
