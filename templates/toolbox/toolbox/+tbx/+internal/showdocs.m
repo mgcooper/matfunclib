@@ -12,7 +12,7 @@ function showdocs(varargin)
          disp(['Cannot find documentation for ',varargin{1},'.'])
          disp('Opening the baseflow documentaton page.')
       end
-      showdemo('bfra_contents.html')
+      % showdemo(default_demofile) % TODO: add as input? 
    end
 
 end

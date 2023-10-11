@@ -22,14 +22,14 @@ function F = privatefunction(funcName)
    % See also: completions, listfolders, listfiles, projectpath
 
    % Validate input
+   try
+      funcName = char(funcName);
+   catch
+   end
    if nargin > 0 && ~ischar(funcName)
       error('Invalid input. Expected a string for function name.');
    end
 
-   funcName = validatestring(funcName, ...
-      pfa.internal.completions('private'), mfilename, 'FUNCNAME', 1);
-   
-   
    cwd = pwd();
    job = onCleanup(@(~) cd(cwd));
 
@@ -73,7 +73,7 @@ function F = privatefunction(funcName)
          error('No functions found in any private directories.');
       end
    end
-   
+
    % Convert to a function module (struct)
    if returnAllFunctions
       [~, privateFolders] = fileparts(fileparts(allprivate));

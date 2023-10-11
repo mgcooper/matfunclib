@@ -1,8 +1,8 @@
 function proplist = completions(funcname)
    %COMPLETIONS Generate function auto-completions for string literals.
 
-   % This has to be set to the toolbox namespace.
-   pkgname = '+tbx';
+   % Set the toolbox namespace.
+   [~, pkgname] = mpackagename();
 
    switch lower(funcname)
 
