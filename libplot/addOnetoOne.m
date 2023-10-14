@@ -37,7 +37,7 @@ function varargout = addOnetoOne(varargin)
    % TODO: reconcile with padone2one
 
    % Parse optional keeplims argument
-   [keeplims, varargin] = parseoptarg(varargin, {'keeplims'}, 'keeplims');
+   [keeplims, varargin] = parseoptarg(varargin, {'keeplims'}, 'resetlims');
 
    % Parse possible axes input.
    [ax, varargin, ~, isfigure] = parsegraphics(varargin{:});
@@ -52,7 +52,14 @@ function varargout = addOnetoOne(varargin)
    hold(ax, 'on');
 
    if strcmp(keeplims, 'keeplims')
+      
+      % If 'keeplims' is designed to keep limits that are already 1:1:
       newlims = xlim;
+      
+      % If 'keeplims' is designed to set the axes equal without modifying the
+      % full extent of either existing axes:
+      newlims(1) = min(min(xlim), min(ylim));
+      newlims(2) = max(max(xlim), max(ylim));
    else
       axis tight;
 

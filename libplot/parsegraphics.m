@@ -1,13 +1,13 @@
-function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
+function [H,args,nargs,wasfigure,isimageaxes] = parsegraphics(varargin)
    %PARSEGRAPHICS Parse graphics handles / objects from varargin-type cell array
    %
-   %   [H,ARGS,NARGS,ISFIGURE,ISIMAGE] = PARSEGRAPHICS(ARG1,ARG2,...) looks for
+   %   [H,ARGS,NARGS,WASFIGURE,ISIMAGE] = PARSEGRAPHICS(ARG1,ARG2,...) looks for
    %   Figure or Axes provided in the input arguments. If the first argument is
    %   a figure or axes handle, it is removed from the list in ARGS and the
-   %   count in NARGS. ISFIGURE is set to true if a Figure handle is detected,
+   %   count in NARGS. WASFIGURE is set to true if a Figure handle is detected,
    %   and false otherwise. If the first argument is an axes handle,
    %   PARSEGRAPHICS then checks the arguments for Name, Value pairs with the
-   %   name 'Parent'. If a graphics object is found following the last occurance
+   %   name 'Parent'. If a graphics object is found following the last occurence
    %   of 'Parent', then all 'Parent', Value pairs are removed from the list in
    %   ARGS and the count in NARGS. ARG1 (if it is an Axes), or the value
    %   following the last occurance of 'Parent', is returned in AX. Double
@@ -15,17 +15,18 @@ function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
    %   handle is determined to be a handle to a deleted graphics object, an
    %   error is thrown.
    %
-   % See also: isaxis, isfig, axescheck
+   % See also: isaxis, isfig, axescheck,
+   % matlab.graphics.chart.internal.inputparsingutils 
 
    % This function is based on axescheck, Copyright 1984-2020 The MathWorks, Inc.
 
    % NOTE: isaxis and isfig are octave-compatible, but the Parent,... checks in
-   % the second part of this function likely are not.
+   % the second part of this function may not be.
 
    args = varargin;
    nargs = nargin;
-   isfigure = false;
-   isimage = false;
+   wasfigure = false;
+   isimageaxes = false;
    H = [];
 
    % Check for either a scalar numeric Figure or Axes handle, or any size array
@@ -33,13 +34,13 @@ function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
    % will not catch deleted graphics handles, so we need to check for both
    % separately.
    if (nargs > 0) && ( isaxis(args{1}) || isfig(args{1}) )
-      isfigure = isfig(args{1});
+      wasfigure = isfig(args{1});
       H = handle(args{1});
       args = args(2:end);
       nargs = nargs-1;
    end
 
-   if ~isfigure && nargs > 0
+   if ~wasfigure && nargs > 0
       % Detect 'Parent' or "Parent" (case insensitive).
       inds = find(cellfun(@(x) (isStringScalar(x) || ...
          ischar(x)) && strcmpi('parent', x), args));
@@ -63,7 +64,7 @@ function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
 
    % Check for image
    if isempty(H) && isa(args{1}, 'matlab.graphics.primitive.Image')
-      isimage = true;
+      isimageaxes = true;
       try
          % Passing the Image object to imgca does not work. imgca expects the
          % figure handle, which can be retrieved with imgcf, but since we want
@@ -114,7 +115,7 @@ function [H,args,nargs,isfigure,isimage] = parsegraphics(varargin)
    end
 
    % add a final check on H
-   isfigure = isfig(H);
+   wasfigure = isfig(H);
 
    % I thought this would allow calling this function with varargin instead of
    % varargin{:} but the former returns a cell array of cell arrays. This fixes

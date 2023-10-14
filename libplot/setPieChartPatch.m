@@ -1,4 +1,4 @@
-function varargout = setPieChartPatch(H, PatchOpts)
+function varargout = setPieChartPatch(H, PatchOpts, CustomOpts)
    %SETPIECHARTPATCH
    %
    %  setPieChartPatch(H) set patch properties of the pie chart with handle H.
@@ -7,16 +7,19 @@ function varargout = setPieChartPatch(H, PatchOpts)
    arguments
       H matlab.graphics.primitive.Data
       PatchOpts.?matlab.graphics.primitive.Patch
+      CustomOpts.ColorPalette = colororder
    end
    opts = namedargs2cell(PatchOpts);
 
+   % If H is an array, 
+   
    hpatch = findobj(H, 'Type', 'Patch');
    Npatch = length(hpatch);
-   colors = colororder;
-   Ncolor = size(colors,1);
+   colors = CustomOpts.ColorPalette;
+   Ncolor = size(colors, 1);
 
    % Create an index from 1:Nobjects
-   idx = repmat(1:Ncolor,1,ceil(Npatch/Ncolor));
+   idx = repmat(1:Ncolor, 1, ceil(Npatch/Ncolor));
    idx = idx(1:Npatch);
 
    % Set the pie slice colors

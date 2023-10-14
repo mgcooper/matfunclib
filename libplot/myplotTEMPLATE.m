@@ -3,7 +3,14 @@ function varargout = myplotTEMPLATE(varargin)
    % Check the number of input and output arguments.
    narginchk(1, Inf)
    nargoutchk(0, 1);
-
+   
+   % might be nice to have:
+   [ax, washeld, wasfigure, varargin] = prepareGraphics(varargin{:}); %#ok<ASGLU>
+   % And move the isempty(h) ... stuff inside that
+   
+   % Parse optional axes flag
+   [dim, varargin] = parseoptarg(varargin, {'x', 'y', 'z'}, 'y');
+   
    % Parse possible axes input.
    [h, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
 
