@@ -1,3 +1,7 @@
+
+% UPDATE Figured it out - need to use property inheritance in the json file, see
+% groupstats functionSignatures.json
+
 % NOTE: I think once I add the function signature i lose all subsequent auto
 % cmplete for example this was all to get the table property variable names to
 % autocomplete in barchartcats, which works with the json file, but then the
