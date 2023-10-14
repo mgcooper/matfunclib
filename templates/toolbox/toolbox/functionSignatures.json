@@ -25,6 +25,20 @@
       ],
       "description":"Build full path to toolbox folder or file"
    },
+   "tbx.internal.getDependencies":
+   {
+      "inputs":
+      [
+         {"name":"target", "kind":"required", "type":"char", "purpose":"the function name or folder to generate dependencies for"},
+         {"name":"referencePath", "kind":"namevalue", "type":"char", "purpose":"the reference path to check for satisfied dependencies"},
+         {"name":"saveRequirementsFile", "kind":"namevalue", "type":["logical", "scalar"], "purpose":"Option"}
+      ],
+      "outputs":
+      [
+         {"name":"Info", "type":"struct", "purpose":"the list of required and missing files and products"}
+      ],
+      "description":"Find all required and missing files and products for toolbox"
+   },
    "tbx.internal.privatefunction":
    {
       "inputs":

@@ -37,12 +37,14 @@ function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
       localopts.Silent (1,1) logical = false
       localopts.LineStyle (1,1) string {mustBeMember(localopts.LineStyle,["--","-",":"])} = '-'
       localopts.LineWidth (1,1) {mustBeNumeric} = 1
-      localopts.Color{mustBeMember(localopts.Color,{'red','blue'})} = "blue" % restrict options
 
       % pull name-value pairs from classdef
       fromclass.?matlab.graphics.chart.primitive.Line
       % for ?syntax call metaclass on the object:
       % mc=metaclass(line()),name=mc.Name
+      
+      % override a default property:
+      fromclass.Color {mustBeMember(fromclass.Color,{'red','blue'})} = "blue"
    end
 
    % get the class defaults
