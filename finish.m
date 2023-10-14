@@ -28,8 +28,11 @@ if usejava('desktop')
 
    % from projects.m finish:
    % Save the current project and exit the projects() logic
-   projects('save', projects('active'));
-   projects('close');
+   try
+      projects('save', projects('active'));
+      projects('close');
+   catch
+   end
 
    % deactivate active toolboxes
    deactivate('all');

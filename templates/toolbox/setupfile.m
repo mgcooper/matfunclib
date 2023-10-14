@@ -70,6 +70,10 @@ function setupfile(varargin)
       projectpath = varargin{2};
    end
 
+   % To implement mtoolbox.toml or mproject.toml concept:
+   if ~isfile(fullfile(projectpath, 'mproject.toml'))
+   end
+
    % Safely add all paths to the userpath
    localpathadd(projectpath, '-begin')
 
