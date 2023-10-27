@@ -2,6 +2,7 @@ function varargout = dealout(varargin)
    %DEALOUT deal out function outputs
    %
    % [argout1, argout2] = dealout(argin1, argin2, ..., arginN]
+   % [cellArrayOutput{1:nargout}] = dealout(cellArrayInput{:});
    %
    % The number of output arguments does not have to match the number of inputs,
    % but they will be dealt out in the exact order they are dealt in i.e.

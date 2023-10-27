@@ -1,4 +1,4 @@
-function [args, pairs, nargs] = parseparampairs(args)
+function [args, pairs, nargs] = parseparampairs(args, asstruct)
    %PARSEPARAMPAIRS Return and remove name-value pairs from cell argument list.
    %
    % [ARGS, PAIRS] = PARSEPARAMPAIRS(ARGS) returns ARGS, a cell array containing
@@ -11,8 +11,12 @@ function [args, pairs, nargs] = parseparampairs(args)
    % functions using VARARGIN as the input argument, and remove them from the
    % variable arguments cell array. It does not assign property values.
    %
-   % See also: parseoptarg, parsegraphics
+   % See also: parseoptarg, parsegraphics, cell2namedargs
 
+   if nargin < 2
+      asstruct = false;
+   end
+   
    [args{1:numel(args)}] = convertStringsToChars(args{:});
    charargs = find( cellfun(@(a) ischar(a), args));
 
@@ -24,4 +28,8 @@ function [args, pairs, nargs] = parseparampairs(args)
    end
 
    nargs = numel(args);
+   
+   if asstruct
+      pairs = pvpairs2struct(pairs);
+   end
 end
