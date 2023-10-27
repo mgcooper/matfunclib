@@ -16,7 +16,7 @@ function S = updateBoundingBox(S,varargin)
 
    X = {S.(xfield)};
    Y = {S.(yfield)};
-
+   
    for n = 1:numel(X)
       S(n).BoundingBox = [min(X{n}), min(Y{n}); max(X{n}), max(Y{n})];
    end

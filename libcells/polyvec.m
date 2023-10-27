@@ -31,6 +31,37 @@ function [lat,lon] = polyvec(latcells,loncells)
          'Contents of corresponding cells in %s and %s must match in size.', ...
          'LATCELLS', 'LONCELLS')
 
+      % The conversion to vector assumes each element of the input cell arrays
+      % is a vector. This checks if the inputs are cell arrays with each element
+      % defining a single coordinate. The case where each element is a cell
+      % array is not handled. 
+      if all(cellfun(@isscalar, loncells)) && all(cellfun(@isscalar, latcells)) 
+         
+         if isShapeMultipart([loncells{:}], [latcells{:}])
+            % Convert to a cell array with one vector element 
+            latcells = {[latcells{:}]};
+            loncells = {[loncells{:}]};
+         else
+            lat = [latcells{:}];
+            lon = [loncells{:}];
+            return
+         end
+      end
+      
+      % Check if the polygons are already nan-separated
+      hassep = cellfun(@(x, y) isnan(x(end)) && isnan(y(end)), loncells, latcells);
+      
+      if sum(hassep) == numel(latcells)
+         lat = Cell2Vec(latcells);
+         lon = Cell2Vec(loncells);
+         
+         % Check if polycells can recover the original cells. This will fail if
+         % individual elements of the geostruct have multiple polygons. To
+         % ensure it recovers them, polycells would somehow need to know which
+         % elements unpacked in here were originally in the same element.
+         % [latcells2, loncells2] = polycells(lat, lon);
+      end
+      
       M = numel(latcells);
       N = 0;
       for k = 1:M
@@ -53,3 +84,4 @@ function [lat,lon] = polyvec(latcells,loncells)
          lon(p:end) = loncells{M};
       end
    end
+end
