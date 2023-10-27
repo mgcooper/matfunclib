@@ -1,36 +1,46 @@
 function mapProj = parseMapProjection(isgeo, varargin)
-   %PARSEMAPPROJECTION general description of function
+   %PARSEMAPPROJECTION Convert or verify map projection objects.
    %
-   %  MAPPROJ = PARSEMAPPROJECTION(ISGEO,WKTSTRING) converts WKTSTRING to 
-   %  geocrs object if ISGEO is true, otherwise to projcrs object.
-   %  
+   %  MAPPROJ = PARSEMAPPROJECTION(ISGEO, WKTSTRING) converts WKTSTRING to
+   %  a geocrs object if ISGEO is true; otherwise, to a projcrs object.
+   %
    %  MAPPROJ = PARSEMAPPROJECTION(ISGEO, PROJCODE, AUTHORITY) creates a geocrs
-   %  object if ISGEO is true, otherwise a projcrs object using the numeric
-   %  scalar projection code PROJCODE and provided authority, indicated by char
-   %  or string AUTHORITY.
+   %  object if ISGEO is true; otherwise, a projcrs object using the numeric
+   %  scalar projection code PROJCODE and the provided authority, indicated by
+   %  char or string AUTHORITY.
+   %
+   %  If the input is already a geo/projcrs object, it is returned as-is.
    %
    % See also: bbox2R
 
-   % input checks
-   narginchk(2,3)
+   % Input checks
+   narginchk(2, 5)
 
-   % Not sure if this is needed
-   % [varargin{:}] = convertStringsToChars(varargin{:});
+   [varargin{:}] = convertStringsToChars(varargin{:});
 
+   % Parse the optional 'forward' or 'inverse' argument
+   [~, args, nargs] = parseoptarg(varargin, {'forward', 'inverse'}, 'forward');
+   drop = cellfun(@(arg) ischar(arg) && strcmp(arg, 'Authority'), args);
+   if any(drop)
+      args = args(~drop);
+      nargs = nargs - 1;
+   end
+
+   % Get the calling function name for error messages
    funcname = mcallername();
+   if nargs+1 == 2
+      mapProj = args{1};
 
-   if nargin == 2
-
-      mapProj = varargin{1};
-
+      % Validate attributes of mapProj
       validateattributes(mapProj, {'projcrs', 'geocrs', 'char', 'string'}, ...
          {'nonempty'}, funcname, 'mapProj')
 
       % for now use validateattributes
-      %throwAsCaller(MException('MATFUNCLIB:libraster:parseMapProjection', 'InvalidInput'));
+      % throwAsCaller(MException( ...
+      %    'MATFUNCLIB:libraster:parseMapProjection', 'InvalidInput'));
 
-      % if mapProj is a string or char, assume it is a wkt string
-      if isa(mapProj, 'char') || isa(mapProj, 'string')
+      % If mapProj is a string or char, assume it is a WKT string
+      if ischar(mapProj) || isstring(mapProj)
          if isgeo
             try
                mapProj = geocrs(mapProj);
@@ -44,16 +54,15 @@ function mapProj = parseMapProjection(isgeo, varargin)
                rethrow(ME);
             end
          end
-      else
-         % mapProj is already a projcrs or geocrs
       end
 
-   elseif nargin == 3
+   elseif nargs+1 == 3
 
-      projCode = varargin{1};
-      projAuth = varargin{2};
+      projCode = args{1};
+      projAuth = args{2};
 
-      validateattributes(projCode, {'numeric'}, {'nonempty'}, ...
+      % Validate attributes
+      validateattributes(projCode, {'numeric'}, {'nonempty', 'scalar'}, ...
          funcname, 'projCode')
       validateattributes(projAuth, {'char', 'string'}, {'nonempty'}, ...
          funcname, 'projAuth')
@@ -74,12 +83,15 @@ function mapProj = parseMapProjection(isgeo, varargin)
       end
    end
 
-   % mapProj is a projcrs or geocrs, confirm it matches tfgeo
-   if isgeo
-      assert(isa(mapProj, 'geocrs'), 'Inconsistent coordinate system')
-   else
-      assert(isa(mapProj, 'projcrs'), 'Inconsistent coordinate system')
-   end
+   % This is too restrictive. Whether the coordinates are lat lon or planar,
+   % most likely the projection should be a projcrs (map proj) object, which is
+   % used for both forward and inverse transformations from/to planar or geo
+   % % Confirm that mapProj is a projcrs or geocrs matching isgeo
+   % if isgeo % && strcmp(opt, 'forward') % || ~isgeo && strcmp(opt, 'inverse')
+   %    assert(isa(mapProj, 'geocrs'), 'Inconsistent coordinate system')
+   % else
+   %    assert(isa(mapProj, 'projcrs'), 'Inconsistent coordinate system')
+   % end
 end
 
 %% LICENSE

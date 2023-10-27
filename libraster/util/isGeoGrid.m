@@ -1,4 +1,4 @@
-function [tfGeoCoords,tfLatLonOrder] = isGeoGrid(Lat, Lon)
+function [tfGeoCoords, tfLatLonOrder] = isGeoGrid(Lat, Lon)
    %ISGEOGRID Determine if coordinates are geographic with X = Lon and Y = Lat.
    %
    % [tfGeoCoords] = isGeoGrid(Lat, Lon) returns a boolean flag indicating if
@@ -24,7 +24,7 @@ function [tfGeoCoords,tfLatLonOrder] = isGeoGrid(Lat, Lon)
 
    % Initialize output
    tfGeoCoords = false;
-   tfLatLonOrder = true;
+   tfLatLonOrder = false;
 
    % Check if coordinates are geographic with X = Lon and Y = Lat
    if ((min(Lon(:)) >= -180 && max(Lon(:)) <= 180) || ...
