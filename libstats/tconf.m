@@ -1,7 +1,7 @@
 function [SE,CI,PM] = tconf(mu,sig,N,alpha)
    %TCONF Compute 1-alpha confidence intervals.
    %
-   % [SE,CI,PM] = tconf(mu,sig,N,alpha) returns 1-alpha confidence intervals
+   % [SE,CI,PM] = TCONF(MU,SIG,N,ALPHA) Returns 1-alpha confidence intervals
    % given mean mu, standard deviation sig, sample size N, and confidence level
    % alpha. No adjustment is made to N, so pass in N for a sample statistic such
    % as the mean of a sample, and N-1 if mu/sig are the mean/stdv of a sample of
@@ -10,9 +10,9 @@ function [SE,CI,PM] = tconf(mu,sig,N,alpha)
    % the population standard deviation, the standard uncertainty.
    %
    % Output:
-   %     SE    = one standard error (stdv/sqrt(N))
-   %     CI    = upper and lower confidence intervals
-   %     PM    = the plus/minus i.e. CI-mu
+   %     SE: one standard error (stdv/sqrt(N))
+   %     CI: upper and lower confidence intervals
+   %     PM: the plus/minus i.e. CI-mu
    %
    %
    % See also: stderr
@@ -28,18 +28,18 @@ function [SE,CI,PM] = tconf(mu,sig,N,alpha)
    % noted
 
    % note: t_c has N-1 dof, whereas the sample has N dof
-   t_c = tinv(1-alpha/2,N-1);
-   SE  = sig./sqrt(N);
-   % idx = N<=30;
-   % SE(idx) = SE(idx).*t_c(idx);
+   tc = tinv(1 - alpha / 2, N - 1);
+   SE = sig ./ sqrt(N);
+   % idx = N <= 30;
+   % SE(idx) = SE(idx) .* tc(idx);
 
    % June 2020, define 'plus/minus' which is the value we normally want to
    % see / quote in the results:
-   PM  = t_c.*SE;
+   PM = tc .* SE;
    if isscalar(mu) || isvector(mu)
-      CI  = mu+PM.*[-1 1];
-   elseif ismatrix(mu) && all(size(mu)>1)
-      PM  = cat(3,PM.*-1.*ones(size(SE)),PM.*ones(size(SE)));
-      CI  = mu+PM;
+      CI = mu + PM .* [-1 1];
+   elseif ismatrix(mu) && all(size(mu) > 1)
+      PM = cat(3, PM .* -1 .* ones(size(SE)), PM .* ones(size(SE)));
+      CI = mu + PM;
    end
 end

@@ -48,6 +48,7 @@ function S = nansmooth(Y,w,type,tol)
    end
 end
 
+%%
 function SmoothY = sa(Y,smoothwidth,tol)
    if smoothwidth == 1
       SmoothY = Y;

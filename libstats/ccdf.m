@@ -2,8 +2,8 @@ function varargout = ccdf(data,varargin)
    %CCDF compute complementary cumulative distribution function
    %
    %  [F, X] = ccdf(data) returns the empirical complementary cumulative
-   %  distribution function F evaluated at points X. F is 1 minus the F returned by
-   %  MATLAB's built in ecdf function.
+   %  distribution function F evaluated at points X. F is 1 minus the F 
+   %  returned by MATLAB's built in ecdf function.
    %
    %  Fx = ccdf(data) returns [F X] concatentated in one array.
    %

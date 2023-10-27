@@ -1,10 +1,10 @@
-function [ mae ] = meanerror( observed, predicted, varargin )
+function [mae] = meanerror(observed, predicted, varargin)
    %MEANERROR compute the mean absolute error
    %
-   % [ mae ] = meanerror( observed, predicted ) computes the mean absolute error
+   % [MAE] = MEANERROR(OBSERVED, PREDICTED) computes the mean absolute error
    % between observed, predicted.
    %
-   % [ mae ] = meanerror( observed, predicted , _) accepts all inputs to SUM
+   % [MAE] = MEANERROR(OBSERVED, PREDICTED, _) accepts all inputs to SUM
    % (matlab builtin, try `doc sum`)
    %
    % Example
@@ -37,9 +37,10 @@ function [ mae ] = meanerror( observed, predicted, varargin )
 
    narginchk(2, Inf)
 
-   dif = predicted-observed;
-   ssz = ones(size(dif)); ssz(isnan(dif)) = nan;
-   mae = sum(dif, varargin{:})./sum(ssz,varargin{:});
+   dif = predicted - observed;
+   ssz = ones(size(dif)); 
+   ssz(isnan(dif)) = nan;
+   mae = sum(dif, varargin{:}) ./ sum(ssz, varargin{:});
 
    % if nargin < 3 || isempty(dim), dim = 1; tovec = true; end
    %

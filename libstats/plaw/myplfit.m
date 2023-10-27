@@ -1,176 +1,179 @@
 function [b,xmin,alpha,D,h0] = myplfit(x,varargin)
-%MYPLFIT power law fit
-%
-%  [b,xmin,alpha,D,h0] = myplfit(x,varargin)
-%
-% See also
+   %MYPLFIT power law fit
+   %
+   %  [b,xmin,alpha,D,h0] = myplfit(x,varargin)
+   %
+   % See also
 
-% parse inputs
-p = inputParser;
-p.FunctionName = mfilename;
-p.addRequired('x',@isnumeric);
-p.addParameter('goftest','ks',@ischar);
-p.addParameter('makeplot',true,@islogical);
-p.parse(x, varargin{:});
+   % parse inputs
+   p = inputParser;
+   p.FunctionName = mfilename;
+   p.addRequired('x',@isnumeric);
+   p.addParameter('goftest','ks',@ischar);
+   p.addParameter('makeplot',true,@islogical);
+   p.parse(x, varargin{:});
 
 
-% see ksboot - it's hidden in a weird folder in my fex path:
+   % see ksboot - it's hidden in a weird folder in my fex path:
 
-% NOTE: could try fmincon
-% If you have the Optimization Toolbox, type "help fmincon." It does
-% general minimization with constraints. You supply the negative likelihood
-% or log-likelihood function for the problem you're trying to solve
+   % NOTE: could try fmincon
+   % If you have the Optimization Toolbox, type "help fmincon." It does
+   % general minimization with constraints. You supply the negative likelihood
+   % or log-likelihood function for the problem you're trying to solve
 
-% prep the data
-[x,xmins,M,D,x0] = prepinput(x,p.goftest);
+   % prep the data
+   [x,xmins,M,D,x0] = prepinput(x,p.goftest);
 
-% find the best-fit xmin
-for m = 1:M
+   % find the best-fit xmin
+   for m = 1:M
 
-   [cx,cf]  = plcdf(x,xmins(m));
-   D(m,:)   = gofdist(cx,cf,p.goftest); % goodness of fit distance
+      [cx,cf]  = plcdf(x,xmins(m));
+      D(m,:)   = gofdist(cx,cf,p.goftest); % goodness of fit distance
 
-   % i think here, once xmin,alpha known, bootstrap cf to get pval
-end
+      % i think here, once xmin,alpha known, bootstrap cf to get pval
+   end
 
-% evaluate the best-fit distribution
-[x,xmin,alpha,D,cx,cf,b,h0] = bestfitdist(x,xmins,D);
+   % evaluate the best-fit distribution
+   [x,xmin,alpha,D,cx,cf,b,h0] = bestfitdist(x,xmins,D);
 
-% plot the best-fit
-if p.makeplot == true
-   % this won't come out quite the same as bfra_gpfitb, i think b/c of
-   % gpfit and gpcdf return slightly different results than plplot
+   % plot the best-fit
+   if p.makeplot == true
+      % this won't come out quite the same as bfra_gpfitb, i think b/c of
+      % gpfit and gpcdf return slightly different results than plplot
 
-   % there is something wrong with bfra_plplot
-   % figure; bfra_plplot(x0,xmin,alpha);
+      % there is something wrong with bfra_plplot
+      % figure; bfra_plplot(x0,xmin,alpha);
 
-   % because this works as expected
-   figure; loglog(x,1-cx,'o'); hold on; loglog(x,1-cf);
-end
+      % because this works as expected
+      figure; loglog(x,1-cx,'o'); hold on; loglog(x,1-cf);
+   end
 
-% if we want to evaluate all the gof tests, do that here
-if strcmp(p.goftest,'all')
+   % if we want to evaluate all the gof tests, do that here
+   if strcmp(p.goftest,'all')
 
-   [x,xmin,alpha,D,cx,cf,b,h0] = allbestfit(D,p.goftest);
+      [x,xmin,alpha,D,cx,cf,b,h0] = allbestfit(D,p.goftest);
 
-   if makeplot == true
+      if makeplot == true
 
-      load('distinguishablecolors.mat','dc')
+         load('distinguishablecolors.mat','dc')
 
-      figure; bfra_plplot(x0,xmin,alpha);
+         figure; bfra_plplot(x0,xmin,alpha);
 
-      % plot the ccdf with vlines at each taumin
-      [F,X]    = ecdf(x0,'Function','survivor');
-      h        = stairs(X,F,'LineWidth',1.5); hold on;
-      set(gca,'YScale','log','XScale','log'); axis tight
-      ylims    = ylim;
+         % plot the ccdf with vlines at each taumin
+         [F,X]    = ecdf(x0,'Function','survivor');
+         h        = stairs(X,F,'LineWidth',1.5); hold on;
+         set(gca,'YScale','log','XScale','log'); axis tight
+         ylims    = ylim;
 
-      for n = 1:numD
-         p(n) = plot([allmins(n) allmins(n)],[ylims(1) ylims(2)],'Color',dc(n,:));
+         for n = 1:numD
+            p(n) = plot([allmins(n) allmins(n)],[ylims(1) ylims(2)],'Color',dc(n,:));
+         end
+
+         legend(p,testnames);
+
+         %  [ADK,ADKn,ADKs,ADKsn] = AnDarksamtest(testsample)
       end
 
-      legend(p,testnames);
-
-      %  [ADK,ADKn,ADKs,ADKsn] = AnDarksamtest(testsample)
    end
-
 end
 
-
+%%
 function [x,xmins,M,D,x0] = prepinput(x,goftest)
 
-x        = sort(x);
-x0       = x;
-xmins    = unique(x);
-M        = numel(x)-100;
+   x = sort(x);
+   x0 = x;
+   xmins = unique(x);
+   M = numel(x)-100;
 
-if strcmp(goftest,'all')
-   D     = nan(M,5);
-else
-   D     = nan(M,1);
+   if strcmp(goftest,'all')
+      D = nan(M,5);
+   else
+      D = nan(M,1);
+   end
 end
 
-
+%%
 function [cx,cf,alpha,xtr] = plcdf(x,xmin)
 
-x     = x(x>=xmin);                 % truncate the data
-N     = length(x);                  % sample size for z>zmin
-lam   = N ./ sum( log(x./xmin) );   % mle to get alpha-1 (cdf exponent) eq. 3.1
-cx    = (0:N-1)'./N;                % the empirical cdf
-cf    = 1-(xmin./x).^lam;           % the theoretical cdf
-% alpha = 1+1/lam;                    % plaw exponent
-alpha = lam + 1;                    % plaw exponent
-xtr   = x;                          % truncated data
+   x     = x(x>=xmin);                 % truncate the data
+   N     = length(x);                  % sample size for z>zmin
+   lam   = N ./ sum( log(x./xmin) );   % mle to get alpha-1 (cdf exponent) eq. 3.1
+   cx    = (0:N-1)'./N;                % the empirical cdf
+   cf    = 1-(xmin./x).^lam;           % the theoretical cdf
+   % alpha = 1+1/lam;                    % plaw exponent
+   alpha = lam + 1;                    % plaw exponent
+   xtr   = x;                          % truncated data
+end
 
-
-
+%%
 function D = gofdist(cx,cf,goftest)
 
-switch goftest
-   case 'ks'
-      %D  = max( abs(cf-cx) );       % standard ksdistance
-      D  = ksdist(cx,cf);
-   case 'ad'
-      D  = addist(cx,cf);
-   case 'cvm'
-      D  = cvmdist(cx,cf);
-   case 'kuiper'
-      D  = kuiperdist(cx,cf);
-   case 'wasser'
-      D  = wasserdist(cx,cf);
-   case 'all'
-      D(1) = ksdist(cx,cf);
-      D(2) = addist(cx,cf);
-      D(3) = cvmdist(cx,cf);
-      D(4) = kuiperdist(cx,cf);
-      D(5) = wasserdist(cx,cf);
+   switch goftest
+      case 'ks'
+         %D  = max( abs(cf-cx) );       % standard ksdistance
+         D  = ksdist(cx,cf);
+      case 'ad'
+         D  = addist(cx,cf);
+      case 'cvm'
+         D  = cvmdist(cx,cf);
+      case 'kuiper'
+         D  = kuiperdist(cx,cf);
+      case 'wasser'
+         D  = wasserdist(cx,cf);
+      case 'all'
+         D(1) = ksdist(cx,cf);
+         D(2) = addist(cx,cf);
+         D(3) = cvmdist(cx,cf);
+         D(4) = kuiperdist(cx,cf);
+         D(5) = wasserdist(cx,cf);
+   end
 end
 
-
+%%
 function [x,xmin,alpha,D,cx,cf,b,h0] = bestfitdist(x,xmins,D)
 
-% choose the smallest k-s distance and get the final estimates
-D1    = D(:,1);      % use k-s as default, which is column 1
-Dmin  = min(D1);
-xmin  = xmins(find(D1<=Dmin,1,'first'));
+   % choose the smallest k-s distance and get the final estimates
+   D1    = D(:,1);      % use k-s as default, which is column 1
+   Dmin  = min(D1);
+   xmin  = xmins(find(D1<=Dmin,1,'first'));
 
-[cx,cf,alpha,x] = plcdf(x,xmin);
+   [cx,cf,alpha,x] = plcdf(x,xmin);
 
-b     = 1+1/alpha;
+   b     = 1+1/alpha;
 
-% test hypothesis
-h0    = kstest2(cx,cf); % null = from same dist, 1=not same, 0 = same
-
-
-function [bb,xxmin,aalpha,DD] = allbestfit(D,goftest);
-
-if strcmp(goftest,'all')
-   % find the min across each gof measure
-   minD     = min(D);
-   numD     = numel(minD);
-   minidx   = nan(numD,1);
-   allmins  = nan(numD,1);
-
-   for n = 1:numD
-      minidx(n)   = find(D(:,n)<=minD(n),1,'first');
-      allmins(n)  = xmins(minidx(n));
-   end
-
-   %  testnames = {'KS','KSMatlab','KS2samp','KSKsamp','AD','CVM','KUIP','WASS'};
-   testnames   = {'KS','KSKsamp','AD','CVM','KUIP','WASS'};
-   D           = array2table(D,'VariableNames',testnames);
+   % test hypothesis
+   h0    = kstest2(cx,cf); % null = from same dist, 1=not same, 0 = same
 end
 
+%%
+function [bb,xxmin,aalpha,DD] = allbestfit(D,goftest);
 
+   if strcmp(goftest,'all')
+      % find the min across each gof measure
+      minD     = min(D);
+      numD     = numel(minD);
+      minidx   = nan(numD,1);
+      allmins  = nan(numD,1);
+
+      for n = 1:numD
+         minidx(n)   = find(D(:,n)<=minD(n),1,'first');
+         allmins(n)  = xmins(minidx(n));
+      end
+
+      %  testnames = {'KS','KSMatlab','KS2samp','KSKsamp','AD','CVM','KUIP','WASS'};
+      testnames   = {'KS','KSKsamp','AD','CVM','KUIP','WASS'};
+      D           = array2table(D,'VariableNames',testnames);
+   end
+end
+
+%%
 function D = getadtestk(cx,cf)
 
-% anderson-darling k-sample
-onesv       = ones(size(cf)); % vector of ones representing sample 1
-testsample  = [vertcat(cx,cf) vertcat(onesv,2.*onesv)];
-D           = adtestk(testsample);
-
-
-
+   % anderson-darling k-sample
+   onesv       = ones(size(cf)); % vector of ones representing sample 1
+   testsample  = [vertcat(cx,cf) vertcat(onesv,2.*onesv)];
+   D           = adtestk(testsample);
+end
 
 %    % NOTES FOR REFERENCE
 %

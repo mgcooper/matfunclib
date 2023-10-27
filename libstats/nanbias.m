@@ -1,8 +1,8 @@
-function [ bias ] = nanbias( obs,mod,dim )
-   %NANBIAS compute the signed mean error of a modeled population of values
+function [bias] = nanbias(obs, mod, dim)
+   %NANBIAS Compute the signed mean error of a modeled population of values
    %
-   % [bias] = nanbias(obs, mod, dim) computes the signed mean error of MOD relative
-   % to OBS along dimension DIM
+   % [BIAS] = NANBIAS(OBS, MOD, DIM) computes the signed mean error of MOD
+   % relative to OBS along dimension DIM.
    %
    %
    % See also nancorr, nansmooth, nanmovmean
@@ -12,5 +12,5 @@ function [ bias ] = nanbias( obs,mod,dim )
 
    numgood = sum(~isnan(obs), dim);
    mod(isnan(obs)) = NaN;
-   bias = sum(mod - obs, dim, 'omitnan')./numgood;
+   bias = sum(mod - obs, dim, 'omitnan') ./ numgood;
 end

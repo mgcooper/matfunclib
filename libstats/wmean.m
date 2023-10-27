@@ -1,5 +1,5 @@
 function y = wmean(x, w, varargin)
-   %WMEAN Weighted Average or mean value.
+   %WMEAN Weighted average or mean value.
    %
    %  Y = WMEAN(X, W)
    %  Y = WMEAN(X, W, DIM)
