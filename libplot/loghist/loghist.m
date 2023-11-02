@@ -12,7 +12,9 @@ function [h,edges,centers,hfit] = loghist(data,varargin)
    % remove negative values
    data = data(data>0);
 
-   if normalization == "ccdf"; normalization = "survivor"; end
+   if normalization == "ccdf"
+      normalization = "survivor";
+   end
 
    if normalization == "survivor"
 

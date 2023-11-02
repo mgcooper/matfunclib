@@ -63,7 +63,7 @@ function [H,args,nargs,wasfigure,isimageaxes] = parsegraphics(varargin)
    end
 
    % Check for image
-   if isempty(H) && isa(args{1}, 'matlab.graphics.primitive.Image')
+   if nargs > 0 && isempty(H) && isa(args{1}, 'matlab.graphics.primitive.Image')
       isimageaxes = true;
       try
          % Passing the Image object to imgca does not work. imgca expects the
