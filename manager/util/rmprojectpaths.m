@@ -7,7 +7,11 @@ function rmprojectpaths(projpath)
 
    % warning off/on suppresses warnings issued when a new folder was
    % created in the active toolbox directory and isn't on the path
-   warning off; rmpath(genpath(projpath)); warning on;
+   withwarnoff({'MATLAB:mpath:nameNonexistentOrNotADirectory', ...
+      'MATLAB:rmpath:DirNotFound'});
+   
+   rmpath(genpath(projpath)); 
+   
 
    % probably don't want this. instead let workon set the active project
    % setenv('ACTIVEPROJECT','default');

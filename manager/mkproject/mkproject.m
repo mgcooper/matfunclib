@@ -59,7 +59,7 @@ function mkproject(projectname,varargin)
          copytoolboxtemplate(projectpath, 'forcecopy', forcecopyflag, ...
             'safecopy', safercopyflag);
       end
-      addproject(projectname, opts.setfiles, opts.setactive);
+      addproject(projectname, 'setfiles', opts.setfiles, 'setactive', opts.setactive);
    end
 end
 

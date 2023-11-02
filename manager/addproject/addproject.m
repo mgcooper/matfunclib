@@ -38,7 +38,7 @@ function varargout = addproject(projectname,varargin)
    % active project
 
    % Parse inputs.
-   [projectname, opts] = parseinputs( projectname, mfilename, varargin{:});
+   [projectname, opts] = parseinputs(projectname, mfilename, varargin{:});
 
    % Read the project directory.
    projectlist = readprjdirectory(getprjdirectorypath);
@@ -78,12 +78,10 @@ end
 function [projectname, opts] = parseinputs(projectname, funcname, varargin)
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.CaseSensitive = false;
-   parser.KeepUnmatched = true;
-   parser.addRequired('projectname',@ischar);
-   parser.addParameter('setfiles',false,@islogical);
-   parser.addParameter('setactive',false,@islogical);
-   parser.parse(projectname,varargin{:});
+   parser.addRequired('projectname', @ischar);
+   parser.addParameter('setfiles', false, @islogicalscalar);
+   parser.addParameter('setactive', false, @islogicalscalar);
+   parser.parse(projectname, varargin{:});
    opts = parser.Results;
 end
 
