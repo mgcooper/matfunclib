@@ -10,8 +10,8 @@ function pathstr = list2path(list,index)
    % See also: listfiles
 
    if nargin == 1
-      pathstr = fullfile({list.folder},{list.name});
+      pathstr = fullfile({list.folder}', {list.name}');
    else
-      pathstr = fullfile(list(index).folder,list(index).name);
+      pathstr = fullfile(list(index).folder, list(index).name);
    end
 end

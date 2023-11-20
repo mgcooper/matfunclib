@@ -10,7 +10,7 @@ function tf = isfullfile(filename)
     %   tf = isfullfile('/home/user/file.txt'); % returns true on Linux/Mac
     %   tf = isfullfile('file.txt'); % returns false
     %
-    % See also: ismfile
+    % See also: ismfile, isonpath, isfullpath
 
     [allparts{1:3}] = fileparts(filename);
     tf = all(~cellfun(@isempty, allparts));

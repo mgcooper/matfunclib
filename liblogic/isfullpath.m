@@ -11,7 +11,7 @@ function [isFile, isFolder] = isfullpath(str)
    %   [isFile, isFolder] = isfullpath('/home/user/');
    %   % isFile returns false on Linux/Mac, isFolder returns true
    %
-   % See also: isfullfile, ispathlike
+   % See also: isfullfile, ispathlike, isonpath
 
    % Check if all components of path are non-empty
    [allPathParts{1:3}] = fileparts(str);
