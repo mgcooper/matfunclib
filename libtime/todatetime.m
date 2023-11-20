@@ -26,10 +26,19 @@ if isdatetime(T)
    return
 end
 
-% all available options for conversion, sorted by my subjective preference
+% All available options for conversion, sorted by my subjective preference
 alltypes = {'datenum', 'yyyymmdd', 'juliandate', 'modifiedjuliandate', ...
    'posixtime', 'excel', 'excel1904', 'tt2000', 'epochtime', 'ntp', ...
    'ntfs', '.net'};
+
+% Try to infer the difference between a datenum and a yyyymmdd.
+try
+   if isyyyymmdd(T)
+      alltypes = [alltypes(2), alltypes(1), alltypes(3:end)];
+   end
+catch
+end
+
 
 % simplest input parsing
 if (nargin<2)
