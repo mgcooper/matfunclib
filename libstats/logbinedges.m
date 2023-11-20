@@ -5,7 +5,7 @@ function [edges, centers] = logbinedges(data, N)
    % See also: binedges
 
    if nargin < 2
-      N = 50;
+      N = ceil(sqrt(numel(data)));
    end
    
    minval = fix(log10(min(data)));
