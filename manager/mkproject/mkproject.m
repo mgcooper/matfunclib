@@ -4,8 +4,13 @@ function mkproject(projectname,varargin)
    %  MKPROJECT(projectname) creates a new default project in
    %  MATLABPROJECTPATH/projectname
    %
-   % Example
-   %
+   % Description:
+   %  mkproject('newproject') Creates a new folder MATLABPROJECTPATH/newproject
+   %  if one does not exist. If one does exist, an option to add the folder to
+   %  the project directory is presented. 
+   %  
+   %  mkproject('newproject', 'maketoolbox', true) Copies the toolbox template
+   %  into the new project folder.
    %
    % Matt Cooper, 21-Mar-2023, https://github.com/mgcooper
    %

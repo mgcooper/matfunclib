@@ -14,14 +14,26 @@ function activate(tbname,varargin)
    % filename conflicts
    withwarnoff('MATLAB:dispatcher:nameConflict');
    [tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
-   if ~isempty(wid)
-      warning(wid, msg)
-      return
-   end
+
+   % I started to add the onpath check after a situation where startup failed so
+   % standard toolboxes were not actually activated but marked active in the 
+   % directory, then decided, what's the harm in just adding the toolboxes to
+   % the path whether or not they are already active? So I commented out the
+   % entire thing
+   % if ~isempty(wid)
+   %    warning(wid, msg)
+   %
+   %    % The toolbox could be marked active but not on the path if startup or
+   %    % finish errored
+   %    % onpath = isfile(tbpath);
+   %    % % additional logic to add the toolbox before returning ...
+   %
+   %    return
+   % end
 
    % Otherwise, proceed with activating the toolbox
    toolboxes = readtbdirectory(gettbdirectorypath);
-   tbidx = findtbentry(toolboxes,tbname);
+   tbidx = findtbentry(toolboxes, tbname);
 
    % Alert the user the toolbox is being activated
    if isempty(except)
