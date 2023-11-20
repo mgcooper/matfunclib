@@ -23,6 +23,10 @@ function out = printf(in, precision, varargin)
    % @(C) Matt Cooper, 04-Nov-2022, https://github.com/mgcooper
    %
    % See also: fprintf, sprintf
+   
+   if nargin < 2
+      precision = 0;
+   end
 
    out = sprintf(['%.' int2str(precision) 'f' varargin{:}], in);
 end
