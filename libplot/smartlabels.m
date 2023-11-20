@@ -11,6 +11,14 @@ function smartlabels(XData, YData, labels, varargin)
    % than 'NE'.
    % 
    % See also: labelpoints
+   
+   if iscategorical(labels)
+      try
+         labels = string(labels);
+      catch ME
+         rethrow(ME)
+      end
+   end
 
    % Get default position
    valid_positions = ...
