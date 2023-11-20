@@ -49,12 +49,21 @@ function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
 
    % get the class defaults
    fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
+   
+   % Override default fromclass props
+   ResetFields = {'JitterOutliers','Notch'};
+   ResetValues = {true,'on'};
+   for n = 1:numel(ResetFields)
+      if ~ismember(ResetFields{n}, fieldnames(fromclass))
+         fromclass.(ResetFields{n}) = ResetValues{n};
+      end
+   end
 
    % use this to create a varargin-like optsCell e.g. plot(c,optsCell{:});
-   args = namedargs2cell(opts);
+   args = namedargs2cell(fromclass);
 
    % use this to convert an opts.name = val struct to "name=val" string
-   args = optionsToNamedArguments(optsstruct);
+   args = optionsToNamedArguments(fromclass);
 
    % MAIN CODE
    cleanup = onCleanup(@() cleanupfunc());
