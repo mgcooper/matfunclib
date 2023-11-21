@@ -1,5 +1,4 @@
-function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, ...
-      CustomOpts, BoxChartOpts)
+function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props)
    %BOXCHARTCATS Box chart by groups along x-axis and by color within groups.
    %
    % Description
@@ -105,21 +104,22 @@ function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, ...
       % CustomOpts.RowSelectMembers string = string.empty()
 
       % These were the active options in this function
-      CustomOpts.XGroupMembers (:, 1) string = groupmembers(T, xgroupvar)
-      CustomOpts.CGroupMembers (:, 1) string = groupmembers(T, cgroupvar)
-      CustomOpts.RowSelectVar string = string.empty()
-      CustomOpts.RowSelectMembers (:, 1) string = string.empty()
-      %CustomOpts.RowSelectMembers (:, 1) string = groupmembers(T, RowSelectVar)
+      opts.XGroupMembers (:, 1) string = groupmembers(T, xgroupvar)
+      opts.CGroupMembers (:, 1) string = groupmembers(T, cgroupvar)
+      opts.RowSelectVar string = string.empty()
+      opts.RowSelectMembers (:, 1) string = string.empty()
+      %opts.RowSelectMembers (:, 1) string = groupmembers(T, RowSelectVar)
 
-      CustomOpts.XGroupOrder (:,1) string = "none"
-      CustomOpts.CGroupOrder (:,1) string = "none"
-      CustomOpts.PlotMeans (1,1) logical = true
-      CustomOpts.ShadeGroups (1,1) logical = true
-      CustomOpts.ConnectMeans (1,1) logical = false
-      CustomOpts.ConnectMedians (1,1) logical = false
-      CustomOpts.Legend (1,1) string = "on"
-      CustomOpts.LegendText string = string.empty()
-      BoxChartOpts.?matlab.graphics.chart.primitive.BoxChart
+      opts.XGroupOrder (:,1) string = "none"
+      opts.CGroupOrder (:,1) string = "none"
+      opts.PlotMeans (1,1) logical = true
+      opts.ShadeGroups (1,1) logical = true
+      opts.ConnectMeans (1,1) logical = false
+      opts.ConnectMedians (1,1) logical = false
+      opts.Legend (1,1) string = "on"
+      opts.LegendString string = string.empty()
+      opts.LegendOrientation (1, 1) string = "vertical"
+      props.?matlab.graphics.chart.primitive.BoxChart
    end
 
    % Import groupstats package
@@ -131,16 +131,16 @@ function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, ...
    ResetFields = {'JitterOutliers','Notch'};
    ResetValues = {true,'on'};
    for n = 1:numel(ResetFields)
-      if ~ismember(ResetFields{n},fieldnames(BoxChartOpts))
-         BoxChartOpts.(ResetFields{n}) = ResetValues{n};
+      if ~ismember(ResetFields{n},fieldnames(props))
+         props.(ResetFields{n}) = ResetValues{n};
       end
    end
-   varargs = namedargs2cell(BoxChartOpts);
+   varargs = namedargs2cell(props);
 
    % validate inputs
    T = prepareTableGroups(T, ydatavar, string.empty(), xgroupvar, cgroupvar, ...
-      CustomOpts.XGroupMembers, CustomOpts.CGroupMembers, ...
-      CustomOpts.RowSelectVar, CustomOpts.RowSelectMembers);
+      opts.XGroupMembers, opts.CGroupMembers, ...
+      opts.RowSelectVar, opts.RowSelectMembers);
 
    % Assign the data to plot
    XData = T.(xgroupvar);
@@ -155,53 +155,54 @@ function varargout = boxchartcats(T, ydatavar, xgroupvar, cgroupvar, ...
    hold off % repeated calls create problems
 
    % Custom ordering along x-axis
-   [XData, YData] = reorderGroups(CustomOpts, XData, YData);
+   [XData, YData] = reorderGroups(opts, XData, YData);
 
-   % Add a legend
-   H = categoricalBoxChart(XData, YData, CData, ydatavar, CustomOpts, varargs);
+   % Create the box chart and legend
+   [H, L] = categoricalBoxChart(XData, YData, CData, ydatavar, opts, varargs);
 
    % If "markerstyle", "none" is in varargin, clip the ylimits to the data
    setboxchartylim(H);
 
    % Add the means if requested
-   plotboxchartstats(CustomOpts,H,XData,YData,CData);
+   plotboxchartstats(opts,H,XData,YData,CData);
 
    % Add shaded bars to distinguish groups if requested
-   shadeboxchartgroups(CustomOpts,H);
+   shadeboxchartgroups(opts,H);
 
    % for troubleshooting
    % muTbl = groupsummary(Tplot,{xgroupvar,cgroupvar}, "mean", ydatavar);
-   if CustomOpts.Legend == "off"
+   if opts.Legend == "off"
       legend off
    end
    hold off
 
-   [varargout{1:nargout}] = dealout(H);
+   [varargout{1:nargout}] = dealout(H, L);
 end
 
 %% Local Functions
-function H = categoricalBoxChart(XData, YData, CData, YDataVar, CustomOpts, varargs)
+function [H, L] = categoricalBoxChart(XData, YData, CData, YDataVar, CustomOpts, varargs)
 
    % Create the box chart
    H = boxchart( XData, YData, 'GroupByColor', CData, varargs{:} );
 
    % Add the legend
    withwarnoff('MATLAB:legend:IgnoringExtraEntries');
-   legendtxt = CustomOpts.LegendText;
+   legendtxt = CustomOpts.LegendString;
    if isempty(legendtxt)
       legendtxt = unique(CData);
    end
    try
-      legend(legendtxt, ...
+      L = legend(legendtxt, ...
          'Orientation', 'horizontal', ...
          'Location', 'northoutside', ...
          'AutoUpdate', 'off', ...
          'numcolumns', numel(legendtxt) );
    catch
+      L = [];
    end
 
    % Add a ylabel
-   ylabel(YDataVar);
+   ylabel(makevalidvarnames(YDataVar))
 
    % Format the plot
    set(gca, "YGrid", "off", "XGrid", "off", "XMinorTick", "off", "box", ...
@@ -221,7 +222,7 @@ function [XData, YData] = reorderGroups(opts, XData, YData)
       %       XData = reordercats(XData, string(XData(idx)));
       % end
    else
-      [Lia, Locb] = ismember(opts.XGroupOrder, string(XData));
+      [~, Locb] = ismember(opts.XGroupOrder, string(XData));
       XData = reordercats(XData, string(XData(Locb)));
       % YData = YData(Locb, :);
    end

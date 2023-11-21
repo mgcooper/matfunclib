@@ -1,4 +1,4 @@
-function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barProps)
+function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props)
    %BARCHARTCATS Bar chart by groups along x-axis and by color within groups.
    %
    % Description
@@ -49,7 +49,7 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    % define groups along the x-axis.
    %
    % cgroupvar - The name of the categorical variable in the table T used to
-   % define groups for the colors of the bares.
+   % define groups for the colors of the bars.
    %
    % method - the method used in the call to groupsummary to compute the values
    % plotted as bars. The default method is 'mean'. For 'mean', the standard
@@ -100,6 +100,9 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    % functionality could go to piechartcats, and that function could have a
    % "DisplayType" option that uses bars instead of pies.
 
+   % Add MergeGroups and PlotError to function signatures. 
+   % Check groupstats.histogram first, it uses MergeGroupVar/Members.
+   
    arguments
       T table
       ydatavar (1,1) string {mustBeNonempty}
@@ -123,17 +126,14 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
       % opts.SortGroupMembers.
       opts.SortGroupMembers (:,1) string = "all"
       opts.ShadeGroups (1,1) logical = true
-      opts.Parent (1,1) { mustBeA(opts.Parent, ...
-         "matlab.graphics.axis.AbstractAxes") } = gca
       opts.PlotError (1,1) logical = true
       opts.MergeGroups (:,1) = []
       opts.XGroupOrder (:,1) string = "none"
       opts.CGroupOrder (:,1) string = "none"
-      opts.LegendText (:,1) string = ""
+      opts.Legend (:,1) string = "on"
+      opts.LegendString (:,1) string = string.empty()
       opts.LegendOrientation (1, 1) string = "vertical"
-      % opts.PlotMeans (1,1) logical = true
-      % opts.ConnectMeans (1,1) logical = false
-      barProps.?matlab.graphics.chart.primitive.Bar
+      props.?matlab.graphics.chart.primitive.Bar
    end
 
    % import groupstats package
@@ -141,7 +141,7 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, barPr
    import groupstats.boxchartxdata
    import groupstats.prepareTableGroups
    
-   varargs = namedargs2cell(barProps);
+   varargs = namedargs2cell(props);
 
    % validate inputs
    T = prepareTableGroups(T, ydatavar, string.empty(), xgroupvar, cgroupvar, ...
@@ -313,13 +313,12 @@ function [XData, YData] = reorderGroups(opts, XData, YData)
    % TODO: reorder the legend entries if custom ones provided
 end
 
-function [H, L] = createCategoricalBarChart(XData,YData,CData, ...
-      ydatavar,opts,varargs)
+function [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
+      opts, props)
    % Create the barchart
 
    % Note that "grouped" is default, use "BarLayout","stacked" for stacked
-   H = bar( XData, YData, 'FaceColor', 'flat', varargs{:}, ...
-      'Parent', opts.Parent);
+   H = bar( XData, YData, 'FaceColor', 'flat', props{:});
 
    % For colors, if there are more bars than default colors, need to generate
    % colors, so I switched to the method below that uses n=1:length(H)
@@ -347,21 +346,23 @@ function [H, L] = createCategoricalBarChart(XData,YData,CData, ...
    end
 
    % Add the legend
-   withwarnoff('MATLAB:legend:IgnoringExtraEntries');
-   legendtxt = opts.LegendText;
-   if legendtxt == ""
-      legendtxt = unique(CData);
-   end
-   try
-      L = legend(legendtxt, ...
-         'Location', 'northwest', ...
-         'AutoUpdate', 'off', ...
-         'Orientation', opts.LegendOrientation, ...
-         'FontSize', 12);
-      % 'Location', 'northoutside', ...
-      % 'AutoUpdate', 'off', ...
-      % 'numcolumns', numel(legendtxt) );
-   catch
+   if opts.Legend == "on"
+      withwarnoff('MATLAB:legend:IgnoringExtraEntries');
+      legendtxt = opts.LegendString;
+      if isempty(legendtxt)
+         legendtxt = unique(CData);
+      end
+      try
+         L = legend(legendtxt, ...
+            'Location', 'northwest', ...
+            'AutoUpdate', 'off', ...
+            'Orientation', opts.LegendOrientation, ...
+            'FontSize', 12);
+         % 'Location', 'northoutside', ...
+         % 'AutoUpdate', 'off', ...
+         % 'numcolumns', numel(legendtxt) );
+      catch
+      end
    end
 
    % % Note: this might work if table data is passed in with all the group data,
