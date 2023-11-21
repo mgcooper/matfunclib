@@ -45,12 +45,12 @@ function [dataGrid,dataList,Unit] = readMerra2(fileName,varName,varargin)
    %   dataList   - the data stored as a spatial list
    %   Unit       - the unit of the data in dataGrid and/or dataList
    %
-   % NOTE: merra2 data is posted at 3-hour time intervals. Merra 2 variables that
-   % represent mass fluxes (such as runoff) are converted by this function from
-   % kg/m2/s to m/h, meaning they represent 3-hour averages. To accumulate fluxes,
-   % multiply the 3-hourly data by 3 prior to calling cumsum. Alternatively,
-   % interpolate the data returned by this function from 3-hour to 1-hour posting
-   % prior to calling cumsum and omit the multiplication by 3.
+   % NOTE: merra2 data is posted at 3-hour time intervals. Merra 2 variables
+   % that represent mass fluxes (such as runoff) are converted by this function
+   % from kg/m2/s to m/h, meaning they represent 3-hour averages. To accumulate
+   % fluxes, multiply the 3-hourly data by 3 prior to calling cumsum.
+   % Alternatively, interpolate the data returned by this function from 3-hour
+   % to 1-hour posting prior to calling cumsum and omit the multiplication by 3.
    %
    % See also: 
 
