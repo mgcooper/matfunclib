@@ -95,7 +95,7 @@ function tf = validatePosition(location)
 end
 
 %% Input Parser
-function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, args)
+function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, varargin)
 
    parser = inputParser;
    parser.KeepUnmatched = true;
@@ -104,7 +104,7 @@ function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, args
    parser.addRequired('xpct', @isnumeric);
    parser.addRequired('ypct', @isnumeric);
    parser.addOptional('location', 'user', @(x)isnumeric(x) | validatePosition(x));
-   parser.parse(textstr, xpct, ypct, args{:});
+   parser.parse(textstr, xpct, ypct, varargin{:});
    unmatched = unmatched2varargin(parser.Unmatched);
    location = parser.Results.location;
 

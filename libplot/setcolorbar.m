@@ -1,4 +1,4 @@
-function varargout = setcolorbar(C, CbOpts, CustomOpts)
+function varargout = setcolorbar(C, props, opts)
    %SETCOLORBAR set colorbar properties
    %
    % [C, climits] = setcolorbar(C)
@@ -8,13 +8,14 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
 
    arguments
       C (:,1) = getcolorbar
-      CbOpts.?matlab.graphics.illustration.ColorBar
-      CustomOpts.AutoColorLimits (1,1) logical = false % Add this line
+      props.?matlab.graphics.illustration.ColorBar
+      opts.Label string = string.empty()
+      opts.Title string = string.empty()
+      opts.AutoColorLimits (1,1) logical = false % Add this line
    end
 
    % apply the property-value pairs
-   cellfun(@(prop, val) set(C, prop, val), ...
-      fieldnames(CbOpts), struct2cell(CbOpts))
+   cellfun(@(p, v) set(C, p, v), fieldnames(props), struct2cell(props))
 
    % Get color limits based on all data associated with the colorbars
    try
@@ -25,7 +26,7 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
    climits = [min(climits(:,1)), max(climits(:,2))];
 
    % Set color limits
-   if CustomOpts.AutoColorLimits
+   if opts.AutoColorLimits
       for n = 1:numel(C)
          C(n).Limits = climits;
       end
@@ -35,6 +36,10 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
       % want it mapped to the colorbar limits
    end
 
+   % Set custom opts
+   set(get(C, 'Label'), 'String', opts.Label)
+   set(get(C, 'Title'), 'String', opts.Title)
+   
    % send back the legend object if requested
    [varargout{1:nargout}] = dealout(C, climits);
 end
