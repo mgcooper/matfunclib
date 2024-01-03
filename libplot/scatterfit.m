@@ -1,4 +1,4 @@
-function H = scatterfit(varargin)
+function varargout = scatterfit(varargin)
    %SCATTERFIT Scatter plot x versus y with a linear fit and a one:one line
    %
    %  H = scatterfit(x,y)
@@ -65,18 +65,24 @@ function H = scatterfit(varargin)
    % Create the chart axes and scatter plot.
    H.figure = f;
    H.ax = ax;
-   H.plot = plot(H.ax,x,y, 'Marker', 'o', args{:});
+   H.plot = plot(H.ax, x, y, 'Marker', 'o', 'LineStyle', 'none', args{:});
    hold on;
    formatPlotMarkers;
 
    % Compute and create the best-fit line.
    m = fitlm(x, y);
-   H.linearfit = plot(H.ax,x,m.Fitted,'LineWidth',2);
-   H.onetoone = addOnetoOne;
-
+   H.linearfit = plot(H.ax, x, m.Fitted, 'LineWidth', 2);
+   
+   % I commented this out b/c 1:1 isn't relevant in general
+   % H.onetoone = addOnetoOne;
+   
    % later add options to pass x/ylabel
    xylabel('x data','ydata')
    legend('data','linear fit','1:1 line')
+   
+   if nargout == 1
+      varargout{1} = H;
+   end
 end
 
 function args = rmMarkerArgs(args)

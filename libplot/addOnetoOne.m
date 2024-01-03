@@ -69,14 +69,27 @@ function varargout = addOnetoOne(varargin)
       % newlims(2) = max(max(xlim),max(ylim)) * 1.02;
 
       % Get the limits based on the data range
+      % NOTE: if this function is called from scatterfit, which plots the data 
+      % and linear fit or any other case where multiple data series are plotted,
+      % xdata, ydata will be cell arrays holding each plotted x,y series, but 
+      % that's a feature not a bug, since newlims finds the extent of all data to 
+      % set the axes limits.
       [xdata, ydata] = getplotdata(ax);
 
       % If multiple data series exist on the plot, cat them to vectors
       if iscell(xdata)
-         xdata = Cell2Vec(xdata);
+         try
+            xdata = Cell2Vec(xdata);
+         catch
+            xdata = cellflatten(xdata, 1, 'column');
+         end
       end
       if iscell(ydata)
-         ydata = Cell2Vec(ydata);
+         try
+            ydata = Cell2Vec(ydata);
+         catch
+            ydata = cellflatten(ydata, 1, 'column');
+         end
       end
 
       newlims(1) = min(min(ydata(:)), min(xdata(:)));
