@@ -6,7 +6,7 @@ inmatlab = ~inoctave;
 %% manage warnings
 
 % remap the red close button associated with figure windows, potentially
-% preventing MATLAB from becoming unresponsive when closing figures. 
+% preventing MATLAB from becoming unresponsive when closing figures.
 set(groot, 'defaultFigureCloseRequestFcn', @(o, ~) delete(o));
 
 % Save the current state of the warnings
@@ -141,7 +141,6 @@ subpaths = horzcat(subpaths{:});
 
 % Add the paths to the path
 addpath(subpaths, '-end');
-
 
 %% Figure defaults
 

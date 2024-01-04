@@ -20,7 +20,7 @@ function missingVal = getMissingValue(propClass)
          missingVal = categorical(NaN); % <undefined>
       case 'datetime'
          missingVal = NaT;
-      case {'duration','calendarDuration'};
+      case {'duration','calendarDuration'}
          missingVal = seconds(NaN);
       otherwise
          error('Unrecognized property class: %s', propClass);
