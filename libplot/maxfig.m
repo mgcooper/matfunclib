@@ -4,19 +4,32 @@ function varargout = maxfig(varargin)
    %  fig = maxfig()
    %  fig = maxfig(fig)
    %
-   % See also: 
+   % See also:
 
-   if nargin == 0
+   [h, varargin, ~, isfigure] = parsegraphics(varargin{:});
+
+   % Get handle to either the requested or a new figure.
+   if isempty(h)
       fig = figure;
+      h = gca(fig);
+   elseif isfigure
+      fig = h;
+      h = gca(fig);
    else
-      fig = varargin{1};
+      fig = get(h, 'Parent');
    end
 
-   units=get(fig,'units');
-   set(fig,'units','normalized','outerposition',[0 0 1 1]);
-   set(fig,'units',units);
+   units = get(fig, 'units');
+   set(fig,'units', 'normalized', 'outerposition', [0 0 1 1]);
+   set(fig,'units', units);
+
+   % Try to set any additional options supplied on input
+   try
+      set(fig, varargin{:});
+   catch
+   end
 
    if nargout == 1
-      varargout{1}=fig;
+      varargout{1} = fig;
    end
 end

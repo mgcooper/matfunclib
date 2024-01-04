@@ -1,4 +1,4 @@
-function h = horzline(y,varargin)
+function varargout = horzline(y,varargin)
    %HORZLINE Draw a horizontal line on a plot at a specified y-coordinate.
    %
    % This function creates a horizontal line on a plot at a given y-coordinate.
@@ -37,6 +37,10 @@ function h = horzline(y,varargin)
 
    if ~washeld
       hold off
+   end
+
+   if nargout == 1
+      varargout{1} = h;
    end
 end
 
