@@ -68,13 +68,6 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
    end
 end
 
-function filedate = mkfiledate(dateformat)
-   if nargin < 1
-      dateformat = 'dd-MMM-yyyy_HH-mm-ss';
-   end
-   filedate = strrep(char(datetime('now', 'Format', dateformat)), '-', '');
-end
-
 function filename = rmtrailingsep(filename)
    if strcmp(filename(end), filesep)
       filename(end) = [];
