@@ -45,13 +45,18 @@ function varargout = listfiles(folderlist, opts)
       opts.aslist (1,1) logical = false
       opts.asstring (1,1) logical = false
       opts.fullpath (1,1) logical = false
+      opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
+   end
+
+   if startsWith(opts.pattern, "*")
+      opts.pattern = opts.pattern(2:end);
    end
 
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
    list = vertcat(list{:});
-   
+
    % Parse outputs
    switch nargout
       case 1
@@ -65,12 +70,12 @@ end
 %% Local Functions
 
 function list = processOneFolder(folder, opts)
-   
+
    % Get all sub folders
    if opts.subfolders == true
-      list = rmdotfolders(dir(fullfile(folder, '**/*')));
+      list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern))));
    else
-      list = rmdotfolders(dir(fullfile(folder)));
+      list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
    end
    list = list(~[list.isdir]);
 
