@@ -13,7 +13,8 @@ function Y = yfullgrid(varargin)
    narginchk(1, 3)
 
    % Check for output format option
-   [opt, args, nargs] = parseoptarg(varargin, {'coordinates', 'gridvectors'});
+   [opt, args, nargs] = parseoptarg(varargin, ...
+      {'coordinates', 'gridvectors'}, 'fullgrid');
 
    % Parse remaining arguments
    X = args{1};
@@ -31,6 +32,8 @@ function Y = yfullgrid(varargin)
       Y = Y(:);
    elseif strcmp(opt,'gridvectors')
       Y = ygridvec(Y);
+   else
+      % fullgrid - default option
    end
 
 end

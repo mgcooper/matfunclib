@@ -30,6 +30,13 @@ function [tf,tflatlon,tol] = isxyregular(x,y,varargin)
    %
    %step = NaN('like',x);
 
+   % NOTE: in at least one case where coordinate lists were passed in, all
+   % values of x were uniform spaced, and all but one of y were, the one
+   % non-uniform y diff was twice the true (uniform) spacing, because the pairs
+   % were captured by interpolationPoints and I think it must have failed to
+   % capture one row, not sure how best to deal with this. In exactremap I use
+   % the mode of celldiffs to estimate the cell resolution.
+
    % check if the coordinates are lat lon or planar
    tflatlon = islatlon(y,x);
 
