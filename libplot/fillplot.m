@@ -72,6 +72,18 @@ function varargout = fillplot(x, y, err, c, varargin)
 
    % Parse optional dim argument
    [dim, varargin] = parseoptarg(varargin, {'x', 'y'}, 'y');
+   [opt, varargin] = parseoptarg(varargin, {'CenterLine'}, false);
+
+   % Parse optional name-value pairs - I added this before I got the cellfun
+   % comparison with LineStyle to work - might want this instead but it adds
+   % another dependency and might fail if varargin does not contain solely
+   % name-value pairs.
+   % [args, pairs, ~, rmpairs] = parseparampairs(varargin, {'CenterLine'});
+
+   % If LineStyle is not included in varargin, add it
+   if ~any(cellfun(@(v) strcmp(v, 'LineStyle'), varargin, 'Uniform', true))
+      varargin = [varargin, 'LineStyle', 'none'];
+   end
 
    % Ensure rows and equal length
    x = x(:)';
@@ -118,8 +130,13 @@ function varargout = fillplot(x, y, err, c, varargin)
 
       [X, Y] = constructVertices(X, Y, E, dim);
 
-      H(n) = fill(ax, X, Y, c, 'LineStyle', 'none', varargin{:});
+      H(n) = fill(ax, X, Y, c, varargin{:});
       hold(ax, 'on')
+   end
+
+   % If line plot was requested, plot it
+   if opt
+      plot(x, y, '-', 'Color', c);
    end
 
    % Restore hold state
