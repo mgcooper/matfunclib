@@ -6,30 +6,31 @@ function varargout = maxfig(varargin)
    %
    % See also:
 
-   [h, varargin, ~, isfigure] = parsegraphics(varargin{:});
+   % Parse possible axes / figure input.
+   [h, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
 
-   % Get handle to either the requested or a new figure.
    if isempty(h)
-      fig = figure;
-      h = gca(fig);
+      fg = figure;
    elseif isfigure
-      fig = h;
-      h = gca(fig);
+      fg = h;
    else
-      fig = get(h, 'Parent');
+      fg = get(h, 'Parent');
    end
 
-   units = get(fig, 'units');
-   set(fig,'units', 'normalized', 'outerposition', [0 0 1 1]);
-   set(fig,'units', units);
+   % Parse param pairs (not needed unless non-standard options added)
+   % [args, pairs, nargs] = parseparampairs(args{:});
+
+   units = get(fg, 'units');
+   set(fg,'units', 'normalized', 'outerposition', [0 0 1 1]);
+   set(fg,'units', units);
 
    % Try to set any additional options supplied on input
    try
-      set(fig, varargin{:});
+      set(fg, args{:});
    catch
    end
 
    if nargout == 1
-      varargout{1} = fig;
+      varargout{1} = fg;
    end
 end
