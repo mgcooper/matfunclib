@@ -20,7 +20,8 @@ function H = getopenfigs(H,flag)
    %% parse inputs
 
    arguments
-      H (:,1) matlab.ui.Figure
+      % H (:,1) matlab.ui.Figure = findobj(allchild(0), 'flat', 'type', 'figure')
+      H (:,1) matlab.ui.Figure = gcf
       flag (1,1) string {mustBeMember(flag,{'match','count'})} = 'match'
    end
 
