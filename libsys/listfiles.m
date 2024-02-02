@@ -49,8 +49,11 @@ function varargout = listfiles(folderlist, opts)
       opts.mfiles (1,1) logical = false
    end
 
-   if startsWith(opts.pattern, "*")
-      opts.pattern = opts.pattern(2:end);
+   if startsWith(opts.pattern, "*") 
+      opts.pattern = erase(opts.pattern, "*");
+   end
+   if startsWith(opts.pattern, ".")
+      opts.pattern = erase(opts.pattern, ".");
    end
 
    % Create the list of files
@@ -75,7 +78,7 @@ function list = processOneFolder(folder, opts)
    if opts.subfolders == true
       list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern))));
    else
-      list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
+      list = rmdotfolders(dir(fullfile(folder, strcat("*", opts.pattern))));
    end
    list = list(~[list.isdir]);
 
