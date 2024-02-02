@@ -1,18 +1,21 @@
 function varargout = plotpolygon(P, PlotOpts)
    %PLOTPOLYGON Plot polyshape or polygon data.
-   % 
+   %
    % plotpolygon(P)
    % H = plotpolygon(P)
    % H = plotpolygon(P, Name, Value)
-   % 
-   % See also: 
+   %
+   % See also:
    arguments
       P
       PlotOpts.?matlab.graphics.primitive.Polygon
    end
    PlotOpts = namedargs2cell(PlotOpts);
-   
+
    if isa(P,'polyshape')
+      % Remove empty polyshapes
+      keep = arrayfun(@(n) ~isempty(P(n).Vertices), 1:numel(P));
+      P = P(keep);
       H = arrayfun(@(n) plot(P(n), PlotOpts{:}), 1:numel(P));
    elseif iscell(P)
       H = cellfun(@(x, y) plot(x, y, PlotOpts{:}), P(:, 1), P(:, 2));
