@@ -3,7 +3,7 @@ function varargout = setPieChartPatch(H, PatchOpts, CustomOpts)
    %
    %  setPieChartPatch(H) set patch properties of the pie chart with handle H.
    %
-   % See also: setPieChartText
+   % See also: setPieChartText, patchlegendlines
    arguments
       H matlab.graphics.primitive.Data
       PatchOpts.?matlab.graphics.primitive.Patch

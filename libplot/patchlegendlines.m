@@ -1,34 +1,62 @@
-function p = patchlegendlines(legobj)
+function p = patchlegendlines(legobj, PatchProps)
    %PATCHLEGENDLINES Add lines to patch objects in legend using pre-2014 legobj
    %
-   % The legobj must be created by call to legend: 
-   % 
+   % The legobj must be created by call to legend:
+   %
    % [leghandle,legobj] = legend(__)
    %
    % p = patchlegendlines(legobj)
    %
    % See also:
 
-   if nargin < 1
-      legobj = getlegobj(gcf);
-      if isempty(legobj)
-         error('this function only works if legend was created using syntax [leghandle,legobj] = legend(__)')
-      end
+   % Changes
+   % Jan 2024 - if a patch was plotted with no line and then a line was plotted
+   % on top, the LineStyle property of the patch may be 'none'. In this case,
+   % setting it to '-' will not affect the plotted patch but it will allow the
+   % line to appear in the legend patch.
+
+   arguments
+      legobj = getlegobj(gcf)
+      PatchProps.?matlab.graphics.primitive.Patch
+   end
+   PatchProps = namedargs2cell(PatchProps);
+
+   if isempty(legobj)
+      error( ...
+         'This function requires legend creation syntax [handle, obj] = legend(_)')
    end
 
-   p = findall(legobj,'Type','Patch');
-   dc = get(gca,'ColorOrder');
+   % Main function
+   p = findall(legobj, 'Type', 'Patch');
+   c = get(gca, 'ColorOrder');
 
    for n = 1:numel(p)
-      p(n).FaceAlpha = 0.25;
+
+      % Previously these were set, now they must be provided, except linestyle
+      % p(n).FaceAlpha = 0.25;
       % p(n).LineWidth = 2;
-      x = get( p(n),'xdata');
-      y = get( p(n),'ydata');
-      x = [x; x(1); x(end)];
+
+      set(p(n), PatchProps{:}, 'LineStyle', '-'); % Jan 2024
+
+      x = get(p(n), 'xdata');
+      y = get(p(n), 'ydata');
+      x = [x; x(1); x(end)]; %#ok<*AGROW>
       y = [y; mean(y); mean(y)];
-      % c = get(h1(n),'faceVertexCData');
-      c = [ repmat([1, 1, 1],[4 1]); repmat(dc(n,:),[2,1]) ]; % dc(1,:)
+      % cc = get(h1(n), 'faceVertexCData');
+      cc = [ repmat([1, 1, 1], [4 1]); repmat(c(n, :), [2,1]) ];
       ff = [1 2 3 4; 5 6 6 6];
-      set( p(n),'vertices',[x y],'faces',ff,'faceVertexCData', c,'edgecolor','flat')
+      set(p(n), 'vertices', [x y], ...
+         'faces', ff, ...
+         'faceVertexCData', cc, ...
+         'edgecolor', 'flat')
    end
+
+   % Old input parsing
+   % if nargin < 1
+   %    legobj = getlegobj(gcf);
+   %    if isempty(legobj)
+   %       error( ...
+   %          'This function requires legend creation syntax [handle, obj] = legend(_)')
+   %    end
+   % end
 end
