@@ -27,6 +27,13 @@
          {"name":"envname",  "kind":"ordered",   "type":["char","choices=getuserpaths"]}
       ]
    },
+   "goto":
+   {
+      "inputs":
+      [
+         {"name":"tbname", "kind":"ordered", "type":["char", "choices=gettbnamelist"]}
+      ]
+   },
    "renamefiles":
    {
       "inputs":

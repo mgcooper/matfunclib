@@ -7,6 +7,10 @@ if nargin == 0; open(mfilename('fullpath')); return; end
 % just in case this is called by accident
 narginchk(0,0)
 
+%%
+
+% don't use try-catch in a codegen codebase
+
 %% JIT 
 
 % From the OCTAVE faq:
