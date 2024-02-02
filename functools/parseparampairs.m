@@ -1,4 +1,4 @@
-function [args, pairs, nargs] = parseparampairs(args, asstruct)
+function [args, pairs, nargs, rmpairs] = parseparampairs(args, rmprop, asstruct)
    %PARSEPARAMPAIRS Return and remove name-value pairs from cell argument list.
    %
    % [ARGS, PAIRS] = PARSEPARAMPAIRS(ARGS) returns ARGS, a cell array containing
@@ -14,9 +14,12 @@ function [args, pairs, nargs] = parseparampairs(args, asstruct)
    % See also: parseoptarg, parsegraphics, cell2namedargs
 
    if nargin < 2
+      rmprop = {''};
+   end
+   if nargin < 3
       asstruct = false;
    end
-   
+
    [args{1:numel(args)}] = convertStringsToChars(args{:});
    charargs = find( cellfun(@(a) ischar(a), args));
 
@@ -27,9 +30,28 @@ function [args, pairs, nargs] = parseparampairs(args, asstruct)
       args=args(1:charargs(1)-1);
    end
 
+   % Remove pairs if requested
+   rmidx = find(cellfun(@(v) any(strcmp(v, rmprop)), pairs, 'Uniform', true));
+   rmpairs = pairs(sort([rmidx, rmidx + 1]));
+   pairs([rmidx, rmidx + 1]) = [];
+
+   % Count remaining args
    nargs = numel(args);
-   
+
    if asstruct
       pairs = pvpairs2struct(pairs);
    end
+
+   % % For reference, the long form of the cellfun method
+   % rmidx = false(size(pairs));
+   % for n = 1:numel(pairs)
+   %    if any(strcmp(pairs{n}, rmprop))
+   %       rmidx(n) = true;
+   %    end
+   % end
+   % if any(rmidx)
+   %    rmidx(find(rmidx)+1) = true;
+   % end
+   % pairs(rmidx) = [];
+
 end
