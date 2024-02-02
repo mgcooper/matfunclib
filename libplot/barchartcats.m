@@ -187,11 +187,11 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
    [XData, YData] = reorderGroups(opts, XData, YData);
 
    % Create the figure
-   [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
+   [H, L, ax] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
       opts, varargs);
 
    hold off
-   [varargout{1:nargout}] = dealout(H, L);
+   [varargout{1:nargout}] = dealout(H, L, ax);
 end
 
 
@@ -323,7 +323,7 @@ function [XData, YData] = reorderGroups(opts, XData, YData)
    % TODO: reorder the legend entries if custom ones provided
 end
 
-function [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
+function [H, L, ax] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
       opts, props)
    % Create the barchart
 
@@ -356,25 +356,25 @@ function [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
    end
 
    % Add the legend
-   if opts.Legend == "on"
-      withwarnoff('MATLAB:legend:IgnoringExtraEntries');
-      legendtxt = opts.LegendString;
-      if isempty(legendtxt)
-         legendtxt = unique(CData);
-      end
-      try
-         L = legend(legendtxt, ...
-            'Location', 'northwest', ...
-            'AutoUpdate', 'off', ...
-            'Orientation', opts.LegendOrientation, ...
-            'FontSize', 12);
-         % 'Location', 'northoutside', ...
-         % 'AutoUpdate', 'off', ...
-         % 'numcolumns', numel(legendtxt) );
-      catch
-      end
+
+   withwarnoff('MATLAB:legend:IgnoringExtraEntries');
+   legendtxt = opts.LegendString;
+   if isempty(legendtxt)
+      legendtxt = unique(CData);
+   end
+   try
+      L = legend(legendtxt, ...
+         'Location', 'northwest', ...
+         'AutoUpdate', 'off', ...
+         'Orientation', opts.LegendOrientation, ...
+         'FontSize', 12);
+      % 'Location', 'northoutside', ...
+      % 'AutoUpdate', 'off', ...
+      % 'numcolumns', numel(legendtxt) );
+   catch
    end
 
+   set(L, 'Visible', opts.Legend)
    % % Note: this might work if table data is passed in with all the group data,
    % but % in my example I used the metadata table from Info which already has
    % the group % summary calcualtions so I cannot get the std
