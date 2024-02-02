@@ -25,6 +25,7 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
    elseif isfigure
       ax = gca(ax);
    end
+   fg = get(ax, 'Parent');
 
    % parse remaining input
    [location, args] = parseinput(textstr, xpct, ypct, mfilename, args{:});
@@ -67,12 +68,23 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
 
    if useaxpos == true
       % Set the x/y text coordinates using normalized (figure) units
-      axpos = get(gca,'Position');
+      axpos = get(gca, 'Position');
       xtext = axpos(1) + xpct/100 .* axpos(3);
       ytext = axpos(2) + ypct/100 .* axpos(4);
 
       % Create the text object
-      h = text(ax, xtext, ytext, textstr, 'Units', 'normalized',args{:});
+      % h = text(ax, xtext, ytext, textstr, 'Units', 'normalized', args{:});
+
+      % In some cases it seems necessary to use annotation
+      h = annotation(fg, 'textbox',...
+         [xtext ytext 0.1 0.1],...
+         'String',{textstr},...
+         ...'FitBoxToText', 'on', ...
+         'Margin', 2, ...
+         'HorizontalAlignment', 'center', ...
+         'VerticalAlignment', 'middle', ...
+         ... 'LineStyle', 'none', ...
+         args{:});
    else
       % Set the x/y text coordinates using data units
       xtext = xlims(:,1) + xpct/100 .* (xlims(:,2) - xlims(:,1));
@@ -100,10 +112,10 @@ function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, vara
    parser = inputParser;
    parser.KeepUnmatched = true;
    parser.FunctionName = mfilename;
-   parser.addRequired('textstr', @(x)ischar(x) | iscell(x));
+   parser.addRequired('textstr', @(x) ischar(x) | iscell(x) | isstring(x));
    parser.addRequired('xpct', @isnumeric);
    parser.addRequired('ypct', @isnumeric);
-   parser.addOptional('location', 'user', @(x)isnumeric(x) | validatePosition(x));
+   parser.addOptional('location', 'user', @(x) isnumeric(x) | validatePosition(x));
    parser.parse(textstr, xpct, ypct, varargin{:});
    unmatched = unmatched2varargin(parser.Unmatched);
    location = parser.Results.location;
