@@ -1,4 +1,4 @@
-function [Coord1, Coord2] = geostructCoordinates(Geom, outputType)
+function [Coord1, Coord2] = geostructCoordinates(Geom, coordinateType, outputType)
    %GEOSTRUCTCOORDINATES Extract coordinates from geostruct
    %
    %  [Coord1, Coord2] = GEOSTRUCTCOORDINATES(GEOM, OUTPUTTYPE) extracts
@@ -30,22 +30,39 @@ function [Coord1, Coord2] = geostructCoordinates(Geom, outputType)
 
    arguments
       Geom (:,:) struct
+      coordinateType (1,1) string {mustBeMember(coordinateType, ...
+         ["geographic","projected"])} = "geographic"
       outputType (1,1) string {mustBeMember(outputType, ...
          ["ascell","asarray"])} = "asarray"
    end
 
-   if isfield(Geom, 'Lat') && isfield(Geom, 'Lon')
+   if coordinateType == "geographic"
       
-      Coord1 = {Geom.Lat};
-      Coord2 = {Geom.Lon};
+      if isfield(Geom, 'Lat') && isfield(Geom, 'Lon')
+         
+         Coord1 = {Geom.Lat};
+         Coord2 = {Geom.Lon};
+         
+      elseif isfield(Geom, 'X') && isfield(Geom, 'Y')
+         
+         Coord1 = {Geom.X};
+         Coord2 = {Geom.Y};
+      else
+         error( ...
+            'Invalid input: Geostruct must contain either Lat-Lon or X-Y fields.');
+      end
       
-   elseif isfield(Geom, 'X') && isfield(Geom, 'Y')
+   elseif coordinateType == "projected"
       
-      Coord1 = {Geom.X};
-      Coord2 = {Geom.Y};
-   else
-      error( ...
-         'Invalid input: Geostruct must contain either Lat-Lon or X-Y fields.');
+      if isfield(Geom, 'X') && isfield(Geom, 'Y')
+         
+         Coord1 = {Geom.X};
+         Coord2 = {Geom.Y};
+      else
+         error( ...
+            'Invalid input: Geostruct must contain X-Y fields.');
+      end
+      
    end
 
    if outputType == "asarray"
