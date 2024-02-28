@@ -81,12 +81,12 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
    if testplot == true
       figure;
       subplot(1, 2, 1);
-      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled'); hold on; plot(P{:});
+      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled'); hold on; % plot(P{:});
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('original data')
 
       subplot(1, 2, 2);
-      scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); hold on; plot(P{:});
+      scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); hold on; % plot(P{:});
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('gridded and gap filled data')
    end
@@ -99,5 +99,9 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
          [varargout{1:nargout}] = dealout(V, X, Y);
       case 4
          [varargout{1:nargout}] = dealout(V, R, X, Y);
+      case 5
+         [varargout{1:nargout}] = dealout(V, R, X, Y, I);
+      case 6
+         [varargout{1:nargout}] = dealout(V, R, X, Y, I, LOC);
    end
 end
