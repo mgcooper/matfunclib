@@ -10,14 +10,11 @@ function Points = interpolationPoints(poly,xgrid,ygrid,buffer,newRes,varargin)
    % See also: pointsInPoly resamplingCoords
 
    % parse inputs
-   persistent parser
-   if isempty(parser)
-      parser = inputParser;
-      parser.FunctionName = mfilename;
-      parser.addParameter('makeplot',false,@islogical);
-      parser.addParameter('plotvar',ones(size(xgrid)),@isnumeric);
-      parser.addParameter('pointinterp',false,@islogical);
-   end
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.addParameter('makeplot',false,@islogical);
+   parser.addParameter('plotvar',ones(size(xgrid)),@isnumeric);
+   parser.addParameter('pointinterp',false,@islogical);
    parse(parser,varargin{:});
    opts = parser.Results;
 
