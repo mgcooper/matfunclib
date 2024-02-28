@@ -22,7 +22,9 @@ function T = settableprops(T,propnames,proptypes,propvals)
    end
 end
 
-function [propnames, proptypes, propvals] = parseinputs(propnames, proptypes, propvals)
+%% Parse inputs
+function [propnames, proptypes, propvals] = parseinputs( ...
+      propnames, proptypes, propvals)
    % Let built-in addprop do most of the input checking
 
    % Convert to cell if propnames is a char or string
@@ -33,7 +35,7 @@ function [propnames, proptypes, propvals] = parseinputs(propnames, proptypes, pr
    % Check if propvals is not a cell
    if ~iscell(propvals)
       % Convert non-cell scalars or tables to cell.
-      if isscalar(propvals) || istabular(propvals)
+      if isscalar(propvals) || istabular(propvals) || isscalartext(propvals)
          propvals = {propvals};
       else
          % Convert non-cell arrays or other non-scalar objects to cell.
@@ -42,7 +44,8 @@ function [propnames, proptypes, propvals] = parseinputs(propnames, proptypes, pr
    end
 
    % Check if the number of elements in propnames and propvals match
-   assert(numel(propnames)==numel(propvals), 'Number of propnames and propvals must match')
+   assert(numel(propnames)==numel(propvals), ...
+      'Number of propnames and propvals must match')
 
    % Allow one proptype to apply to all props
    if ischar(proptypes)
