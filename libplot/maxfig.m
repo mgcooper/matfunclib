@@ -25,9 +25,11 @@ function varargout = maxfig(varargin)
    set(fg,'units', units);
 
    % Try to set any additional options supplied on input
-   try
-      set(fg, args{:});
-   catch
+   if ~isempty(args)
+      try
+         set(fg, args{:});
+      catch
+      end
    end
 
    if nargout == 1

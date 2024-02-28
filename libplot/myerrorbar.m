@@ -77,28 +77,28 @@ function h = myerrorbar(varargin)
    h = errorbar(varargin{:});
    c = h.Color;
 
-   defaultkeys = {'Marker','MarkerSize','LineWidth','LineStyle','Color',...
-      'MarkerFaceColor','MarkerEdgeColor'};
-   defaultvals = {'o',8,1.5,'none',c,c,'none'};
-   ichar = cellfun(@ischarlike,varargin);
-   userkeyvals = varargin(find(ichar,1,'first'):find(ichar,1,'last')+1);
+   defaultkeys = {'Marker', 'MarkerSize', 'LineWidth', 'LineStyle', 'Color',...
+      'MarkerFaceColor', 'MarkerEdgeColor'};
+   defaultvals = {'o', 8, 1.5, 'none', c, c, 'none'};
+   ichar = cellfun(@ischarlike, varargin);
+   userkeyvals = varargin(find(ichar, 1, 'first'):find(ichar, 1, 'last') + 1);
    for n = 1:numel(userkeyvals)
       if ischar(userkeyvals{n})
-         if ismember(userkeyvals{n},defaultkeys)
-            ifind = ismember(defaultkeys,userkeyvals{n});
+         if ismember(userkeyvals{n}, defaultkeys)
+            ifind = ismember(defaultkeys, userkeyvals{n});
             defaultvals{ifind} = userkeyvals{n+1};
          end
       end
    end
 
-   % defaultvals = matchinputs(userkeyvals,defaultkeys,defaultvals);
+   % defaultvals = matchinputs(userkeyvals, defaultkeys, defaultvals);
 
    for n = 1:numel(defaultkeys)
-      set(h,defaultkeys{n},defaultvals{n});
+      set(h, defaultkeys{n}, defaultvals{n});
    end
 
    % not sure why this doesn't work
-   % set(h,defaultkeys{:},defaultvals{:});
+   % set(h, defaultkeys{:}, defaultvals{:});
 
    % set(h,  ...
    %       'Marker',           'o',        ...
