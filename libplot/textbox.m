@@ -2,11 +2,8 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
    %TEXTBOX Place text box at x,y percent distance from lower left figure corner
    %
    %  [h, x, y] = textbox(textstr, xpct, ypct)
-   %
+   %  [h, x, y] = textbox(_, ax)
    %  [h, x, y] = textbox(_, location)
-   %
-   %  [h, x, y] = textbox(_, 'ax', ax)
-   %
    %  [h, x, y] = textbox(_, varargin) where varargin is any name-value pair
    %  compatibile with text function
    %
@@ -15,7 +12,7 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
    % note: this function is ready to be converted to this notation where instead
    % of xpct,ypct, either pass in [xpct ypct] or a char 'best' for textbp or
    % eventually if possible 'sw','nw', etc.
-   % function [ h,x,y ] = mytextbox( textstr,location,varargin)
+   % function [h, x, y] = textbox(textstr, location, varargin)
 
    % parse axis input
    [ax, args, ~, isfigure] = parsegraphics(varargin{:});
@@ -26,7 +23,7 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
       ax = gca(ax);
    end
    fg = get(ax, 'Parent');
-
+   
    % parse remaining input
    [location, args] = parseinput(textstr, xpct, ypct, mfilename, args{:});
 
