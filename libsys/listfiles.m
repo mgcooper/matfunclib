@@ -49,7 +49,8 @@ function varargout = listfiles(folderlist, opts)
       opts.mfiles (1,1) logical = false
    end
 
-   if startsWith(opts.pattern, "*") 
+   % * is appended before the pattern by default, so remove it if supplied.
+   if startsWith(opts.pattern, "*") || endsWith(opts.pattern, "*")
       opts.pattern = erase(opts.pattern, "*");
    end
    if startsWith(opts.pattern, ".")
@@ -76,9 +77,9 @@ function list = processOneFolder(folder, opts)
 
    % Get all sub folders
    if opts.subfolders == true
-      list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern))));
+      list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern, "*"))));
    else
-      list = rmdotfolders(dir(fullfile(folder, strcat("*", opts.pattern))));
+      list = rmdotfolders(dir(fullfile(folder, strcat("*", opts.pattern, "*"))));
    end
    list = list(~[list.isdir]);
 
