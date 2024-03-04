@@ -108,6 +108,13 @@ setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
 setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
 setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
 
+% Google Drive
+setenv('USERGDRIVEPATH', fullfile(getenv('HOME'), ...
+   'Library/CloudStorage/GoogleDrive-guycooper@g.ucla.edu/My Drive'));
+
+% merra toolbox
+setenv('USER_MERRA_PATH', fullfile(getenv('USERDATAPATH'), 'merra2'));
+
 %% Add shared library to path
 
 % Ignored folders - append these to ignorePaths to use
