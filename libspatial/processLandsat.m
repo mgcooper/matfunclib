@@ -12,12 +12,12 @@ function [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot
    filenames = {filelist.name}';
    idx = contains(filenames,"B1.TIF");
    testfile = fullfile(filelist(1).folder, filelist(idx).name);
-   [filepath,~,fileext] = fileparts(testfile);
-   [~,R1] = readgeoraster(testfile); % set to 'postings'
+   [filepath, ~, fileext] = fileparts(testfile);
+   [~, R1] = readgeoraster(testfile); % set to 'postings'
 
-   xlimits = R1.XWorldLimits + [-1 +1].*R1.SampleSpacingInWorldX/2;
-   ylimits = R1.YWorldLimits + [-1 +1].*R1.SampleSpacingInWorldX/2;
-   R = maprefcells(xlimits,ylimits,R1.RasterSize);
+   xlimits = R1.XWorldLimits + [-1 +1] .* R1.SampleSpacingInWorldX / 2;
+   ylimits = R1.YWorldLimits + [-1 +1] .* R1.SampleSpacingInWorldX / 2;
+   R = maprefcells(xlimits, ylimits, R1.RasterSize);
    R.ColumnsStartFrom = 'north';
    R.ProjectedCRS = R1.ProjectedCRS;
 
@@ -26,16 +26,20 @@ function [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot
    bands = {'B2','B3','B4'};                                % True color RGB
    Image = uint16(nan([R.RasterSize,3]));                   % preallocate
    for n = 1:length(bands)                                  % read in the bands
-      bandn = bands{n};
-      fname = [fprfx,bandn,fileext];
-      Image(:,:,n) = uint16(imread(fullfile(filepath,fname)));
+      band_n = bands{n};
+      fname = [fprfx, band_n, fileext];
+      Image(:,:,n) = uint16(imread(fullfile(filepath, fname)));
    end
    Image = cat(3,Image(:,:,3),Image(:,:,2),Image(:,:,1));   % put in RGB order
 
+   % This was done at this point in the scripts but I think I left it out of 
+   % the function b/c it isn't necessary since the image is cropped
+   % Image = imadjustn(Image); % brighten the image
+
    % crop the image if requested
    if cropimage == true
-      [Image,rect] = imcrop(Image);
-      R = refcrop(Image,R,rect);
+      [Image, rect] = imcrop(Image);
+      R = refcrop(Image, R, rect);
    end
 
    % apply adaptive histogram equilization
