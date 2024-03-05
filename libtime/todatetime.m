@@ -1,74 +1,74 @@
 function varargout = todatetime(T, varargin)
-%TODATETIME try to convert input T to a datetime object
-%
-%  [T, TF, DATETYPE] = TODATETIME(T) returns input T converted to datetime
-%  format, logical TF indicating if the conversion was successful, and the
-%  inferred input date type DATETYPE which is the value of the 'ConvertFrom'
-%  property passed to DATETIME(X, 'CONVERTFROM', DATETYPE). If the conversion
-%  was not successful, then DATETYPE = 'none', and T is returned unaltered.
-%
-%  [T, _] = TODATETIME(T, DATETYPE) uses the specified input DATETYPE to try the
-%  conversion.
-%
-% Example
-%
-%
-% Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
-%
-% See also: isdatelike
+   %TODATETIME try to convert input T to a datetime object
+   %
+   %  [T, TF, DATETYPE] = TODATETIME(T) returns input T converted to datetime
+   %  format, logical TF indicating if the conversion was successful, and the
+   %  inferred input date type DATETYPE which is the value of the 'ConvertFrom'
+   %  property passed to DATETIME(X, 'CONVERTFROM', DATETYPE). If the conversion
+   %  was not successful, then DATETYPE = 'none', and T is returned unaltered.
+   %
+   %  [T, _] = TODATETIME(T, DATETYPE) uses the specified input DATETYPE to try the
+   %  conversion.
+   %
+   % Example
+   %
+   %
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   %
+   % See also: isdatelike
 
-% PARSE INPUTS
-narginchk(1,2)
+   % PARSE INPUTS
+   narginchk(1,2)
 
-% quick exit if a datetime was passed in
-if isdatetime(T)
-   [varargout{1:nargout}] = dealout(T, true, 'datetime');
-   return
-end
-
-% All available options for conversion, sorted by my subjective preference
-alltypes = {'datenum', 'yyyymmdd', 'juliandate', 'modifiedjuliandate', ...
-   'posixtime', 'excel', 'excel1904', 'tt2000', 'epochtime', 'ntp', ...
-   'ntfs', '.net'};
-
-% Try to infer the difference between a datenum and a yyyymmdd.
-try
-   if isyyyymmdd(T)
-      alltypes = [alltypes(2), alltypes(1), alltypes(3:end)];
+   % quick exit if a datetime was passed in
+   if isdatetime(T)
+      [varargout{1:nargout}] = dealout(T, true, 'datetime');
+      return
    end
-catch
-end
 
+   % All available options for conversion, sorted by my subjective preference
+   alltypes = {'datenum', 'yyyymmdd', 'juliandate', 'modifiedjuliandate', ...
+      'posixtime', 'excel', 'excel1904', 'tt2000', 'epochtime', 'ntp', ...
+      'ntfs', '.net'};
 
-% simplest input parsing
-if (nargin<2)
-   menu = alltypes;
-else
-   menu = validatestring(lower(varargin{1}), alltypes, mfilename, 'datetype', 2);
-   menu = {menu};
-end
-
-% MAIN CODE
-tf = false;
-
-ii = 0;
-while ~tf && ii <= numel(menu)-1
-   ii = ii+1;
+   % Try to infer the difference between a datenum and a yyyymmdd.
    try
-      T = datetime(T,'ConvertFrom', menu{ii});
-      tf = true;
+      if isyyyymmdd(T)
+         alltypes = [alltypes(2), alltypes(1), alltypes(3:end)];
+      end
    catch
    end
-end
 
-if ~tf
-   wid = 'MATFUNCLIB:libtime:convertToDatetimeFailed';
-   msg = 'unable to convert input T to datetime';
-   warning(wid, msg)
-end
 
-% PARSE OUTPUTS
-[varargout{1:nargout}] = dealout(T, tf, ifelse(tf, menu{ii}, 'none'));
+   % simplest input parsing
+   if (nargin<2)
+      menu = alltypes;
+   else
+      menu = validatestring(lower(varargin{1}), alltypes, mfilename, 'datetype', 2);
+      menu = {menu};
+   end
+
+   % MAIN CODE
+   tf = false;
+
+   ii = 0;
+   while ~tf && ii <= numel(menu)-1
+      ii = ii+1;
+      try
+         T = datetime(T,'ConvertFrom', menu{ii});
+         tf = true;
+      catch
+      end
+   end
+
+   if ~tf
+      wid = 'MATFUNCLIB:libtime:convertToDatetimeFailed';
+      msg = 'unable to convert input T to datetime';
+      warning(wid, msg)
+   end
+
+   % PARSE OUTPUTS
+   [varargout{1:nargout}] = dealout(T, tf, ifelse(tf, menu{ii}, 'none'));
 
 end
 
