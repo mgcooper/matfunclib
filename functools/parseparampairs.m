@@ -1,4 +1,4 @@
-function [args, pairs, nargs, rmpairs] = parseparampairs(args, rmprop, asstruct)
+function [args, pairs, nargs, rmpairs] = parseparampairs(args, rmprop, output_format)
    %PARSEPARAMPAIRS Return and remove name-value pairs from cell argument list.
    %
    % [ARGS, PAIRS] = PARSEPARAMPAIRS(ARGS) returns ARGS, a cell array containing
@@ -7,17 +7,23 @@ function [args, pairs, nargs, rmpairs] = parseparampairs(args, rmprop, asstruct)
    % after, and including, the first char-like argument in input cell-array
    % ARGS.
    %
+   % [ARGS, PAIRS] = PARSEPARAMPAIRS(_, RMPROP) Removes property name and paired
+   % value RMPROP.
+   %
+   % [ARGS, PAIRS] = PARSEPARAMPAIRS(_, 'asstruct') Returns name-value pairs in
+   % a struct instead of a cell array.
+   %
    % PARSEPARAMPAIRS is intended to isolate possible property value pairs in
    % functions using VARARGIN as the input argument, and remove them from the
    % variable arguments cell array. It does not assign property values.
    %
    % See also: parseoptarg, parsegraphics, cell2namedargs
 
-   if nargin < 2
+   if nargin < 2 || isempty(rmprop)
       rmprop = {''};
    end
-   if nargin < 3
-      asstruct = false;
+   if nargin < 3 || isempty(output_format)
+      output_format = 'ascell'; % ascell or asstruct
    end
 
    [args{1:numel(args)}] = convertStringsToChars(args{:});
@@ -38,7 +44,7 @@ function [args, pairs, nargs, rmpairs] = parseparampairs(args, rmprop, asstruct)
    % Count remaining args
    nargs = numel(args);
 
-   if asstruct
+   if strcmp(output_format, 'asstruct')
       pairs = pvpairs2struct(pairs);
    end
 
