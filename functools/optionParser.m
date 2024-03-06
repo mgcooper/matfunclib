@@ -8,6 +8,17 @@ function opts = optionParser(validopts,calleropts,varargin)
    %  that are members of validopts to provided structure opts and sets them to
    %  true
    %
+   % NOTE: If I changed inputs to: optionParser(currentopts, validopts, varargin)
+   % where currentopts could be [], then I could pass the calleropts, which is
+   % often varargin in the calling function like this:
+   %  optionParser(currentopts, validopts, varargin{:})
+   % As it currently is, I cannot pass varargin{:} from the calling function:
+   %  optionParser(validopts, varargin{:}, currentopts)
+   % because varargin{:} is the second argument here but it's expanded into a
+   % csl when passed in. I could also use this input:
+   %  optionParser(validopts, varargin{:})
+   % then parse out currentopts as the first argument of varargin.
+   %
    % optionParser is based on this method:
    %
    % optargs = varargin(cellfun(@ischar, convertStringsToChars(varargin)));

@@ -26,7 +26,7 @@ function workoff(varargin)
    %
    % To fix this, workoff sets the activeproject to 'default', which is the
    % right method, but it is still problematic to call workoff from finish.m,
-   % here's why: 
+   % here's why:
    % - close matlab
    % - finish.m calls workoff
    % - workoff updates the activefiles and sets the activeproject to 'default'

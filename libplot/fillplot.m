@@ -9,7 +9,9 @@ function varargout = fillplot(x, y, err, c, varargin)
    %  Input:
    %     X - X-axis data points
    %     Y - Y-axis data points
-   %     E - Error margin(s), can be Nx2 or Nx1 array
+   %     E - Error margin(s), can be 2xN or 1xN array. If 2xN, E(1, :) must be
+   %     the upper margin, and E(2, :) the lower. E can also be oriented
+   %     column-wise. If Nx2, E(1, :) is the upper margin, E(2, :) the lower.
    %     C - Color to use for the fill, can be 1x3 rgb array or char color name
    %     dim - (Optional) dimension to apply error, 'x' or 'y'
    %     Name, Value - additional Patch properties
@@ -154,6 +156,8 @@ function e = reorientError(e, n)
    else
       [~, m] = size(e);
       if m == 2
+         % Note: if e(:, 1) is the lower error margin, and e(:, 2) is the upper,
+         % then on reorientation, e(1, :) is the lower, and e(2, :) the upper.
          e = e.';
       end
    end
@@ -172,7 +176,14 @@ function [x, y] = constructVertices(x, y, e, dim)
 end
 
 function [s, e] = nonnansegments(x, y, err)
-   ok = ~isnan(x) & ~isnan(y) & ~any(isnan(err), 1);
+
+   if isdatetime(x)
+      ok = ~isnat(x) & ~isnan(y) & ~any(isnan(err), 1);
+   elseif isnumeric(x)
+      ok = ~isnan(x) & ~isnan(y) & ~any(isnan(err), 1);
+   else
+      error('unrecognized x data type')
+   end
    s = find(ok & [true ~ok(1:end-1)]);
    e = find(ok & [~ok(2:end) true]);
 end
@@ -181,13 +192,13 @@ function [LineProps, varargin] = parseLineProps(varargin)
 
    % lineProps = ?matlab.graphics.chart.primitive.Line;
    maybeLineProps = {'LineStyle', 'LineWidth', 'Marker', 'MarkerFaceColor', 'MarkerEdgeColor'};
-   
+
    % For now, I only parse out the LineStyle for boundedline
    % iLineProps = false(numel(varargin), 1);
    % for n = 1:numel(varargin)
    %    iLineProps(n) = any(strcmp(maybeLineProps{n}, varargin));
    % end
-   
+
    iLineProps = cellfun(@(v) any(strcmp(v, maybeLineProps)), varargin, 'Uniform', true);
    if any(iLineProps)
       iLineProps = sort([find(iLineProps), find(iLineProps) + 1]);
@@ -203,7 +214,7 @@ function [LineProps, varargin] = parseLineProps(varargin)
    %       varargin = [varargin, 'MarkerEdgeColor', 'none'];
    %    end
    % end
-   
+
    % Parse optional name-value pairs - I added this before I got the cellfun
    % comparison with LineStyle to work - might want this instead but it adds
    % another dependency and might fail if varargin does not contain solely
@@ -211,7 +222,7 @@ function [LineProps, varargin] = parseLineProps(varargin)
    % if BoundedLine
    %    [args, pairs, ~, rmpairs] = parseparampairs(varargin, {'BoundedLine'});
    % end
-   
+
 end
 %% Possible refactoring to use arguments
 % function varargout = fillplot(x, y, err, c, dim, ax, LineProps)% PatchProps

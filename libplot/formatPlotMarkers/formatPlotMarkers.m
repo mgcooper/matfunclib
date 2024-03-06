@@ -127,7 +127,7 @@ function h = formatPlotMarkers(varargin)
 
             % if not provided, set fillspacing such that 10 points are filled
             if isnan(fillspacing)
-               fillspacing = max(1,numPoints/10); % if <10 points fill them all
+               fillspacing = max(1, numPoints/10); % if <10 points fill them all
             end
             numfill = fix(numPoints/fillspacing);
             markerIdx = round(linspace(1,numPoints,numfill),0);
