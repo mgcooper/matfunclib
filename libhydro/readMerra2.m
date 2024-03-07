@@ -52,7 +52,7 @@ function [dataGrid,dataList,Unit] = readMerra2(fileName,varName,varargin)
    % Alternatively, interpolate the data returned by this function from 3-hour
    % to 1-hour posting prior to calling cumsum and omit the multiplication by 3.
    %
-   % See also: 
+   % See also:
 
    % assume ncstart/count not provided
    partialRead = false;

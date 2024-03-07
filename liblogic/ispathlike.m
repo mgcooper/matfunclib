@@ -7,18 +7,24 @@ function TF = ispathlike(STR)
    % Example:
    % TF = ispathlike('C:\Users\file.txt')
    % % returns true on Windows
-   %   
+   %
    % TF = ispathlike('/home/user/')
    % % returns true on Linux/Mac
    %
    % TF = ispathlike('/home/user/file.txt')
    % % returns true on Linux/Mac
-   % 
+   %
    % See also: isfullfile, isfullpath
 
    % Parse inputs
    narginchk(1, 2)
    STR = convertStringsToChars(STR);
+
+   % Do a basic check that the input is text-like
+   if ~ischarlike(STR)
+      TF = false;
+      return
+   end
 
    % Does the string contain the filesep
    TF = ismember(filesep, STR) && notempty(fileparts(STR));
@@ -28,7 +34,7 @@ function TF = ispathlike(STR)
    else
       TF = TF && startsWith(fileparts(STR), '/');
    end
-   
+
    % Don't use this, b/c not all paths begin with /Users on macos
    % elseif ismac
    %    TF = TF && startsWith(fileparts(STR), '/Users');
