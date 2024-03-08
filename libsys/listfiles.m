@@ -77,7 +77,13 @@ function list = processOneFolder(folder, opts)
 
    % Get all sub folders
    if opts.subfolders == true
-      list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern, "*"))));
+      % If the if-else is not used and pattern is "", then the strcat creates
+      % **/** which is illegal.
+      if opts.pattern == ""
+         list = rmdotfolders(dir(fullfile(folder, "**/*")));
+      else
+         list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern, "*"))));
+      end
    else
       list = rmdotfolders(dir(fullfile(folder, strcat("*", opts.pattern, "*"))));
    end
