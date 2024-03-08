@@ -126,5 +126,5 @@ function [data, normalization, logmodel, edges, centers, dist, theta, varargs] =
    edges = parser.Results.edges;
    theta = parser.Results.theta;
    dist = string(parser.Results.dist);
-   varargs = unmatched2varargin(parser.Unmatched);
+   varargs = struct2varargin(parser.Unmatched);
 end

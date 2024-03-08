@@ -106,9 +106,9 @@ end
 
 %% Input Parser
 function [monitor, size, args] = parseinputs(mfilename, varargin)
-   
+
    validmonitor = @(x) any(validatestring(x,{'mac','main','external'}));
-   
+
    parser = inputParser;
    parser.FunctionName = mfilename;
    parser.CaseSensitive = true;
@@ -119,5 +119,5 @@ function [monitor, size, args] = parseinputs(mfilename, varargin)
 
    monitor = parser.Results.monitor;
    size = parser.Results.size;
-   args = unmatched2varargin(parser.Unmatched);
+   args = struct2varargin(parser.Unmatched);
 end

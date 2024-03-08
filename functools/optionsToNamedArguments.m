@@ -5,17 +5,17 @@ function s = optionsToNamedArguments(options)
    % s.name2 = 'val2';
    % args = optionsToNamedArguments(s)
    %
-   % See also: struct2nameval, unmatched2varargin, namedargs2cell
+   % See also: struct2nameval, struct2varargin, namedargs2cell
 
    names = string(fieldnames(options));
    s = strings(length(names),1);
-   for k = 1:length(names)
-      name = names(k);
+   for n = 1:length(names)
+      name = names(n);
       value = convertCharsToStrings(options.(name));
       if isstring(value)
-         s(k) = name + "=" + """" + value + """";
+         s(n) = name + "=" + """" + value + """";
       elseif isnumeric(value) || islogical(value)
-         s(k) = name + "=" + value;
+         s(n) = name + "=" + value;
       end
    end
    s = join(s,",");

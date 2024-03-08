@@ -2,10 +2,10 @@ function namedvalues = structexpand(S,varargin)
    %STRUCTEXPAND Convert struct of name-value pairs to varargin-like cell array
    %
    %
-   % See also parser2varargin, namedargs2cell, cellexpand, unmatched2varargin,
-   % stringexpand 
+   % See also parser2varargin, namedargs2cell, cellexpand, struct2varargin,
+   % stringexpand
    %
-   % NOTE this does exactly what namedargs2cell does
+   % NOTE this does exactly what namedargs2cell (and struct2varargin) does
 
    opts = optionParser('asstring',varargin(:));
 

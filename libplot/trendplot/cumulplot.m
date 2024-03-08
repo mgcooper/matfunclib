@@ -60,5 +60,5 @@ function [t, y, useax, figpos, ytext, xtext, titletext, legendtext, varargs] = .
    xtext = parser.Results.xlabeltext;
    titletext = parser.Results.titletext;
    legendtext = parser.Results.legendtext;
-   varargs = unmatched2varargin(parser.Unmatched);
+   varargs = struct2varargin(parser.Unmatched);
 end

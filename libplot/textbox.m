@@ -23,7 +23,7 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
       ax = gca(ax);
    end
    fg = get(ax, 'Parent');
-   
+
    % parse remaining input
    [location, args] = parseinput(textstr, xpct, ypct, mfilename, args{:});
 
@@ -114,7 +114,7 @@ function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, vara
    parser.addRequired('ypct', @isnumeric);
    parser.addOptional('location', 'user', @(x) isnumeric(x) | validatePosition(x));
    parser.parse(textstr, xpct, ypct, varargin{:});
-   unmatched = unmatched2varargin(parser.Unmatched);
+   unmatched = struct2varargin(parser.Unmatched);
    location = parser.Results.location;
 
    % could replace xpct,ypct with location then parse for either a 1x2 numeric
