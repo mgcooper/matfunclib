@@ -20,4 +20,9 @@ function units = gettableunits(T,varargin)
          units = allunits;
       end
    end
+
+   % This is useful for printing to the screen but bad in general
+   % if numel(unique(units)) == 1
+   %    units = unique(units);
+   % end
 end
