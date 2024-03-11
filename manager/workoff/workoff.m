@@ -5,10 +5,14 @@ function workoff(varargin)
    %  activefiles property of the projectdirectory to the currently open files,
    %  and sets the 'default' project active.
    %
-   %  WORKOFF(PROJECTNAME,'UPDATEFILES', FALSE) does not update the activefiles
+   %  WORKOFF() Without any arguments deactivates the current active project and
+   %  activates project "default".
+   %
+   %  WORKOFF(_,'UPDATEFILES', FALSE) Does not update the activefiles
    %  list associated with MYPROJECT to the current open files. Default is true,
    %  the current open files are saved to the activefiles property for
-   %  MYPROJECT.
+   %  MYPROJECT. This syntax also works if PROJECTNAME is not provided as
+   %  described above.
    %
    % See also: workon, manager, addproject
 

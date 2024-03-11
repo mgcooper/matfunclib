@@ -37,9 +37,15 @@ function varargout = setcolorbar(C, props, opts)
    end
 
    % Set custom opts
-   set(get(C, 'Label'), 'String', opts.Label)
-   set(get(C, 'Title'), 'String', opts.Title)
-   
+   for n = 1:numel(C)
+      if ~isempty(opts.Label)
+         set(get(C(n), 'Label'), 'String', opts.Label(n))
+      end
+      if ~isempty(opts.Title)
+         set(get(C(n), 'Title'), 'String', opts.Title(n))
+      end
+   end
+
    % send back the legend object if requested
    [varargout{1:nargout}] = dealout(C, climits);
 end
