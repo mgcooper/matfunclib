@@ -49,13 +49,7 @@ function varargout = listfiles(folderlist, opts)
       opts.mfiles (1,1) logical = false
    end
 
-   % * is appended before the pattern by default, so remove it if supplied.
-   if startsWith(opts.pattern, "*") || endsWith(opts.pattern, "*")
-      opts.pattern = erase(opts.pattern, "*");
-   end
-   if startsWith(opts.pattern, ".")
-      opts.pattern = erase(opts.pattern, ".");
-   end
+   opts.pattern = parseFilePattern(opts);
 
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
@@ -75,18 +69,8 @@ end
 
 function list = processOneFolder(folder, opts)
 
-   % Get all sub folders
-   if opts.subfolders == true
-      % If the if-else is not used and pattern is "", then the strcat creates
-      % **/** which is illegal.
-      if opts.pattern == ""
-         list = rmdotfolders(dir(fullfile(folder, "**/*")));
-      else
-         list = rmdotfolders(dir(fullfile(folder, strcat("**/*", opts.pattern, "*"))));
-      end
-   else
-      list = rmdotfolders(dir(fullfile(folder, strcat("*", opts.pattern, "*"))));
-   end
+   % Get all files in main folder and if requested, sub folders
+   list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
    list = list(~[list.isdir]);
 
    if opts.mfiles == true
@@ -105,5 +89,28 @@ function list = processOneFolder(folder, opts)
       if opts.asstring == true
          list = string(list);
       end
+   end
+end
+
+function pattern = parseFilePattern(opts)
+   %PARSEFILEPATTERN Create a wildcard pattern from the user supplied one
+
+   pattern = opts.pattern;
+
+   % Wildcard * is appended to the pattern by default, so remove if supplied
+   if startsWith(pattern, "*") || endsWith(pattern, "*")
+      pattern = erase(pattern, "*");
+   end
+   if startsWith(pattern, ".")
+      pattern = erase(pattern, ".");
+   end
+   if opts.subfolders == true
+      if pattern ~= ""
+         pattern = strcat("**/*", pattern, "*");
+      else
+         pattern = "**/*"; % Prevent strcat from creating **/**
+      end
+   else
+      pattern = strcat("*", pattern, "*");
    end
 end

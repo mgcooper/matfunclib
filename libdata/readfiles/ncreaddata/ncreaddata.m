@@ -32,8 +32,21 @@ function data = ncreaddata(fname,varargin)
 
    for n = 1:length(vars)
 
-      data_n = ncread(fname,vars{n});
-      info_n = ncinfo(fname,vars{n});
+      info_n = ncinfo(fname, vars{n});
+
+      try
+         data_n = ncread(fname, vars{n});
+      catch ME
+         try
+            data_n = nan(info_n.Size);
+         catch ME2
+            if contains(ME2.identifier, 'SizeLimitExceeded')
+               data_n = nan;
+            else
+               rethrow(ME)
+            end
+         end
+      end
 
       % try to determine if variable is a 2-d or 3-d spatial variable and if
       % so, rotate so it's orientied correctly

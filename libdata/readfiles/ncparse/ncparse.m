@@ -1,14 +1,14 @@
 function S = ncparse(fname)
    %PARSENC Parse a netcdf file - variable names, attributes, dimensions
    %
-   % S = parsenc(fname) returns the variable names, attributes, dimensions,
+   % S = NCPARSE(FNAME) returns the variable names, attributes, dimensions,
    % into a matlab structure S that is slightly more useful than the
    % standard output of ncinfo
    %
    % This function puts the standard ncinfo into a more accessible format.
    % It uses extractfield to get the variable names.
    %
-   % See also: ncvars
+   % See also: ncvars, ncreaddata
 
    info = ncinfo(fname);
    S = table;
@@ -58,7 +58,7 @@ function S = ncparse(fname)
       % if the size attribute exists, put it in the structure, else put nan
       size_n = info.Variables(n).Size;
       if isempty(size_n)
-         S.Size(n) = {info.Variables(n).Size};
+         S.Size(n) = nan;
       else
          S.Size(n) = {info.Variables(n).Size};
       end
