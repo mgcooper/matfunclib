@@ -162,6 +162,10 @@ function [tf, cellsize] = checkuniformity(x, tol)
 
    if tf
       cellsize = mode(dx);
+   else
+      % March 2024 there was no "else" but hadn't ever gotten here so added nan
+      % for now, not sure what is best.
+      cellsize = nan;
    end
 end
 

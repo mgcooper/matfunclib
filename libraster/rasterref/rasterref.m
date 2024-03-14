@@ -77,7 +77,7 @@ assert(license('test','map_toolbox')==1, ...
    [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
 % parse inputs
-[X, Y, cellType, mapProj, geoCoords] = parseinputs(X, Y, mfilename, varargin{:});
+[X, Y, cellType, mapProj, UseGeoCoords] = parseinputs(X, Y, mfilename, varargin{:});
 
 % convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and N-S,
 % get an estimate of the grid resolution, and determine if the data is
@@ -85,7 +85,7 @@ assert(license('test','map_toolbox')==1, ...
 [X, Y, cellsizeX, cellsizeY, gridType, tfgeo] = prepareMapGrid(X, Y, 'fullgrids');
 
 % override tfgeo if user-specified map coords
-if tfgeo == true && geoCoords == false
+if tfgeo == true && UseGeoCoords == false
    tfgeo = false;
 end
 
