@@ -1,81 +1,78 @@
 function S = ncparse(fname)
    %PARSENC Parse a netcdf file - variable names, attributes, dimensions
    %
-   % S = NCPARSE(FNAME) returns the variable names, attributes, dimensions,
-   % into a matlab structure S that is slightly more useful than the
-   % standard output of ncinfo
-   %
-   % This function puts the standard ncinfo into a more accessible format.
-   % It uses extractfield to get the variable names.
+   % S = NCPARSE(FNAME) Returns the variable names, attributes, dimensions,
+   % into a matlab table S that is easier to access than the standard struct
+   % output of ncinfo. In particular, the attributes of each variable are
+   % expanded into individual columns, with missing inserted if a variable does
+   % not have a value for the attribute. This provides a "flat" view of the
+   % entire file, rather than a nested view provided by ncinfo.
    %
    % See also: ncvars, ncreaddata
 
    info = ncinfo(fname);
-   S = table;
-   S.Name = (string({info.Variables.Name}))';
+
+   % Retrieve the standard fields to expand each info.Variables.Attributes
+   % struct into individual columns.
+   varattnames = ncdefaults("attributes");
+
+   % These are the other standard variable attributes which are already columns
+   % in the struct returned by ncread.
+   ncattnames = ["Attributes", "Dimensions", "Size", "Datatype", ...
+      "ChunkSize", "FillValue", "DeflateLevel", "Shuffle"];
+
+   % Convert the ncread "Variables" struct to a table
+   S = ncStructToTable(info, ncattnames);
+
+   % If struct2table failed, and the assignment of the "Attributes" column
+   % failed, then there are no attributes to expand.
+   if none(cellfun(@isstruct, S.Attributes)) && all(isnan(S.Attributes))
+      return
+   end
+
+   % Otherwise, expand the attributes to individual columns
    nvars = length(S.Name);
 
+   % Add columns for variable attributes, to expand the "Attributes" structs
+
+   for thisatt = varattnames(:)'
+      S.(thisatt)(1:nvars) = string(missing);
+   end
+
+   % Fill in the attributes for each variable
    for n = 1:nvars
 
-      % get the names of the attributes
-      if isempty(info.Variables(n).Attributes)
-         S.LongName{n} = nan;
-         S.Units{n} = nan;
-         S.Size{n} = nan;
-         S.FillValue{n} = nan;
-         S.Filename{n} = info.Filename;
+      varatts = info.Variables(n).Attributes;
+
+      % Get the names of the attributes
+      if isempty(varatts)
          continue
       else
-         atts = (string({info.Variables(n).Attributes.Name}))';
+         attnames = string({varatts.Name}');
       end
 
-      % if a longname exists, put it in the structure, else put nan
-      ilongname = find(strcmp('long_name',atts));
-      if isempty(ilongname)
-         S.LongName{n} = nan;
-      else
-         long_n = info.Variables(n).Attributes(ilongname).Value;
-         if isempty(long_n)
-            S.LongName{n} = nan;
-         else
-            S.LongName{n} = long_n;
+      % Match this variable's attributes with the list of possible varatts
+      for thisatt = varattnames(:)'
+         if any(attnames == thisatt)
+            S.(thisatt)(n) = varatts(attnames == thisatt).Value;
          end
       end
-
-      % if units exists, put it in the structure, else put nan
-      iunits = find(strcmp('units',atts));
-      if isempty(iunits)
-         S.Units{n} = nan;
-      else
-         units_n = info.Variables(n).Attributes(iunits).Value;
-         if isempty(units_n)
-            S.Units{n} = nan;
-         else
-            S.Units{n} = units_n;
-         end
-      end
-
-      % if the size attribute exists, put it in the structure, else put nan
-      size_n = info.Variables(n).Size;
-      if isempty(size_n)
-         S.Size(n) = nan;
-      else
-         S.Size(n) = {info.Variables(n).Size};
-      end
-
-      % if the fill value exists, put it in the structure, else put nan
-      fill_n = info.Variables(n).FillValue;
-      if isempty(fill_n)
-         S.FillValue{n} = nan;
-      elseif ischar(fill_n)
-         if strcmp(fill_n,'')
-            S.FillValue{n} = nan;
-         else
-            S.FillValue{n} = info.Variables(n).FillValue;
-         end
-      elseif isnumeric(fill_n)
-         S.FillValue{n} = info.Variables(n).FillValue;
-      end
-      S.Filename{n} = info.Filename;
    end
+
+   % Previously I added the filename, keep for patching errors.
+   S.Filename(1:nvars) = string(info.Filename);
+
+   % Rearrange the columns in a preferred order.
+   S = movevars(S, {'standard_name', 'units', 'axis', 'coordinates'}, ...
+      "After", 'Name');
+
+   % Keep the "Attributes" column to identify non-expanded ones, but
+   % move it to the end.
+   S = movevars(S, 'Attributes'); % default behavior moves it to the end
+
+   % Remove any columns with all missing values.
+   S = rmmissing(S, 2, 'MinNumMissing', height(S));
+
+   % For reference, in case rmmissing method fails:
+   % S = S(:, ~varfun(@(x) all(ismissing(x)), S, "Output", "uniform"));
 end

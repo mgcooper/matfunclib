@@ -1,4 +1,4 @@
-function data = ncreaddata(fname,varargin)
+function data = ncreaddata(filename, opts)
    %NCREADDATA Read all data in .nc file fname, or all vars in optional list
    %
    %  data = ncreaddata(fname) reads all variables in fname
@@ -17,56 +17,199 @@ function data = ncreaddata(fname,varargin)
    %
    % See also: ncparse
 
-   finfo = ncparse(fname);
-   if nargin == 1
-      vars = finfo.Name;
-      % was gonna have a flag or something to note that i can use ncparse
-      % output since it matches vars inptu
-      % if height(finfo) ~= numel(vars)
-      % end
-   else
-      vars = varargin{1};
+   % TODO: add grid_mapping. See snowlines/1km-ISMIP6.nc for an example.
+   % f = '/Users/mattcooper/work/data/greenland/snowlines/1km-ISMIP6.nc';
+   % data = ncreaddata(f);
+   % R = rasterref(data.x, data.y);
+
+   arguments
+      filename (1, :) char
+      opts.varnames (1, :) string = string.empty()
+      opts.reorient (1, 1) logical = true
    end
 
-   data.info = finfo;
+   fileinfo = ncparse(filename);
 
-   for n = 1:length(vars)
+   if isempty(opts.varnames)
+      varnames = string(fileinfo.Name); % Use all varnames
+   else
+      varnames = opts.varnames;
+      assert(all(ismember(varnames, fileinfo.Name)))
+   end
 
-      info_n = ncinfo(fname, vars{n});
+   data.info = fileinfo;
 
+   % Determine the size of the x,y dimension
+   [numx, numy, numt, numz] = getDimensions(fileinfo);
+
+   for n = 1:length(varnames)
+
+      info_n = ncinfo(filename, varnames(n));
+      data_n = try_ncread(filename, varnames(n), info_n.Size);
+
+      % Orient the data spatially if >2d and not a known non-spatial case
+      if isvector(data_n) || ismember(info_n.Name, {'time', 'depth'})
+         % TODO: if 2d, check if one dimension is the size of the time dimension
+         data.(varnames(n)) = data_n;
+      else
+         % This variable > 1 dim, orient it north up, east right
+         data.(varnames(n)) = orientGridData(data_n, [numx, numy, numt, numz]);
+      end
+   end
+end
+
+function data_n = try_ncread(filename, varname, varsize)
+   try
+      data_n = ncread(filename, varname);
+   catch ME
       try
-         data_n = ncread(fname, vars{n});
-      catch ME
-         try
-            data_n = nan(info_n.Size);
-         catch ME2
-            if contains(ME2.identifier, 'SizeLimitExceeded')
-               data_n = nan;
-            else
-               rethrow(ME)
-            end
+         data_n = nan(varsize);
+      catch ME2
+         if contains(ME2.identifier, 'SizeLimitExceeded')
+            data_n = nan;
+         else
+            rethrow(ME)
          end
       end
-
-      % try to determine if variable is a 2-d or 3-d spatial variable and if
-      % so, rotate so it's orientied correctly
-      if info_n.Size > 1
-         data_n = rot90(fliplr(data_n));
-      end
-      data.(vars{n}) = data_n;
-
-      % here I was gonna compare the ncinfo output to a few cases where I know I
-      % wouldn't want to rotate the data
-      %     % first deal with known cases
-      %     if ismember({info_n.Attributes.Name},'time')
-      %         data.(vars{n}) = data_n;
-      %     end
-
-      % here I was gonna do the same thing but use my ncparse output
-      %     % check against my ncparse function
-      %     if strcmp(info_n.Name,finfo.Name(n))
-      %         if finfo.Size(n)
-      %         end
-      %     else
    end
+end
+
+%% Determine the size and orientation of the data
+function [numx, numy, numt, numz] = getDimensions(fileinfo)
+
+   % This subfunction may need to be expanded in scope, and certainly could be
+   % improved by utilizing the 'coordinates' attributes of the data if it exists
+   % or the standard_names or dimensions. Right now, this basically tries to
+   % determine the size of the lat/lon dimensions, which is easiest if lat/lon
+   % are vectors but more challenging if they are 2d arrays.
+
+   varnames = string(fileinfo.Name);
+   [numx, numy, numt, numz] = deal(nan);
+   [ilat, ilon, ix, iy, itime, idepth] = deal(false(numel(varnames), 1));
+
+   % Potential matches. standard_names are first.
+   xfields = ["projection_x_coordinate", "x", "x_easting", "x_eastings"];
+   yfields = ["projection_y_coordinate", "y", "y_northing", "y_northings"];
+   latfields = ["latitude", "lat"];
+   lonfields = ["longitude", "lon", "long"];
+   timefields = ["time", "date", "dates", "day_of_year"];
+   depthfields = ["depth", "depth_below_surface"];
+
+   % First check the standard names
+   if isvariable('standard_name', fileinfo)
+      ix = ismember(lower(fileinfo.standard_name), xfields);
+      iy = ismember(lower(fileinfo.standard_name), yfields);
+      ilat = ismember(lower(fileinfo.standard_name), latfields);
+      ilon = ismember(lower(fileinfo.standard_name), lonfields);
+      itime = ismember(lower(fileinfo.standard_name), timefields);
+      idepth = ismember(lower(fileinfo.standard_name), depthfields);
+   end
+
+   % If not found, try the varnames
+   if none(ix)
+      ix = ismember(lower(varnames), xfields);
+      iy = ismember(lower(varnames), yfields);
+   end
+   if none(ilat)
+      ilat = ismember(lower(varnames), latfields);
+      ilon = ismember(lower(varnames), lonfields);
+   end
+   if none(itime)
+      itime = ismember(lower(varnames), timefields);
+   end
+   if none(idepth)
+      idepth = ismember(lower(varnames), depthfields);
+   end
+
+   % If time or depth dimensions were found, return them
+   if any(itime)
+      numt = fileinfo.Size{itime};
+   end
+   if any(idepth)
+      numz = fileinfo.Size{idepth};
+   end
+
+   % Get the size of the x,y dimension according to both x,y and lat,lon
+   hasxy = any(ix);
+   haslatlon = any(ilat);
+   if haslatlon
+      numlat = fileinfo.Size{ilat};
+      numlon = fileinfo.Size{ilon};
+   end
+   if hasxy
+      numx = fileinfo.Size{ix};
+      numy = fileinfo.Size{iy};
+   end
+
+   % Determine the size of the x,y dimension
+   if haslatlon & numel(numlat) > 1
+      if hasxy & numel(numx) == 1
+         % Use numx, numy to determine the size of the x,y dimension
+      else
+         % Both lat/lon and x/y are 2d grids.
+         % It is more difficult to determine the size of the x,y dimension.
+
+      end
+   elseif haslatlon & numel(numlat) == 1
+      % Use numlon, numlat to determine the size of the x,y dimension
+      numx = numlon;
+      numy = numlat;
+   end
+end
+
+%% Orient the data north up and east right
+function data = orientGridData(data, expected_size)
+
+   numx = expected_size(1);
+   numy = expected_size(2);
+   numt = expected_size(3);
+   numz = expected_size(4);
+
+   actual_size = size(data);
+
+   numrows = actual_size(1);
+   numcols = actual_size(2);
+
+   % This orders the data so Y along the columns (1st dim), X along rows (2nd
+   % dim), T along pages (3rd dim), and depth along the 4th dim. This might work
+   % generally, and then only flipud if the data is known to be gridded and Y
+   % increasing down.
+
+   % Note: This was added to deal with data ordered [T, X, Y] or [T, Y, X].
+   % Normally the data is [X, Y, T], and permutation is [2 1 3]. This should
+   % catch that case too. Not sure what
+   newdims = [
+      find(actual_size == numy)
+      find(actual_size == numx)
+      find(actual_size == numt)
+      find(actual_size == numz)
+      ];
+   data = permute(data, unique(newdims, 'stable'));
+
+   if numrows == numx && numcols == numy
+      % The data likely needs to be transposed.
+      data = flipud(data);
+
+      % Use this if the newdims method is not working in general
+      % data = flipud(permute(data, [2 1 actual_size(3:end)]));
+
+      % This collapses the 3: dimensions
+      % data = reshape(data, numrows, numcols, []);
+      % data = flipud(permute(data, [2 1 3]));
+   end
+
+   % % The original method:
+   % data = rot90(fliplr(data));
+   %
+   % % My standard method:
+   % data = flipud(permute(data, [2 1]));
+   %
+   % % Compare them:
+   % M = magic(10);
+   % M0 = flipud(permute(M, [2 1 3]));
+   % M1 = rot90(M);
+   % M2 = rot90(fliplr(M));
+   % isequal(M0, M1) % yes
+   % isequal(M0, M2) % no
+   % isequal(M0, flipud(M2)) % yes
 end
