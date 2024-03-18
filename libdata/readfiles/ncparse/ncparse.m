@@ -1,8 +1,8 @@
-function S = ncparse(fname)
+function T = ncparse(fname)
    %PARSENC Parse a netcdf file - variable names, attributes, dimensions
    %
-   % S = NCPARSE(FNAME) Returns the variable names, attributes, dimensions,
-   % into a matlab table S that is easier to access than the standard struct
+   % T = NCPARSE(FNAME) Returns the variable names, attributes, dimensions,
+   % into a matlab table T that is easier to access than the standard struct
    % output of ncinfo. In particular, the attributes of each variable are
    % expanded into individual columns, with missing inserted if a variable does
    % not have a value for the attribute. This provides a "flat" view of the
@@ -22,21 +22,21 @@ function S = ncparse(fname)
       "ChunkSize", "FillValue", "DeflateLevel", "Shuffle"];
 
    % Convert the ncread "Variables" struct to a table
-   S = ncStructToTable(info, ncattnames);
+   T = ncStructToTable(info, ncattnames);
 
    % If struct2table failed, and the assignment of the "Attributes" column
    % failed, then there are no attributes to expand.
-   if none(cellfun(@isstruct, S.Attributes)) && all(isnan(S.Attributes))
+   if none(cellfun(@isstruct, T.Attributes)) && all(isnan(T.Attributes))
       return
    end
 
    % Otherwise, expand the attributes to individual columns
-   nvars = length(S.Name);
+   nvars = length(T.Name);
 
    % Add columns for variable attributes, to expand the "Attributes" structs
 
    for thisatt = varattnames(:)'
-      S.(thisatt)(1:nvars) = string(missing);
+      T.(thisatt)(1:nvars) = string(missing);
    end
 
    % Fill in the attributes for each variable
@@ -54,25 +54,25 @@ function S = ncparse(fname)
       % Match this variable's attributes with the list of possible varatts
       for thisatt = varattnames(:)'
          if any(attnames == thisatt)
-            S.(thisatt)(n) = varatts(attnames == thisatt).Value;
+            T.(thisatt)(n) = varatts(attnames == thisatt).Value;
          end
       end
    end
 
    % Previously I added the filename, keep for patching errors.
-   S.Filename(1:nvars) = string(info.Filename);
+   T.Filename(1:nvars) = string(info.Filename);
 
    % Rearrange the columns in a preferred order.
-   S = movevars(S, {'standard_name', 'units', 'axis', 'coordinates'}, ...
+   T = movevars(T, {'standard_name', 'units', 'axis', 'coordinates'}, ...
       "After", 'Name');
 
    % Keep the "Attributes" column to identify non-expanded ones, but
    % move it to the end.
-   S = movevars(S, 'Attributes'); % default behavior moves it to the end
+   T = movevars(T, 'Attributes','After', width(T));
 
    % Remove any columns with all missing values.
-   S = rmmissing(S, 2, 'MinNumMissing', height(S));
+   T = rmmissing(T, 2, 'MinNumMissing', height(T));
 
    % For reference, in case rmmissing method fails:
-   % S = S(:, ~varfun(@(x) all(ismissing(x)), S, "Output", "uniform"));
+   % T = T(:, ~varfun(@(x) all(ismissing(x)), T, "Output", "uniform"));
 end
