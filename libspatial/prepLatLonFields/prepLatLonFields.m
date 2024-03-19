@@ -18,7 +18,7 @@ function S = prepLatLonFields(S,newfieldnames)
    % parse arguments
    arguments
       S (:,:) struct
-      newfieldnames (1,2) cell = {'Lat','Lon'}
+      newfieldnames (1,2) cell = {'Lat', 'Lon'}
    end
 
    % set defaults
@@ -32,13 +32,14 @@ function S = prepLatLonFields(S,newfieldnames)
 
    % first get all lat/lon fields (in case there is more than one)
    %------------------------------------------------------------
-   if sum(contains(fields,latfields)) > 0
+   if sum(contains(fields, latfields)) > 0
 
-      ilat = find(contains(fields,latfields));
+      ilat = find(contains(fields, latfields));
 
-   elseif sum(contains(fields,yfields)) > 0              % check for Y
+   elseif sum(contains(fields, yfields)) > 0 % check for Y
 
-      ilat = find(contains(fields,yfields)); useY = true;
+      ilat = find(contains(fields, yfields));
+      useY = true;
 
       warning('no lat coordinates found, using Y coordinates')
 
@@ -48,13 +49,14 @@ function S = prepLatLonFields(S,newfieldnames)
 
    % repeat for Lon
    %------------------------------------------------------------
-   if sum(contains(fields,lonfields)) > 0
+   if sum(contains(fields, lonfields)) > 0
 
-      ilon = find(contains(fields,lonfields));
+      ilon = find(contains(fields, lonfields));
 
-   elseif sum(contains(fields,xfields)) > 0
+   elseif sum(contains(fields, xfields)) > 0
 
-      ilon = find(contains(fields,xfields)); useX = true;
+      ilon = find(contains(fields,xfields));
+      useX = true;
       warning('no lon coordinates found, using X coordinates');
    else
       error('no lon coordinates found');
@@ -65,12 +67,14 @@ function S = prepLatLonFields(S,newfieldnames)
 
    % if there is both an 'Y' and 'y' field, need to choose one
    if useX == true && useY == true
-      newfieldnames = {'Y','X'};
+      newfieldnames = {'Y', 'X'};
    else
       % for lat/lon there are more options, but use default Lat/Lon
    end
 
-   % rename them to 'Lat' and 'Lon' for compatibility with geopoint
+   % rename them to 'Lat' and 'Lon' for compatibility with geopoint, unless
+   % newfieldnames were given e.g., 'lat', 'long' for compatibility with
+   % updategeostruct.
 
    % if multiple fields names contain 'Lat', pick the one that is 'Lat' or
    % 'Latitude', otherwise issue an error
@@ -80,8 +84,7 @@ function S = prepLatLonFields(S,newfieldnames)
    % FIELD ALREADY NAMED 'LAT/LON' AND CHOOSES THEM
    if numel(ilat) > 1
       for n = 1:numel(ilat)
-         % if strcmp(fields{ilat(n)},'Lat') || strcmp(fields{ilat(n)},'Latitude')
-         if strcmp(fields{ilat(n)},newfieldnames(1)) % exact match
+         if strcmp(fields{ilat(n)}, newfieldnames(1)) % exact match
             ilatkeep = ilat(n);
          end
       end
@@ -94,20 +97,25 @@ function S = prepLatLonFields(S,newfieldnames)
    end
 
    % now rename to 'Lat', so don't use pickLat anymore
-   if all(~ismember(fields(ilat),'Lat'))
-      if isscalar(S)  % should never be true
-         S = renamestructfields(S,fields{ilat},'Lat');
-      else
-         S = renameNonScalarStructField(S,fields{ilat},'Lat');
-      end
+   if all(~ismember(fields(ilat), 'Lat'))
+
+      S = renamestructfields(S, fields{ilat}, newfieldnames{1});
+
+      % March 2024, renameNonScalarStructField is no longer present in the
+      % function library, I think I made renamestructfields work for scalar and
+      % non-scalar.
+      % if isscalar(S)  % should never be true
+      %    S = renamestructfields(S, fields{ilat}, newfieldnames{1});
+      % else
+      %    S = renameNonScalarStructField(S, fields{ilat}, 'Lat');
+      % end
    end
 
    % repeat for Lon
    ilonkeep = nan;
    if numel(ilon) > 1
       for n = 1:numel(ilon)
-         % if strcmp(fields{ilon(n)},'Lon') || strcmp(fields{ilon(n)},'Longitude')
-         if strcmp(fields{ilon(n)},newfieldnames(2))
+         if strcmp(fields{ilon(n)}, newfieldnames(2))
             ilonkeep = ilon(n);
          end
       end
@@ -120,11 +128,13 @@ function S = prepLatLonFields(S,newfieldnames)
    end
 
    % now rename to 'Lat' or 'Lon', so don't use pickLat/Lon anymore
-   if all(~ismember(fields(ilon),'Lon'))
-      if isscalar(S)  % should never be true
-         S = renamestructfields(S,fields{ilon},'Lon');
-      else
-         S = renameNonScalarStructField(S,fields{ilon},'Lon');
-      end
+   if all(~ismember(fields(ilon), newfieldnames(2)))
+      S = renamestructfields(S, fields{ilon}, newfieldnames(2));
+
+      % if isscalar(S)  % should never be true
+      %    S = renamestructfields(S, fields{ilon}, 'Lon');
+      % else
+      %    S = renameNonScalarStructField(S,fields{ilon},'Lon');
+      % end
    end
 end

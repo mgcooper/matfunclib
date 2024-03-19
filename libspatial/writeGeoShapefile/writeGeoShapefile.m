@@ -1,4 +1,4 @@
-function coords = writeGeoShapefile(S,filename,varargin)
+function coords = writeGeoShapefile(S, filename, varargin)
    %WRITEGEOSHAPEFILE write a shapefile in geographic coordinate format
    %
    %  coords = writeGeoShapefile(S,filename,varargin)
@@ -9,15 +9,16 @@ function coords = writeGeoShapefile(S,filename,varargin)
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = mfilename;
-      parser.CaseSensitive=false;
-      parser.PartialMatching=true;
-      parser.addRequired('S',@(x)isstruct(x)|istable(x)|ischar(x)|isa(x,'geopoint')|...
-         isa(x,'mappoint')|isa(x,'geoshape')|isa(x,'mapshape'));
-      parser.addRequired('filename',@ischar);
-      parser.addParameter('Geometry','Point',@ischar);
-      parser.addParameter('plotshp',false,@islogical);
-      parser.addParameter('lat',nan,@isnumeric);
-      parser.addParameter('lon',nan,@isnumeric);
+      parser.CaseSensitive = false;
+      parser.PartialMatching = true;
+      parser.addRequired('S', @(x) isstruct(x) | istable(x) | ischar(x) | ...
+         isa(x,'geopoint') | isa(x,'mappoint') | isa(x,'geoshape') | ...
+         isa(x,'mapshape'));
+      parser.addRequired('filename', @ischar);
+      parser.addParameter('Geometry', 'Point', @ischar);
+      parser.addParameter('plotshp', false, @islogical);
+      parser.addParameter('lat', nan, @isnumeric);
+      parser.addParameter('lon', nan, @isnumeric);
    end
    parse(parser, S, filename, varargin{:});
    [Geometry, plotshp, lat, lon] = dealout(parser.Results);
@@ -28,7 +29,7 @@ function coords = writeGeoShapefile(S,filename,varargin)
    if isa(S,'geopoint') || isa(S,'mappoint') || isa(S,'geoshape') || ...
          isa(S,'mapshape') || isgeostruct(S)
 
-      shapewrite(S,filename);
+      shapewrite(S, filename);
       copygeoprjtemplate(filename);
       return
    end
