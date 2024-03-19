@@ -1,4 +1,4 @@
-function ensemble = ensembleList(varargin)
+function [ensemble, allcombos] = ensembleList(varargin)
    %ENSEMBLELIST Create all unique combinations of values in input cell arrays.
    %
    %  ensemble = ensembleList(cellstr1, cellstr2, ..., cellstrN)
@@ -46,13 +46,12 @@ function ensemble = ensembleList(varargin)
       % ensembleList('mychar') or ensembleList(mystruct.mycellstr) because inputname
       % for both of those will be empty. Below I attempted to convert char inputs to
       % cellstrs thinking it was the reason above syntax failed.
-      %    if ischarlike(varargin{n})
-      %       thisvarlist = cellstr(varargin{n});
-      %    else
-      %       thisvarlist = varargin{n};
-      %    end
+      if ischar(varargin{n})
+         thisvarlist = cellstr(varargin{n});
+      else
+         thisvarlist = varargin{n};
+      end
 
-      thisvarlist = varargin{n};
       thisvarName = argnames{n};
 
       uniquevals = unique(thisvarlist, 'stable');
@@ -107,7 +106,8 @@ function ensemble = ensembleList(varargin)
    % end
 
    % Convert to a table and send it to the output
-   ensemble.allcombos = array2table(allcombos,'VariableNames',ensemble.varnames);
+   allcombos = array2table(allcombos,'VariableNames',ensemble.varnames);
+   ensemble.allcombos = allcombos;
 end
 
 % This is an attempt to put numeric values in the allcombos table, the first
