@@ -52,10 +52,10 @@ function varargout = addOnetoOne(varargin)
    hold(ax, 'on');
 
    if strcmp(keeplims, 'keeplims')
-      
+
       % If 'keeplims' is designed to keep limits that are already 1:1:
       newlims = xlim;
-      
+
       % If 'keeplims' is designed to set the axes equal without modifying the
       % full extent of either existing axes:
       newlims(1) = min(min(xlim), min(ylim));
@@ -69,10 +69,10 @@ function varargout = addOnetoOne(varargin)
       % newlims(2) = max(max(xlim),max(ylim)) * 1.02;
 
       % Get the limits based on the data range
-      % NOTE: if this function is called from scatterfit, which plots the data 
+      % NOTE: if this function is called from scatterfit, which plots the data
       % and linear fit or any other case where multiple data series are plotted,
-      % xdata, ydata will be cell arrays holding each plotted x,y series, but 
-      % that's a feature not a bug, since newlims finds the extent of all data to 
+      % xdata, ydata will be cell arrays holding each plotted x,y series, but
+      % that's a feature not a bug, since newlims finds the extent of all data to
       % set the axes limits.
       [xdata, ydata] = getplotdata(ax);
 
@@ -96,9 +96,14 @@ function varargout = addOnetoOne(varargin)
       newlims(2) = max(max(ydata(:)), max(xdata(:)));
    end
 
-   set(ax, 'XLim', newlims, 'YLim', newlims);
-   delta = (newlims(2) - newlims(1)) / 100;
+   if isnumeric(newlims) && newlims(2) > newlims(1)
+      set(ax, 'XLim', newlims, 'YLim', newlims);
+   else
+      % Something likely wrong, e.g., all data is zero
+      newlims = xlim;
+   end
 
+   delta = (newlims(2) - newlims(1)) / 100;
    plotdata = newlims(1):delta:newlims(2);
    H = plot(plotdata, plotdata, varargin{:});
 
