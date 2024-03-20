@@ -12,6 +12,12 @@ function varargs = struct2varargin(S, varargin)
    % See also parser2varargin, namedargs2cell
 
    narginchk(1, 2)
+
+   if isempty(fieldnames(S))
+      varargs = {};
+      return
+   end
+
    opts.asstring = strcmp('astring', varargin{1});
 
    if opts.asstring == true
