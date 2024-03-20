@@ -9,6 +9,7 @@ function varargout = listfiles(folderlist, opts)
    % FILELIST = LISTFILES(_, 'SUBFOLDERS', TRUE)
    % FILELIST = LISTFILES(_, 'FULLPATH', TRUE)
    % FILELIST = LISTFILES(_, 'MFILES', TRUE)
+   % FILELIST = LISTFILES(_, 'RMPATTERN', RMPATTERN)
    % [FILELIST, NUMFILES] = LISTFILES(_)
    %
    % Description:
@@ -47,6 +48,7 @@ function varargout = listfiles(folderlist, opts)
       opts.fullpath (1,1) logical = false
       opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
+      opts.rmpatterns (1,:) string = ""
    end
 
    opts.pattern = parseFilePattern(opts);
@@ -76,6 +78,9 @@ function list = processOneFolder(folder, opts)
    if opts.mfiles == true
       list = list(strncmp(reverse({list.name}), 'm.', 2));
    end
+
+   % Remove files containing the "RMPATTERNS"
+   list = trimfiles(list, opts);
 
    if opts.aslist == true
 
@@ -113,4 +118,25 @@ function pattern = parseFilePattern(opts)
    else
       pattern = strcat("*", pattern, "*");
    end
+end
+
+function list = trimfiles(list, opts)
+
+   % Note: call trimfiles prior to converting from dir struct to list to
+   % respect the requested output type, but perform the same "fullpath"
+   % check that is performed in the "aslist" section to respect the
+   % requested output type meaning the rmpattern must apply to the filename
+   % OR the fullpath. note - could be preferable to add a "nameonly" option
+   % to distinguish whether the rmpatterns apply to the fullpath or filename.
+
+   % Append default patterns that should be removed
+   rmpatterns = append(opts.rmpatterns, "~$"); % add more as needed
+
+   if opts.fullpath
+      files = transpose(fullfile({list.folder}, {list.name}));
+   else
+      files = transpose(fullfile({list.name}));
+   end
+
+   list = list(~contains(files, rmpatterns));
 end

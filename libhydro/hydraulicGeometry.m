@@ -79,9 +79,9 @@ function [width, depth, xarea, discharge] = hydraulicGeometry(option, DA, ...
       validateattributes( ...
          slope, {'numeric'}, {'positive', 'scalar'}, mfilename, 'SLOPE', 3);
    end
-   
+
    % Alaska equations do not provide discharge
-   if strcmp(option, {'alaska', 'ak'}) 
+   if strcmp(option, {'alaska', 'ak'})
       nargoutchk(1, 3)
    end
 
@@ -102,15 +102,15 @@ function [width, depth, xarea, discharge] = hydraulicGeometry(option, DA, ...
             % Bankfull flow width
             a = 3.436;     % width = a * DA ^ b
             b = 0.730;
-            
+
             % Bankfull maximum channel depth
             c = 2.070;     % depth = c * DA ^ d
             d = 0.277;
-            
+
             % Bankfull cross-sectional area
             e = 5.875;     % xarea = e * DA ^ f
             f = 0.936;
-            
+
             % Discharge - not available for alaska
             g = 0;
             h = 0;
@@ -125,7 +125,7 @@ function [width, depth, xarea, discharge] = hydraulicGeometry(option, DA, ...
             % Bankfull flow width (same as nargin == 3)
             a = 3.436;     % width = a * DA ^ b
             b = 0.730;
-            
+
             % Bankfull average channel depth
             c = 0.611;     % depth = c * DA ^ d * cc * CS ^ dd * ccc * ER ^ ddd
             d = 0.238;
@@ -133,11 +133,11 @@ function [width, depth, xarea, discharge] = hydraulicGeometry(option, DA, ...
             dd = -0.0946;
             ccc = 1.0;
             ddd = 0.441;
-            
+
             % Bankfull cross-sectional area (same as nargin == 3)
             e = 5.875;     % xarea = e * DA ^ f
             f = 0.936;
-            
+
             % % "Summer flow width" - the "normal" summer flow width
             % a0 = 10.30; % width = a0 + a * DA ^ b + aa * CS ^ bb + aaa * ER ^ bbb
             % a = 0.115;
@@ -199,8 +199,8 @@ function [width, depth, xarea, discharge] = hydraulicGeometry(option, DA, ...
 
             error('unrecognized number of inputs')
          end
-         
-         
+
+
    end
 
    % Compute hydraulic geometry parameters
