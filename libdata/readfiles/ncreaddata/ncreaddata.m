@@ -170,7 +170,7 @@ function data = orientGridData(data, expected_size)
    numrows = actual_size(1);
    numcols = actual_size(2);
 
-   % This orders the data so Y along the columns (1st dim), X along rows (2nd
+   % This orders the data so Y is along columns (1st dim), X along rows (2nd
    % dim), T along pages (3rd dim), and depth along the 4th dim. This might work
    % generally, and then only flipud if the data is known to be gridded and Y
    % increasing down.
@@ -184,7 +184,32 @@ function data = orientGridData(data, expected_size)
       find(actual_size == numt)
       find(actual_size == numz)
       ];
-   data = permute(data, unique(newdims, 'stable'));
+
+   % Note: if each of the data dimensions match one of the known dim sizes
+   % (numx/y/z/t), then newdims will have all of the information needed to
+   % reshape the data from it's input shape to the one enforced here: Y,X,T,Z.
+   %
+   % Note that for a gridcell-based dataset, numx=numy, so newdims could have
+   % repeat elements, which is why unique() is applied.
+   %
+   % But if the data has a dimension size which does not match numx/y/z/t, then
+   % the numel(unique(newdims)) will be < ndims(data). This means we cannot
+   % reshape the data to the known Y,X,T,Z ordering.
+   %
+   % This came up when I read a variable (nele) which was N x M, where N = numx
+   % = numy (gridcell-based data), and M = 11 did not correspond to any of the
+   % dimension variable sizes.
+   %
+   % In this case, we can use the ones which are found and leave the unmatched
+   % dimension to the end or
+
+   if numel(unique(newdims)) == ndims(data)
+      data = permute(data, unique(newdims, 'stable'));
+   else
+      % Handle the case where the data matches some but not all dimension sizes
+      % For now, return wihtout modifying the data shape. Need a solution.
+      return
+   end
 
    if numrows == numx && numcols == numy
       % The data likely needs to be transposed.
