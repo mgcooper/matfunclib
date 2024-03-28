@@ -44,8 +44,13 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
    fullpath_bk = fullfile(filepath, filename_bk);
 
    if makecopy
+      if ~isfile(fullpath) || ~isfolder(fullpath)
+         % This lets backupfile be called without if(isfile) in the caller
+         warning('No backup made. File not found: %s', fullpath)
+         return
+      end
       if isfile(fullpath_bk) || isfolder(fullpath_bk)
-         warning('Backup already exists. No copy made.');
+         warning('No backup made. Backup already exists: %s', fullpath_bk);
       else
          try
             copyfile(fullpath, fullpath_bk);
