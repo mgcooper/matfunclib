@@ -60,6 +60,16 @@ function varargout = fillplot(x, y, err, c, varargin)
    %
    % See also: fill, patch
 
+   % March 2024 - not sure why a default color is not set if not provided, but
+   % it may be due to the way parsegraphics / parseoptarg work, e.g., if c was
+   % optional, but an ax was provided, then nargin == 4. But if we require c,
+   % then it means there are 4 required arguments, so nargin < 4 should be a
+   % valid method, and the only way to not provide c if ax or other args are
+   % provided is to send in an empty matrix.
+   if nargin < 4 || isempty(c)
+      c = [0 0.4470 0.7410];
+   end
+
    % Parse possible axes input.
    [ax, varargin, ~, isfigure] = parsegraphics(varargin{:});
 
