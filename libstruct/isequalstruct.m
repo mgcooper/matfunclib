@@ -1,6 +1,6 @@
 function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    %ISEQUALSTRUCT perform an equality comparison between two structures
-   % 
+   %
    % ISEQUALSTRUCT performs an equality comparison between two structures by
    % recursively comparing the elements of the struct array, their fields and
    % subfields. This function requires companion function CELLEQ to compare
@@ -24,8 +24,8 @@ function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    %
    % [...] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    %       Illustrates an alternate syntax for the function with additional
-   %       input arguments. See the help for CELLEQ for more information on the
-   %       meaning of the arguments
+   %       input arguments. See the help for ISEQUALCELL for more information on
+   %       the meaning of the arguments
    %
    % METHOD:
    % 1. Compare sizes of struct arrays
@@ -33,7 +33,7 @@ function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    % 3. Compare field names of the arrays
    % 4. For every element of the struct arrays, convert the field values into
    % a cell array and do a cell array comparison recursively (this can result
-   % in multiple recursive calls to CELLEQ and STRUCTEQ)
+   % in multiple recursive calls to ISEQUALCELL and ISEQUALSTRUCT)
    %
    % EXAMPLE:
    % % Compare two handle graphics hierarchies
@@ -68,7 +68,7 @@ function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
       return
    end
    % Check field names
-   result = celleq(fields1,fields2);
+   result = isequalcell(fields1,fields2);
    result = all(result);
    if ~result
       why = struct('Reason','Field names are different','Where','');
@@ -77,7 +77,7 @@ function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    for i = 1:numel(struct1)
       props1 = struct2cell(struct1(i));
       props2 = struct2cell(struct2(i));
-      [result, subwhy] = celleq(props1,props2,funh2string,ignorenan);
+      [result, subwhy] = isequalcell(props1,props2,funh2string,ignorenan);
       result = all(result);
       if ~result
 

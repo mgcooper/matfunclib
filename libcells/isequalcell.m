@@ -75,7 +75,7 @@ function [result, why] = isequalcell(cell1, cell2, funh2string, ignorenan)
             case 'cell'
                [result, whysub] = isequalcell(cell1{i},cell2{i},funh2string, ignorenan);
             case 'struct'
-               [result, whysub] = structeq(cell1{i},cell2{i},funh2string, ignorenan);
+               [result, whysub] = isequalstruct(cell1{i},cell2{i},funh2string, ignorenan);
             case 'function_handle'
                if funh2string
                   result = strcmp(func2str(cell1{i}), func2str(cell1{i}));
