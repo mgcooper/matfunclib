@@ -18,7 +18,11 @@ function varargs = struct2varargin(S, varargin)
       return
    end
 
-   opts.asstring = strcmp('astring', varargin{1});
+   if nargin == 2
+      opts.asstring = strcmp('astring', varargin{1});
+   else
+      opts.asstring = false;
+   end
 
    if opts.asstring == true
       varargs = reshape(transpose([string(fieldnames(S)), struct2cell(S)]),1,[]);
