@@ -160,6 +160,14 @@ end
 
 %% Local functions
 function e = reorientError(e, n)
+
+   % If e is a scalar or two-element vector, assume the error margin applies
+   % identically to all values of the data.
+   if numel(e) <= 2
+      % Create an Nx2 error margin, top row = upper, bottom row = lower.
+      e = [repelem(e(1), n); repelem(e(2), n)];
+   end
+
    if isvector(e)
       e = e(:)';
       e = [e; e];
