@@ -6,6 +6,12 @@ function varargout = setcolorbar(C, props, opts)
    %
    % See also: getcolorbar
 
+   % Note: To make two-line tick labels:
+   % cbTicks = desired tick locations;
+   % cbLabels = {'one line', 'first line \newline second line'};
+   % c = colorbar('south', 'Ticks', cbTicks, 'TickLabels', cbLabels);
+
+
    arguments
       C (:,1) = getcolorbar
       props.?matlab.graphics.illustration.ColorBar

@@ -9,9 +9,9 @@ function smartlabels(XData, YData, labels, varargin)
    % Note: this currently only adjusts the x direction, since text runs
    % left-right. The adjustments may not work for default label locations other
    % than 'NE'.
-   % 
+   %
    % See also: labelpoints
-   
+
    if iscategorical(labels)
       try
          labels = string(labels);
@@ -19,6 +19,15 @@ function smartlabels(XData, YData, labels, varargin)
          rethrow(ME)
       end
    end
+
+   % If one of either XData or YData is a scalar, assume it applies to all
+   if isscalar(XData) % && ~isscalar(YData)
+      XData = repmat(XData, numel(XData), 1);
+   end
+   if isscalar(YData) % && ~isscalar(YData)
+      YData = repmat(YData, numel(XData), 1);
+   end
+
 
    % Get default position
    valid_positions = ...
@@ -41,7 +50,7 @@ function smartlabels(XData, YData, labels, varargin)
 
    % Did not end up using y-versions
    % yedge_thresh = 0.1 * yrange;
-   
+
    % Initialize label positions to 'NE'
    pos = repmat({default_pos}, size(XData));
 
@@ -52,18 +61,18 @@ function smartlabels(XData, YData, labels, varargin)
    % only the right edge part was active, the left edge and "everywhere else"
    % sections were missing, but they were in another commented out block at the
    % very bottom, which was actually the original version of this function when
-   % I only adjusted edges, not overlap. 
-   
+   % I only adjusted edges, not overlap.
+
    % 9 Jul 2023, commented this out - not sure if this was ever used, but
    % occassionally it is nice to have the edges automatically moved e.g.
    % right edge would be 'E', left edge 'W', top 'N', bottom 'S', so this
    % could form the basis for that.
-      
+
    % Adjust label positions if near edges
    for n = 1:length(XData)
       x = XData(n);
       y = YData(n);
-      
+
       % Determine label position based on proximity to edge
       if x > xlims(2) - xedge_thresh % near right edge
          pos{n} = 'NW';
