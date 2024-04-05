@@ -39,7 +39,7 @@ function activate(tbname,varargin)
    if isempty(except)
       disp(['activating ' tbname])
    else
-      disp(strjoin(['activating',tbname,'except',except]))
+      disp(strjoin(['activating', tbname, 'except', except]))
    end
 
    % Set the active state

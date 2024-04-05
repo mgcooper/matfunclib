@@ -1,10 +1,15 @@
 function addprojectpaths(projectname)
-   %ADDPROJECTPATHS add all project paths to path
+   %ADDPROJECTPATHS Add all project paths to path
    %
-   %     addprojectpaths(projectname)
-   %     addprojectpaths(projectpath)
+   %  addprojectpaths(projectname)
+   %  addprojectpaths(projectpath)
    %
-   % projectpath is the full path to the project
+   % Inputs
+   %  projectname - the project name, the full path is retrieved from the
+   %  project directory.
+   %  projectpath - the full path to the project.
+   %
+   % Use ADDPROJECTPATHS to access a project when working on another one.
    %
    % See also: workon, workoff
 
@@ -29,9 +34,8 @@ function addprojectpaths(projectname)
       pathadd(projectpath);
    catch ME
       % use built-ins
-      addpath(genpath(projectpath),'-end');
-      % remove .git files from path
-      try
+      addpath(genpath(projectpath), '-end');
+      try % remove .git files from path
          rmpath(genpath(fullfile(projectpath,'.git')));
          rmpath(genpath(fullfile(projectpath,'.svn')));
       catch

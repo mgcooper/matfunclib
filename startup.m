@@ -149,6 +149,9 @@ subpaths = horzcat(subpaths{:});
 % Add the paths to the path
 addpath(subpaths, '-end');
 
+% Add these paths to the top to ensure they are not shadowed by built-ins
+addpath(fullfile(getenv('MATLABFUNCTIONPATH'), 'libstats'), '-begin');
+
 %% Figure defaults
 
 % groot settings apply to low-level properties and therefore low-level functions
