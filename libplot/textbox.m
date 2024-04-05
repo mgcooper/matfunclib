@@ -66,8 +66,8 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
    if useaxpos == true
       % Set the x/y text coordinates using normalized (figure) units
       axpos = get(gca, 'Position');
-      xtext = axpos(1) + xpct/100 .* axpos(3);
-      ytext = axpos(2) + ypct/100 .* axpos(4);
+      xtext = axpos(1) + xpct/100 * axpos(3);
+      ytext = axpos(2) + ypct/100 * axpos(4);
 
       % Create the text object
       % h = text(ax, xtext, ytext, textstr, 'Units', 'normalized', args{:});
@@ -84,8 +84,8 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
          args{:});
    else
       % Set the x/y text coordinates using data units
-      xtext = xlims(:,1) + xpct/100 .* (xlims(:,2) - xlims(:,1));
-      ytext = ylims(:,1) + ypct/100 .* (ylims(:,2) - ylims(:,1));
+      xtext = xlims(:,1) + xpct/100 * (xlims(:,2) - xlims(:,1));
+      ytext = ylims(:,1) + ypct/100 * (ylims(:,2) - ylims(:,1));
 
       % Create the text object
       h = text(ax, xtext, ytext, textstr, args{:});
@@ -97,14 +97,15 @@ function varargout = textbox(textstr, xpct, ypct, varargin)
 end
 
 %% Local Functions
-function tf = validatePosition(location)
-   tf = ((ischar(location) && isrow(location)) || ...
-      (isstring(location) && isscalar(location) && (strlength(location) > 0))) && ...
-      strncmpi(location,'best',max(strlength(location), 1));
+function tf = validateLocation(loc)
+   tf = ( ( ischar(loc) && isrow(loc) ) ...
+      || ( isstring(loc) && isscalar(loc) && strlength(loc) > 0 ) ) ...
+      && strncmpi(loc, 'best', max(strlength(loc), 1));
 end
 
 %% Input Parser
-function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, varargin)
+function [location, unmatched] = parseinput( ...
+      textstr, xpct, ypct, mfilename, varargin)
 
    parser = inputParser;
    parser.KeepUnmatched = true;
@@ -112,7 +113,7 @@ function [location, unmatched] = parseinput(textstr, xpct, ypct, mfilename, vara
    parser.addRequired('textstr', @(x) ischar(x) | iscell(x) | isstring(x));
    parser.addRequired('xpct', @isnumeric);
    parser.addRequired('ypct', @isnumeric);
-   parser.addOptional('location', 'user', @(x) isnumeric(x) | validatePosition(x));
+   parser.addOptional('location', 'user', @(x) isnumeric(x) | validateLocation(x));
    parser.parse(textstr, xpct, ypct, varargin{:});
    unmatched = struct2varargin(parser.Unmatched);
    location = parser.Results.location;
