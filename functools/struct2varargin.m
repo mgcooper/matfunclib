@@ -7,7 +7,7 @@ function varargs = struct2varargin(S, varargin)
    %  VARARGS = STRUCT2VARARGIN(_, 'asstring') Returns VARARGS as a string
    %  array.
    %
-   % NOTE this does exactly what namedargs2cell does
+   % NOTE this does exactly what namedargs2cell does, but supports pre-2019b.
    %
    % See also parser2varargin, namedargs2cell
 
