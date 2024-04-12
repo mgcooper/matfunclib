@@ -1,9 +1,13 @@
-function [colors] = defaultcolors()
+function [colors] = defaultcolors(N)
    %GETDEFAULTCOLORS Returns the default color triplets
    %
    %  [colors] = defaultcolors() returns the default color order triplets
    %
    % See also: distinguishable_colors
+
+   arguments
+      N = []
+   end
 
    colors = get(groot,'defaultaxescolororder');
 
@@ -16,9 +20,9 @@ function [colors] = defaultcolors()
       0.47 0.25 0.80];
 
    colors = [colors; newcolors];
-   
+
    % add the first nine colors from distinguishable colors
-   colors = [colors; 
+   colors = [colors;
       0	0	1
       1	0	0
       0	1	0
@@ -29,4 +33,7 @@ function [colors] = defaultcolors()
       0.517241379310345	0.517241379310345	1
       0.620689655172414	0.310344827586207	0.275862068965517];
 
+   if ~isempty(N)
+      colors = colors(1:N, :);
+   end
 end
