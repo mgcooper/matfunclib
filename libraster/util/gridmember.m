@@ -2,14 +2,14 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
    %GRIDMEMBER Find pixels in X2, Y2 that are members of X1, Y1.
    %
    %  [LI2, LOC1] = GRIDMEMBER(X2, Y2, X1, Y1) returns indices of coordinate
-   %  pairs in X2, Y2 on X1, Y1. 
-   % 
+   %  pairs in X2, Y2 on X1, Y1.
+   %
    %  [LI2, LOC1] = GRIDMEMBER(X2, Y2, X1, Y1, 'gridvectors') returns indices of
-   %  coordinate pairs in X2, Y2 on X1, Y1 in gridvector format. 
+   %  coordinate pairs in X2, Y2 on X1, Y1 in gridvector format.
    %
    % For analogy, consider:
-   %  [Lia, Locb] = ismember(A,B). 
-   % 
+   %  [Lia, Locb] = ismember(A,B).
+   %
    % The 2,1 convention used in gridmember is because X1, Y1 are assumed to
    % represent a compact grid stored as grid vectors or geolocated coordinate
    % lists, and X2, Y2 represents a full-grid representation (or a grid-vector
@@ -18,14 +18,14 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
    % pixels" i.e., pixels in X2, Y2 that are not in X1, Y1. If some other data,
    % call it V1, is referenced to X1, Y1, the logical true/false LI2, and
    % indices LOC1, are needed to adjust the shape of V1 to match the new grid
-   % X2, Y2. 
+   % X2, Y2.
    %
    % Example
    %
    %
    % Notes
    %
-   % LI2 is true for X2, Y2 pairs that exist in X1, Y1. 
+   % LI2 is true for X2, Y2 pairs that exist in X1, Y1.
    % LOC1 is the indices of the pairs in X2, Y2 that exist in X1, Y1, relative
    % to X1, Y1, such that X2(LOC1(LOC1>0)), Y2(LOC1(LOC1>0))
    % Missing pixels in X1, Y1 are therefore false in LI2.
@@ -73,10 +73,10 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
    %   unique([X2(:) Y2(:)], 'rows', 'stable'), ...
    %   unique([X1(:) Y1(:)], 'rows', 'stable'), 'rows');
    %
-   % therefore, the original logical mapping is : 
+   % therefore, the original logical mapping is :
    % I = ~LI2, e.g. try: isequal(I,~LI2)
 
-   % % Note: to get the missing coordinates: 
+   % % Note: to get the missing coordinates:
    % XY_missing = setdiff( ...
    %    unique([X2(:) Y2(:)], 'rows', 'stable'), ...
    %    unique([X1(:) X2(:)], 'rows', 'stable'), 'rows');
@@ -90,7 +90,7 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
       % missing. Therefore, if 'gridvectors' is requested, the values returned
       % are true for rows/column with NO missing pixels.
 
-      % Convert the LI2 representation as a coordinate list to gridvector. 
+      % Convert the LI2 representation as a coordinate list to gridvector.
       % For the test case, 6,2 should be missing, which is X(3), Y(2), so LI2X
       % should be [1 1 0] and LI2Y should be [1; 0].
 
@@ -101,7 +101,7 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
       LI2Y = ismember(Y2vec, Y2(~LI2)); LI2Y = ~LI2Y;
 
       % The LI2X/Y are correct in principle, but as noted above, will be
-      % misleading depending on the location of missing pixels. 
+      % misleading depending on the location of missing pixels.
       [~, LOC2X] = ismember(X2vec, X2(LI2));
       [~, LOC2Y] = ismember(Y2vec, Y2(LI2));
 
@@ -140,10 +140,10 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
 
       case 4
          if strcmp(GridOption, 'gridvectors')
-            
-            % varargout{1} = LI2X; 
-            % varargout{2} = LI2Y; 
-            
+
+            % varargout{1} = LI2X;
+            % varargout{2} = LI2Y;
+
             % sep 2023 - varargout 3,4 were missing which causes an error, need
             % to review the logic above about gridvectors, maybe 3,4 aren't
             % applicable, but for now, return the LOC, but I don't see why it
@@ -160,7 +160,7 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
             varargout{4} = LOC2;
          end
    end
-   
+
    % This was an earlier method that used the input shape, keep for now.
    % if strcmp(GridFormat2, 'gridvectors')
    %
@@ -176,26 +176,26 @@ function varargout = gridmember(X2, Y2, X1, Y1, GridOption)
    %    IX = ismember(X, X2(I));
    %    IY = ismember(Y, Y2(I));
    % end
-   
+
    % % It doesn't work to make Grid1 match Grid2 b/c conversion to fullgrids or
    % % gridvecs fills in the missing pixels ... the only issue is when gridvecs are
    % % supplied b/c they can be different size in the x-y, whereas fullgrids and
    % % coordinatelists both have the same number, so the original ismember method
    % % works for both.
-   % 
+   %
    % % Make both Grid1 and Grid2 coordinates
    % if ~strcmp(GridFormat1, GridFormat2)
-   % 
+   %
    %    switch GridFormat2
-   % 
+   %
    %       case 'gridvectors'
    %          [X1, Y1] = gridvec(X1, Y1);
-   % 
+   %
    %       case 'fullgrids'
    %          [X1, Y1] = fullgrid(X1, Y1);
-   % 
+   %
    %       case 'coordinates'
-   % 
+   %
    %          [X1, Y1] = fullgrid(X1, Y1);
    %          X1 = X1(:); Y1 = Y1(:);
    %    end

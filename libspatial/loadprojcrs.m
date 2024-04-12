@@ -40,7 +40,7 @@ function varargout = loadprojcrs(NAME)
       case 'ease-global'
          proj = projcrs(6933, 'Authority', 'EPSG');
 
-      case 'sipsn'
+      case {'sipsn', 'spsn'}
          proj = projcrs(3413, 'Authority', 'EPSG');
 
       case 'psn'
@@ -50,6 +50,7 @@ function varargout = loadprojcrs(NAME)
          proj = projcrs(32622, 'Authority', 'EPSG');
 
       case 'aka'
+         proj = projcrs(3338, 'Authority', 'EPSG');
 
    end
 
