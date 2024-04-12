@@ -28,7 +28,7 @@ function varargout = timespan(timeLikeObject,varargin)
    end
 
    if tf
-      tspan = gettimespan(timeLikeObject);
+      [tspan, tzone] = gettimespan(timeLikeObject);
 
    elseif isstruct(timeLikeObject)
       % search for a datetime or timetable in timeLikeObject
@@ -45,7 +45,8 @@ function varargout = timespan(timeLikeObject,varargin)
          structFields = structFields(tf);
          tspan = NaT(numel(structFields), 2);
          for n = 1:numel(structFields)
-            tspan(n, :) = gettimespan([timeLikeObject(:).(structFields{n})]);
+            [tspan_, tzone] = gettimespan([timeLikeObject(:).(structFields{n})]);
+            tspan(n, :) = tspan_;
          end
       end
 
@@ -53,13 +54,16 @@ function varargout = timespan(timeLikeObject,varargin)
       tf = cellfun(@(c) isdatetime(c) || istimetable(c), timeLikeObject);
 
       if any(tf)
-         tspan = gettimespan(timeLikeObject{tf});
+         [tspan, tzone] = gettimespan(timeLikeObject{tf});
       end
 
    else
       error( ...
          'Expected input, T, to be a timetable, datetime, or otherwise time-like')
    end
+
+   % Add the timezone - For now this assumes all found dates have the same zone
+   tspan.TimeZone = tzone;
 
    % Return output
    switch nargout
@@ -77,7 +81,7 @@ end
 
 %% LOCAL FUNCTIONS
 
-function tspan = gettimespan(T)
+function [tspan, tzone] = gettimespan(T)
 
    if istimetable(T)
       T = settimetabletimevar(T);
@@ -87,6 +91,11 @@ function tspan = gettimespan(T)
       Time = T;
    end
    tspan = [Time(1) Time(end)];
+   tzone = Time(1).TimeZone;
+
+   % Remove the timezone so NaT can be populated, otherwise "cannot combine a
+   % datetime array ... " error . This should be fixed up later.
+   tspan.TimeZone = '';
 end
 
 %% TESTS
