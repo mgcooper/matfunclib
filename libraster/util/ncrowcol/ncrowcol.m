@@ -52,7 +52,7 @@ colcount = @(c) max(c)-min(c)+1; % colcount = @(c) length(unique(c));
 if varIsChar == false
    if iscolumn(ncvar)
       start = r(1);
-      count = colcount(c);
+      count = rowcount(r);
    elseif isrow(ncvar)
       start = c(1);
       count = colcount(c);
