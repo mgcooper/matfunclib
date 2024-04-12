@@ -3,12 +3,13 @@ function varargout = rastersurf(Z, R, varargin)
    %
    % rastersurf(Z,R,varargin) project and display spatially referenced raster Z
    % associated with map/geographic raster reference object or valid referencing
-   % vector/matrix R as a 2-d surface using in-built Matlab functions mapshow.m or
-   % geoshow.m (Copyright 2016 The MathWorks, Inc.). Default behavior sets
+   % vector/matrix R as a 2-d surface using in-built Matlab functions mapshow.m
+   % or geoshow.m (Copyright 2016 The MathWorks, Inc.). Default behavior sets
    % properties ('DisplayType','surface'), ('Box','on'), ('TickDir','out'),
-   % ('LineWidth',1.5), axis image, and adds a colorbar. The function accepts any
-   % input to mapshow.m or geoshow.m and returns the graphics, axis, and colorbar
-   % handle objects so the user can make ex-post adjustments as desired.
+   % ('LineWidth',1.5), axis image, and adds a colorbar. The function accepts
+   % any input to mapshow.m or geoshow.m and returns the graphics, axis, and
+   % colorbar handle objects so the user can make ex-post adjustments as
+   % desired.
    %
    %   This function is a wrapper for the in-built Matlab functions geoshow.m
    %   and mapshow.m (Copyright 2016 The MathWorks, Inc.). The function is
@@ -215,5 +216,4 @@ function varargout = rastersurf(Z, R, varargin)
       otherwise
          error('Unrecognized number of outputs.')
    end
-
 end

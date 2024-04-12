@@ -8,6 +8,17 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
 
    % See map2grid, need to decide which to keep
 
+   % Need to add notes - few months went by and I was unsure if the infilled
+   % data was correctly used. Key thing is here no matter what it's returned as
+   % a full grid infilled, elsewhere it needs to be accounted for, and in
+   % exactremap
+
+   % note that gridxyz creates full grids then uses scatteredInterpolation with
+   % nearest extrap so it is guaranteed to fill in missing pixels of the full grid,
+   % and I don't think it is possible to have a full grid which misses any pixels.
+   % But it is still essential to confirm the infilled data is returned to
+   % exactremap and used correctly
+
    %% notes
 
    % inpainting needs to happen on the full grid, but note that
@@ -89,6 +100,9 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
       scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); hold on; % plot(P{:});
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('gridded and gap filled data')
+
+      % P = loadSitePoly("leverett", "min");
+      % plot(P)
    end
 
    switch nargout

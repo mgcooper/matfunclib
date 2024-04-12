@@ -38,7 +38,8 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    %   previous syntaxes. method can be 'linear', 'nearest', 'natural',
    %   'cubic', or 'v4'. The default method is 'natural'. For more information
    %   on why this option is default, see:
-   %   https://blogs.mathworks.com/loren/2015/07/01/natural-neighbor-a-superb-interpolation-method/
+   %   https://blogs.mathworks.com/loren/2015/07/01/natural-neighbor-a-superb-
+   %     interpolation-method/
    %
    %   Notes on griddata vs scatteredInterpolant: This function is designed to
    %   return a single 2-d surface. scatteredInterpolant is faster when
@@ -55,6 +56,9 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    %   EXAMPLES
    %
    % See also rasterinterp, rasterref, rastersurf
+
+   % TODO: Completely refactor the input parsing. It is impossible to modify.
+   % Use an arguments block. Need to support projection input like rasterref.
 
    %% Check inputs
 
@@ -131,50 +135,86 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    %% Now have 1) rasterSize or 2) cellextent, build the spatial reference R
 
    % Check if the user passed in regularly-spaced data that isn't gridded
-   tfreg = isxyregular(x,y);
-   if tfreg == true % if so, then simply grid it
-      [X,Y] = meshgrid(unique(x(:),'sorted'),flipud(unique(y(:),'sorted')));
-      Z = reshape(z,size(X,1),size(Y,2));
-      R = rasterref(x,y,'cellInterpretation','cells');
+   if isxyregular(x, y)
 
-      % check for missing values
-      if any(isnan(Z(:))) && extrap
-         Z = inpaintn(Z);
-         prec = ceil(log10(Z));
-         prec(prec>0) = 0;
-         Z = round(Z, mode(prec(:)));
+      % If so, then simply grid it. Apr 2024 - but if the data is regular but
+      % not a full grid, then z cannot be reshaped to match the size of the
+      % grids produced by meshgrid, so I added the check numel(z) == numel(X),
+      % if that passes, then assume its a full grid already. If not, then the
+      % data need to be embedded into their
+
+      [X, Y] = meshgrid(unique(x(:), 'sorted'), flipud(unique(y(:), 'sorted')));
+
+      if numel(z) == numel(X)
+
+         Z = reshape(z, size(X,1), size(Y,2));
+
+         % check for missing values
+         if any(isnan(Z(:))) && extrap
+            Z = inpaintn(Z);
+            prec = ceil(log10(Z));
+            prec(prec > 0) = 0;
+            Z = round(Z, mode(prec(:)));
+         end
+
+      else
+         % Apply Chad Greene's magic.
+
+         % Get unique values of x and y:
+         [xs, ~, xi] = unique(x(:), 'sorted');
+         [~ , ~, yi] = unique(y(:), 'sorted');
+
+         if numel(xs) == numel(z)
+            warning(...
+               ['This data appears to be scattered with irregular X, Y spacing.' ...
+               ' Rasterize may rpoduce incorrect results in this case.'])
+         end
+
+         % Sum up all the Z values that in each x,y grid point:
+         Z = accumarray([yi xi], z(:), [], [], NaN);
+         % wow it worked
+
+         % This should hold if it worked.
+         assert(all(size(Z) == size(X)))
+         assert(all(size(Z) == size(Y)))
       end
+
+      % Construct the referencing matrix.
+      R = rasterref(X, Y, 'cellInterpretation', 'cells');
 
    else % build a query grid and interpolate the scattered data onto it
 
       % Determine the x-y extent of the interpolation query grid. This method
       % attempts to account for both very small and large domains. It might not
       % work all the time.
+
+      % Note that extending by xmindif can substantially increase the extent
       xdiffs = abs(diff(x(:)));
       ydiffs = abs(diff(y(:)));
-      xmindif = min(xdiffs(xdiffs>0.0));
-      ymindif = min(ydiffs(ydiffs>0.0));
-      xtol = floor(log10(xmindif))-1;
-      ytol = floor(log10(ymindif))-1;
-      xmin = round(min(x(:)),-xtol);
-      xmax = round(max(x(:)),-xtol); % extending by xmindif can substantially increase the extent
-      ymin = round(min(y(:)),-ytol);
-      ymax = round(max(y(:)),-ytol);
+      xmindiff = min(xdiffs(xdiffs > 0.0));
+      ymindiff = min(ydiffs(ydiffs > 0.0));
+      xtol = floor(log10(xmindiff)) - 1;
+      ytol = floor(log10(ymindiff)) - 1;
+      xmin = round(min(x(:)), -xtol);
+      xmax = round(max(x(:)), -xtol);
+      ymin = round(min(y(:)), -ytol);
+      ymax = round(max(y(:)), -ytol);
 
       % This can rectify some issues where rounding to x/ytol fails to
       % encompass the entire extent, but extending by xmindif can also
       % substantially increase the extent and therefore slow down the
       % function because it increases the interpolation below
 
-      % ymin = round(min(y(:)),-ytol)-ymindif;
-      % ymax = round(max(y(:)),-ytol)+ymindif;
-      % xmin = round(min(x(:)),-xtol)-xmindif;
-      % xmax = round(max(x(:)),-xtol)+xmindif;
+      % ymin = round(min(y(:)), -ytol) - ymindiff;
+      % ymax = round(max(y(:)), -ytol) + ymindiff;
+      % xmin = round(min(x(:)), -xtol) - xmindiff;
+      % xmax = round(max(x(:)), -xtol) + xmindiff;
       xlims = [xmin xmax];
       ylims = [ymin ymax];
 
       % i could also push the extent outward by 1/10th of its value ...
-      % xoffset = (max(x(:))-min(x(:)))/10; % but this will fail for global datasets
+      % ... but this will fail for global datasets
+      % xoffset = (max(x(:))-min(x(:)))/10;
       % yoffset = (max(y(:))-min(y(:)))/10;
 
       % determine if the data is planar or geographic and build the R object
@@ -203,29 +243,37 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
       % interpolation may not be optimal). THUS I ADDED A 1/2 CELL SIZE
       % ADJUSTMENT TO THE CASE WHERE CELL SIZE IS KNOWN).
 
+      % Back again Apr 2024 - Key thing to remember is input x,y are the GRID
+      % POINTS, and xlims, ylims are the GRID POINT extents.
+      %
+      % noticing that rasterize and rasterref return different R's for the SW
+      % sector masked points (the 1487 or 2479, in both cases the grid is the
+      % same). So just noting that if tfreg is false, which it is, then xlims,
+      % ylims are the GRID POINT extents. So it is correct to
+
       if tf
          if inrasterSize
-            R = georefcells(ylims,xlims,rasterSize, ...
+            R = georefcells(ylims, xlims, rasterSize, ...
                'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom','west');
+               'RowsStartFrom', 'west');
          else
-            R = georefcells(ylims,xlims,cellextentY,cellextentX, ...
+            R = georefcells(ylims, xlims, cellextentY, cellextentX, ...
                'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom','west');
+               'RowsStartFrom', 'west');
          end
       else % note: x,y positioning is reversed for maprefcells
          if inrasterSize
 
-            R = maprefcells(xlims,ylims,rasterSize, ...
+            R = maprefcells(xlims, ylims, rasterSize, ...
                'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom','west');
+               'RowsStartFrom', 'west');
          else
-            % Jan 2024 - if this means we know cellextent, so adjust xlims,ylims
+            % Jan 2024 - this means we know cellextent, so adjust xlims,ylims
             xlims = xlims + [-cellextentX +cellextentX] / 2;
             ylims = ylims + [-cellextentY +cellextentY] / 2;
-            R = maprefcells(xlims,ylims,cellextentX,cellextentY, ...
+            R = maprefcells(xlims, ylims, cellextentX, cellextentY, ...
                'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom','west');
+               'RowsStartFrom', 'west');
          end
       end
 
@@ -274,7 +322,6 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
       % hold on
       % plot(X(LI2), Y(LI2), 'x')
       % plot(X(~LI2), Y(~LI2), 'rx')
-
    end
 end
 
@@ -341,8 +388,10 @@ function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap)
       Y double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
       V {mustBeNumeric, mustBeReal, mustBeNonempty}
       cellsize (1,1) double {mustBePositive}
-      method (1,1) string {mustBeMember(method, ["linear", "nearest", "natural"])} = "linear"
-      extrap (1,1) string {mustBeMember(extrap, ["linear", "nearest", "none"])} = "none"
+      method (1,1) string {mustBeMember(method, ...
+         ["linear", "nearest", "natural"])} = "linear"
+      extrap (1,1) string {mustBeMember(extrap, ...
+         ["linear", "nearest", "none"])} = "none"
    end
 
    validateGridCoordinates(X, Y, mfilename, 'X', 'Y', 'coordinates')
@@ -353,8 +402,8 @@ function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap)
    % Use 1/2 cell size to extend the GRID pixels to the MAP LIMITS
    halfcell = cellsize/2;
 
-   % Obtain the minimum and maximum X and Y grid cell center values and adjust them
-   % to create map frame limits (X/YWORLDLIMITS).
+   % Obtain the minimum and maximum X and Y grid cell center values and adjust
+   % them to create map frame limits (X/YWORLDLIMITS).
    xlim = [floor(min(X(:))),ceil(max(X(:)))] + [-halfcell +halfcell];
    ylim = [floor(min(Y(:))),ceil(max(Y(:)))] + [-halfcell +halfcell];
 
@@ -431,13 +480,15 @@ function [B, R] = gridgeodata(lat, lon, V, cellsize, method, extrap)
       lon double {mustBeNumeric, mustBeReal, mustBeNonempty, mustBeFinite}
       V {mustBeNumeric, mustBeReal, mustBeNonempty}
       cellsize (1,1) double {mustBePositive}
-      method (1,1) string {mustBeMember(method, ["linear", "nearest", "natural"])} = "linear"
-      extrap (1,1) string {mustBeMember(extrap, ["linear", "nearest", "none"])} = "none"
+      method (1,1) string {mustBeMember(method, ...
+         ["linear", "nearest", "natural"])} = "linear"
+      extrap (1,1) string {mustBeMember(extrap, ...
+         ["linear", "nearest", "none"])} = "none"
    end
 
    checklatlon(lat, lon, mfilename, "LAT", "LON", 1, 2);
    if any(size(lat) ~= size(V))
-      error("matfunclib:validate:inconsistentSizes3", mfilename, "LAT", "LON", "A")
+      error("matfunclib:validate:inconsistentSizes3",mfilename,"LAT","LON","A")
    end
 
    loncheck = max(abs(diff(sort(lon(:)))));
