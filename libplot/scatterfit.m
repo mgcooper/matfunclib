@@ -43,6 +43,9 @@ function varargout = scatterfit(x, y, varargin)
    % look for provided axes or figure
    [h, args, ~, isfigure] = parsegraphics(varargin{:});
 
+   % note - this uses the less common method to create a new figure, not sure
+   % if this is desirable in general, but if plotting into an axis in a loop,
+   % pass in the axis.
    if isempty(h)
       f = figure;
       ax = gca(f);
@@ -79,8 +82,8 @@ function varargout = scatterfit(x, y, varargin)
    % legend('data','linear fit','1:1 line')
 
    % later add options to pass x/ylabel
-   xylabel('x data','ydata')
-   legend('data','linear fit')
+   xylabel('x data', 'y data')
+   legend('data', 'linear fit', 'Location', 'northwest')
 
    if nargout == 1
       varargout{1} = H;
