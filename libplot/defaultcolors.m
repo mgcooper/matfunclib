@@ -1,4 +1,4 @@
-function [colors] = defaultcolors(N)
+function [colors] = defaultcolors(N, opts)
    %GETDEFAULTCOLORS Returns the default color triplets
    %
    %  [colors] = defaultcolors() returns the default color order triplets
@@ -7,9 +7,17 @@ function [colors] = defaultcolors(N)
 
    arguments
       N = []
+      opts.palette string { ...
+         mustBeMember(opts.palette, ["default", "distinguishable"])} = "default"
    end
 
-   colors = get(groot,'defaultaxescolororder');
+   switch char(opts.palette)
+      case 'default'
+         colors = get(groot,'defaultaxescolororder');
+      case 'distinguishable'
+         colors = makedistinguishablecolors(N);
+         return
+   end
 
    % add some additional colors
    newcolors = [
@@ -37,3 +45,17 @@ function [colors] = defaultcolors(N)
       colors = colors(1:N, :);
    end
 end
+
+function colors = makedistinguishablecolors(N)
+   try
+      colors = distinguishable_colors(N);
+   catch e
+      % Use custom cform
+      func = @(x) colorspace('RGB->Lab', x);
+
+      % The colors are distinguishable relative to the background color which is
+      % the second argument 'w'.
+      colors = distinguishable_colors(N, 'w', func);
+   end
+end
+
