@@ -42,14 +42,10 @@ function table2latex(T, filename, precision, headers, alignment, caption)
    %   Rewritten by Matt Cooper.
    %
    % See also:
-
-   % Check arguments and set defaults
-   [T, filename, precision, headers, alignment, rownames, units] = ...
-      parseinputs(T, filename, precision, headers, alignment);
    
-   if nargin < 6 || isempty(caption)
-      caption = [];
-   end
+   % Check arguments and set defaults
+   [T, filename, precision, headers, alignment, rownames, units, caption] = ...
+      parseinputs(T, filename, precision, headers, alignment, caption);
 
    % Open file and write LaTeX table header
    fileID = createLatexTable(filename, alignment, headers, units, caption);
@@ -155,24 +151,25 @@ function closeLatexTable(fileID, caption)
 end
 
 %% Parse inputs
-function [T, fname, precision, columnlabels, columnspecs, rowlabels, units] = ...
-      parseinputs(T, fname, precision, columnlabels, columnspecs)
-
+function [T, filename, precision, columnlabels, columnspecs, rowlabels, ...
+      units, caption] = parseinputs(T, filename, precision, columnlabels, ...
+      columnspecs, caption)
+   
    if ~istable(T)
       error('Input must be a table.');
    end
    [~, ncols] = size(T);
 
    % Parse the filename
-   if nargin < 2 || isempty(fname)
-      fname = 'table.tex';
-      fprintf('Output path is not defined. Writing table to: %s.\n', fname);
+   if nargin < 2 || isempty(filename)
+      filename = 'table.tex';
+      fprintf('Output path is not defined. Writing table to: %s.\n', filename);
    else
-      fname = convertStringsToChars(fname);
-      if ~ischar(fname)
+      filename = convertStringsToChars(filename);
+      if ~ischar(filename)
          error('The output file name must be a char or string.');
-      elseif ~strcmp(fname(end-3:end), '.tex')
-         fname = [fname '.tex'];
+      elseif ~strcmp(filename(end-3:end), '.tex')
+         filename = [filename '.tex'];
       end
    end
 
@@ -184,7 +181,15 @@ function [T, fname, precision, columnlabels, columnspecs, rowlabels, units] = ..
       if isscalar(precision)
          precision = repmat(precision, 1, ncols);
       elseif length(precision) ~= ncols
-         error('PRECISION must be scalar or contain one value per table column.');
+         % Check if precision matches the number of numeric columns
+         if length(precision) == numel(T{1, vartype("numeric")})
+            % Pad to ncols. Note that precision only applies to numeric columns
+            tmp = zeros(1, ncols);
+            tmp(tablevartypeindices(T, "numeric")) = precision; %#ok<FNDSB>
+            precision = tmp;
+         else
+            error('PRECISION must be scalar or contain one value per table column.');
+         end
       end
    end
 
@@ -197,6 +202,7 @@ function [T, fname, precision, columnlabels, columnspecs, rowlabels, units] = ..
    end
    columnlabels = cellfun(@(x) strrep(x, '&', '\&'), columnlabels, 'Uniform', false);
 
+   % Set the column specs (alignment)
    if nargin < 5 || isempty(columnspecs)
       columnspecs = repmat('l', 1, ncols);
    else
@@ -206,6 +212,10 @@ function [T, fname, precision, columnlabels, columnspecs, rowlabels, units] = ..
       elseif length(columnspecs) ~= ncols
          error('COLSPEC must be a scalar char or row char with one value per table column.');
       end
+   end
+   
+   if nargin < 6 || isempty(caption)
+      caption = [];
    end
    
    % Prepare column and row specs

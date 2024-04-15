@@ -1,4 +1,4 @@
-function H = scatterfit(varargin)
+function varargout = scatterfit(x, y, varargin)
    %SCATTERFIT Scatter plot x versus y with a linear fit and a one:one line
    %
    %  H = scatterfit(x,y)
@@ -22,7 +22,7 @@ function H = scatterfit(varargin)
    % addOnetoOne('k--','linewidth',5)
    %
    % AUTHOR: Matthew Guy Cooper, UCLA, guycooper@ucla.edu
-   % 
+   %
    % See also: addonetoone.m
 
    % if nargin==0
@@ -43,6 +43,9 @@ function H = scatterfit(varargin)
    % look for provided axes or figure
    [h, args, ~, isfigure] = parsegraphics(varargin{:});
 
+   % note - this uses the less common method to create a new figure, not sure
+   % if this is desirable in general, but if plotting into an axis in a loop,
+   % pass in the axis.
    if isempty(h)
       f = figure;
       ax = gca(f);
@@ -54,10 +57,10 @@ function H = scatterfit(varargin)
       f = get(ax, 'Parent');
    end
 
-   % pull out x and y and remove them
-   x = args{1};
-   y = args{2};
-   args = args(3:end);
+   % % pull out x and y and remove them
+   % x = args{1};
+   % y = args{2};
+   % args = args(3:end);
 
    % Call to rmMarkerArgs would have gone here, but calling syntax below works.
    args = rmMarkerArgs(args);
@@ -65,18 +68,26 @@ function H = scatterfit(varargin)
    % Create the chart axes and scatter plot.
    H.figure = f;
    H.ax = ax;
-   H.plot = plot(H.ax,x,y, 'Marker', 'o', args{:});
+   H.plot = plot(H.ax, x, y, 'Marker', 'o', 'LineStyle', 'none', args{:});
    hold on;
    formatPlotMarkers;
 
-   % Compute and create the best-fit line.
+   % Compute and create the best-fit line. Plot in sorted order so linestyle's
+   % such as '--' or ':' render as expected.
    m = fitlm(x, y);
-   H.linearfit = plot(H.ax,x,m.Fitted,'LineWidth',2);
-   H.onetoone = addOnetoOne;
+   H.linearfit = plot(H.ax, sort(x), predict(m, sort(x)), 'LineWidth', 2);
+
+   % I commented this out b/c 1:1 isn't relevant in general
+   % H.onetoone = addOnetoOne;
+   % legend('data','linear fit','1:1 line')
 
    % later add options to pass x/ylabel
-   xylabel('x data','ydata')
-   legend('data','linear fit','1:1 line')
+   xylabel('x data', 'y data')
+   legend('data', 'linear fit', 'Location', 'northwest')
+
+   if nargout == 1
+      varargout{1} = H;
+   end
 end
 
 function args = rmMarkerArgs(args)

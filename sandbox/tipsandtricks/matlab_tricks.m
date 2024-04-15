@@ -16,6 +16,12 @@ narginchk(0,0)
 
 % column selection is supported by default with option-select
 
+% WOW - can use .('<funcname>') to index into package functions!
+
+propvals.(thisprop) = namespace.defaults.(thisprop)(option);
+
+
+
 %% fex functions to check out
 
 % https://www.mathworks.com/matlabcentral/fileexchange/48233-image-with-non-square-pixels?s_tid=srchtitle

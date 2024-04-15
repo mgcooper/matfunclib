@@ -1,4 +1,4 @@
-function varargout = setcolorbar(C, CbOpts, CustomOpts)
+function varargout = setcolorbar(C, props, opts)
    %SETCOLORBAR set colorbar properties
    %
    % [C, climits] = setcolorbar(C)
@@ -6,15 +6,22 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
    %
    % See also: getcolorbar
 
+   % Note: To make two-line tick labels:
+   % cbTicks = desired tick locations;
+   % cbLabels = {'one line', 'first line \newline second line'};
+   % c = colorbar('south', 'Ticks', cbTicks, 'TickLabels', cbLabels);
+
+
    arguments
       C (:,1) = getcolorbar
-      CbOpts.?matlab.graphics.illustration.ColorBar
-      CustomOpts.AutoColorLimits (1,1) logical = false % Add this line
+      props.?matlab.graphics.illustration.ColorBar
+      opts.Label string = string.empty()
+      opts.Title string = string.empty()
+      opts.AutoColorLimits (1,1) logical = false % Add this line
    end
 
    % apply the property-value pairs
-   cellfun(@(prop, val) set(C, prop, val), ...
-      fieldnames(CbOpts), struct2cell(CbOpts))
+   cellfun(@(p, v) set(C, p, v), fieldnames(props), struct2cell(props))
 
    % Get color limits based on all data associated with the colorbars
    try
@@ -25,7 +32,7 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
    climits = [min(climits(:,1)), max(climits(:,2))];
 
    % Set color limits
-   if CustomOpts.AutoColorLimits
+   if opts.AutoColorLimits
       for n = 1:numel(C)
          C(n).Limits = climits;
       end
@@ -33,6 +40,16 @@ function varargout = setcolorbar(C, CbOpts, CustomOpts)
       % scatterobj = findobj(gcf, 'Type', 'Scatter');
       % set(scatterobj, 'CData') problem is we don't want to reset the CData, we
       % want it mapped to the colorbar limits
+   end
+
+   % Set custom opts
+   for n = 1:numel(C)
+      if ~isempty(opts.Label)
+         set(get(C(n), 'Label'), 'String', opts.Label(n))
+      end
+      if ~isempty(opts.Title)
+         set(get(C(n), 'Title'), 'String', opts.Title(n))
+      end
    end
 
    % send back the legend object if requested

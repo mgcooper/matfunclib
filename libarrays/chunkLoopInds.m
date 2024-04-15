@@ -1,41 +1,43 @@
-function varargout = chunkLoopInds(iCurrent,iBegin,iStride)
-% chunkLoopInds return start and end index to access chunks of array
-%  
-% [iChunkStart,iChunkEnd] = chunkLoopInds(iCurrent,iBegin,iStride) returns start
-% and end indices to access elements of matrix A in chunks of size
-% numel(iStride). If A has size NxM, then N = numel(A)/M, and M = iStride. N is
-% also equal to max(iCurrent), assuming this function is called for all chunks
-% of size iStride over array M. The iBegin parameter is nominally 1 if looping
-% over all elements of A, but can be set to some other value to allow accessing
-% a portion of array A.
-% 
-% idx = chunkLoopInds(iCurrent,iBegin,iStride) returns iChunkStart:iChunkEnd as
-% an array (vector) of indices to use as linear indices.
-% 
-% Example
-% 
-% iBegin = 365;
-% iEnd = 365*4;
-% iStride = 365;
-% for i = iBegin:iStride:iEnd % where iEnd-iStride+1 >= iBegin >= 1
-%    
-%    % [iChunkStart,iChunkEnd] = chunkLoopInds(i, iBegin, 4)
-%    % % is equivalent to:
-%    % iChunkStart = (i-1)*4 + 1;
-%    % iChunkEnd = (i-1+1)*iStride;
-%    % note: if i=iEnd, then iChunkEnd == iEnd == iStride*(iEnd/numChunks
-% end
-% 
-% 
-% See also: 
+function varargout = chunkLoopInds(icurrent, ibegin, istride)
+   %CHUNKLOOPINDS Return start and end index to access chunks of array
+   %
+   %  [ISTART, IEND] = CHUNKLOOPINDS(ICURRENT, IBEGIN, ISTRIDE) Returns start
+   %  and end indices to access elements of matrix A in chunks of size ISTRIDE.
+   %  Here, ICURRENT is the current loop iteration index and IBEGIN is the first
+   %  loop iteration index.
+   %
+   %  For vector V with P elements, if ISTRIDE is an even divisor of P, then V
+   %  can be reshaped into an array A of size NxM, with N = ISTRIDE and M = P/N.
+   %  Thus ISTRIDE samples each "column" of the reshaped vector.
+   %
+   %  IDX = CHUNKLOOPINDS(ICURRENT, IBEGIN, ISTRIDE) Returns the list of linear
+   %  indices ISTART:IEND.
+   %
+   % Example
+   %  ibegin = 1;
+   %  istride = 10;
+   %  icurrent = 1;
+   %  [istart, iend] = chunkLoopInds(icurrent, ibegin, istride)
+   %  >>
+   %     istart = 1, iend = 10
+   %
+   %  icurrent = 2;
+   %  [istart, iend] = chunkLoopInds(icurrent, ibegin, istride)
+   %  >>
+   %     istart = 11, iend = 20
+   %
+   % See also:
 
-iChunkStart = (iCurrent-iBegin)*iStride + 1;
-iChunkEnd = (iCurrent-iBegin+1)*iStride;
+   % TODO: Add option to check if ISTRIDE is an even divisor of numel(A)
 
-switch nargout
-   case 1
-      varargout{1} = iChunkStart:iChunkEnd;
-   case 2
-      varargout{1} = iChunkStart;
-      varargout{2} = iChunkEnd;
+   istart = (icurrent - ibegin) * istride + 1;
+   iend = (icurrent - ibegin + 1) * istride;
+
+   switch nargout
+      case 1
+         varargout{1} = istart:iend;
+      case 2
+         varargout{1} = istart;
+         varargout{2} = iend;
+   end
 end

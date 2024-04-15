@@ -1,4 +1,4 @@
-function [DataOut] = setnan(Data,varargin)
+function [DataOut] = setnan(Data, varargin)
    %SETNAN sets logical indices in Data to nan
    %
    %  [DataOut] = setnan(Data) sets all values in Data nan
@@ -27,7 +27,7 @@ function [DataOut] = setnan(Data,varargin)
    if nargin == 1
       DataOut = nan(size(Data));
       if wastable || wastimetable
-         DataOut = replacevars(Data,Data.Properties.VariableNames,DataOut);
+         DataOut = replacevars(Data, Data.Properties.VariableNames, DataOut);
          return
       end
    end
@@ -36,7 +36,7 @@ function [DataOut] = setnan(Data,varargin)
    % if a table was passed in, prep it for replacement
    if wastable
 
-      inumeric = cellfun(@isnumeric,table2cell(Data(1,:)));
+      inumeric = cellfun(@isnumeric, table2cell(Data(1,:)));
       DataOut = table2array(Data(:,inumeric));
       props = Data.Properties;
 

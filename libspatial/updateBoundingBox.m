@@ -1,10 +1,22 @@
-function S = updateBoundingBox(S,varargin)
+function S = updateBoundingBox(S, varargin)
    %UPDATEBOUNDINGBOX update BoundingBox property of geostruct S
    %
    %  S = updateBoundingBox(S)
    %  S = updateBoundingBox(S, latfieldname, lonfieldname)
-   % 
+   %
    % See also: geostructinit, isgeostruct
+
+   % Convert table to geostruct. TODO: Either preserve table props or refactor
+   % subfunctions to work with tables. Latter appears straightforward here.
+   wastabular = istabular(S);
+   if wastabular
+      try
+         S = table2struct(S);
+      catch e
+         rethrow(e) % throw for now, add handling later
+      end
+      warning('Converting input argument 1, S, from table to struct. Custom properties are not preserved.')
+   end
 
    if nargin > 1
       xfield = varargin{1};
@@ -16,7 +28,7 @@ function S = updateBoundingBox(S,varargin)
 
    X = {S.(xfield)};
    Y = {S.(yfield)};
-   
+
    for n = 1:numel(X)
       S(n).BoundingBox = [min(X{n}), min(Y{n}); max(X{n}), max(Y{n})];
    end
@@ -25,6 +37,15 @@ function S = updateBoundingBox(S,varargin)
    %[S.BoundingBox] = deal(BoundingBox);
 
    S = reorderShapeFields(S,xfield,yfield);
+
+   % Send it back as it came
+   if wastabular
+      try
+         S = struct2table(S);
+      catch e
+         rethrow(e) % throw for now, add handling later
+      end
+   end
 end
 
 function S = reorderShapeFields(S,xfield,yfield)

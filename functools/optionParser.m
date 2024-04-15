@@ -1,4 +1,4 @@
-function opts = optionParser(validopts,calleropts,varargin)
+function opts = optionParser(validopts, calleropts, varargin)
    %OPTIONPARSER Parse optional inputs to logical name-value struct
    %
    %  opts = optionParser(validopts,calleropts) finds elements of calleropts
@@ -7,6 +7,17 @@ function opts = optionParser(validopts,calleropts,varargin)
    %  opts = optionParser(validopts,calleropts,opts) adds elements of calleropts
    %  that are members of validopts to provided structure opts and sets them to
    %  true
+   %
+   % NOTE: If I changed inputs to: optionParser(currentopts, validopts, varargin)
+   % where currentopts could be [], then I could pass the calleropts, which is
+   % often varargin in the calling function like this:
+   %  optionParser(currentopts, validopts, varargin{:})
+   % As it currently is, I cannot pass varargin{:} from the calling function:
+   %  optionParser(validopts, varargin{:}, currentopts)
+   % because varargin{:} is the second argument here but it's expanded into a
+   % csl when passed in. I could also use this input:
+   %  optionParser(validopts, varargin{:})
+   % then parse out currentopts as the first argument of varargin.
    %
    % optionParser is based on this method:
    %
@@ -94,6 +105,9 @@ function opts = optionParser(validopts,calleropts,varargin)
    % convert to cell array if passed in as a char
    if ischar(validopts)
       validopts = cellstr(validopts);
+
+   elseif isstring(validopts)
+      validopts = convertStringsToChars(validopts);
    end
 
    % I think i broke something with the last update ... if i preset opts to
@@ -101,9 +115,9 @@ function opts = optionParser(validopts,calleropts,varargin)
    % should fix it - replace any non-comparable calleropts with an empty char
    for n = 1:numel(calleropts)
       try
-         ismember(calleropts{n},validopts);
+         ismember(calleropts{n}, validopts);
       catch ME
-         if strcmp(ME.identifier,'MATLAB:ISMEMBER:InputClass')
+         if strcmp(ME.identifier, 'MATLAB:ISMEMBER:InputClass')
             calleropts{n} = '';
          end
       end
@@ -113,7 +127,7 @@ function opts = optionParser(validopts,calleropts,varargin)
    for n = 1:numel(validopts)
 
       try
-         if isfield(opts,validopts{n}) % keep default value that was passed in
+         if isfield(opts, validopts{n}) % keep default value that was passed in
             continue
          end
       catch
@@ -121,7 +135,7 @@ function opts = optionParser(validopts,calleropts,varargin)
       end
 
       try
-         opts.(validopts{n}) = ismember(validopts{n},calleropts);
+         opts.(validopts{n}) = ismember(validopts{n}, calleropts);
 
       catch ME
          % catch cases where varargin from the calling function is not a char.
@@ -130,7 +144,7 @@ function opts = optionParser(validopts,calleropts,varargin)
          % within the calling function. if name-value pairs are used it will get
          % confused but as long as the callign function knows the valid optional
          % args it should be ok
-         if strcmp(ME.identifier,'MATLAB:ISMEMBER:InputClass')
+         if strcmp(ME.identifier, 'MATLAB:ISMEMBER:InputClass')
             % let it go
          end
       end

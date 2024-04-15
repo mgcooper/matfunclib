@@ -5,7 +5,7 @@ function props = tableprops(T,varargin)
    %
    %  props = tableprops(T,vars) returns properties of variables VARS in T
    %
-   % See also
+   % See also: settableprops
 
    narginchk(1,2);
 

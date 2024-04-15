@@ -4,19 +4,35 @@ function varargout = maxfig(varargin)
    %  fig = maxfig()
    %  fig = maxfig(fig)
    %
-   % See also: 
+   % See also:
 
-   if nargin == 0
-      fig = figure;
+   % Parse possible axes / figure input.
+   [h, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
+
+   if isempty(h)
+      fg = figure;
+   elseif isfigure
+      fg = h;
    else
-      fig = varargin{1};
+      fg = get(h, 'Parent');
    end
 
-   units=get(fig,'units');
-   set(fig,'units','normalized','outerposition',[0 0 1 1]);
-   set(fig,'units',units);
+   % Parse param pairs (not needed unless non-standard options added)
+   % [args, pairs, nargs] = parseparampairs(args{:});
+
+   units = get(fg, 'units');
+   set(fg,'units', 'normalized', 'outerposition', [0 0 1 1]);
+   set(fg,'units', units);
+
+   % Try to set any additional options supplied on input
+   if ~isempty(args)
+      try
+         set(fg, args{:});
+      catch
+      end
+   end
 
    if nargout == 1
-      varargout{1}=fig;
+      varargout{1} = fg;
    end
 end

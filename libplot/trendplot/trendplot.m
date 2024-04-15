@@ -35,7 +35,7 @@ function h = trendplot(t,y,varargin)
    alpha = p.Results.alpha;
    precision = p.Results.precision;
    yerr = p.Results.yerr;
-   varargs = unmatched2varargin(p.Unmatched);
+   varargs = struct2varargin(p.Unmatched);
 
    % convert to anomalies etc.
    [t,y,yerr] = prepInput(t,y,yerr,anomalies,reference);

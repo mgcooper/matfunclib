@@ -5,6 +5,10 @@ inmatlab = ~inoctave;
 
 %% manage warnings
 
+% remap the red close button associated with figure windows, potentially
+% preventing MATLAB from becoming unresponsive when closing figures.
+set(groot, 'defaultFigureCloseRequestFcn', @(o, ~) delete(o));
+
 % Save the current state of the warnings
 originalWarningState = warning;
 
@@ -104,6 +108,13 @@ setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
 setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
 setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
 
+% Google Drive
+setenv('USERGDRIVEPATH', fullfile(getenv('HOME'), ...
+   'Library/CloudStorage/GoogleDrive-guycooper@g.ucla.edu/My Drive'));
+
+% merra toolbox
+setenv('USER_MERRA_PATH', fullfile(getenv('USERDATAPATH'), 'merra2'));
+
 %% Add shared library to path
 
 % Ignored folders - append these to ignorePaths to use
@@ -138,6 +149,8 @@ subpaths = horzcat(subpaths{:});
 % Add the paths to the path
 addpath(subpaths, '-end');
 
+% Add these paths to the top to ensure they are not shadowed by built-ins
+addpath(fullfile(getenv('MATLABFUNCTIONPATH'), 'libstats'), '-begin');
 
 %% Figure defaults
 
@@ -193,7 +206,8 @@ format compact % use pi to see different formats: pi
 
 % active toolboxes
 toolboxes = {'magicParser', 'BrewerMap', 'CubeHelix', 'mpm', 'CDT', ...
-   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin', 'm_map'};
+   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin', 'm_map', ...
+   'exactremap'};
 
 for n = 1:numel(toolboxes)
    try

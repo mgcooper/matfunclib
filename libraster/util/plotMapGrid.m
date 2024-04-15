@@ -108,7 +108,7 @@ function H = plotGrid(target, X, Y, Xedges, Yedges, opt)
 
    if strcmp(opt, 'edges') || strcmp(opt, 'both')
       % Plot the grid edges
-      p1 = mesh(Xedges, Yedges, zeros(size(Xedges)),'FaceAlpha',0);
+      p1 = mesh(Xedges, Yedges, zeros(size(Xedges)), 'FaceAlpha', 0);
       view(2);
       H(3) = p1;
    end

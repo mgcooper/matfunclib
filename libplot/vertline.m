@@ -1,4 +1,4 @@
-function h = vertline(x,varargin)
+function varargout = vertline(x,varargin)
    %VERTLINE Draw a vertical line on a plot at a specified x-coordinate.
    %
    % This function creates a vertical line on a plot at a given x-coordinate.
@@ -37,6 +37,10 @@ function h = vertline(x,varargin)
 
    if ~washeld
       hold off
+   end
+
+   if nargout == 1
+      varargout{1} = h;
    end
 end
 

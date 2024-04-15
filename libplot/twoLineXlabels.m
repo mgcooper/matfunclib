@@ -6,6 +6,8 @@ function twoLineXlabels(ax, xlabels, jitter, varargin)
    %
    % See also:
 
+   % See setcolorbar for example how to do this for colorbar tick labels.
+
    % Get the number of rows and columns in the xlabels array
    [rows, cols] = size(xlabels);
 

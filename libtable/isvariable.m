@@ -8,7 +8,7 @@ function [tf, vi] = isvariable(varname, T)
 
    arguments
       varname (:,1) string
-      T (:,:) table
+      T (:,:) tabular
    end
    tf = any(strcmp(varname, T.Properties.VariableNames));
    vi = find(strcmp(varname, T.Properties.VariableNames));

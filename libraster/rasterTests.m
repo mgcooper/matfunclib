@@ -6,7 +6,7 @@ end
 function setup(testCase)
    % This setup function was designed for gridmember, it creates a coordinate
    % pair list with one missing coordinate-pair (6, 2).
-   
+
    % Set x=3, y=1 missing.
    coords = [
       4, 2
@@ -14,9 +14,9 @@ function setup(testCase)
       5, 2
       5, 3
       6, 3] ;
-   
+
    % Notes on the expected results. The grid above in x,y format with y
-   % increasing up and x increasing right: 
+   % increasing up and x increasing right:
    % 4,3 5,3 6,3
    % 4,2 5,2 <missing>
    %
@@ -52,7 +52,7 @@ function setup(testCase)
    % missing. Therefore, although the function does return the "correct" answer
    % when GridOption=gridvectors, note that the values returned represent
    % rows/columns with NO missing values.
-   
+
    % Create coordinate pairs, gridvecs, and fullgrids
    xcoords = coords(:, 1);
    ycoords = coords(:, 2);

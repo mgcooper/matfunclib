@@ -11,8 +11,8 @@ function [x, y] = textcoords(xpct, ypct)
    xrange = xlims(:, 2) - xlims(:, 1);
    yrange = ylims(:, 2) - ylims(:, 1);
 
-   xoffset = xpct/100 .* xrange;
-   yoffset = ypct/100 .* yrange;
+   xoffset = xpct/100 * xrange;
+   yoffset = ypct/100 * yrange;
 
    x = xlims(:, 1) + xoffset;
    y = ylims(:, 1) + yoffset;

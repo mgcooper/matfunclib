@@ -5,10 +5,14 @@ function workoff(varargin)
    %  activefiles property of the projectdirectory to the currently open files,
    %  and sets the 'default' project active.
    %
-   %  WORKOFF(PROJECTNAME,'UPDATEFILES', FALSE) does not update the activefiles
+   %  WORKOFF() Without any arguments deactivates the current active project and
+   %  activates project "default".
+   %
+   %  WORKOFF(_,'UPDATEFILES', FALSE) Does not update the activefiles
    %  list associated with MYPROJECT to the current open files. Default is true,
    %  the current open files are saved to the activefiles property for
-   %  MYPROJECT.
+   %  MYPROJECT. This syntax also works if PROJECTNAME is not provided as
+   %  described above.
    %
    % See also: workon, manager, addproject
 
@@ -26,7 +30,7 @@ function workoff(varargin)
    %
    % To fix this, workoff sets the activeproject to 'default', which is the
    % right method, but it is still problematic to call workoff from finish.m,
-   % here's why: 
+   % here's why:
    % - close matlab
    % - finish.m calls workoff
    % - workoff updates the activefiles and sets the activeproject to 'default'

@@ -30,7 +30,7 @@ function [gridType, cellSizeX, cellSizeY, tfGeoCoords, tfLatLonOrder] = ...
       case {'fullgrids', 'coordinates'}
 
          % Remove duplicate coordinate pairs. Use 'stable' to retain the order.
-         XY = unique([X(:),Y(:)], 'rows');
+         XY = unique([X(:), Y(:)], 'rows');
          X = XY(:, 1);
          Y = XY(:, 2);
 

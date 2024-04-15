@@ -3,11 +3,12 @@ function varargout = setPieChartPatch(H, PatchOpts, CustomOpts)
    %
    %  setPieChartPatch(H) set patch properties of the pie chart with handle H.
    %
-   % See also: setPieChartText
+   % See also: setPieChartText, patchlegendlines
    arguments
       H matlab.graphics.primitive.Data
       PatchOpts.?matlab.graphics.primitive.Patch
       CustomOpts.ColorPalette = colororder
+      CustomOpts.KeepColors = false;
    end
    opts = namedargs2cell(PatchOpts);
 
@@ -23,8 +24,10 @@ function varargout = setPieChartPatch(H, PatchOpts, CustomOpts)
    idx = idx(1:Npatch);
 
    % Set the pie slice colors
-   for n=1:Npatch
-      hpatch(n).FaceColor = colors(idx(n),:);
+   if ~CustomOpts.KeepColors
+      for n=1:Npatch
+         hpatch(n).FaceColor = colors(idx(n),:);
+      end
    end
 
    % Apply the property-value pairs

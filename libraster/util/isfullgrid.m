@@ -5,6 +5,11 @@ function tf = isfullgrid(X, Y, varargin)
    %  elements of their fullgrid representation and FALSE otherwise. X, Y can be
    %  coordinate-pair lists or gridvectors.
    %
+   %  TF = ISFULLGRID(X, Y, GRIDFORMAT) Uses specified GRIDFORMAT to test if
+   %  X, Y are fullgrids. GRIDFORMAT can be "coordinates" or "gridvectors". If
+   %  GRIDFORMAT is not provided, it is computed. Specify GRIDFORMAT to save the
+   %  computation.
+   %
    % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
    %
    % See also: fullgrid, gridmember
@@ -12,9 +17,24 @@ function tf = isfullgrid(X, Y, varargin)
    % input checks
    narginchk(2, Inf)
 
-   tf = all(ismember( ...
-      [xfullgrid(X, Y, 'coordinates'), yfullgrid(X, Y, 'coordinates')], ...
-      [X(:), Y(:)], 'rows'));
+   if nargin < 3
+      gridFormat = mapGridFormat(X, Y);
+   else
+      gridFormat = varargin{1};
+   end
+
+   if gridFormat == "gridvectors"
+      % This works if X, Y are gridvectors
+      tf = all(ismember( ...
+         [X(:), Y(:)], ...
+         [xfullgrid(X, Y, 'coordinates'), yfullgrid(X, Y, 'coordinates')], ...
+         'rows'));
+   else
+      % This will fail if X, Y are gridvectors
+      tf = all(ismember( ...
+         [xfullgrid(X, Y, 'coordinates'), yfullgrid(X, Y, 'coordinates')], ...
+         [X(:), Y(:)], 'rows'));
+   end
 
    % "unique" should not be necessary, but keep this around for now:
    % tf = all(ismember(unique( ...
@@ -25,14 +45,14 @@ end
 %% notes
 
 % If for some reason the method above fails, this should work:
-% [X2, Y2] = fullgrid(X, Y); 
+% [X2, Y2] = fullgrid(X, Y);
 % tf = all(gridmember(X2, Y2, X, Y), 'all');
 
 % This confirms that xfullgrid produces the correct values
 % isequal(X2(:), xfullgrid(X, Y, 'coordinates'))
 % isequal(Y2(:), yfullgrid(X, Y, 'coordinates'))
 
-% NOTE, this is not sufficient:
+% NOTE, this is necessary but not sufficient:
 % tf = numel(xgridvec(X)) * numel(ygridvec(Y)) == numel(fullgrid(X, Y));
 
 %% LICENSE

@@ -84,7 +84,7 @@ function results = bootdiff(data, nboot, alpha, ndraws)
    results.CI_upper = CI_upper;
 
    % Check if difference is significant based on CI not including zero
-   results.significant_diff = (CI_lower > 0 & CI_upper > 0) | ...
+   results.h_bootdiff = (CI_lower > 0 & CI_upper > 0) | ...
       (CI_lower < 0 & CI_upper < 0);
 end
 

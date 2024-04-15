@@ -31,14 +31,21 @@ function varargout = plotraster(Z, varargin)
 
       if R.CoordinateSystemType == "planar"
 
-         [X, Y] = R.intrinsicToWorld([1, R.RasterSize(1)], [1, R.RasterSize(2)]);
+         % See R2Grid for a diagram to understand why [1, R.RasterSize(2)]
+         % captures the grid cell centers of the first and last X pixel and
+         % similarly [1, R.RasterSize(1)] the first and last Y pixel.
+         % TLDR: the pixel centers are from 1:numpixels, the cell edges are
+         % from 0.5:numpixels-0.5.
+
+         [X, Y] = R.intrinsicToWorld([1, R.RasterSize(2)], [1, R.RasterSize(1)]);
          XTicks = sort(min(X(:)):R.CellExtentInWorldX:max(X(:)), 'ascend');
          YTicks = sort(min(Y(:)):R.CellExtentInWorldY:max(Y(:)), 'descend');
 
-         % This should be equivalent 
-         % [X, Y] = R.worldGrid; 
-         % X = [min(X(:)), max(X(:))]; 
-         % Y = [max(Y(:)), min(Y(:))];
+         % This should be equivalent but requires creating the full grids.
+         % [Xgrid, Ygrid] = R.worldGrid;
+         % X2 = [min(Xgrid(:)), max(Xgrid(:))];
+         % Y2 = [max(Ygrid(:)), min(Ygrid(:))];
+         % Compare X2 to X and Y2 to Y.
       else
 
          X = R.intrinsicXToLongitude([1 rasterSize(2)]);
@@ -77,29 +84,29 @@ function varargout = plotraster(Z, varargin)
    end
 end
 
-% % Check that X,Y are defined correctly 
+% % Check that X,Y are defined correctly
 % scatter(X(1,1), Y(1,1), 'filled')
 % scatter(X(1,2), Y(1,2), 'filled')
 
 % % This deosn't work b/c for pcolor, we would need to extend the grid outward
-% by 1/2 pixel 
-% [X, Y] = prepareMapGrid(X, Y); 
+% by 1/2 pixel
+% [X, Y] = prepareMapGrid(X, Y);
 % figure; pcolor(X,Y,Z);
 
-% % Set properties if necessary 
+% % Set properties if necessary
 % if ~isempty(props)
 %   set(H,props{:,1},props{:,2});
 % end
 %
-% % Set labels if necessary 
+% % Set labels if necessary
 % if ~isempty(xlbl)
 %   xlabel(xlbl);
-% end 
+% end
 % if ~isempty(ylbl)
 %   ylabel(ylbl);
 % end
 %
-% % Return the handle 
+% % Return the handle
 % if nargout == 1
 %   H = H;
 % end

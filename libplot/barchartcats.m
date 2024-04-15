@@ -100,9 +100,9 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
    % functionality could go to piechartcats, and that function could have a
    % "DisplayType" option that uses bars instead of pies.
 
-   % Add MergeGroups and PlotError to function signatures. 
+   % Add MergeGroups and PlotError to function signatures.
    % Check groupstats.histogram first, it uses MergeGroupVar/Members.
-   
+
    arguments
       T table
       ydatavar (1,1) string {mustBeNonempty}
@@ -140,7 +140,7 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
    import groupstats.groupselect
    import groupstats.boxchartxdata
    import groupstats.prepareTableGroups
-   
+
    varargs = namedargs2cell(props);
 
    % validate inputs
@@ -187,17 +187,27 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
    [XData, YData] = reorderGroups(opts, XData, YData);
 
    % Create the figure
-   [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
+   [H, L, ax] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
       opts, varargs);
 
    hold off
-   [varargout{1:nargout}] = dealout(H, L);
+   [varargout{1:nargout}] = dealout(H, L, ax);
 end
 
 
 function [XData, YData, CData, EData] = summarizeTableGroups(T, ydatavar, ...
       xgroupvar, cgroupvar, method)
    %SUMMARIZETABLEGROUPS
+
+   % TODO
+   % - check if two calls to groupsummary or similar has occurred in which case
+   % there may be e.g. mean_mean_<var>. This would happen if I passed in a table
+   % that was created with groupsummary, in which there is no need to summarize
+   % the data further.
+   % - Add a method to handle missing values e.g. in the above example, if a
+   % binning method was used on the table outside this function, and a group has
+   % no members for a bin, the table won't have the expected size based on the
+   % number of cgroupvar or xgroupvar elements.
 
    % cgroupvar complicates this when it is "none" adn I don't think we need
    % it anyway, in boxchartcats I set CData to a logical the same size as
@@ -313,7 +323,7 @@ function [XData, YData] = reorderGroups(opts, XData, YData)
    % TODO: reorder the legend entries if custom ones provided
 end
 
-function [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
+function [H, L, ax] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
       opts, props)
    % Create the barchart
 
@@ -346,25 +356,25 @@ function [H, L] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
    end
 
    % Add the legend
-   if opts.Legend == "on"
-      withwarnoff('MATLAB:legend:IgnoringExtraEntries');
-      legendtxt = opts.LegendString;
-      if isempty(legendtxt)
-         legendtxt = unique(CData);
-      end
-      try
-         L = legend(legendtxt, ...
-            'Location', 'northwest', ...
-            'AutoUpdate', 'off', ...
-            'Orientation', opts.LegendOrientation, ...
-            'FontSize', 12);
-         % 'Location', 'northoutside', ...
-         % 'AutoUpdate', 'off', ...
-         % 'numcolumns', numel(legendtxt) );
-      catch
-      end
+
+   withwarnoff('MATLAB:legend:IgnoringExtraEntries');
+   legendtxt = opts.LegendString;
+   if isempty(legendtxt)
+      legendtxt = unique(CData);
+   end
+   try
+      L = legend(legendtxt, ...
+         'Location', 'northwest', ...
+         'AutoUpdate', 'off', ...
+         'Orientation', opts.LegendOrientation, ...
+         'FontSize', 12);
+      % 'Location', 'northoutside', ...
+      % 'AutoUpdate', 'off', ...
+      % 'numcolumns', numel(legendtxt) );
+   catch
    end
 
+   set(L, 'Visible', opts.Legend)
    % % Note: this might work if table data is passed in with all the group data,
    % but % in my example I used the metadata table from Info which already has
    % the group % summary calcualtions so I cannot get the std

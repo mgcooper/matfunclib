@@ -56,8 +56,8 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
    % If one is uniform but the other not, determine just how non-uniform it is
    if xIsUniform && ~yIsUniform
 
-      % If Y is a vector of constant values, then the "grid" is a vector, 
-      % assume uniformity. 
+      % If Y is a vector of constant values, then the "grid" is a vector,
+      % assume uniformity.
       if isvector(Y) && all(diff(Y)==0)
          yIsUniform = true;
          cellSizeY = cellSizeX;
@@ -105,18 +105,25 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
          if nnz(diff(cellSizeY,2))==0 % allcolsequal
             cellSizeY = cellSizeY(:,1);
          end
+
+         % This was needed with full grids (MAR, which were nearly uniform) to cet
+         % the pad cellSize to equal the size of X and Y
+         cellSizeX = [cellSizeX cellSizeX(:, end)];
+         cellSizeY = [cellSizeY(1, :); cellSizeY];
       else
 
          % Here and next isn't really right, to know te actual grid size I need
          % ot know the vertices or the edges of the first or last
          cellSizeX = diff(X);
          cellSizeY = diff(Y);
+
+         % This section appends the first element because diff returns 1 fewer
+         % element than the input X,Y:
+         cellSizeX = [cellSizeX(1); cellSizeX];
+         cellSizeY = [cellSizeY(1); cellSizeY];
       end
 
-      cellSizeX = [cellSizeX(1); cellSizeX];
-      cellSizeY = [cellSizeY(1); cellSizeY];
-
-      % cellSizeX = NaN; 
+      % cellSizeX = NaN;
       % cellSizeY = NaN;
    end
 
@@ -155,37 +162,41 @@ function [tf, cellsize] = checkuniformity(x, tol)
 
    if tf
       cellsize = mode(dx);
+   else
+      % March 2024 there was no "else" but hadn't ever gotten here so added nan
+      % for now, not sure what is best.
+      cellsize = nan;
    end
 end
 
 % function [cellsizeX,cellsizeY,tfGeo,tol] = mapgridcellsize(X,Y)
 %
-% % determine if the data are planar or geographic 
+% % determine if the data are planar or geographic
 % tfGeo = isGeographic(X(1,1),Y(1,1));
 %
-% % get an estimate of the grid resolution (i.e. the grid cell size) 
-% xres = diff(X(1,:)); 
+% % get an estimate of the grid resolution (i.e. the grid cell size)
+% xres = diff(X(1,:));
 % yres = diff(Y(:,1));
 %
-% % check that the gridding is uniform. 
+% % check that the gridding is uniform.
 % if tfGeo
 %    tol = 7; % approximately 1 cm in units of degrees
 % else
-%    % tol = 2; % nearest cm 
+%    % tol = 2; % nearest cm
 %    tol = 0; % nearest m (changed for MAR)
 % end
 %
 % % round to tol and take second derivative, should == 0 everywhere
 % assert(all(round(diff(abs(xres),2),tol)==0), ...
-%    ['Input argument 1, X, must have uniform grid spacing. ' ... 
-%     'You might need to round the X/Y or LON/LAT grids ' ... 
+%    ['Input argument 1, X, must have uniform grid spacing. ' ...
+%     'You might need to round the X/Y or LON/LAT grids ' ...
 %     'to a uniform precision']);
 % assert(all(round(diff(abs(yres),2),tol)==0), ...
-%    ['Input argument 2, Y, must have uniform grid spacing. ' ... 
-%     'You might need to round the X/Y or LON/LAT grids ' ... 
+%    ['Input argument 2, Y, must have uniform grid spacing. ' ...
+%     'You might need to round the X/Y or LON/LAT grids ' ...
 %     'to a uniform precision']);
 %
-% % return the cell size 
-% cellsizeX = abs(xres(1)); 
-% cellsizeY = abs(yres(1)); 
+% % return the cell size
+% cellsizeX = abs(xres(1));
+% cellsizeY = abs(yres(1));
 % % cellsize = [cellsizeX, cellsizeY];

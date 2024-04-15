@@ -1,5 +1,5 @@
 function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
-      prepareMapGrid( X1, Y1, GridOption)
+      prepareMapGrid(X1, Y1, GridOption)
    %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis.
    %
    % [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y)
@@ -43,6 +43,15 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
    %     ans: minLon = -170, maxLon = 180
    %
    % See also: mapGridInfo, orientMapGrid, mapGridCellSize
+
+   % NOTE: This is failing in at least one known case - the gridded albedo from
+   % Johnny. There, the lat lon grid vectors are projected to SIPSN. The
+   % resolution is 1km, but mapGridFormat is returning "irregular" because the
+   % call to customIsUniform returns false. That function is not ideal b/c it
+   % does not consider the 2d grid orientation and take the diff along the
+   % appropriate dimension. It should be possible to fix this using the mode and
+   % an appropriate tolerance, but i was not able to get a "true" isuniform for
+   % that case until I set tol to 6
 
    % Round input to nearest 1e-10. This is ad-hoc, from experience (e.g. MERRA2)
    X1 = round(X1, 10);
@@ -105,9 +114,19 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
       case 'unstructured' % inclusive of 'irregular'
 
          % Probably do nothing, but if anything, remove / check for redundant pairs
-         XY = unique([X1(:), Y1(:)], 'rows', 'stable');
-         X2 = XY(:, 1);
-         Y2 = XY(:, 2);
+         if numel(X1) == numel(Y1)
+            XY = unique([X1(:), Y1(:)], 'rows', 'stable');
+            X2 = XY(:, 1);
+            Y2 = XY(:, 2);
+         else
+            % If here, likely means X1, Y1 are vectors of irregularly spaced
+            % coordinates, e.g., if regular lat lon grid vectors were projected.
+            % This is an error.
+            X2 = X1;
+            Y2 = Y1;
+
+            error('X1, Y1 appear to be irregular and/or are not coordinate pairs')
+         end
 
    end
 

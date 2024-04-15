@@ -28,6 +28,8 @@ function [XOUT, I] = rmnan(XIN, DIM)
          fnc = @(x) isnat(x);
       elseif isstring(XIN)
          fnc = @(x) ismissing(x);
+      elseif istabular(XIN)
+
       else
          fnc = @(x) isnan(x);
       end

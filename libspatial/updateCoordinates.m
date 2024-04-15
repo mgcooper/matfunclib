@@ -3,10 +3,10 @@ function S = updateCoordinates(S, mapproj, varargin)
    %
    %  S = UPDATECOORDINATES(S, MAPPROJ) transforms the coordinates of the
    %  input geostruct S using the map projection defined by MAPPROJ.
-   %  It will transform Latitude and Longitude to X and Y if 'Lat' and 'Lon' 
+   %  It will transform Latitude and Longitude to X and Y if 'Lat' and 'Lon'
    %  fields are present and append the X and Y fields to the geostruct;
    %  otherwise, it will transform X and Y to Latitude and Longitude if 'X' and
-   %  'Y' fields are present and append new Lat and Lon fields. 
+   %  'Y' fields are present and append new Lat and Lon fields.
    %
    %  S = UPDATECOORDINATES(S, MAPPROJ, VARARGIN) accepts additional
    %  parameters that are forwarded to parseMapProjection function for
@@ -19,10 +19,10 @@ function S = updateCoordinates(S, mapproj, varargin)
    % Now you can plot the struct using either mapshow or geoshow:
    %  mapshow(S_updated)
    %  geoshow(S_updated)
-   % 
+   %
    % Requirements:
    %  - Geostruct S must contain either 'Lat' and 'Lon' fields or 'X' and 'Y'
-   %  fields. 
+   %  fields.
    %
    % Outputs:
    %  - S: Modified geostruct with updated coordinates.
@@ -36,15 +36,15 @@ function S = updateCoordinates(S, mapproj, varargin)
    if isfield(S, 'Lat') && isfield(S, 'Lon')
 
       % Extract coordinates using geostructCoordinates
-      [Lat, Lon] = geostructCoordinates(S, 'ascell');
+      [Lat, Lon] = geostructCoordinates(S, 'geographic', 'ascell');
       needXY = true;
       tfGeoCoords = true;
 
    elseif isfield(S, 'X') && isfield(S, 'Y')
 
       % Extract coordinates using geostructCoordinates
-      [X, Y] = geostructCoordinates(S, 'ascell');
-      
+      [X, Y] = geostructCoordinates(S, 'projected', 'ascell');
+
       [tfGeoCoords, tfLatLonOrder] = cellfun(@(x, y) isGeoGrid(y, x), X, Y);
 
       if all(tfGeoCoords)
@@ -63,9 +63,9 @@ function S = updateCoordinates(S, mapproj, varargin)
       error('Invalid input: Geostruct must contain either Lat-Lon or X-Y fields.');
    end
 
-   % Verify the mapproj, and convert 
+   % Verify the mapproj, and convert
    mapproj = parseMapProjection(false, mapproj, 'inverse', varargin{:});
-   
+
    if needXY
 
       % Forward projection to obtain X and Y
@@ -84,7 +84,7 @@ function S = updateCoordinates(S, mapproj, varargin)
          S(n).Lon = Lon{n};
       end
    end
-   
+
    % In case it ends up being easier to use a loop, this is how I did it before
    % I wrote this function. The poly2cw and closePolygonParts prevented the
    % insertion of a phantom pole (90o Lat) for nan-separated polygons

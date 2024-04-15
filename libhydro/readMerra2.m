@@ -1,155 +1,169 @@
-function [dataGrid,dataList,Unit] = readMerra2(fileName,varName,varargin)
+function [dataGrid, dataList, unit] = readMerra2(filename, varname, varargin)
    %READMERRA2 read data from merra2 .nc file
    %
-   % Syntax
+   %  [DATAGRID, DATALIST] = READMERRA2(FILENAME, VARNAME)
+   %  [DATAGRID, DATALIST] = READMERRA2(FILENAME, VARNAME, NCSTART, NCCOUNT)
    %
-   %  [dataGrid,dataList] = readMerra2(fileName,varName)
-   %  [dataGrid,dataList] = readMerra2(fileName,varName,ncstart,nccount)
-   %  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,Unit)
-   %  [dataGrid,dataList,Unit] = readMerra2(fileName,varName,ncstart,nccount,Unit)
+   %  [_, UNIT] = READMERRA2(FILENAME, VARNAME, UNIT)
+   %  [_, UNIT] = READMERRA2(FILENAME, VARNAME, NCSTART, NCCOUNT, UNIT)
    %
    % Description
    %
-   %  [dataGrid,dataList] = readMerra2(fileName,varName) reads the data from
-   %  variable `varName` contained in the MERRA2 .nc file specified by
-   %  `fileName`. `dataGrid` contains the data reshaped to column-major format
+   %  [DATAGRID, DATALIST] = READMERRA2(FILENAME, VARNAME) reads the data from
+   %  variable `varname` contained in the MERRA2 .nc file specified by
+   %  `filename`. `dataGrid` contains the data reshaped to column-major format
    %  as a data grid (matrix). `dataList` contains the data reshaped to
    %  list-format.
    %
-   %  [dataGrid,dataList] = readMerra2(fileName,varName,ncstart,nccount) reads
-   %  data beginning at the location of each dimension specified in `start`. The
-   %  `count` argument specifies the number of elements to read along each
-   %  dimension.
+   %  [DATAGRID, DATALIST] = READMERRA2(FILENAME, VARNAME, NCSTART, NCCOUNT)
+   %  reads data beginning at the location of each dimension specified in
+   %  `start`. The `count` argument specifies the number of elements to read
+   %  along each dimension.
    %
-   %  [dataGrid,dataList,Unit] = readMerra2(___,Unit) uses the unit specified by
-   %  input argument `Unit` to convert the variable to a pre-defined standard
-   %  output `Unit`. For example, mass fluxes stored in Merra2 files in units
+   %  [DATAGRID, DATALIST, UNIT] = READMERRA2(_, UNIT) uses the unit specified
+   %  by input argument `unit` to convert the variable to a pre-defined standard
+   %  output `unit`. For example, mass fluxes stored in Merra2 files in units
    %  kg/m2/s are converted to m/hr. Temperature data stored in units Celsius
-   %  are converted to Kelvins. If the provided value for Unit is not
+   %  are converted to Kelvins. If the provided value for unit is not
    %  recognized, the variable is not converted. Use with either of the two
    %  prior syntaxes.
    %
    % REQUIRED INPUTS
-   %     fileName - full path to .nc file
-   %     varName  - character array or cellstr of variabe name to read
+   %     filename - full path to .nc file
+   %     varname  - character array or cellstr of variabe name to read
    %
    % OPTIONAL INPUTS
    %     ncstart  - numeric vector of positive integers representing the
    %                starting location along each data dimension.
    %     nccount  - numeric vector of positive integers representing the number
    %                of elements to read along each data dimension.
-   %     Unit     - character array specifying the unit of the variable to read
+   %     unit     - character array specifying the unit of the variable to read
    %
    % OUTPUTS
    %   dataGrid   - the data stored as a spatial grid in column-major format
    %   dataList   - the data stored as a spatial list
-   %   Unit       - the unit of the data in dataGrid and/or dataList
+   %   unit       - the unit of the data in dataGrid and/or dataList
    %
-   % NOTE: merra2 data is posted at 3-hour time intervals. Merra 2 variables
-   % that represent mass fluxes (such as runoff) are converted by this function
-   % from kg/m2/s to m/h, meaning they represent 3-hour averages. To accumulate
-   % fluxes, multiply the 3-hourly data by 3 prior to calling cumsum.
-   % Alternatively, interpolate the data returned by this function from 3-hour
-   % to 1-hour posting prior to calling cumsum and omit the multiplication by 3.
+   %  Note on temporal posting:
    %
-   % See also: 
+   %  Merra-2 data is posted at 3-hour time intervals. Variables that represent
+   %  mass fluxes (such as runoff) are converted by this function from kg/m2/s
+   %  to m/h, meaning they represent 3-hour averages. To accumulate fluxes,
+   %  multiply the 3-hourly data by 3 prior to calling cumsum. Alternatively,
+   %  interpolate the data returned by this function from 3-hour to 1-hour
+   %  posting prior to calling cumsum and omit the multiplication by 3.
+   %
+   %  Note on dimension ordering:
+   %
+   %  CF conventions store the data with dimensions [T Z Y X] in row-major.
+   %  Matlab reads in reverse order: [X Y Z T]. Thus X is along the first
+   %  dimension, Y the second. This function transposes the first and second
+   %  dimension, so X is along the second dimension (across rows) and Y along
+   %  the first dimension (down columns). Following this, the data is flipped
+   %  along Y dimension because CF stores the data with Y increasing downward.
+   %  These steps ensure the data is oriented with Y increasing northward, and
+   %  X increasing eastward.
+   %
+   % See also:
 
-   % assume ncstart/count not provided
+   % Assume ncstart/count not provided
    partialRead = false;
 
    if nargin == 3
-      % if 3 inputs, assume the third is the Unit, to avoid ncinfo every read
-      Unit = varargin{1};
+      % if 3 inputs, assume the third is the unit, to avoid ncinfo every read
+      unit = varargin{1};
 
    elseif nargin == 4
       % if 4 inputs, assume they are ncstart,nccount
-      ncstart     = varargin{1};
-      nccount     = varargin{2};
+      ncstart = varargin{1};
+      nccount = varargin{2};
       partialRead = true;
 
    elseif nargin == 5
-      % if 5 inputs, assume they are ncstart,nccount,Unit
-      ncstart     = varargin{1};
-      nccount     = varargin{2};
-      Unit        = varargin{3};
+      % if 5 inputs, assume they are ncstart,nccount,unit
+      ncstart = varargin{1};
+      nccount = varargin{2};
+      unit = varargin{3};
       partialRead = true;
    end
 
    if nargin == 2 || nargin == 4
       % 2 inputs, need to find the unit
-      fInfo   = ncparse(fileName);
-      iVar    = ismember(fInfo.Name,varName);
-      Unit    = fInfo.Units{iVar};
+      fInfo = ncparse(filename);
+      iVar = ismember(fInfo.Name, varname);
+      unit = fInfo.units{iVar};
    end
 
-
-   % read the data and convert to double
+   % Read the data and convert to double
    if partialRead
-      dataGrid = double(squeeze(ncread(fileName,varName,ncstart,nccount)));
+      dataGrid = double(squeeze(ncread(filename, varname, ncstart, nccount)));
    else
-      dataGrid = double(squeeze(ncread(fileName,varName)));
+      dataGrid = double(squeeze(ncread(filename, varname)));
    end
 
-   % reshape the data. note, this works for 2d, 3d (daily), and 4d (hourly)
-   % data, even though it may not seem like it would. For 3-d data, it
-   % preserves all dimensions, so you get [x,y,t], where x and y are spatial
-   % coordinates and t is time. For 4-d you also get [x,y,t], but it is
-   % assumed that the original 3rd and 4th dimensions were both time, such as
-   % hours and days, so you get a collapsed time dimensions.
+   % Reshape the data. This works for 2d, 3d (daily), and 4d (hourly) data.
+   % For 3-d data, it yields [x,y,t], where x and y are spatial coordinates and
+   % t is time. For 4-d it also yields [x,y,t], but the original 3rd and 4th
+   % dimensions are collapsed into one continuous time dimension. This works if
+   % the 3rd and 4th dimension represent hours and days, e.g. if the data reads
+   % in as [nx ny 24 365] the data is reshaped and returned as [ny nx 24*365].
+   % However, this will not return the expected result if the 3rd dimension is
+   % depth, not time.
+
+   % Reshape the data to combine time dimensions for 4D data into a singular
+   % time dimension.
    [r,c,h,d] = size(dataGrid);
-   dataGrid = reshape(dataGrid,r,c,h*d);
-   dataGrid = flipud(permute(dataGrid,[2 1 3]));
+   dataGrid = reshape(dataGrid, r, c, h * d);
 
-   % NOTE: racmo and merra are kg/m2/s posted every three hours, but don't
-   % multipy by 3*3600/1000 unless the data is kept at three hour posting. If
-   % the data is interpolated to hourly, then multiply by 3600/1000, so it's
-   % m/hr posted every hour.
+   % Permute the spatial dimensions (swap X and Y) for conventional plotting
+   % orientation, then flip the Y dimension to ensure Y increases upwards in the
+   % resulting [Y, X, T] array, for conventional spatial data visualization.
+   dataGrid = flipud(permute(dataGrid, [2 1 3]));
 
-   densityLiquidWater      = 1000.0;
-   milimetersPerMeter      = 1000.0;
-   secondsPerHour          = 3600.0;
-   freezingPointKelvins    = 273.15;
-   gramsPerKilogram        = 1000.0;
-   pascalsPerHectoPascal   = 100.0;
+   % Unit conversions. Note, these were ported from MAR and RACMO, and many are
+   % not applicable to MERRA.
+   secondsPerHour = 3600.0;
+   gramsPerKilogram = 1000.0;
+   densityLiquidWater = 1000.0;
+   milimetersPerMeter = 1000.0;
+   freezingPointKelvins = 273.15;
+   pascalsPerHectoPascal = 100.0;
 
    % convert non-standard units to standard units or preferred units
-   if strcmp(Unit,'mmWE/h')                        % convert to m/h
-      dataGrid =   dataGrid./milimetersPerMeter;
-      Unit     =   'm/h';
-   elseif strcmp(Unit,'kg m-2 s-1')                % convert to m/h
-      dataGrid =   dataGrid.*(secondsPerHour/densityLiquidWater);
-      Unit     =   'm/h';
-   elseif strcmp(Unit,'C')                         % convert to K
-      dataGrid =   dataGrid+freezingPointKelvins;
-      Unit     =   'K';
-   elseif strcmp(Unit,'g/kg')                      % convert to kg/kg
-      dataGrid =   dataGrid./gramsPerKilogram;
-      Unit     =   'kg/kg';
-   elseif strcmp(Unit,'hPa')                       % convert to Pa
-      dataGrid =   dataGrid.*pascalsPerHectoPascal;
-      Unit     =   'Pa';
-   elseif strcmp(Unit,'W m-2')
-      Unit     =   'W/m2';
-   elseif strcmp(Unit,'m s-1')
-      Unit     =   'm/s';
-   elseif strcmp(Unit,'kg kg-1')
-      Unit     =   'm/s';
-   elseif strcmp(Unit,'kg m-2')                    % convert to m (eg swe)
-      dataGrid =   dataGrid./densityLiquidWater;
-      Unit     =   'm';
+   if strcmp(unit,'mmWE/h')                        % convert to m/h
+      dataGrid = dataGrid / milimetersPerMeter;
+      unit = 'm/h';
+
+   elseif strcmp(unit,'kg m-2 s-1')                % convert to m/h
+      dataGrid = dataGrid * secondsPerHour / densityLiquidWater;
+      unit = 'm/h';
+
+   elseif strcmp(unit,'C')                         % convert to K
+      dataGrid = dataGrid + freezingPointKelvins;
+      unit = 'K';
+
+   elseif strcmp(unit,'g/kg')                      % convert to kg/kg
+      dataGrid = dataGrid / gramsPerKilogram;
+      unit = 'kg/kg';
+
+   elseif strcmp(unit,'hPa')                       % convert to Pa
+      dataGrid = dataGrid * pascalsPerHectoPascal;
+      unit = 'Pa';
+
+   elseif strcmp(unit,'W m-2')
+      unit = 'W/m2';
+
+   elseif strcmp(unit,'m s-1')
+      unit = 'm/s';
+
+   elseif strcmp(unit,'kg kg-1')
+      unit = 'kg/kg';
+
+   elseif strcmp(unit,'kg m-2')                    % convert to m (eg swe)
+      dataGrid = dataGrid / densityLiquidWater;
+      unit = 'm';
    end
 
    % doing this here avoids having to do the conversions twice
-   dataList = reshape(dataGrid,r*c,h*d);
-
-   % % this was what originally would have come after getting the Unit, so if
-   % above method from readMar doesn't work, revert to this
-   %     switch ndims(dataGrid)
-   %         case 2
-   %             dataGrid    = flipud(permute(dataGrid,[2 1]));
-   %             dataList  = reshape(dataGrid,numel(dataGrid),1);
-   %         case 3
-   %             dataGrid    = flipud(permute(dataGrid,[2 1 3]));
-   %             dataList  = reshape(dataGrid,size(dataGrid,1)*size(dataGrid,2),size(dataGrid,3));
-   %     end
+   dataList = reshape(dataGrid, r*c, h*d);
 end
