@@ -37,7 +37,7 @@ function foldername = mfoldername(filename, appendpath, makefolder)
    if nargin < 2
       appendpath = "";
    end
-   
+
    if nargin < 3
       makefolder = false;
    end

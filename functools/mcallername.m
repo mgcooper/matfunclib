@@ -7,7 +7,7 @@ function varargout = mcallername(varargin)
    %
    %  [MSG, LINE] = MCALLERNAME() also returns the line number of the function
    %  call.
-   %  
+   %
    %  MSG = MCALLERNAME(FILEOPTION) returns the full path to the function for
    %  the prior calling syntaxes if FILEOPTION 'fullpath', the filename without
    %  the full path but including the .m extension if FILEOPTION 'filename', and

@@ -47,7 +47,7 @@ function f = validationModule(varargin)
    % F = {f.validTableLike, f.validNumericArray};
    %
    % % Pass that to the inputParser using cellfun to apply each function in F to
-   % DATA 
+   % DATA
    % p.addRequired('Data', @(x) any(cellfun(@(f) f(x),F)));
    %
    % % arrayfun also works but the syntax is less clear
@@ -243,7 +243,7 @@ function f = validOptionalArgument
    % passes that to the validation function. I tried this syntax to test that,
    % but it failed:
    %
-   % p.addOptional('option',{'add', menu}, @(opt, menu) f.validOptionalArgument(opt, menu)); 
+   % p.addOptional('option',{'add', menu}, @(opt, menu) f.validOptionalArgument(opt, menu));
    %
 
    % Using cellfun might help in some of the case above

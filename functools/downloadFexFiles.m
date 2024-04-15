@@ -1,9 +1,9 @@
 function AddedPath = downloadFexFiles(FEXSubmissionID)
    %REQUIREFEXPACKAGE Install Matlab Central File Exchange (FEX) submission.
-   % 
+   %
    % requireFEXpackage - installs Matlab Central File Exchange (FEX) submission
    % with given ID into the directory chosen by the user.
-   % 
+   %
    % A new FEX submissions may use previous FEX submissions as its part.
    % The function 'requireFEXpackage' helps in adding those previous
    % submissions to the user's MATLAB installation.
@@ -77,8 +77,8 @@ function AddedPath = downloadFexFiles(FEXSubmissionID)
       'requires the presence of the package ' ID ...
       ' from Matlab Central File Exchange.' ...
       'Would you like to install the FEX package ' ID ' now?'] , ...
-   	['Required package ' ID], ...
-   	yes, no, yes);
+      ['Required package ' ID], ...
+      yes, no, yes);
 
    % Handle response
    switch userchoice

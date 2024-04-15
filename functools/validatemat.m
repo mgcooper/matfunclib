@@ -13,7 +13,7 @@ function varargout = validatemat(A, classes, attributes, varargin)
    % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
    %
    % See also
-   
+
    % NOT FUNCTIONAL
 
    % PARSE INPUTS

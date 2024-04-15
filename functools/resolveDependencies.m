@@ -12,7 +12,7 @@ function [requirementsList, urlList] = resolveDependencies(requiredFiles, Opts)
    % resolveDependencies(requiredFiles, "installMissing", true)
    %
    % Input Arguments:
-   % 
+   %
    % requiredFiles - the target function that other functions depend on.
    % projectFolder - folder that needs the required files.
    % localSourceFolder - folder with local versions of the dependencies.

@@ -60,13 +60,13 @@ end
 % pkglist = pkglist([pkglist.isdir]);
 % pkglist = pkglist(strncmp({pkglist.name}, '+', 1));
 %
-% % subpackage folders 
+% % subpackage folders
 % for thispkg = tbxlist.packages(:).'
 %    thispkglist = dir(fullfile(tbxpath, ['+' thispkg{:}], '**/*'));
-%    thispkglist(strncmp({thispkglist.name}, '.', 1)) = []; 
+%    thispkglist(strncmp({thispkglist.name}, '.', 1)) = [];
 %    thispkglist = thispkglist([thispkglist.isdir]);
 %    thispkglist = thispkglist(strncmp({thispkglist.name}, '+', 1));
 % end
 
-% for testing 
+% for testing
 % thispkg = tbxlist.packages(1)

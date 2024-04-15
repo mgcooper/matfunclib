@@ -4,7 +4,7 @@ function assertError(fh, eid, varargin)
    %  assertError(fh, eid, varargin)
    %
    % See also: assertEqual assertSuccess assertWithRelTol assertWithAbsTol
-   
+
    import matlab.unittest.diagnostics.Diagnostic;
    import matlab.unittest.constraints.Throws;
 

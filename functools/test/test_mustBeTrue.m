@@ -29,37 +29,37 @@ assertSuccess(@() mustBeTrue(1>0), eid, testdiag)
 
 % LOCAL FUNCTIONS
 function assertError(fh, eid, varargin)
-%ASSERTERROR assert error using function handle and error id
+   %ASSERTERROR assert error using function handle and error id
 
    import matlab.unittest.diagnostics.Diagnostic;
    import matlab.unittest.constraints.Throws;
-   
+
    throws = Throws(eid);
    passed = throws.satisfiedBy(fh);
    diagText = ""; % set empty string for passed == true
    if ~passed
-       diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
-       arrayfun(@diagnose, diag);
-       diagText = strjoin({diag.DiagnosticText},[newline newline]);
+      diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
+      arrayfun(@diagnose, diag);
+      diagText = strjoin({diag.DiagnosticText},[newline newline]);
    end
-   assert(passed, diagText); 
+   assert(passed, diagText);
 end
 
 function assertSuccess(fh, eid, varargin)
-%ASSERTSUCCESS assert success using function handle and error id
+   %ASSERTSUCCESS assert success using function handle and error id
 
    import matlab.unittest.diagnostics.Diagnostic;
    import matlab.unittest.constraints.Throws;
-   
+
    throws = Throws(eid);
    passed = throws.satisfiedBy(fh);
    diagText = ""; % set empty string for passed == true
    if passed
-       diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
-       arrayfun(@diagnose, diag);
-       diagText = strjoin({diag.DiagnosticText},[newline newline]);
+      diag = Diagnostic.join(varargin{:}, throws.getDiagnosticFor(fh));
+      arrayfun(@diagnose, diag);
+      diagText = strjoin({diag.DiagnosticText},[newline newline]);
    end
-   assert(~passed, diagText); 
+   assert(~passed, diagText);
 end
 
 function assertWithAbsTol(actVal,expVal,varargin)
