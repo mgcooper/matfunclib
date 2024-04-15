@@ -1,8 +1,8 @@
 function [data_out,dates_out] = trimtimeseries(data,dates,trimstart,trimend)
    %TRIMTIMESERIES Trim timeseries from 1:trimstart and trimend:end
    %
-   % [data_out,dates_out] = trimtimeseries(data,dates,trimstart,trimend)  
-   % 
+   % [data_out,dates_out] = trimtimeseries(data,dates,trimstart,trimend)
+   %
    % Inputs:
    % data - timeseries of monotonically increasing data
    % dates - vector of datenums corresponding to data

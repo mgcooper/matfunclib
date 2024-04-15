@@ -1,18 +1,18 @@
 function [newdata, newtime, timeidx] = fillmissingdates(data, time, dt)
    %FILLMISSINGDATES Fill missing values of regular timeseries with nan
-   % 
+   %
    % Finds missing dates in a timeseries of 'data' given a vector 'time' of
    % matlab formatted datenums and returns the filled data and indices 'inds' of
-   % missing data 
+   % missing data
    %
    % See also: padtimeseries, trimtimeseries
 
    if nargin < 3
       dt = time(2) - time(1);
    end
-   
+
    % Make sure the dates are datenums (could be a vector of years)
-   time = datenum(time); %#ok<*DATNM> 
+   time = datenum(time); %#ok<*DATNM>
 
    % Find the indexes of the times
    timeidx = round((time-time(1))/dt) + 1;

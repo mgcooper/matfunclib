@@ -1,8 +1,8 @@
 function [maxval,maxinds] = findmax2(A, dim, direction)
    %FINDMAX2 Find max values and indices in array.
    %
-   % 
-   % 
+   %
+   %
    % See also: findlocalmax
 
    if nargin < 2
