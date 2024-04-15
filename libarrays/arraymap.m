@@ -4,7 +4,7 @@ function varargout = arraymap(fn, varargin)
    %  A = ARRAYMAP(A)
    %
    % This function is equivalent to:
-   % arraymap = @(fn, varargin) arrayfun(fn, varargin{:}, 'UniformOutput', false);
+   % arraymap = @(fn, varargin) arrayfun(fn, varargin{:}, 'UniformOutput', false); 
    %
    % Example
    %
@@ -14,32 +14,32 @@ function varargout = arraymap(fn, varargin)
 
    [varargout{1:nargout}] = arrayfun(fn, varargin{:}, 'UniformOutput', false);
 
-%    % In a prior commit I commented out the standard behavior above and changed
-%    % to this:    
-%    out = arrayfun(fn, varargin{:}, 'UniformOutput', false);
-%    % If out is changed to [varargout{1:nargout}], then the stuff below does
-%    % catenate the individual outputs of arrayfun into one uniform array, when I
-%    % got here from bfra.eventfinder, I wanted T, Q, R, Info returned, but it
-%    % failed so when I did the thing above I must have been working with a
-%    % function that returned one argument, and I wanted a vector or matrix
-%    % instead of a cell array, but if I change to [varargout{1:nargout}] then it
-%    % will put T, Q< R, Info into one Nx4 cell array, which could be useful, so
-%    % maybe add an option to do that
-% 
-%    % try to put in a uniform array
-%    try
-%       if isrow(out{1})
-%          [varargout{1:nargout}] = vertcat(out{:});
-%       elseif iscolumn(out{1})
-%          [varargout{1:nargout}] = horzcat(out{:});
-%       elseif ~isvector(out{1}) && ismatrix(out{1})
-%          % ambiguous, return to this later
-%       elseif numel(size(out{1})) == 3
-%          [varargout{1:nargout}] = cat(3, out{:});
-%       end
-%    catch
-%       [varargout{1:nargout}] = out;
-%    end
+   %    % In a prior commit I commented out the standard behavior above and changed
+   %    % to this:
+   %    out = arrayfun(fn, varargin{:}, 'UniformOutput', false);
+   %    % If out is changed to [varargout{1:nargout}], then the stuff below does
+   %    % catenate the individual outputs of arrayfun into one uniform array, when I
+   %    % got here from bfra.eventfinder, I wanted T, Q, R, Info returned, but it
+   %    % failed so when I did the thing above I must have been working with a
+   %    % function that returned one argument, and I wanted a vector or matrix
+   %    % instead of a cell array, but if I change to [varargout{1:nargout}] then it
+   %    % will put T, Q< R, Info into one Nx4 cell array, which could be useful, so
+   %    % maybe add an option to do that
+   %
+   %    % try to put in a uniform array
+   %    try
+   %       if isrow(out{1})
+   %          [varargout{1:nargout}] = vertcat(out{:});
+   %       elseif iscolumn(out{1})
+   %          [varargout{1:nargout}] = horzcat(out{:});
+   %       elseif ~isvector(out{1}) && ismatrix(out{1})
+   %          % ambiguous, return to this later
+   %       elseif numel(size(out{1})) == 3
+   %          [varargout{1:nargout}] = cat(3, out{:});
+   %       end
+   %    catch
+   %       [varargout{1:nargout}] = out;
+   %    end
 
 end
 
