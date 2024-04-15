@@ -7,8 +7,8 @@ function varargout = todatetime(T, varargin)
    %  property passed to DATETIME(X, 'CONVERTFROM', DATETYPE). If the conversion
    %  was not successful, then DATETYPE = 'none', and T is returned unaltered.
    %
-   %  [T, _] = TODATETIME(T, DATETYPE) uses the specified input DATETYPE to try the
-   %  conversion.
+   %  [T, _] = TODATETIME(T, DATETYPE) uses the specified input DATETYPE to try
+   %  the conversion.
    %
    % Example
    %
