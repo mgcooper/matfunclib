@@ -1,5 +1,5 @@
 %TEST_INTERSECTN Test for the function intersectn
-%#ok<*NASGU> 
+%#ok<*NASGU>
 
 % Define test data
 A1 = [1, 20, 10];
@@ -46,7 +46,7 @@ assert(isequal(Locb, expected), 'Test 2 failed to find Locb indices');
 
 %% Test3: No elements are common to all arrays, WindowSize = 0
 
-% Remove the 20 so no elements are common to all arrays. 
+% Remove the 20 so no elements are common to all arrays.
 A1 = [1, 20, 10];
 A2 = [19, 2];
 A3 = [1, 21, 20, 1];
@@ -55,7 +55,7 @@ expected = double.empty(1,0);
 I = intersectn(A1, A2, A3, ComparisonMethod="all", WindowSize=0);
 assert(isequal(I, expected), 'Test 3 failed with method "all"');
 
-% 1 and 20 are still common to at least one other. 
+% 1 and 20 are still common to at least one other.
 expected = [1, 20];
 [I, Lia, Locb] = intersectn(A1, A2, A3, ComparisonMethod="any", WindowSize=0);
 assert(isequal(I, expected), 'Test 3 failed with method "any"');
@@ -91,7 +91,7 @@ assert(isequal(Locb, expected), 'Test 4 failed to find Locb indices');
 
 % Test "any" with an element (10) that is common to one (11 in A2) but not the
 % third array, and an element common to one other in its own array (30 and 31 in
-% A1) but no other arrays. 
+% A1) but no other arrays.
 A1 = [1, 20, 10, 30, 31];
 A2 = [19, 2, 11];
 A3 = [1, 21, 20, 1];
@@ -163,7 +163,7 @@ expected = double.empty(1,0);
 I = intersectn(Inf, A1, A2, A3, ComparisonMethod="all");
 assert(isequal(I, expected), 'Test 10 failed on Inf input with method "all"');
 
-% 
+%
 expected = 20;
 I = intersectn(Inf, A1, A2, A3, ComparisonMethod="any");
 assert(isequal(I, expected), 'Test 10 failed on Inf input with method "any"');
@@ -174,14 +174,14 @@ I = intersectn(Inf, A1, A2, A3, ComparisonMethod="any", WindowSize=Inf);
 assert(isequal(I, expected), 'Test 10 failed on Inf input with method "any"');
 
 % %% Test10: Dimension handling
-% 
+%
 % This is not currently supported, but it should be - if all inputs are rows,
-% the intersect should be a row etc. 
-% 
+% the intersect should be a row etc.
+%
 % I = intersectn(A1', A2', A3', 'ComparisonMethod', "any", 'WindowSize', 10);
 % assert(isequal(I, expected), 'Test 5 failed with "WindowSize" 10');
-% 
-% 
+%
+%
 % %% Test type handling
 % assert(isequal(intersectn(winSize, single(A1), single(A2), single(A3)), single(expected)));
-% 
+%

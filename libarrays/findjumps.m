@@ -2,7 +2,7 @@ function idx = findjumps(x)
    %FINDJUMPS Find jumps in array.
    %
    % idx = findjumps(x)
-   % 
+   %
    % See also:
 
    idx = find(cumsum(diff(x(:), 2)) ~= 0) + 2;

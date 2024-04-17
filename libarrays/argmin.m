@@ -1,6 +1,6 @@
 function [index, value] = argmin(varargin)
    %ARGMIN Index of minimum valued element.
-   %   
+   %
    % I = ARGMIN(X)
    % I = ARGMIN(X, [], DIM)
    % I = ARGMIN(X, [], NANFLAG)
@@ -12,17 +12,17 @@ function [index, value] = argmin(varargin)
    % I = ARGMIN(X, [], 'all', NANFLAG)
    % I = ARGMIN(X, [], VECDIM, NANFLAG)
    % [I, M] = ARGMIN(X, [], 'all', _)
-   % 
+   %
    % See documentation for MIN for additional syntax options.
    %
    % I = ARGMIN(X) returns the index I of the minimum valued element of X,
    % such that X(I) == MIN(X(:)). For vectors, ARGMIN(X) is a scalar index.
-   % For matrices, ARGMIN(X) is a row vector containing the indices of the 
+   % For matrices, ARGMIN(X) is a row vector containing the indices of the
    % minimum valued elements for each column of X, such that X(I) == MIN(X, [], 1).
-   % 
-   % I = ARGMIN(X, DIM) returns the index I of the minimum valued element 
+   %
+   % I = ARGMIN(X, DIM) returns the index I of the minimum valued element
    % of X along the dimension specified by DIM.
-   % 
+   %
    % ARGMIN accepts the same inputs as the built-in MIN function.
    % See the documentation for MIN to understand the requirements for each syntax.
    %
@@ -33,7 +33,7 @@ function [index, value] = argmin(varargin)
    %     argmin(X, [], 2)
    %
    % See also ARGMAX, MIN, MAX
-   
+
    [value, index] = min(varargin{:});
 end
 

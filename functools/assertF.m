@@ -18,7 +18,7 @@ function assertF(cond, varargin)
    % This function was inspired by Dave Ober's assertF function.
    %
    % See also: assert
-   
+
    persistent assertFlag
    if isempty(assertFlag)
       assertFlag = true;

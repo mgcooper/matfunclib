@@ -1,6 +1,6 @@
 function [mininds, minvals] = findlocalmin(data, k, varargin)
    %FINDLOCALMIN Find the first k local min indices and values in data.
-   % 
+   %
    % optional arguments follow those of 'min' e.g. 'first','last'
    %
    % See also:

@@ -3,12 +3,12 @@ function Info = getDependencies(target, varargin)
    %
    %  INFO = GETDEPENDENCIES(TARGET) Returns INFO, a struct containing a list of
    %  functions and products required to run the function or functions specified
-   %  by the function(s) or folder of functions TARGET. 
+   %  by the function(s) or folder of functions TARGET.
    %
    %  INFO = GETFUNCTIONDEPENDENCIES(TARGET, 'REFERENCEPATH', REFPATH) Compares
    %  the required functions in flist to functions in folder specified by
    %  'refpath' to indicate if required files are missing.
-   % 
+   %
    % TARGET - the target function, list of functions, or folder containing
    % functions that other functions depend upon. TARGET can be a single
    % char or string, or a cell array or string array of targets. If TARGET is a
@@ -40,7 +40,7 @@ function Info = getDependencies(target, varargin)
       Info.missingFiles = 'unknown';
    else
       Info.missingFiles = setdiff(requiredFiles, referenceList);
-   end   
+   end
 end
 
 

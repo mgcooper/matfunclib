@@ -12,7 +12,7 @@ function [data_out,dates_out] = padtimeseries(data,dates,padstart,padend,dt)
    % padstart - date to start the padding
    % padend - date to end the padding
    % dt - the timestep
-   % 
+   %
    % Outputs:
    %
    % data_out - padded data
@@ -25,7 +25,7 @@ function [data_out,dates_out] = padtimeseries(data,dates,padstart,padend,dt)
 
    wasdatetime = isdatetime(dates);
    if wasdatetime == true
-      dates = datenum(dates); %#ok<*DATNM> 
+      dates = datenum(dates); %#ok<*DATNM>
    end
 
    % make sure the padstart/padend are dates

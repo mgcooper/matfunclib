@@ -14,7 +14,7 @@ function S = readnetcdf(File,varargin)
    % To read the header only call S = netcdf(File,'Var',[]);
    %
    % SEE ALSO
-   
+
    S = [];
    try
       if exist(File,'file') fp = fopen(File,'r','b');

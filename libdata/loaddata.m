@@ -226,7 +226,7 @@ function varargout = loaddata(datapath,filename,varargin)
 end
 
 function [tfisstruct,numstructs,idxstructs] = findstructvars(data)
-   
+
    if ~isstruct(data)
       tfisstruct = false; numstructs = 0; idxstructs = [];
       return

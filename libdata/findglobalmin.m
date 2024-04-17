@@ -1,6 +1,6 @@
 function [mininds, minvals] = findglobalmin(Data, k, position, iref, varargin)
    %FINDGLOBALMIN Find the first k global min indices and values in data.
-   % 
+   %
    % optional arguments follow those of 'min' e.g. 'first','last'
    %
    %

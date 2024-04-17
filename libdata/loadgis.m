@@ -168,7 +168,7 @@ function [S,A] = tryshaperead(fname,namedargs,reader)
          if none(cellfun(@(x, y) isGeoGrid(y, x), lon, lat))
             T = renamevars(T, {'Lat', 'Lon'}, {'Y', 'X'});
          end
-         
+
          % send back the geostruct (overwrite m_shapefile S)
          S = table2struct(T);
 

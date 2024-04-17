@@ -33,7 +33,7 @@ function varargout = minmax(a, type, whis)
    %
    % Copywrite 2005 Kelly Kearney
    %
-   % See also: 
+   % See also:
 
    if nargin == 1
       type = 'all';

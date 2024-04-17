@@ -85,7 +85,7 @@ function [funcpath, funcname, flibrary] = parseinputs(funcname,varargin)
    validfuncname = @(x) any(contains(listallmfunctions,x));
    validlibrarys = @(x) any(ismember(functiondirectorylist,x));
    validfuncpath = @(x) ischar(x)&&~any(ismember(x,{'library','funcname'}));
-   
+
    parser = inputParser;
    parser.FunctionName = funcname;
    parser.CaseSensitive = true;
@@ -94,7 +94,7 @@ function [funcpath, funcname, flibrary] = parseinputs(funcname,varargin)
    parser.addParameter('funcname', '', validfuncname );
    parser.addParameter('flibrary', '', validlibrarys );
    parser.parse(varargin{:});
-   
+
    funcpath = parser.Results.funcpath;
    funcname = parser.Results.funcname;
    flibrary = parser.Results.flibrary;

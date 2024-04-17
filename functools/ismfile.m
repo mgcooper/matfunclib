@@ -26,7 +26,7 @@ function [tf, onpath] = ismfile(filename, varargin)
       [~, filename, fileext] = fileparts(filename);
       filename = strcat(filename, fileext);
    end
-   
+
    onpath = isfile(filename) || ~isempty(which(filename));
 end
 

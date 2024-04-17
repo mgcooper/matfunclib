@@ -53,8 +53,8 @@ function [maxinds, maxvals] = findglobalmax(Data, k, position, iref, varargin)
    % maxinds = peakfinder(Data,[],-Inf,1,false);
 
    if isempty(maxinds)
-      maxinds = nan; 
-      maxvals = nan; 
+      maxinds = nan;
+      maxvals = nan;
       return
    end
 

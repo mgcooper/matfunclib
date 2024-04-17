@@ -14,7 +14,7 @@ function M = setdiag(M, v)
    else
       M = triu(M,1) + tril(M,-1) + diag(v);
    end
-   
+
    % This should work too:
    % M = diag(v) + M - diag(diag(M));
 end
