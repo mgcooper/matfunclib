@@ -1,4 +1,4 @@
-function activate(tbname,varargin)
+function success = activate(tbname, varargin)
    %ACTIVATE Add toolbox to path and make it the working directory.
    %
    %  activate(TBNAME) activates toolbox TBNAME.
@@ -6,7 +6,8 @@ function activate(tbname,varargin)
    % See also: addtoolbox, isactive
 
    % PARSE INPUTS
-   [tbname, except, pathloc, postset] = parseinputs(tbname, mfilename, varargin{:});
+   [tbname, except, pathloc, postset, silent] = parseinputs(tbname, ...
+      mfilename, varargin{:});
 
    % MAIN FUNCTION
 
@@ -16,7 +17,7 @@ function activate(tbname,varargin)
    [tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
 
    % I started to add the onpath check after a situation where startup failed so
-   % standard toolboxes were not actually activated but marked active in the 
+   % standard toolboxes were not actually activated but marked active in the
    % directory, then decided, what's the harm in just adding the toolboxes to
    % the path whether or not they are already active? So I commented out the
    % entire thing
@@ -36,10 +37,12 @@ function activate(tbname,varargin)
    tbidx = findtbentry(toolboxes, tbname);
 
    % Alert the user the toolbox is being activated
-   if isempty(except)
-      disp(['activating ' tbname])
-   else
-      disp(strjoin(['activating', tbname, 'except', except]))
+   if not(silent)
+      if isempty(except)
+         disp(['activating ' tbname])
+      else
+         disp(strjoin(['activating', tbname, 'except', except]))
+      end
    end
 
    % Set the active state
@@ -58,10 +61,18 @@ function activate(tbname,varargin)
 
    % Rewrite the directory
    writetbdirectory(toolboxes);
+
+   % Return success
+   if nargout == 1
+      success = true;
+   else
+      nargoutchk(0, 1)
+   end
 end
 %% local functions
 
-function [tbname, except, pathloc, postset] = parseinputs(tbname, funcname, varargin)
+function [tbname, except, pathloc, postset, silent] = parseinputs(tbname, ...
+      funcname, varargin)
 
    persistent parser
    if isempty(parser)
@@ -71,10 +82,12 @@ function [tbname, except, pathloc, postset] = parseinputs(tbname, funcname, vara
       parser.addOptional('postset', 'none', @(x) any(validatestring(x, {'goto'})));
       parser.addParameter('except', string.empty(), @ischarlike);
       parser.addParameter('pathloc', '-end', @ischarlike);
+      parser.addParameter('silent', false, @islogical);
    end
    parser.parse(tbname, varargin{:});
    tbname = char(parser.Results.tbname);
    except = string(parser.Results.except);
    postset = string(parser.Results.postset);
    pathloc = string(parser.Results.pathloc);
+   silent = parser.Results.silent;
 end
