@@ -18,7 +18,9 @@ function [dataGrid, dataList, unit] = readMerra2(filename, varname, varargin)
    %  [DATAGRID, DATALIST] = READMERRA2(FILENAME, VARNAME, NCSTART, NCCOUNT)
    %  reads data beginning at the location of each dimension specified in
    %  `start`. The `count` argument specifies the number of elements to read
-   %  along each dimension.
+   %  along each dimension. Note that NCSTART and NCCOUNT should correspond
+   %  with the dimensions of the underlying data which is usually in row-major
+   %  format. See ncrowcol.
    %
    %  [DATAGRID, DATALIST, UNIT] = READMERRA2(_, UNIT) uses the unit specified
    %  by input argument `unit` to convert the variable to a pre-defined standard
