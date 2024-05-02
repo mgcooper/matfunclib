@@ -68,8 +68,11 @@ function varargout = plotraster(Z, varargin)
    YTicks = sort(YTicks(1:round(numel(YTicks)/numticks):end));
 
    % X and Y are two-element vectors representing the coordinates of the first
-   % and last pixel centers. X(1), Y(1) = upper left , X(2), Y(2) = lower right
+   % and last pixel centers. X(1), Y(1) = upper left , X(2), Y(2) = lower right.
    H = image(Z, 'XData', X, 'YData', Y, 'CDataMapping', 'scaled', 'Parent', ax);
+
+   % Display transparent nan's. This will work if Z is 3-d (e.g. RGB).
+   set(H, 'AlphaData', ~isnan(H.CData))
 
    % For reference, this works too, but X, Y might need to be the coordinates:
    % H = imagesc(X, Y, Z); set(gca,'YDir','normal');
