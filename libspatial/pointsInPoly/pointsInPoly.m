@@ -1,8 +1,15 @@
-function Points = pointsInPoly(x,y,poly,varargin)
+function Points = pointsInPoly(x, y, poly, varargin)
    %POINTSINPOLY Find x,y points within polygon plus an optional buffer
    %
-   % Points = pointsInPoly(x,y,poly) returns struct POINTS containing X,Y
-   % coordinates found in POLY.
+   %  POINTS = POINTSINPOLY(X, Y, POLY)
+   %  POINTS = POINTSINPOLY(X, Y, POLY, BUFFER=BUFFER)
+   %  POINTS = POINTSINPOLY(X, Y, POLY, XBUFFER=XBUFFER, YBUFFER=YBUFFER)
+   %  POINTS = POINTSINPOLY(X, Y, POLY, MAKEPLOT=TRUE)
+   %  POINTS = POINTSINPOLY(X, Y, POLY, BUFFERBOX=FALSE)
+   %
+   % Description
+   %  POINTS = POINTSINPOLY(X,Y,POLY) returns struct POINTS containing X,Y
+   %  coordinates found in POLY.
    %
    % Use POINTSINPOLY to find all X,Y points within the boundaries of POLY with
    % an optional BUFFER. See interpolationPoints for an example of how these are
@@ -19,8 +26,7 @@ function Points = pointsInPoly(x,y,poly,varargin)
    %     latin = lat(in);
    %     lonin = lon(in);
    %
-   %
-   %     Author: matt cooper (matt.cooper@pnnl.gov)
+   % Author: matt cooper (matt.cooper@pnnl.gov)
    %
    % See also interpolationPoints, resamplingCoords
 
@@ -79,7 +85,7 @@ function Points = pointsInPoly(x,y,poly,varargin)
    % deal with the buffer box
    if dobuffer == true && bufferbox == true
 
-      [xb,yb] = boundingbox(poly);
+      [xb, yb] = boundingbox(poly);
 
       % if x/ybuffer is requested, buffer the bbox in the x-y directions
       if notnan(xbuffer)
@@ -95,12 +101,12 @@ function Points = pointsInPoly(x,y,poly,varargin)
       yrect = [yb(1) yb(1) yb(2) yb(2) yb(1)];
 
       % buffer the box
-      polyb = polybuffer(polyshape(xrect,yrect),buffer);
+      polyb = polybuffer(polyshape(xrect,yrect), buffer);
 
    elseif dobuffer == true && bufferbox == false
 
       % buffer the provided polyshape
-      polyb = polybuffer(poly,buffer);
+      polyb = polybuffer(poly, buffer);
    end
 
    % figure; plot(poly); hold on; plot(xrect,yrect);
