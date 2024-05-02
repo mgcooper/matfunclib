@@ -163,12 +163,11 @@ function varargout = rastersurf(Z, R, varargin)
    % make a surface of zeros.
    Z0 = zeros(size(Z));
 
-   if strcmp(R.CoordinateSystemType,'planar')
-      h = mapshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
+   if strcmp(R.CoordinateSystemType, 'planar')
+      h = mapshow(Z0, R, 'CData', Z, 'DisplayType', 'surface', varargin{:});
 
-   elseif strcmp(R.CoordinateSystemType,'geographic')
-      h = geoshow(Z0,R,'CData',Z,'DisplayType','surface',varargin{:});
-
+   elseif strcmp(R.CoordinateSystemType, 'geographic')
+      h = geoshow(Z0, R, 'CData', Z, 'DisplayType', 'surface', varargin{:});
    end
 
    shading flat

@@ -1,5 +1,5 @@
 function out = tochar(in, varargin)
-   %TOCHAR One line description of function.
+   %TOCHAR Convert value to char with support for matlab fundamental types.
    %
    %  OUT = TOCHAR(IN)
    %
@@ -22,10 +22,14 @@ function out = tochar(in, varargin)
    % PARSE INPUTS
    narginchk(0, Inf)
 
-   try
-      out = char(tostring(in));
-   catch e
-      rethrow(e)
+   if ismissing(in)
+      out = char(getMissingValue(class(in), asstring=true));
+   else
+      try
+         out = char(tostring(in));
+      catch e
+         rethrow(e)
+      end
    end
 
    assert(ischar(out))

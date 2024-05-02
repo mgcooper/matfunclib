@@ -24,18 +24,6 @@
          {"name":"ax",     "kind":"namevalue",  "type":[["matlab.graphics.axis.AbstractAxes"], ["matlab.ui.control.UIAxes"]]}
       ]
    },
-   "merraWaterBalance":
-   {
-      "inputs":
-      [
-         {"name":"basinname", "kind": "required",
-                              "type": ["char","choices=bfra_stationlist"]},
-         {"name":"t1",        "kind": "namevalue",
-                              "type": [["datetime","scalar"],["numeric","scalar"]]},
-         {"name":"t2",        "kind": "namevalue",
-                              "type": [["datetime","scalar"],["numeric","scalar"]]}
-      ]
-   },
    "computeWaterBalance":
    {
       "inputs":

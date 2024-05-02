@@ -60,6 +60,11 @@ function varargout = fillplot(x, y, err, c, varargin)
    %
    % See also: fill, patch
 
+   % TODO: Requiring y means this is more like "shadedbounds" or "boundedline"
+   % than "fillplot", for instance to use this with a known upper/lower and no
+   % central "y" series required setting "y" to the upper line and the upper
+   % "yerr" all zero to trick this into doing what it should do by default.
+
    % March 2024 - not sure why a default color is not set if not provided, but
    % it may be due to the way parsegraphics / parseoptarg work, e.g., if c was
    % optional, but an ax was provided, then nargin == 4. But if we require c,

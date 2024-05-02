@@ -36,8 +36,8 @@ function varargout = isdatelike(X, varargin)
    % [tf, datetype] = isdatelike(now, 'dum')
    % Error using isdatelike
    % Expected input number 2, datetype, to match one of these values:
-   % 'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate', 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net',
-   % 'tt2000', 'epochtime'
+   % 'datenum', 'excel', 'excel1904', 'juliandate', 'modifiedjuliandate',
+   % 'posixtime', 'yyyymmdd', 'ntp', 'ntfs', '.net', 'tt2000', 'epochtime'
    %
    % See also:
 
@@ -57,9 +57,16 @@ function varargout = isdatelike(X, varargin)
       notInfinite = ~isinf(X);
    catch
    end
+   % This occurs when X is an empty object e.g. datetime.empty()
+   if isempty(notInfinite)
+      notInfinite = true;
+   end
 
    if notStructOrCell && notInfinite
 
+      % if X is an empty datetime, this will produce a 1x0 empty logical, like
+      % the notInfinite case, but here, the "if tf" will be false, and it will
+      % go to isdatetime(X) and tf = true.
       try
          tf = isnat(X);
       catch
