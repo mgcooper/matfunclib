@@ -6,7 +6,7 @@ function [colors] = defaultcolors(N, opts)
    % See also: distinguishable_colors
 
    arguments
-      N = []
+      N = 21
       opts.palette string { ...
          mustBeMember(opts.palette, ["default", "distinguishable"])} = "default"
    end
@@ -27,7 +27,7 @@ function [colors] = defaultcolors(N, opts)
       1.00 0.54 0.00
       0.47 0.25 0.80];
 
-   colors = [colors; newcolors];
+   colors = [colors; newcolors]; % N = 12
 
    % add the first nine colors from distinguishable colors
    colors = [colors;
@@ -39,7 +39,7 @@ function [colors] = defaultcolors(N, opts)
       1	0.827586206896552	0
       0	0.344827586206897	0
       0.517241379310345	0.517241379310345	1
-      0.620689655172414	0.310344827586207	0.275862068965517];
+      0.620689655172414	0.310344827586207	0.275862068965517]; % N = 21
 
    if ~isempty(N)
       colors = colors(1:N, :);

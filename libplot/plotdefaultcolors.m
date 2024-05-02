@@ -4,12 +4,11 @@ function plotdefaultcolors()
    % load('defaultcolors.mat','dc'); c = dc;
    % load('distinguishablecolors.mat','dc');
 
-   c = defaultcolors();
-   dc = distinguishable_colors(8);
+   c = defaultcolors(12, palette="default");
+   dc = defaultcolors(12, palette="distinguishable");
 
-
-   x   = 1:10;
-   y   = x;
+   x = 1:10;
+   y = x;
 
    figure; hold on;
    plot(x,y,'LineWidth',4,'Color',dc(1,:));
