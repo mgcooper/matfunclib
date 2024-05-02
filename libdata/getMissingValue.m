@@ -1,4 +1,4 @@
-function missingVal = getMissingValue(propClass)
+function missingVal = getMissingValue(propClass, kwargs)
    %GETMISSINGVALUE Return default missing value for class.
    %
    %  missingVal = getMissingValue(propClass)
@@ -38,8 +38,13 @@ function missingVal = getMissingValue(propClass)
    %  a numeric array, cell array, etc. Could likely use a series of try-catch,
    %  but for now, the method below covers nearly all standard cases.
 
+   arguments
+      propClass (1, :) string
+      kwargs.asstring (1, 1) logical = false
+   end
+
    % Create a lookup table using containers.Map
-   persistent missingValMap
+   persistent missingValMap missingValStringMap
    if isempty(missingValMap)
 
       missingValMap = containers.Map(...
@@ -51,11 +56,29 @@ function missingVal = getMissingValue(propClass)
          uint8(0), int16(0), uint16(0), int32(0), uint32(0), int64(0), uint64(0)} ...
          );
    end
+   if isempty(missingValStringMap)
+      missingValStringMap = containers.Map(...
+         {'numeric', 'logical', 'double', 'single', 'char', 'cell', 'string', ...
+         'categorical', 'datetime', 'duration', 'calendarDuration', 'int8', ...
+         'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64'}, ...
+         {'NaN', 'NaN', 'NaN', 'NaN', 'empty', 'empty', 'missing', ...
+         'undefined', 'NaT', 'NaN', 'NaN', '0', ...
+         '0', '0', '0', '0', '0', '0', '0'} ...
+         );
+   end
 
-   try
-      missingVal = missingValMap(propClass);
-   catch ME
-      error('Unrecognized property class: %s', propClass);
+   if kwargs.asstring == true
+      try
+         missingVal = string(missingValStringMap(propClass));
+      catch ME
+         error('Unrecognized property class: %s', propClass);
+      end
+   else
+      try
+         missingVal = missingValMap(propClass);
+      catch ME
+         error('Unrecognized property class: %s', propClass);
+      end
    end
 end
 
