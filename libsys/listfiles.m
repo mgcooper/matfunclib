@@ -24,6 +24,8 @@ function varargout = listfiles(folderlist, opts)
    % subfolders of FOLDERNAME.
    %
    % FILELIST = LISTFILES(_, 'MFILES', TRUE) Only returns m-files.
+   % FILELIST = LISTFILES(_, 'MFILES', TRUE, 'MATFILES', TRUE) Also returns
+   % mat-files.
    %
    % FILELIST = LISTFILES(_, 'ASLIST', TRUE) Returns a list of
    % filenames in a cell array rather than the default directory struct.
@@ -48,6 +50,7 @@ function varargout = listfiles(folderlist, opts)
       opts.fullpath (1,1) logical = false
       opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
+      opts.matfiles (1,1) logical = false
       opts.rmpatterns (1,:) string = ""
    end
 
@@ -72,11 +75,18 @@ end
 function list = processOneFolder(folder, opts)
 
    % Get all files in main folder and if requested, sub folders
-   list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
+   list = dir(fullfile(folder, opts.pattern));
+   list(strncmp({list.name}, '.', 1)) = [];
    list = list(~[list.isdir]);
 
    if opts.mfiles == true
-      list = list(strncmp(reverse({list.name}), 'm.', 2));
+      if opts.matfiles == true
+         list = list(...
+            strncmp(reverse({list.name}), 'm.', 2) | ...
+            strncmp(reverse({list.name}), 'tam.', 4));
+      else
+         list = list(strncmp(reverse({list.name}), 'm.', 2));
+      end
    end
 
    % Remove files containing the "RMPATTERNS"
