@@ -26,5 +26,21 @@
           ]
          }
       ]
+   },
+   "getRequiredFiles":
+   {
+      "inputs":
+      [
+         {"name":"targetList", "kind":"required", "type":["char","string","cell"], "purpose":"the function name or folder to generate dependencies for"},
+         {"name":"ignoreList", "kind":"namevalue", "type":["char","string","cell"], "purpose":"function name or folder within targelist to ignore when generating dependencies"},
+         {"name":"referenceList", "kind":"namevalue", "type":["char","string","cell"], "purpose":"the reference path to check for satisfied dependencies"},
+         {"name":"requirementsFileName", "kind":"namevalue", "type":["char","string"]},
+         {"name":"saveRequirementsFile", "kind":"namevalue", "type":["logical", "scalar"], "purpose":"Option"}
+      ],
+      "outputs":
+      [
+         {"name":"Info", "type":"struct", "purpose":"the list of required and missing files and products"}
+      ],
+      "description":"Find all required and missing files and products for toolbox"
    }
 }
