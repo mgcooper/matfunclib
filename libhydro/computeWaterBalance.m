@@ -1,4 +1,4 @@
-function PER = computeWaterBalance(Data,varargin)
+function PER = computeWaterBalance(Data, varargin)
    %computeWaterBalance Compute water balance dS/dt = P-E-R and trends in each.
    %
    %  PER = computeWaterBalance(Data) returns struct PER containing timetables
@@ -73,27 +73,27 @@ function PER = computeWaterBalance(Data,varargin)
    end
 
    % P-E-R for each month
-   P = transpose(reshape(Data.P,12,nyears));
-   E = transpose(reshape(Data.E,12,nyears));
-   R = transpose(reshape(Data.R,12,nyears));
+   P = transpose(reshape(Data.P, 12, nyears));
+   E = transpose(reshape(Data.E, 12, nyears));
+   R = transpose(reshape(Data.R, 12, nyears));
 
    if snowcorrect == true
-      if sum(contains(Data.Properties.VariableNames,'SW')) == 0
+      if sum(contains(Data.Properties.VariableNames, 'SW')) == 0
          error('no SW variable in provided table')
       else
-         SW = reshape(Data.SW,12,nyears);
+         SW = reshape(Data.SW, 12, nyears);
       end
    end
 
    % init the monthly, seasonal, and annual dS/dt arrays
-   dSdtS = nan(nyears,12);
-   dSdtA = nan(nyears,12);
+   dSdtS = nan(nyears, 12);
+   dSdtA = nan(nyears, 12);
 
    % init arrays to store trends computed on an annual basis for each month,
    % each 3-month season, and each 12-month period beginning on each month
-   abSM = nan(2,12);
-   abSS = nan(2,12);
-   abSA = nan(2,12);
+   abSM = nan(2, 12);
+   abSS = nan(2, 12);
+   abSA = nan(2, 12);
 
 
    % 1. annual timeseries of monthly dSdt for each month
@@ -114,11 +114,11 @@ function PER = computeWaterBalance(Data,varargin)
    for month = 1:12
       % get the indices to sum over
       i1 = month;
-      i2 = nmonths;        % use this to include all years
+      i2 = nmonths; % use this to include all years
       % i2  = nmonths-(13-n); % use this to omit the last year
 
       % annual timeseries of 12-month sums beginning on each month
-      MA = retime(Data(i1:i2,:),'regular',Favg,'TimeStep',calyears(1));
+      MA = retime(Data(i1:i2, :), 'regular', Favg, 'TimeStep', calyears(1));
 
       % annual timeseries of annual (12-month sum) dSdt for each month
       if snowcorrect == true
@@ -140,11 +140,9 @@ function PER = computeWaterBalance(Data,varargin)
    end
 
    % mask the last values which are partial sums for all but the first month
-   dSdtA(end,2:12) = nan;
-
+   dSdtA(end, 2:12) = nan;
 
    % 3. annual timeseries of seasonal dSdt
-
    for month = 1:12
 
       % get the indices to average over
@@ -164,16 +162,17 @@ function PER = computeWaterBalance(Data,varargin)
       end
    end
 
-   % 4. compute linear trends
+   % 4. compute linear trends, if there are more than two points
+   if size(dSdtM, 1) > 2
+      for month = 1:12
 
-   for month = 1:12
+         abSM(:,month) = olsfit(year(Time),dSdtM(:,month));
+         abSS(:,month) = olsfit(year(Time),dSdtS(:,month));
+         abSA(:,month) = olsfit(year(Time),dSdtA(:,month));
 
-      abSM(:,month) = olsfit(year(Time),dSdtM(:,month));
-      abSS(:,month) = olsfit(year(Time),dSdtS(:,month));
-      abSA(:,month) = olsfit(year(Time),dSdtA(:,month));
-
-      % use this to omit the last year
-      % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
+         % use this to omit the last year
+         % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
+      end
    end
 
    % save the period-average PER, and the calendar-year trend
@@ -189,7 +188,8 @@ function PER = computeWaterBalance(Data,varargin)
    PER.monthly.avg   = array2table(mean(dSdtM, 1, 'omitnan'),'VariableNames',months);
    PER.seasonal.avg  = array2table(mean(dSdtS, 1, 'omitnan'),'VariableNames',seasons);
 
-   % PER.annual.avg    = array2timetable(nanmean(dSdtA,2),'VariableNames',{'PER'},'RowTimes',T);
+   % PER.annual.avg = array2timetable( ...
+   %    nanmean(dSdtA,2),'VariableNames',{'PER'},'RowTimes',T);
 
    PER.readme = ['the PER.annual.PER arrays are 12-month sums where each ' newline ...
       'column defines a 12-month year beginning on the ' newline ...

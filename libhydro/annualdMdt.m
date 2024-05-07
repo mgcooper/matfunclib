@@ -1,16 +1,20 @@
 function [dMdt, Mt] = annualdMdt(Time, M)
-   %ANNUALDMDT compute annual differences of mass, e.g. grace water storage
+   %ANNUALDMDT Compute annual differences of mass, e.g. grace water storage.
    %
-   % climate model snow mass, etc. Input data are assumed to be monthly
-   % averages. If the number of months is an even divisor of 12, then the first
-   % and last differences are annual differences of the respective monthly
-   % values. If the number of months is 1 longer than an even divisor of 12,
-   % then for 1 extra month, the last month is a bi-monthly average
+   %  [DMDT, MT] = ANNUALDMDT(TIME, M)
    %
-   %     [dMdt,Mt] = annualdMdt(Time,M)
+   % Description
+   %  [DMDT, MT] = ANNUALDMDT(TIME, M) Computes annual differences of mass, e.g.
+   %  grace water storage, climate model snow mass, etc. Input data are assumed
+   %  to be monthly averages. If the number of months is an even divisor of 12,
+   %  then the first and last differences are annual differences of the
+   %  respective monthly values. If the number of months is 1 longer than an
+   %  even divisor of 12, then for 1 extra month, the last month is a bi-monthly
+   %  average
    %
-   % based on the method to get Grace dS/dt from Crow et al. 2017 using:
-   % dS/dt(i) = (Sdec(i)+Sjan(i+1))/2 - (Sdec(i-1)+Sjan(i))/2
+   %  The calculation is based on the method to get Grace dS/dt from Crow et al.
+   %  2017 using:
+   %     dS/dt(i) = (Sdec(i)+Sjan(i+1))/2 - (Sdec(i-1)+Sjan(i))/2
    %
    % See also:
 
@@ -23,28 +27,27 @@ function [dMdt, Mt] = annualdMdt(Time, M)
    % bi-monthly value would be nan, except I also have an if statement that
    % instead uses the last monthly value. Can change later if desired.
 
-   if mod(nmonths-1,12) == 0
+   if mod(nmonths-1, 12) == 0
       nmonths = nmonths - 1;
    elseif mod(nmonths,12) ~= 0
       error('input data must be posted monthly, or option to provide +1 month');
    else
-      M = [M;nan];
+      M = [M; nan];
    end
 
-   dMdt = nan(nmonths,1);
-   Mt = nan(nmonths,1);
+   dMdt = nan(nmonths, 1);
+   Mt = nan(nmonths, 1);
 
    % average bi-monthly mass from start to finish
    for n = 1:nmonths
 
-      Mt(n) = (M(n)+M(n+1))/2;
+      Mt(n) = (M(n)+M(n+1)) / 2;
 
       % this is the case where one extra month was not provided. it also
       % works if the first two or more months are nan.
       if isnan(M(n+1))
          Mt(n) = (M(n));
       end
-
    end
 
    % annual differences on a monthly basis
@@ -62,43 +65,38 @@ function [dMdt, Mt] = annualdMdt(Time, M)
    % to build the new yearly time vector, if water year or anything other
    % than Jan-Dec, then datetime(years,1,1) won't work b/c we will have one
    % extra year for the last partial year, so this should work:
-   numyears = nmonths/12;
+   numyears = nmonths / 12;
    newtimes = tocolumn(Time(1):calyears(1):Time(1)+calyears(numyears-1));
-   mvars = cellstr(datestr(Time(1:12),'mmm'));
+   mvars = cellstr(datestr(Time(1:12), 'mmm'));
 
-
-   dMdt = transpose(reshape(dMdt,12,numyears));
-   dMdt = array2timetable(dMdt,'RowTimes',newtimes);
+   dMdt = transpose(reshape(dMdt, 12, numyears));
+   dMdt = array2timetable(dMdt, 'RowTimes', newtimes);
 
    dMdt.Properties.VariableNames = mvars;
 
-   Mt = transpose(reshape(Mt,12,numyears));
-   Mt = array2timetable(Mt,'RowTimes',newtimes);
+   Mt = transpose(reshape(Mt, 12, numyears));
+   Mt = array2timetable(Mt, 'RowTimes', newtimes);
 
    Mt.Properties.VariableNames = mvars;
 
-   %    dGdt = array2timetable(dGdt,'RowTimes',datetime(years,1,1), ...
-   %                   'VariableNames',{ 'Jan','Feb','Mar','Apr','May','Jun',...
-   %                                     'Jul','Aug','Sep','Oct','Nov','Dec'});
+   % dGdt = array2timetable(dGdt,'RowTimes',datetime(years,1,1), ...
+   %    'VariableNames',{ 'Jan','Feb','Mar','Apr','May','Jun',...
+   %    'Jul','Aug','Sep','Oct','Nov','Dec'});
 
    % this would return a timetable as a single monthly column
-   %dGdt = timetable(dGdt,'RowTimes',G.Time);
+   % dGdt = timetable(dGdt, 'RowTimes', G.Time);
 
-   %    % this is the orignal method that uses the Jan + Dec only
-   %    for i = 2:numel(years)-1
+   % % This is the orignal method that uses the Jan + Dec only
+   % for n = 2:numel(years)-1
+   %    iyear = years(n);
+   %    ideci = find(Time == datetime(iyear,12,1));
+   %    ijanip1 = find(Time == datetime(iyear+1,1,1));
+   %    idecim1 = find(Time == datetime(iyear-1,12,1));
+   %    ijani = find(Time == datetime(iyear,1,1));
    %
-   %       iyear = years(i);
-   %       ideci = find(Time == datetime(iyear,12,1));
-   %       ijanip1 = find(Time == datetime(iyear+1,1,1));
-   %       idecim1 = find(Time == datetime(iyear-1,12,1));
-   %       ijani = find(Time == datetime(iyear,1,1));
-   %
-   %       dGdt(i) = (S(ideci)+S(ijanip1))/2 - (S(idecim1)+S(ijani))/2;
-   %
-   %    end
-
-   %    dGdt = timetable(dGdt,'RowTimes',datetime(years,1,1));
-
+   %    dGdt(n) = (S(ideci)+S(ijanip1))/2 - (S(idecim1)+S(ijani))/2;
+   % end
+   % dGdt = timetable(dGdt,'RowTimes',datetime(years,1,1));
 
    % % the ET calculation from Rodel
    % % this is not right but a start

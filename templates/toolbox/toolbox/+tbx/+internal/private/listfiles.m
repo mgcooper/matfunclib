@@ -9,6 +9,7 @@ function varargout = listfiles(folderlist, opts)
    % FILELIST = LISTFILES(_, 'SUBFOLDERS', TRUE)
    % FILELIST = LISTFILES(_, 'FULLPATH', TRUE)
    % FILELIST = LISTFILES(_, 'MFILES', TRUE)
+   % FILELIST = LISTFILES(_, 'RMPATTERN', RMPATTERN)
    % [FILELIST, NUMFILES] = LISTFILES(_)
    %
    % Description:
@@ -23,6 +24,8 @@ function varargout = listfiles(folderlist, opts)
    % subfolders of FOLDERNAME.
    %
    % FILELIST = LISTFILES(_, 'MFILES', TRUE) Only returns m-files.
+   % FILELIST = LISTFILES(_, 'MFILES', TRUE, 'MATFILES', TRUE) Also returns
+   % mat-files.
    %
    % FILELIST = LISTFILES(_, 'ASLIST', TRUE) Returns a list of
    % filenames in a cell array rather than the default directory struct.
@@ -45,13 +48,18 @@ function varargout = listfiles(folderlist, opts)
       opts.aslist (1,1) logical = false
       opts.asstring (1,1) logical = false
       opts.fullpath (1,1) logical = false
+      opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
+      opts.matfiles (1,1) logical = false
+      opts.rmpatterns (1,:) string = ""
    end
+
+   opts.pattern = parseFilePattern(opts);
 
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
    list = vertcat(list{:});
-   
+
    % Parse outputs
    switch nargout
       case 1
@@ -65,18 +73,23 @@ end
 %% Local Functions
 
 function list = processOneFolder(folder, opts)
-   
-   % Get all sub folders
-   if opts.subfolders == true
-      list = rmdotfolders(dir(fullfile(folder, '**/*')));
-   else
-      list = rmdotfolders(dir(fullfile(folder)));
-   end
+
+   % Get all files in main folder and if requested, sub folders
+   list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
    list = list(~[list.isdir]);
 
    if opts.mfiles == true
-      list = list(strncmp(reverse({list.name}), 'm.', 2));
+      if opts.matfiles == true
+         list = list(...
+            strncmp(reverse({list.name}), 'm.', 2) | ...
+            strncmp(reverse({list.name}), 'tam.', 4));
+      else
+         list = list(strncmp(reverse({list.name}), 'm.', 2));
+      end
    end
+
+   % Remove files containing the "RMPATTERNS"
+   list = trimfiles(list, opts);
 
    if opts.aslist == true
 
@@ -91,4 +104,48 @@ function list = processOneFolder(folder, opts)
          list = string(list);
       end
    end
+end
+
+function pattern = parseFilePattern(opts)
+   %PARSEFILEPATTERN Create a wildcard pattern from the user supplied one
+
+   pattern = opts.pattern;
+
+   % Wildcard * is appended to the pattern by default, so remove if supplied
+   if startsWith(pattern, "*") || endsWith(pattern, "*")
+      pattern = erase(pattern, "*");
+   end
+   if startsWith(pattern, ".")
+      pattern = erase(pattern, ".");
+   end
+   if opts.subfolders == true
+      if pattern ~= ""
+         pattern = strcat("**/*", pattern, "*");
+      else
+         pattern = "**/*"; % Prevent strcat from creating **/**
+      end
+   else
+      pattern = strcat("*", pattern, "*");
+   end
+end
+
+function list = trimfiles(list, opts)
+
+   % Note: call trimfiles prior to converting from dir struct to list to
+   % respect the requested output type, but perform the same "fullpath"
+   % check that is performed in the "aslist" section to respect the
+   % requested output type meaning the rmpattern must apply to the filename
+   % OR the fullpath. note - could be preferable to add a "nameonly" option
+   % to distinguish whether the rmpatterns apply to the fullpath or filename.
+
+   % Append default patterns that should be removed
+   rmpatterns = append(opts.rmpatterns, "~$"); % add more as needed
+
+   if opts.fullpath
+      files = transpose(fullfile({list.folder}, {list.name}));
+   else
+      files = transpose(fullfile({list.name}));
+   end
+
+   list = list(~contains(files, rmpatterns));
 end

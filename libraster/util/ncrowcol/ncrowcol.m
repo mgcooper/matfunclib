@@ -1,12 +1,13 @@
-function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
+function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
    %NCROWCOL find start and count indices for netcdf file
    %
-   %  [START, COUNT] = NCROWCOL(NCVAR, NCX, NCY, XPOLY, YPOLY)
+   %  [START, COUNT] = NCROWCOL(NCVAR, NCX, NCY, COORDS)
    %
    % Inputs
    %  ncvar - a variable in the nc file. If
    %  ncX - the X coordinates of the data,
    %  ncY - the Y coordinates of the data, either exactly as returned by ncread,
+   %  coords - an Nx2 numeric array of x and y coordinates or a polyshape.
    %
    % Notes
    %  ncX and ncY must be oriented along the same dimensions as the underlying
@@ -18,7 +19,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
    %  dimensions if they exist. If these dims are known, it is often easiest to
    %  pass in ncX or ncY for ncvar, e.g.:
    %
-   %     [START, COUNT] = NCROWCOL(NCX, NCX, NCY, XPOLY, YPOLY)
+   %     [START, COUNT] = NCROWCOL(NCX, NCX, NCY, COORDS)
    %
    %  If that syntax is used, care must be taken to ensure ncvar (here, ncX) is
    %  oriented like the underlying data. Technically, ncvar only needs to be the
@@ -34,8 +35,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
       ncvar
       ncX
       ncY
-      xpoly
-      ypoly
+      coords {mustBePolygon}
       kwargs.ncinfo = []
       kwargs.makeplot (1, 1) logical = false
       kwargs.polybuffer (1, 1) {mustBeNumeric} = 0
@@ -44,6 +44,13 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
       kwargs.xcellbuffer (1, 1) {mustBeInteger} = 0
       kwargs.ycellbuffer (1, 1) {mustBeInteger} = 0
    end
+
+   % Parse the coordinates
+   if ~isa(coords, 'polyshape')
+      coords = polyshape(coords(:, 1), coords(:, 2));
+   end
+   xcoords = coords.Vertices(:, 1);
+   ycoords = coords.Vertices(:, 2);
 
    % Assume a data var was provided rather than char variable name
    waschar = ischar(ncvar);
@@ -54,7 +61,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
    end
 
    % % check if input is geographic or projected
-   % if islatlon(ncY,ncX)
+   % if islatlon(ncY, ncX)
    % end
 
    % Convert grid vectors to full (nd) grids.
@@ -63,8 +70,8 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
    end
 
    % Check if a polygon was provided or just a point
-   if numel(xpoly) > 1
-      Points = pointsInPoly(ncX, ncY, polyshape(xpoly, ypoly), ...
+   if numel(xcoords) > 1
+      Points = pointsInPoly(ncX, ncY, coords, ...
          buffer=kwargs.polybuffer, ...
          xbuffer=kwargs.xpolybuffer, ...
          ybuffer=kwargs.ypolybuffer);
@@ -75,7 +82,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
       c = unique(c);
    else
       % Use dsearchn
-      knear = dsearchn([ncX(:) ncY(:)], [xpoly ypoly]);
+      knear = dsearchn([ncX(:) ncY(:)], [xcoords ycoords]);
       [r,c] = ind2sub(size(ncX), knear);
       r = unique(r);
       c = unique(c);
@@ -139,7 +146,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, xpoly, ypoly, kwargs)
       figure; hold on
       scatter(ncX(:), ncY(:), 'filled');
       scatter(ncX(inpoly), ncY(inpoly), 'filled')
-      plot(xpoly, ypoly);
+      plot(xcoords, ycoords);
    end
 end
 

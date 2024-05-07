@@ -1,77 +1,46 @@
 clean
 
-% Note: This needs to be updated for latest syntax .
+% Demonstrate how to use installRequiredFiles and getRequiredFiles
 
-% Test resolveDependencies and getFunctionDependencies
+% see icemodel for combined "install" function.
 
-%%
+%% Demo getRequiredFiles
 
-% The outcome of this is that the loop over files in getFunctionDependencies is
-% not necessary ad is slow, getRequiredFilesAndPrd does it with a list of files
-% so now I just need to determine what should be combined in the resolve step
-% between subfucntions of getRequirements/getFunctionDependencies and
-% resovleDependencies
-
-% The only other thing I might check is if 'toponly' and recurisively checking
-% whihc deps are in theh requirement list and skipping htem is faster but
-% presumably requiredFilesAndProducts deos something smart like that
-
-% getFunctionDependencies requires the filename be in matfunclib
-
-% Try getFunctionDependencies with a file name (It won't work with a full-path
-% because it uses listallmfiles to validate the function name)
 filename = '/Users/coop558/MATLAB/matfunclib/libraster/util/isfullgrid.m';
 [folder, filename] = fileparts(filename);
-tic; Info1 = getFunctionDependencies(filename); toc
-tic; Info2 = getRequirements(filename); toc
-isequal(Info1, Info2)
 
-% Try with a folder name
-folder = '/Users/coop558/MATLAB/matfunclib/libsys';
-tic; Info1 = getFunctionDependencies(folder); toc
-tic; Info2 = getRequirements(folder); toc
-isequal(Info1, Info2)
+% Simplest use - with filename
+Info = getRequiredFiles(filename);
 
-% test getFunctionDependencies with a file/folder not on path
-folder = '/Users/coop558/myprojects/matlab/bfra/toolbox/+baseflow/+internal';
-tic; Info1 = getFunctionDependencies(folder); toc
-tic; Info2 = getRequirements(folder); toc
-isequal(Info1, Info2)
+% With folder
+Info = getRequiredFiles(folder);
 
-% test with a file not on path
-rmpath('/Users/coop558/MATLAB/matfunclib/libsys/')
-cd('/Users/coop558/MATLAB/matfunclib/');
-filename = '/Users/coop558/MATLAB/matfunclib/libsys/backupfile.m';
-tic; Info1 = getFunctionDependencies(filename); toc
-tic; Info2 = getFunctionDependencies(filename); toc
+% Supply a reference folder to exclude
+Info = getRequiredFiles(filename, ...
+   reference="/Users/coop558/MATLAB/matfunclib/libraster/");
 
-% test with a file not on path w/o extension (should fail)
-filename = '/Users/coop558/MATLAB/matfunclib/libsys/backupfile';
-tic; Info1 = getFunctionDependencies(filename); toc
-tic; Info2 = getFunctionDependencies(filename); toc
+% Using the folder
+Info = getRequiredFiles(folder, ...
+   reference="/Users/coop558/MATLAB/matfunclib/libraster/");
 
-% test from within the folder with no extension
-cd('/Users/coop558/MATLAB/matfunclib/libsys');
-filename = 'backupfile';
-tic; Info1 = getFunctionDependencies(filename); toc
-tic; Info2 = getFunctionDependencies(filename); toc
-isequal(Info1, Info2)
+% Multiple reference folders
+Info = getRequiredFiles(filename, ...
+   reference=["/Users/coop558/MATLAB/matfunclib/libraster/", ...
+   "/Users/coop558/MATLAB/matfunclib/libcells/"]);
 
-% % Try with a folder list - fails b/c it doesn't support folder lists, but i
-% % think that's ok, operating on one folder at a time is reasonable
-% folderlist = {
-%    '/Users/coop558/MATLAB/matfunclib/libsys'; ...
-%    '/Users/coop558/MATLAB/matfunclib/libsys/setFontSize'};
-% Info = getFunctionDependencies('funcpath', folderlist);
+% All reference folders needed to satisfy all requirements
+Info = getRequiredFiles(filename, ...
+   reference=["/Users/coop558/MATLAB/matfunclib/libraster", ...
+   "/Users/coop558/MATLAB/matfunclib/libcells",...
+   "/Users/coop558/MATLAB/matfunclib/functools", ...
+   "/Users/coop558/MATLAB/matfunclib/liblogic"]);
 
-% now use resolveDependencies
+% Save the requirements file
+Info = getRequiredFiles(filename, ...
+   reference="/Users/coop558/MATLAB/matfunclib/libraster/", ...
+   saveRequirementsFile=true);
 
-[tf, onpath] = ismfile('/Users/coop558/myprojects/matlab/exactremap/toolbox/enclosedGridCells.m')
-
-tf = ispathlike('/Users/coop558/myprojects/matlab/exactremap/toolbox')
-
-
-%%
+%% installRequiredFiles
 
 % use enclosedGridCells b/c it depends on files in matfunclib including nested
 % files inside sub-folders of libraster.
@@ -82,16 +51,58 @@ filename = '/Users/coop558/myprojects/matlab/exactremap/toolbox/enclosedGridCell
 
 cd(projectFolder);
 
-[requirementsList, urlList] = resolveDependencies( ...
-   functionName, "projectFolder", projectFolder, "installMissing", true, ...
-   "remotebranch", "dev");
+% Note - the behavior of installRequiredFiles changed, it no longer accepts a
+% function name, it accepts the list or uses the project folder, so send it the
+% list generatd by getRequiredFiles to test with a specific function - this used
+% to deliberately test with enclosedGridCells. I removed that as the first
+% argument and confirmed the syntax below works to generate the full toolbox
+% dependency folder for exact remap
 
-% To reconcile getFunctionDependencies with resolveDependencies, test with a
-% full projectFolder to eliminate the dir struct
-Info = getFunctionDependencies(filename, 'referencePath', projectFolder);
+[requirementsList, urlList] = installRequiredFiles( ...
+   projectPath=projectFolder, ...
+   installPath=fullfile(projectFolder, "dependencies"), ...
+   installMissing=true, ...
+   remoteBranch="dev");
 
-Info = getFunctionDependencies(functionName);
+%% Below here the original tests
+
+% Try with a folder name
+folder = '/Users/coop558/MATLAB/matfunclib/libsys';
+Info = getRequiredFiles(folder);
+
+% test getRequiredFiles with a file/folder not on path
+folder = '/Users/coop558/myprojects/matlab/bfra/toolbox/+baseflow/+internal';
+Info = getRequiredFiles(folder);
+
+% test with a file not on path
+rmpath('/Users/coop558/MATLAB/matfunclib/libsys/')
+cd('/Users/coop558/MATLAB/matfunclib/');
+filename = '/Users/coop558/MATLAB/matfunclib/libsys/backupfile.m';
+Info = getRequiredFiles(filename);
+
+% test with a file not on path w/o extension (should fail)
+filename = '/Users/coop558/MATLAB/matfunclib/libsys/backupfile';
+Info = getRequiredFiles(filename);
+
+% test from within the folder with no extension
+cd('/Users/coop558/MATLAB/matfunclib/libsys');
+filename = 'backupfile';
+Info = getRequiredFiles(filename);
+
+% % Try with a folder list - fails b/c it doesn't support folder lists, but i
+% % think that's ok, operating on one folder at a time is reasonable
+% folderlist = {
+%    '/Users/coop558/MATLAB/matfunclib/libsys'; ...
+%    '/Users/coop558/MATLAB/matfunclib/libsys/setFontSize'};
+% Info = getRequiredFiles('funcpath', folderlist);
+
+% now use installRequiredFiles
+
+% [tf, onpath] = ismfile( ...
+%    '/Users/coop558/myprojects/matlab/exactremap/toolbox/enclosedGridCells.m')
+% tf = ispathlike('/Users/coop558/myprojects/matlab/exactremap/toolbox')
+
+%%
 
 
 
-list = listfiles(folderlist, "subfolders", true, "aslist", true, "fullpath", true);
