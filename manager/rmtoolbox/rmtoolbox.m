@@ -10,7 +10,7 @@ function varargout = rmtoolbox(tbname,varargin)
    [tbname, rmsource] = parseinputs(tbname, mfilename, varargin{:});
 
    % Confirm the toolbox exists
-   tbname = validatetoolbox(tbname, funcname, 'TBNAME', 1);
+   tbname = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
 
    % Read in the toolbox directory and find the entry for this toolbox
    toolboxes = readtbdirectory(gettbdirectorypath());
