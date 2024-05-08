@@ -3,4 +3,6 @@ function toolboxes = readtbdirectory(dbpath)
       dbpath = gettbdirectorypath;
    end
    toolboxes = readtable(dbpath,'Delimiter',',','ReadVariableNames',true);
+   % This converts nan to missing
+   toolboxes.library = string(toolboxes.library);
 end
