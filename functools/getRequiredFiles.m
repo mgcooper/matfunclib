@@ -140,10 +140,10 @@ function [targetFiles, referenceFiles, requirementsFileName, ...
    referenceList = string(referenceList);
 
    % Validate each member of the target file / folder list
-   targetList = cellfun(@validateFileList, targetList, 'Uniform', false);
+   targetList = string(cellfun(@validateFileList, targetList, 'Uniform', false));
 
    % Decided this does not need to be validated.
-   % ignoreList = cellfun(@validateFileList, ignoreList, 'Uniform', false);
+   % ignoreList = string(cellfun(@validateFileList, ignoreList, 'Uniform', false));
 
    % If target is a folder, convert to file list
    [targetFiles, referenceFiles] = prepareFileLists(...
