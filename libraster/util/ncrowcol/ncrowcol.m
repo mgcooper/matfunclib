@@ -71,11 +71,26 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
 
    % Check if a polygon was provided or just a point
    if numel(xcoords) > 1
+
       Points = pointsInPoly(ncX, ncY, coords, ...
          buffer=kwargs.polybuffer, ...
          xbuffer=kwargs.xpolybuffer, ...
          ybuffer=kwargs.ypolybuffer);
       inpoly = Points.inpolyb;
+      found = sum(inpoly(:));
+
+      % Buffer the polyshape by multiples of its effective radius until a point
+      % is found. This is ad-hoc but should be reasonable for both geo and map.
+      eff_rad = area(coords) / sqrt(pi);
+      iter = 0;
+      while found == 0
+         iter = iter + 1;
+         buffer = kwargs.polybuffer + iter * eff_rad;
+         Points = pointsInPoly(ncX, ncY, coords, ...
+            buffer=buffer);
+         inpoly = Points.inpolyb;
+         found = sum(inpoly(:));
+      end
 
       [r, c] = ind2sub(size(inpoly), find(inpoly));
       r = unique(r);

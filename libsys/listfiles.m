@@ -51,7 +51,8 @@ function varargout = listfiles(folderlist, opts)
       opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
       opts.matfiles (1,1) logical = false
-      opts.rmpatterns (1,:) string = ""
+      opts.rmpatterns (1,:) string = ".git"
+      opts.ignoredfolders (1, :) string = []
    end
 
    opts.pattern = parseFilePattern(opts);
@@ -140,7 +141,7 @@ function list = trimfiles(list, opts)
    % to distinguish whether the rmpatterns apply to the fullpath or filename.
 
    % Append default patterns that should be removed
-   rmpatterns = append(opts.rmpatterns, "~$"); % add more as needed
+   rmpatterns = [opts.rmpatterns, "~$"]; % add more as needed
 
    if opts.fullpath
       files = transpose(fullfile({list.folder}, {list.name}));
@@ -150,3 +151,4 @@ function list = trimfiles(list, opts)
 
    list = list(~contains(files, rmpatterns));
 end
+
