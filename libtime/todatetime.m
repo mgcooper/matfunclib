@@ -20,8 +20,13 @@ function varargout = todatetime(T, varargin)
    % PARSE INPUTS
    narginchk(1,2)
 
+   % If a cell array of strings was provided, convert to string
+   if iscell(T) && all(ischarlike(T))
+      T = string(T);
+   end
+
    % quick exit if a datetime was passed in
-   if isdatetime(T)
+   if all(isdatetime(T))
       [varargout{1:nargout}] = dealout(T, true, 'datetime');
       return
    end
@@ -44,7 +49,8 @@ function varargout = todatetime(T, varargin)
    if (nargin<2)
       menu = alltypes;
    else
-      menu = validatestring(lower(varargin{1}), alltypes, mfilename, 'datetype', 2);
+      menu = validatestring( ...
+         lower(varargin{1}), alltypes, mfilename, 'datetype', 2);
       menu = {menu};
    end
 
@@ -57,7 +63,19 @@ function varargout = todatetime(T, varargin)
       try
          T = datetime(T,'ConvertFrom', menu{ii});
          tf = true;
-      catch
+      catch e
+      end
+   end
+
+   % If all of the specified options fail, try simple conversion. For instance,
+   % if a cell array of date chars is passed in, conversion will fail with
+   % message "Input data must be one numeric matrix when converting from a
+   % different date/time representation."
+   if ~tf
+      try
+         T = datetime(T);
+         tf = true;
+      catch e
       end
    end
 
