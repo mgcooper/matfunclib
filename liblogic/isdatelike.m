@@ -54,7 +54,7 @@ function varargout = isdatelike(X, varargin)
 
    notInfinite = false;
    try
-      notInfinite = ~isinf(X);
+      notInfinite = all(~isinf(X));
    catch
    end
    % This occurs when X is an empty object e.g. datetime.empty()
