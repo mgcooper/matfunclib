@@ -1,9 +1,10 @@
 function cdhome()
-   %CDBACK cd to the prior working directory
+   %CDHOME cd to the home directory
    %
-   % cdback() executes cd(getenv('OLD_CWD'))
+   % cdhome() executes cd(getenv('MATLABUSERPATH')) if this env var exists.
+   % cdhome() executes cd(userpath) if MATLABUSERPATH does not exist.
    %
-   % See also cd, cddata, cdenv, cdfex, cdfunc, cdhome, cdproject, cdtb, withcd
+   % See also cd, cddata, cdenv, cdfex, cdfunc, cdback, cdproject, cdtb, withcd
 
    thisdir = pwd();
    cleanup = onCleanup( @() setenv('OLD_CWD', thisdir) );
