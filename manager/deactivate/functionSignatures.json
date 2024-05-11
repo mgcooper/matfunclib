@@ -4,7 +4,8 @@
    {
       "inputs":
       [
-         {"name":"tbname", "kind":"ordered", "type":["char", "choices=gettbnamelist"]}
+         {"name":"tbname", "kind":"ordered", "type":["char", "choices=gettbnamelist"]},
+         {"name":"asproject", "kind":"namevalue", "type":["logical", "scalar"] ,"purpose":"Option"}
       ]
    }
 }

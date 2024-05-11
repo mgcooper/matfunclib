@@ -1,4 +1,4 @@
-function deactivate(tbname)
+function deactivate(tbname, varargin)
    %DEACTIVATE Remove toolbox from path.
    %
    %  DEACTIVATE(TBNAME) Removes toolbox paths from the path and sets the active
@@ -7,8 +7,21 @@ function deactivate(tbname)
    % See also: activate, workon, workoff
 
    % Parse inputs.
-   p = inputParser;
-   p.FunctionName = mfilename;
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.addRequired('tbname', @ischarlike)
+   parser.addParameter('asproject', false, @islogicalscalar);
+   parser.parse(tbname, varargin{:})
+
+   % Special case - deactivate a project
+   if parser.Results.asproject
+      try
+         pathadd(getprojectfolder(tbname), rmpath=true);
+         return
+      catch e
+         rethrow(e)
+      end
+   end
 
    if nargin == 0
       tbname = defaulttbdir;
@@ -46,7 +59,7 @@ function toolboxes = deactivateToolbox(tbname, toolboxes)
       'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
    tbidx = findtbentry(toolboxes, tbname);
    tbpath = toolboxes.source{tbidx};
-   pathadd(tbpath, "rmpath", true); % remove toolbox paths
+   pathadd(tbpath, rmpath=true); % remove toolbox paths
    toolboxes.active(tbidx) = false; % set the active state
 end
 

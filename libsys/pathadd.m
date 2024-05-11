@@ -80,12 +80,12 @@ function varargout = pathadd(pathlist, addSubPaths, pathAppend, ignorePaths, opt
          addpath(subpaths, pathAppend);
       end
 
-      %    switch option
-      %       case "addpath"
-      %          addpath(subpaths, pathAppend);
-      %       case "rmpath"
-      %          rmpath(subpaths);
-      %    end
+      % switch option
+      %    case "addpath"
+      %       addpath(subpaths, pathAppend);
+      %    case "rmpath"
+      %       rmpath(subpaths);
+      % end
 
    end
 
