@@ -6,10 +6,24 @@ function success = activate(tbname, varargin)
    % See also: addtoolbox, isactive
 
    % PARSE INPUTS
-   [tbname, except, pathloc, postset, silent] = parseinputs(tbname, ...
-      mfilename, varargin{:});
+   [tbname, except, pathloc, postset, silent, asproject] = parseinputs(...
+      tbname, mfilename, varargin{:});
 
    % MAIN FUNCTION
+
+   if asproject
+      try
+         tbxpath = getprojectfolder(tbname);
+         addprojectpaths(tbname);
+         pathadd(tbxpath);
+         if strcmp(postset, "goto")
+            cd(tbxpath);
+         end
+         return
+      catch e
+         rethrow(e)
+      end
+   end
 
    % If the toolbox is active, issue a warning, but suppress warnings about
    % filename conflicts
@@ -55,7 +69,7 @@ function success = activate(tbname, varargin)
    pathadd(tbpath, true, pathloc, except, "addpath", true);
 
    % cd to the activated tb if requested
-   if postset == "goto"
+   if strcmp(postset, "goto")
       cd(tbpath);
    end
 
@@ -69,25 +83,28 @@ function success = activate(tbname, varargin)
       nargoutchk(0, 1)
    end
 end
-%% local functions
 
-function [tbname, except, pathloc, postset, silent] = parseinputs(tbname, ...
-      funcname, varargin)
+%% Local Functions
+function [tbname, except, pathloc, posthook, silent, asproject] = ...
+      parseinputs(tbname, funcname, varargin)
 
    persistent parser
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = funcname;
       parser.addRequired('tbname', @ischarlike);
-      parser.addOptional('postset', 'none', @(x) any(validatestring(x, {'goto'})));
+      parser.addOptional('posthook', 'none', @(x) any(validatestring(x, {'goto'})));
       parser.addParameter('except', string.empty(), @ischarlike);
       parser.addParameter('pathloc', '-end', @ischarlike);
-      parser.addParameter('silent', false, @islogical);
+      parser.addParameter('silent', false, @islogicalscalar);
+      parser.addParameter('asproject', false, @islogicalscalar);
+      parser.addParameter('userhooks', '', @(x) isfile(x)); % not implemented
    end
    parser.parse(tbname, varargin{:});
    tbname = char(parser.Results.tbname);
    except = string(parser.Results.except);
-   postset = string(parser.Results.postset);
-   pathloc = string(parser.Results.pathloc);
    silent = parser.Results.silent;
+   posthook = string(parser.Results.posthook);
+   pathloc = string(parser.Results.pathloc);
+   asproject = parser.Results.asproject;
 end

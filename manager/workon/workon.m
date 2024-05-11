@@ -35,7 +35,7 @@ function workon(varargin)
    % Check if this is a new project (if it exists in the project directory)
    ok = verifyprojectexists(projname);
 
-   if ok == false
+   if not(ok)
       return
    end
 
