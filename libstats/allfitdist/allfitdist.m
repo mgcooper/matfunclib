@@ -222,7 +222,10 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
    end
 
    % Run through all distributions in FITDIST function
-   warning('off', 'all'); % Turn off all future warnings
+
+   % mgc: turned this off - add them to withwarnoff as needed
+   % warning('off', 'all'); % Turn off all future warnings
+
    for indx=1:length(distname)
       try
          switch distname{indx}
@@ -260,7 +263,7 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
          %Ignore distribution
       end
    end
-   warning('on','all'); %Turn back on warnings
+   % warning('on','all'); %Turn back on warnings
    if numel(D)==0
       error('ALLFITDIST:NoDist','No distributions were found');
    end
@@ -329,6 +332,7 @@ function PD = fitgpcase(data, args, strs)
       % that is not what is wanted, so I turned it off.
       % thetahat = estimatemode(data(:));
       % data = data(data > thetahat);
+      % Instead, apply this outside the function and send in data(data > thetahat)
 
       gpargs{end+1} = 'theta'; 
       gpargs{end+1} = thetahat;

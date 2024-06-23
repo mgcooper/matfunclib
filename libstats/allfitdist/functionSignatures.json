@@ -4,8 +4,8 @@
    {
       "inputs":
       [
-         {"name":"data",      "kind":"required",
-                              "type":[["numeric","column","double"],["cell"]]},
+         {"name":"data", "kind":"required", "type":[["numeric","column","double"],["cell"]]
+         },
          {"mutuallyExclusiveGroup":   
             [
                [
