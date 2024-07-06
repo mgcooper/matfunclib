@@ -65,7 +65,18 @@ function varargout = mcallername(varargin)
 
          otherwise % case 'funcname'
 
-            msg = stack(stacklevel).name;
+            % Say the function calling this one is a "parser" function, and is
+            % calling this function to retrieve its parent calling function, to
+            % construct an error message using mfilename, argname, and argidx,
+            % where mfilename is the parent function that called the parsing
+            % function. Then the parser function would request the stack level
+            % one above itself using: mcallername(stacklevel=3). But if for some
+            % reason the parser function is called from base, then
+            % max(stacklevel) = 2, so the min() condition enforces stacklevel=2.
+            % But this returns the parser function name, so it could be better
+            % to return "base". Otherwise that needs to be handled on a case by
+            % case basis in the parser functions.
+            msg = stack(min(stacklevel, N)).name;
       end
    end
 
@@ -87,13 +98,14 @@ function [stacklevel, fileoption] = parseinputs(N, funcname, varargin)
    validopt = {'fullpath', 'filename', 'funcname'};
 
    % create parser
-   p = inputParser;
-   p.FunctionName = funcname;
-   p.addOptional('fileoption', 'funcname', @(x) ~isempty(validatestring(x, validopt)));
-   p.addParameter('stacklevel', N, @(x) isnumericscalar(x));
-   p.parse(varargin{:})
-   stacklevel = p.Results.stacklevel;
-   fileoption = p.Results.fileoption;
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.addOptional('fileoption', 'funcname', ...
+      @(x) ~isempty(validatestring(x, validopt)));
+   parser.addParameter('stacklevel', N, @isnumericscalar);
+   parser.parse(varargin{:})
+   stacklevel = parser.Results.stacklevel;
+   fileoption = parser.Results.fileoption;
 end
 
 % set defaults
