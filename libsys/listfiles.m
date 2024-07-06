@@ -59,7 +59,10 @@ function varargout = listfiles(folderlist, opts)
 
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
-   list = vertcat(list{:});
+
+   if iscell(list)
+      list = vertcat(list{:});
+   end
 
    % Parse outputs
    switch nargout
@@ -80,8 +83,8 @@ function list = processOneFolder(folder, opts)
    list(strncmp({list.name}, '.', 1)) = [];
    list = list(~[list.isdir]);
 
-   if opts.mfiles == true
-      if opts.matfiles == true
+   if opts.mfiles
+      if opts.matfiles
          list = list(...
             strncmp(reverse({list.name}), 'm.', 2) | ...
             strncmp(reverse({list.name}), 'tam.', 4));
@@ -93,7 +96,7 @@ function list = processOneFolder(folder, opts)
    % Remove files containing the "RMPATTERNS"
    list = trimfiles(list, opts);
 
-   if opts.aslist == true
+   if opts.aslist
 
       if opts.fullpath
          list = transpose(fullfile({list.folder}, {list.name}));
@@ -102,7 +105,7 @@ function list = processOneFolder(folder, opts)
       end
 
       % convert to string array if requested
-      if opts.asstring == true
+      if opts.asstring
          list = string(list);
       end
    end
@@ -120,14 +123,18 @@ function pattern = parseFilePattern(opts)
    if startsWith(pattern, ".")
       pattern = erase(pattern, ".");
    end
-   if opts.subfolders == true
+   if opts.subfolders
       if pattern ~= ""
          pattern = strcat("**/*", pattern, "*");
       else
          pattern = "**/*"; % Prevent strcat from creating **/**
       end
    else
-      pattern = strcat("*", pattern, "*");
+      if pattern ~= ""
+         pattern = strcat("*", pattern, "*");
+      else
+         pattern = "*"; % Prevent strcat from creating ** which returns subfolders
+      end
    end
 end
 
@@ -151,4 +158,3 @@ function list = trimfiles(list, opts)
 
    list = list(~contains(files, rmpatterns));
 end
-
