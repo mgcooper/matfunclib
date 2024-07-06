@@ -1,4 +1,4 @@
-function [S,A] = loadgis(fname,varargin)
+function [S, A] = loadgis(fname, varargin)
    %LOADGIS loads gis data saved in USERGISPATH
    %
    %  Data = LOADGIS(fname);
