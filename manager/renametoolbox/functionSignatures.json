@@ -6,10 +6,11 @@
       [
          {"name":"oldtbname",    "kind":"required",   "type":["char","choices=gettbnamelist"]},
          {"name":"newtbname",    "kind":"required",   "type":["char"]},
-         {"name":"library",      "kind":"positional", "type":["string","choices=gettbdirectorylist"]},
+         {"name":"library",      "kind":"namevalue",  "type":["string","choices=gettbdirectorylist"]},
          {"name":"renamesource", "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
          {"name":"movesource",   "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
-         {"name":"force",        "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+         {"name":"force",        "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"dryrun",       "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
       ]
    }
 }
