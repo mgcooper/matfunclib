@@ -49,7 +49,7 @@ function T = stacktables(tbls,opts)
    %  *variables of the same name must also be of the same datatype.
 
    arguments (Repeating)
-      tbls table
+      tbls tabular
    end
    arguments
       opts.MergeCustomProps (1,1) logical = true
@@ -103,7 +103,12 @@ function T = stacktables(tbls,opts)
    T = removevars(t1,rowKey);
 
    % Collect rownames, which may or may not exist
-   rownames = cellfun(@(tbl) tbl.Properties.RowNames, tbls, 'Uniform', 0);
+   if all(cellfun(@istable, tbls))
+      rownames = cellfun(@(tbl) tbl.Properties.RowNames, tbls, 'Uniform', 0);
+   elseif all(cellfun(@istimetable, tbls))
+      % Timetables do not hvae rownames
+      rownames = "";
+   end
 
    % Merge row names if they exist
    if opts.KeepRowNames && any(cellfun(@notempty, rownames))
