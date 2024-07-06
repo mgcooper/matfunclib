@@ -1,7 +1,8 @@
 function tf = isscalartext(X)
    %ISSCALARTEXT Return true if input is scalar text
    %
-   %  TF = ISSCALARTEXT(X) returns TF = true if X is a row char or a scalar string
+   %  TF = ISSCALARTEXT(X) returns TF = true if X is a row vector of char's or
+   %  a scalar string.
    %
    % Examples
    % tf = isscalartext('')
@@ -29,7 +30,7 @@ function tf = isscalartext(X)
    % logical
    %  0
    %
-   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
    %
    % See also: ischarlike
 

@@ -35,7 +35,12 @@ function poly = processOnePoly(poly, kwargs)
    end
 
    % Reduce the number of vertices to <10000 or user-specified
-   factor = max(1, fix(size(poly.Vertices, 1) / kwargs.maxverts));
-   poly = polyshape(poly.Vertices(1:factor:end, 1), ...
-      poly.Vertices(1:factor:end, 2));
+   keep = fix(linspace(1, size(poly.Vertices, 1), kwargs.maxverts));
+   keep = unique([1, keep, size(poly.Vertices, 1)]);
+   poly = polyshape(poly.Vertices(keep, 1), poly.Vertices(keep, 2));
+
+   % This method only reduces the number of vertices if factor is > 1
+   % factor = max(1, fix(size(poly.Vertices, 1) / kwargs.maxverts));
+   % poly = polyshape(poly.Vertices(1:factor:end, 1), ...
+   %    poly.Vertices(1:factor:end, 2));
 end

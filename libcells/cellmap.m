@@ -14,8 +14,25 @@ function varargout = cellmap(fn, varargin)
 
    % Iain Murray, November 2007
 
+   % Original method:
+   % varargout = cell(1, nargout);
+   % [varargout{:}] = cellfun(fn, varargin{:}, 'UniformOutput', false);
+
+   % Maybe this? Note - standard implementation above passes the burden to the
+   % caller, who must use deal (or dealout) to handle this.
    varargout = cell(1, nargout);
-   [varargout{:}] = cellfun(fn, varargin{:}, 'UniformOutput', false);
+   if all(cellfun(@iscell, varargin))
+      [varargout{:}] = cellfun(fn, varargin{:}, 'UniformOutput', false);
+   else
+      varargout = cellfun(fn, varargin, 'UniformOutput', false);
+   end
+
+   % Note: I don't fully understand why, but if a cell array is passed in and
+   % each element is a uniform sized array, and on the calling side the same
+   % number of outputs are requested as elements of the input cell array, then
+   % this syntax is required (and initialization is not technically needed):
+   % varargout = cell(1, nargout);
+   % varargout(1:nargout) = cellfun(fn, varargin{:}, 'UniformOutput', false);
 
    % % This first tries the user-supplied varargin, which, if empty, is
    % % equivalent to 'UniformOutput', true,

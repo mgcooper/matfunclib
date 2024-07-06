@@ -1,4 +1,11 @@
 function renametbsourcedir(tfrenamesource,oldtbpath,newtbpath,force)
+   arguments
+      tfrenamesource (1, 1) logical
+      oldtbpath (1, :) {mustBeFolder}
+      newtbpath (1, :) {mustBeTextScalar}
+      force (1, 1) logical = false
+      % dryrun (1, 1) logical = false % dryrun is in calling functions
+   end
 
    if tfrenamesource == true
       % some older entries in the directory have the trailing slash
@@ -10,7 +17,7 @@ function renametbsourcedir(tfrenamesource,oldtbpath,newtbpath,force)
          system(sprintf('mv %s %s',oldtbpath,newtbpath));
       else
          % move after prompt confirmation
-         msg = '\n renaming source directory from %s to %s\n\n press ';
+         msg = '\n renaming source directory from "%s" to "%s"\n\n press ';
          msg = [msg ' ''y'' to proceed or any other key to cancel\n'];
          str = input(sprintf(msg,oldtbpath,newtbpath),'s');
 

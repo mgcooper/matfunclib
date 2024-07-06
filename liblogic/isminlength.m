@@ -3,7 +3,7 @@ function [tf,istart,iend] = isminlength(tf,nmin)
    %
    %
    % See also: runlength
-   
+
    rl = runlength(tf); % get run lengths
    tf = rl >= nmin; % find run lengths > min length
    istart = find(diff([false;tf]) == 1); % start index of useable events
@@ -11,7 +11,7 @@ function [tf,istart,iend] = isminlength(tf,nmin)
 end
 
 function rl = runlength(tf)
-   
+
    % get run lengths of consecutive equal values along columns of data
    diffs = diff(tf) ~= 0;    % find where values change
    ncol = size(diffs,2);    % pad implicit jumps at start and end

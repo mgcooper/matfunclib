@@ -5,55 +5,56 @@ function T = padtimetable(T,varargin)
    %  T = padtimetable(T,varargin)
    %
    %  Inputs
-   %     T        =   timetable of monotonically increasing data
-   %     dates    =   vector of datenums corresponding to data
-   %     padstart =   date you want to start the padding
-   %     padend   =   date you want to end the padding
+   %     T = timetable of monotonically increasing data
+   %     dates = vector of datenums corresponding to data
+   %     padstart = date you want to start the padding
+   %     padend = date you want to end the padding
    %
    %  Outputs
-   %     T        =   padded timetable
+   %     T = padded timetable
    %
    % See also:
 
-   p = magicParser; %#ok<*NODEF>
-   p.FunctionName = mfilename;
+   parser = inputParser; %#ok<*NODEF>
+   parser.FunctionName = mfilename;
 
-   validT  = @(x)validateattributes(x,{'timetable'},{'nonempty'},mfilename,'T',1);
+   validT = @(x)validateattributes(x,{'timetable'},{'nonempty'},mfilename,'T',1);
    validt1 = @(x)validateattributes(x,{'datetime'},{'nonempty'},mfilename,'t1');
    validt2 = @(x)validateattributes(x,{'datetime'},{'nonempty'},mfilename,'t2');
    validdt = @(x)validateattributes(x,{'duration'},{'nonempty'},mfilename,'dt');
 
-   p.addRequired('T', validT);
-   p.addOptional('t1', defaultt1(T), validt1);
-   p.addOptional('t2', defaultt2(T), validt2);
-   p.addOptional('dt', defaultdt(T), validdt);
-   p.parseMagically('caller');
+   parser.addRequired('T', validT);
+   parser.addOptional('t1', defaultt1(T), validt1);
+   parser.addOptional('t2', defaultt2(T), validt2);
+   parser.addOptional('dt', defaultdt(T), validdt);
+   parser.parse(T, varargin{:});
+   t1 = parser.Results.t1;
+   t2 = parser.Results.t2;
+   dt = parser.Results.dt;
 
-   hast1t2  = not(any(ismember(p.UsingDefaults,{'t1','t2'})));
-
-   dt = p.Results.dt; % just to get rid of annoying warning
+   hast1t2 = not(any(ismember(parser.UsingDefaults,{'t1','t2'})));
 
    % Main function
    T = renametimetabletimevar(T);
 
-   if isregular(T,'time')
-      Time  = t1:dt:t2;
-      T     = retime(T,Time,'fillwithmissing');
+   if isregular(T, 'time')
+      Time = t1:dt:t2;
+      T = retime(T,Time,'fillwithmissing');
       return
-   elseif isregular(T,'years')
+   elseif isregular(T, 'years')
       if ~hast1t2
          t1 = datetime(year(T.Time(1)),1,1);
          t2 = datetime(year(T.Time(end)),12,1);
       end
-      Time  = t1:calyears(1):t2;
-      T     = retime(T,Time,'fillwithmissing');
-   elseif isregular(T,'months')
+      Time = t1:calyears(1):t2;
+      T = retime(T,Time,'fillwithmissing');
+   elseif isregular(T, 'months')
       if ~hast1t2
          t1 = datetime(year(T.Time(1)),1,1);
          t2 = datetime(year(T.Time(end)),12,1);
       end
-      Time  = t1:calmonths(1):t2;
-      T     = retime(T,Time,'fillwithmissing');
+      Time = t1:calmonths(1):t2;
+      T = retime(T,Time,'fillwithmissing');
    end
 
    % check for non-numeric data
@@ -62,14 +63,14 @@ function T = padtimetable(T,varargin)
    if any(inotnum)
       varnames = T.Properties.VariableNames(inotnum);
 
-      %       % here I was going to determine what type of data is in the
-      %       % non-numeric cells and try to convert to double or categorical
-      %       % depending on the type but if the data is a char then we don't know
-      %       % if it's supposed to be numeirc or not
-      %       for n = 1:numel(varnames)
-      %          if iscell(T.(varnames{n})(1))
-      %          end
-      %       end
+      % % here I was going to determine what type of data is in the
+      % % non-numeric cells and try to convert to double or categorical
+      % % depending on the type but if the data is a char then we don't know
+      % % if it's supposed to be numeirc or not
+      % for n = 1:numel(varnames)
+      %    if iscell(T.(varnames{n})(1))
+      %    end
+      % end
 
       % so instead I just convert to categorical. note that converting to
       % double will return nan, so that may solve the issue above, below I
@@ -129,9 +130,7 @@ function T = padtimetable(T,varargin)
          T = addvars(T,data_out(:,n+1));
       end
    end
-
    T.Properties.VariableNames = varnames;
-
 end
 
 function t1 = defaultt1(T)
@@ -143,10 +142,11 @@ function t2 = defaultt2(T)
 end
 
 function dt = defaultdt(T)
+   dt = timetabletimestep(T);
    if ~isnan(T.Properties.TimeStep)
-      %       dt       = T.Properties.TimeStep;
-      %       [y,m,d]  = split(dt,{'years','months','days'});
-      dt = timetabletimestep(T);
+      % dt = T.Properties.TimeStep;
+      % [y,m,d] = split(dt,{'years','months','days'});
+      % use the dt returned by timetabletimestep until this is figured out
    else
       dt = timetabletimestep(T);
    end

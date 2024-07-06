@@ -17,10 +17,16 @@ function mustBeImplicitlyExpandable(A, A_reference)
    %   dimension size with A_reference.
 
    if ~isscalar(A) && ~hasMatchingDimension(A, A_reference)
-      eid = 'Size:notScalarOrMatchingDimension';
+      eid = 'MUSTBEIMPLICITLYEXPANDABLE:notScalarOrMatchingDimension';
       msg = ['Input must be a scalar or have at least one dimension size ' ...
          'in common with the reference array.'];
-      throwAsCaller(MException(eid, msg));
+
+      % Generally preferable to throw from here, I think, otherwise the error
+      % message traces to the calling function and doesn't say
+      % mustBeImplicitlyExpandable
+      throw(MException(eid, msg));
+
+      %throwAsCaller(MException(eid, msg));
    end
 end
 

@@ -1,4 +1,4 @@
-function [V, R] = validateRasterReference(V, R, funcname, varargin)
+function varargout = validateRasterReference(V, R, funcname, varargin)
    %VALIDATERASTERREFERENCE Validate raster reference object R and grid data V.
    %
    %  [V,R] = VALIDATERASTERREFERENCE(V,R) description
@@ -41,7 +41,16 @@ function [V, R] = validateRasterReference(V, R, funcname, varargin)
 
    if ~isempty(V)
       validateattributes(V, {'numeric', 'logical'}, ...
-         {'size', R.RasterSize}, funcname, 'V')
+         {'size', [R.RasterSize, size(V, 3)]}, funcname, 'V');
+   end
+
+   switch nargout
+      case 0
+      case 1
+         varargout{1} = V;
+      case 2
+         varargout{1} = V;
+         varargout{2} = R;
    end
 end
 

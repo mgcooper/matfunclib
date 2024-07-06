@@ -49,3 +49,4 @@ function mustBePolygon(P)
       msg = 'Value must be a polyshape, Nx2 numeric matrix, or valid cell array.';
       throwAsCaller(MException(eid, msg));
    end
+end

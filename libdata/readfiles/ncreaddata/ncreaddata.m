@@ -1,4 +1,4 @@
-function data = ncreaddata(filename, opts)
+function data = ncreaddata(filename, kwargs)
    %NCREADDATA Read all data in .nc file fname, or all vars in optional list
    %
    %  data = ncreaddata(fname) reads all variables in fname
@@ -24,16 +24,16 @@ function data = ncreaddata(filename, opts)
 
    arguments
       filename (1, :) char
-      opts.varnames (1, :) string = string.empty()
-      opts.reorient (1, 1) logical = true
+      kwargs.varnames (1, :) string = string.empty()
+      kwargs.reorient (1, 1) logical = true
    end
 
    fileinfo = ncparse(filename);
 
-   if isempty(opts.varnames)
+   if isempty(kwargs.varnames)
       varnames = string(fileinfo.Name); % Use all varnames
    else
-      varnames = opts.varnames;
+      varnames = kwargs.varnames;
       assert(all(ismember(varnames, fileinfo.Name)))
    end
 
@@ -48,7 +48,10 @@ function data = ncreaddata(filename, opts)
       data_n = try_ncread(filename, varnames(n), info_n.Size);
 
       % Orient the data spatially if >2d and not a known non-spatial case
-      if isvector(data_n) || ismember(info_n.Name, {'time', 'depth'})
+      if isvector(data_n) || ...
+            ismember(info_n.Name, ...
+            {'time', 'time_bounds', 'depth'}) % add more as they come up
+
          % TODO: if 2d, check if one dimension is the size of the time dimension
          data.(varnames(n)) = data_n;
       else

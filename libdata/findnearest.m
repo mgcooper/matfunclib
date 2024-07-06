@@ -1,13 +1,17 @@
-function [val,idx] = findnearest(X,target,varargin)
+function [val, idx] = findnearest(X, target, varargin)
    %FINDNEAREST find value in X nearest in magnitude to target value
    %
+   %  Y = FINDNEAREST(X, TARGET)
+   %  
+   % Description
    %  Y = FINDNEAREST(X, 2) finds the value in X nearest 2
-   %  Y = FINDNEAREST(T, datetime(2000, 1, 1)) finds the value in X nearest in time
-   %  to 2000, 1, 1.
+   %  Y = FINDNEAREST(T, datetime(2000, 1, 1)) finds the value in X nearest in
+   %  time to 2000, 1, 1.
    %
    % Example
-   %
-   %  [val,idx] = findnearest(datetime(2000,1,1,1:24,0,0),datetime(2000,1,1,12,0,0))
+   %  X = datetime(2000,1,1,1:24,0,0);
+   %  target = datetime(2000,1,1,12,0,0);
+   %  [val, idx] = findnearest(X, target)
    %
    % val =
    %   datetime

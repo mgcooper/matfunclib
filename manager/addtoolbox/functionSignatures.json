@@ -5,8 +5,9 @@
       "inputs":
       [
          {"name":"tbname",    "kind":"required",   "type":["char"]},
-         {"name":"library",   "kind":"positional", "type":["char","choices=gettbdirectorylist"]},
-         {"name":"postadd",   "kind":"flag",       "type":["char","choices={'activate'}"]}
+         {"name":"library",   "kind":"namevalue",  "type":["char","choices=gettbdirectorylist"]},
+         {"name":"dryrun",    "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"},
+         {"name":"posthook",  "kind":"namevalue",  "type":["char","choices={'activate'}"]}
       ]
    }
 }

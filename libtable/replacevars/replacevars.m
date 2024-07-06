@@ -4,12 +4,12 @@ function T = replacevars(T, VarNames, NewVars, varargin)
    % Syntax
    %
    %  T = REPLACEVARS(T,VarNames,NewVars) replaces columns with variable names
-   %  VarNames with columns of NewVars. VarNames is a cell array of variable names
-   %  that match values of T.Properties.VariableNames. NewVars is an array with
-   %  second dimension (width) equal to numel(VarNames).
+   %  VarNames with columns of NewVars. VarNames is a cell array of variable
+   %  names that match values of T.Properties.VariableNames. NewVars is an array
+   %  with second dimension (width) equal to numel(VarNames).
    %
-   %  T = REPLACEVARS(T,VarNames,NewVars,'NewVarNames',NewVarNames) also replaces
-   %  the VarNames with NewVarNames.
+   %  T = REPLACEVARS(T,VarNames,NewVars,'NewVarNames',NewVarNames) also
+   %  replaces the VarNames with NewVarNames.
    %
    % Example
    %
@@ -20,8 +20,8 @@ function T = replacevars(T, VarNames, NewVars, varargin)
    % convertvars
 
    % parse inputs
-   [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
-      NewVars, mfilename, varargin{:});
+   [T, VarNames, NewVars, NewVarNames] = parseinputs( ...
+      T, VarNames, NewVars, mfilename, varargin{:});
 
    % replace vars
    T = removevars(T,VarNames);
@@ -35,7 +35,7 @@ function T = replacevars(T, VarNames, NewVars, varargin)
 end
 
 function [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
-      NewVars, funcname, varargin);
+      NewVars, funcname, varargin)
 
    p = inputParser;
    p.FunctionName = funcname;
@@ -44,10 +44,10 @@ function [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
 
    validVarNames = @(x)all(ismember(x, gettablevarnames(T)));
 
-   addRequired(p, 'T', @(x) istablelike(x) );
+   addRequired(p, 'T', @istabular);
    addRequired(p, 'VarNames', validVarNames );
    addRequired(p, 'NewVars' );
-   addParameter(p,'NewVarNames', VarNames, @(x) ischarlike(x) );
+   addParameter(p,'NewVarNames', VarNames, @ischarlike);
 
    parse(p,T,VarNames,NewVars,varargin{:});
 

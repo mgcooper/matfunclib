@@ -4,18 +4,17 @@ function timestep = timetabletimestep(T)
    % calmonths
 
    % make sure the T time dimension is named 'Time'
-   T     = renametimetabletimevar(T);
-   Time  = T.Time;
+   T = renametimetabletimevar(T);
+   Time = T.Time;
 
    % if the timetable doesn't have a set timestep, this will be empty
    % if it does have one, it will be a calendarDuration
    timestep = T.Properties.TimeStep;
 
    % get the time unit, duration, and timestep
-   dTime          =  diff(Time);             % timestep in hh:mm:ss
-   elapsedTime    =  max(Time) - min(Time);  % will be in hh:mm:ss
-   dElapsedTime   =  elapsedTime/height(T);  % just an idea, not used
-
+   dTime = diff(Time); % timestep in hh:mm:ss
+   elapsedTime = max(Time) - min(Time);  % will be in hh:mm:ss
+   dElapsedTime = elapsedTime/height(T);  % just an idea, not used
 
    % because T.Properties.TimeStep returns a duration, I set timestep in
    % the if/switch below to durations, otherwise I would have 'years' in
@@ -27,15 +26,15 @@ function timestep = timetabletimestep(T)
    if isempty(timestep) || isnan(timestep) % || isnat(timestep) % isnat errors if timestep is a calendarduration
 
       if round(years(median(dTime))) == 1
-         timestep    =  years(1);
+         timestep = years(1);
       elseif round(days(median(dTime))) == 1
-         timestep    =  days(1);
+         timestep = days(1);
       elseif round(hours(median(dTime))) == 1
-         timestep    =  hours(1);
+         timestep = hours(1);
       elseif round(minutes(median(dTime))) == 1
-         timestep    =  minutes(1);
+         timestep = minutes(1);
       elseif round(seconds(median(dTime))) == 1
-         timestep    =  seconds(1);
+         timestep = seconds(1);
       end
 
       % otherwise, use the timetable timestep, which is a calendar duration,
@@ -50,10 +49,10 @@ function timestep = timetabletimestep(T)
          % reasonable since months have different durations, but they do
          % have a standard year, so I use years(1)/12 for months
          if y == 1
-            timestep    = years(1);
+            timestep = years(1);
          elseif m == 1
-            timestep    = years(1)/12;
-            monthflag   = true;
+            timestep = years(1)/12;
+            monthflag = true;
 
             % maybe issue a warning or maybe the easiest thing is to just
             % return the varaible with units /year
@@ -62,16 +61,16 @@ function timestep = timetabletimestep(T)
             %          % this was suggested online, it would work for days or any
             %          % function that has a duration function i.e. not 'cal' so
             %          % 'days' not 'caldays' would work, but months only has calmonths
-            %          [y,m,d,t]   = split(timestep, {'years','months','days','time'});
-            %          duration    = calmonths(m) + t;
+            %          [y,m,d,t] = split(timestep, {'years','months','days','time'});
+            %          duration = calmonths(m) + t;
 
          elseif d == 1
-            timestep    = days(1);
+            timestep = days(1);
 
             % I think if the timestep is <1day, it won't be
             % calendarDuration, so I didn't add minutes/seconds
          elseif d*24 == 1
-            timestep    = hours(1);
+            timestep = hours(1);
          end
       end
    end
@@ -79,22 +78,22 @@ function timestep = timetabletimestep(T)
    % now set the format based on the timestep
    switch timestep
       case years(1)
-         dTime.Format         =  'y';
-         elapsedTime.Format   =  'y';
+         dTime.Format = 'y';
+         elapsedTime.Format = 'y';
       case years(1)/12
-         dTime.Format         =  'y'; % have to use years
-         elapsedTime.Format   =  'y';
+         dTime.Format = 'y'; % have to use years
+         elapsedTime.Format = 'y';
       case days(1)
-         dTime.Format         =  'd';
-         elapsedTime.Format   =  'd';
+         dTime.Format = 'd';
+         elapsedTime.Format = 'd';
       case hours(1)
-         dTime.Format         =  'h';
-         elapsedTime.Format   =  'h';
+         dTime.Format = 'h';
+         elapsedTime.Format = 'h';
       case minutes(1)
-         dTime.Format         =  'm';
-         elapsedTime.Format   =  'm';
+         dTime.Format = 'm';
+         elapsedTime.Format = 'm';
       case seconds(1)
-         elapsedTime.Format   =  's';
-         dTime.Format         =  's';
+         elapsedTime.Format = 's';
+         dTime.Format = 's';
    end
 end

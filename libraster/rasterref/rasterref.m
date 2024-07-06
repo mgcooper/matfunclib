@@ -92,34 +92,26 @@ function [R, X, Y] = rasterref(X, Y, varargin)
       'representation of the total extent of X and Y. If this is not the case, ' ...
       'try rasterize with "extrap=true"'])
 
-   %% parse inputs
+   %% Prepare inputs
 
-   % confirm mapping toolbox is installed
+   % Confirm mapping toolbox is installed.
    assert(license('test', 'map_toolbox') == 1, ...
       [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
-   % parse inputs
+   % Parse inputs.
    [X, Y, cellType, mapProj, UseGeoCoords] = parseinputs( ...
       X, Y, mfilename, varargin{:});
 
-   % convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and
+   % Convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and
    % N-S, get an estimate of the grid resolution, and determine if the data is
-   % geographic or planar
+   % geographic or planar.
 
    % Test - confirm if all input X, Y are in the grid X, Y
-   X1 = X;
-   Y1 = Y;
-
-   [X, Y, cellsizeX, cellsizeY, gridType, tfgeo] = prepareMapGrid( ...
-      X, Y, 'fullgrids');
+   X1 = X; Y1 = Y;
+   [X, Y, cellsizeX, cellsizeY] = prepareMapGrid(X, Y, 'fullgrids');
 
    % [LI2, LOC1] = gridmember(X, Y, X1, Y1);
    % sum(LI2(:))
-
-   % override tfgeo if user-specified map coords
-   if tfgeo == true && UseGeoCoords == false
-      tfgeo = false;
-   end
 
    % extend the lat/lon limits by 1/2 cell in both directions
    halfX = cellsizeX/2;
@@ -132,14 +124,14 @@ function [R, X, Y] = rasterref(X, Y, varargin)
    %    'Input argument 2, Y, must have uniform grid spacing');
 
    % call the appropriate function depending on if R is planar or geographic
-   if tfgeo
+   if UseGeoCoords
       R = rasterrefgeo(X, Y, halfX, halfY, cellType);
    else
       R = rasterrefmap(X, Y, halfX, halfY, cellType);
    end
 
    % if provided, add the projection
-   if isa(mapProj,'projcrs')
+   if isa(mapProj, 'projcrs')
       R.ProjectedCRS = mapProj;
    end
 
@@ -150,6 +142,10 @@ end
 %% Apply the appropriate function
 function R = rasterrefmap(X, Y, halfX, halfY, cellInterpretation, tol)
 
+   % Note: rounding wont work in general esp for large and/or global grids e.g.
+   % if the min coordinate is near the edge round to 0 will force the x/ymin
+   % values to the edge and then adjusting by half cell will put the edge
+   % outside the limits.
    if nargin < 6
       tol = 0;
    end
@@ -174,8 +170,9 @@ function R = rasterrefmap(X, Y, halfX, halfY, cellInterpretation, tol)
    end
 end
 
-function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
+function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation, tol)
 
+   % May 2024, removed round(xmin, tol), see notes in map version.
    if nargin < 6
       tol = 0;
    end
@@ -184,18 +181,18 @@ function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
    % as often provided by netcdf and h5 but I require this function accept N-S
    % oriented grids i.e. index (1,1) is NW corner, consequently set
    % 'columnstartfrom','north'
-   xmin = round(min(X(:)),tol); % changed from floor(min(X(:)))
-   xmax = round(max(X(:)),tol); % changed from ceil(max(X(:)))
-   ymin = round(min(Y(:)),tol);
-   ymax = round(max(Y(:)),tol);
+   [xmin, xmax, ymin, ymax] = deal(...
+      min(X(:)), max(X(:)), min(Y(:)), max(Y(:)));
+
    xlims = double([xmin-halfX xmax+halfX]);
    ylims = double([ymin-halfY ymax+halfY]);
+
    rasterSize = size(X);
 
    if strcmp(cellInterpretation,'cells')
 
-      R = georefcells(ylims,xlims,rasterSize, ...
-         'ColumnsStartFrom','north', ...
+      R = georefcells(ylims, xlims, rasterSize, ...
+         'ColumnsStartFrom', 'north', ...
          'RowsStartFrom', 'west');
 
       % 'georefcells' gets the limits/size/spacing/extent correct in
@@ -246,28 +243,47 @@ function R = rasterrefgeo(X,Y,halfX,halfY,cellInterpretation,tol)
    end
 end
 
-function [X, Y, cellType, mapProj, UseGeoCoords] = parseinputs( ...
-      X, Y, funcname, varargin)
+function [X, Y, cellType, mapProj, UseGeoCoords] = ...
+      parseinputs(X, Y, funcname, varargin)
 
-   p = inputParser;
-   p.FunctionName = funcname;
-   addRequired( p, 'X', @isnumeric);
-   addRequired( p, 'Y', @isnumeric);
-   addParameter(p, 'cellInterpretation', 'cells', @mustBeTextScalar);
-   addParameter(p, 'projection', 'unknown', @(x)isa(x,'projcrs')||ischar(x));
-   addParameter(p, 'UseGeoCoords', false, @islogical);
+   UseGeoCoordsDefault = false;
 
-   parse(p,X,Y,varargin{:});
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   addRequired( parser, 'X', @validateGridCoordinates);
+   addRequired( parser, 'Y', @validateGridCoordinates);
+   addParameter(parser, 'cellInterpretation', 'cells', @mustBeTextScalar);
+   addParameter(parser, 'projection', 'unknown', @validateProjection);
+   addParameter(parser, 'UseGeoCoords', UseGeoCoordsDefault, @islogicalscalar);
+   addParameter(parser, 'silent', false, @islogicalscalar);
+   parse(parser, X, Y, varargin{:});
 
-   cellType = char(p.Results.cellInterpretation);
-   mapProj = p.Results.projection;
-   UseGeoCoords = p.Results.UseGeoCoords;
-
-   % % confirm X and Y are 2d numeric grids of equal size
+   % Confirm X and Y are numeric and of equal size.
    % validateattributes(X, ...
-   %    {'numeric'}, {'2d','size',size(Y)}, 'rasterref', 'X', 1)
-   % validateattributes(Y, ...
-   %    {'numeric'}, {'2d','size',size(X)}, 'rasterref', 'Y', 2)
+   %    {'numeric'}, {'size', size(Y)}, 'rasterref', 'X', 1)
+
+   % Retreive parameter values.
+   cellType = char(parser.Results.cellInterpretation);
+   mapProj = parser.Results.projection;
+   UseGeoCoords = parser.Results.UseGeoCoords;
+
+   % Resolve UseGeoCoords user choice versus detected coordinate system.
+   tfGeoCoords = isGeoGrid(Y, X);
+   UsingDefault = ismember('UseGeoCoords', parser.UsingDefaults);
+
+   UseGeoCoords = parseGeoCoordsChoice(tfGeoCoords, UseGeoCoords, ...
+      UseGeoCoordsDefault, UsingDefault, silent=parser.Results.silent);
+end
+
+function tf = validateProjection(x)
+   assert(isa(x, 'projcrs') || ischar(x))
+   tf = true;
+end
+function tf = validateGridCoordinates(x)
+   validTypes = {'numeric'};
+   attributes = {'real', 'finite', 'nonsparse'};
+   validateattributes(x, validTypes, attributes);
+   tf = true;
 end
 
 %% Notes

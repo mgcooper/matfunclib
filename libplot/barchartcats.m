@@ -91,6 +91,13 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
    %
    % See also reordergroups, reordercats, barchart
 
+   % NOTE: "unique" is embedded all over the place e.g. in the call to
+   % groupsummary in summarizeTableGroups ... which means the CGroup / YData at
+   % minimum is in sorted order. This creates a possible discrepancy when trying
+   % to set legend text outside of this function using unique(..., "stable")
+   % thinking the data would be in stable order. It could also lead to errors
+   % within this function, but will require time to sort out.
+
    % TODO: add a "histogram" or "frequencies" or maybe "groupfilter" option in
    % which the xgroupvar is transformed to generate the values on the y axis. In
    % this case, ydatavar and xgroupvar would be the same, and the data would
@@ -171,20 +178,26 @@ function varargout = barchartcats(T, ydatavar, xgroupvar, cgroupvar, opts, props
 
    % Need to add validation to ensure SortGroupMembers are members of CData
 
+   % NOTE: unique returns indices in sorted order, so opts.SortColumns is
+   % implicitly sorted. I tried changing to "stable" for one test case but
+   % suprisingly still got sorted order ... b/c "unique" is embedded all over
+   % the place e.g. in the call to groupsummary in summarizeTableGroups ...
+   % so this is a bigger issue that will take some time to figure out.
+
    % Custom group merging
    if isempty(opts.MergeGroups)
       % Find the columns to use for computing the sort
       if opts.SortGroupMembers == "all"
-         opts.SortGroupMembers = string(unique(CData));
+         opts.SortGroupMembers = string(unique(CData, "stable"));
       end
-      opts.SortColumns = ismember(string(unique(CData)), ...
+      opts.SortColumns = ismember(string(unique(CData, "stable")), ...
          opts.SortGroupMembers);
    else
       [YData, opts] = mergeGroupColumns(opts, YData, CData);
    end
 
    % Custom ordering along x-axis
-   [XData, YData] = reorderGroups(opts, XData, YData);
+   [XData, YData] = reorderXGroups(opts, XData, YData);
 
    % Create the figure
    [H, L, ax] = createCategoricalBarChart(XData, YData, CData, ydatavar, ...
@@ -263,6 +276,13 @@ end
 function [NewYData, opts] = mergeGroupColumns(opts, YData, CData)
    %MERGEGROUPCOLUMNS
 
+   % May 2024 - need a way to enforce the C-Group ordering. This created
+   % difficulty when setting the legend outside of this function. The data is
+   % plotted by sorted order e.g. if the CGroupMember labels are obtained from
+   % unique(tbl.(cgroupvar), 'stable') they won't match the legend ordering,
+   % however, they will match if obtained from unique(tbl.(cgroupvar)) which is
+   % in sorted order.
+
    % mergegroups is the YData column indices to merge, so the new YData needs to
    % contain the unmerged groups and the merged groups. The new YData are
    % ordered with the merged groups in the position of the smallest index for
@@ -303,19 +323,28 @@ function [NewYData, opts] = mergeGroupColumns(opts, YData, CData)
    end
 end
 
-function [XData, YData] = reorderGroups(opts, XData, YData)
-   %REORDERGROUPS
+function [XData, YData] = reorderXGroups(opts, XData, YData)
+   %REORDERGROUPS Reorder the x-axis (tick) groups
+   %
+   % Use this to order categorical data or data of any type that you want
+   % ordered other than the default ordinal ordering.
 
    if opts.XGroupOrder == "none"
+      % Use sorting methods available to "sort" - ascend, descend, stable
+
       switch opts.SortBy
          case "ascend"
-            [~, idx] = sort(mean(YData(:, opts.SortColumns), 2));
+            [~, idx] = sort(mean(YData(:, opts.SortColumns), 2), 'ascend');
             XData = reordercats(XData, string(XData(idx)));
          case "descend"
             [~, idx] = sort(mean(YData(:, opts.SortColumns),2), 'descend');
             XData = reordercats(XData, string(XData(idx)));
+         otherwise
+            % opts.SortBy should equal "none" but no error issued b/c there are
+            % unimplemented methods e.g. "stable"
       end
    else
+      % Sort by order of provided elements
       [~, idx] = ismember(opts.XGroupOrder, string(XData));
       XData = reordercats(XData, string(XData(idx)));
       YData = YData(idx, :);

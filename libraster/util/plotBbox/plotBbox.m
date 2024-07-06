@@ -26,7 +26,7 @@ function [h,coords] = plotBbox(bbox,varargin)
    coords.y    =   [uprighty uplefty lowlefty lowrighty uprighty];
    coords.x    =   [uprightx upleftx lowleftx lowrightx uprightx];
 
-   if ismap(ax)==true
+   if ismap(ax)
       h = plotm(coords.y,coords.x,'Color','r'); % removed varargin
    else
       if ~isempty(varargin)

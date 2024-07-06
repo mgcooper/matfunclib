@@ -19,6 +19,7 @@ function success = activate(tbname, varargin)
          if strcmp(postset, "goto")
             cd(tbxpath);
          end
+         printmessage(tbname, silent, except, asproject)
          return
       catch e
          rethrow(e)
@@ -51,13 +52,7 @@ function success = activate(tbname, varargin)
    tbidx = findtbentry(toolboxes, tbname);
 
    % Alert the user the toolbox is being activated
-   if not(silent)
-      if isempty(except)
-         disp(['activating ' tbname])
-      else
-         disp(strjoin(['activating', tbname, 'except', except]))
-      end
-   end
+   printmessage(tbname, silent, except, asproject)
 
    % Set the active state
    toolboxes.active(tbidx) = true;
@@ -81,6 +76,22 @@ function success = activate(tbname, varargin)
       success = true;
    else
       nargoutchk(0, 1)
+   end
+end
+
+%%
+function printmessage(tbname, silent, except, asproject)
+   if not(silent)
+
+      msg = ['activating ' tbname];
+      if ~isempty(except)
+         msg = strjoin([msg, 'except', except]);
+      end
+      if asproject
+         msg = [msg, ' ', 'asproject'];
+      end
+
+      disp(msg)
    end
 end
 
