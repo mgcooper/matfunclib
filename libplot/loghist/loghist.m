@@ -1,9 +1,16 @@
-function [h,edges,centers,hfit] = loghist(data,varargin)
+function [h, edges, centers, hfit] = loghist(data, varargin)
    %LOGHIST Plot a histogram in log space.
    %
    %  [h,edges,centers,hfit] = loghist(data,varargin)
    %
    % See also: setlogticks
+
+   arguments (Output)
+      h
+      edges
+      centers
+      hfit
+   end
 
    % Parse inputs
    [data, normalization, logmodel, edges, centers, dist, theta, varargs] = ...
@@ -19,8 +26,8 @@ function [h,edges,centers,hfit] = loghist(data,varargin)
    if normalization == "survivor"
 
       % this is sufficient to make the plot
-      [f,x] = ecdf(data,'Function','survivor');
-      h = stairs(x,f,'LineWidth',1.5);
+      [f, x] = ecdf(data, 'Function', 'survivor');
+      h = stairs(x, f, 'LineWidth', 1.5);
 
       % % To finish this, need to map the 'centers' onto 'x', then pass
       % % those to ecdfhist, whihc should be possible using f,x recall that
@@ -35,23 +42,23 @@ function [h,edges,centers,hfit] = loghist(data,varargin)
       % figure; ecdfhist(f,x,centers); % ,normalization,varargs{:});
 
    else
-      h = histogram(data,edges,'Normalization',normalization,varargs{:});
+      h = histogram(data, edges, 'Normalization', normalization, varargs{:});
    end
 
    % fit a dist if requested
    if dist ~= "none"
       if dist == "GeneralizedPareto"
          % if gp distfit is requested, truncate the data for fitting
-         dfit = fitdist(data(data>theta),'GeneralizedPareto','Theta',theta);
+         dfit = fitdist(data(data>theta), 'GeneralizedPareto', 'Theta', theta);
       else
-         dfit = fitdist(data,dist); % see distfit for options I could add
+         dfit = fitdist(data, dist); % see distfit for options I could add
       end
 
       % truncate the bins to the data range, so the plot is compact
-      imax = find(edges >= max(data),1,'first');
-      imin = find(edges>theta,1,'first');
-      edges = [max(theta,min(data)) edges(imin:imax)];
-      centers = edges(1:end-1)+diff(edges)./2;
+      imax = find(edges >= max(data), 1, 'first');
+      imin = find(edges>theta, 1, 'first');
+      edges = [max(theta, min(data)) edges(imin:imax)];
+      centers = edges(1:end-1) + diff(edges) ./ 2;
 
       % % if gp is requested, make sure the bin centers/edges are >theta
       % if dist == "GeneralizedPareto"
@@ -65,34 +72,40 @@ function [h,edges,centers,hfit] = loghist(data,varargin)
             pfit = dfit.pdf(centers);
             % refv = dfit.pdf(data(find(data >= theta,1,'first')));
             % pfit = refv.*pfit;
-            hfit = plot(centers,pfit,'LineWidth',2.5,'LineStyle','-');
+            hfit = plot(centers, pfit, 'LineWidth', 2.5, 'LineStyle', '-');
          case 'cdf'
             pfit = dfit.cdf(centers);
-            refv = dfit.cdf(data(find(data >= theta,1,'first')));
-            pfit = refv.*pfit;
-            hfit = plot(centers,pfit,'LineWidth',1.5,'LineStyle','-');
+            refv = dfit.cdf(data(find(data >= theta, 1, 'first')));
+            pfit = refv .* pfit;
+            hfit = plot(centers, pfit, 'LineWidth', 1.5, 'LineStyle', '-');
          case 'survivor'
-            hfit = plot(centers,dfit.cdf(centers,'upper'), ...
-               'LineWidth',1.5,'LineStyle','--');
+            hfit = plot(centers, dfit.cdf(centers,'upper'), ...
+               'LineWidth', 1.5, 'LineStyle', '--');
          otherwise
             error('no option to plot distfit using requested normalization');
       end
    end
 
-   axis tight; hold off;
+   axis tight
+   hold off
    switch logmodel
 
       case 'loglog'
-         set(gca,'XScale','log','YScale','log');
+         set(gca, 'XScale', 'log', 'YScale', 'log');
 
       case 'semilogy'
-         set(gca,'XScale','linear','YScale','log');
+         set(gca, 'XScale', 'linear', 'YScale', 'log');
 
       case 'semilogx'
-         set(gca,'XScale','log','YScale','linear');
+         set(gca, 'XScale', 'log', 'YScale', 'linear');
+   end
+
+   if ~nargout
+      clearvars
    end
 end
 
+%%
 function edges = logbinedges(data)
    data = data(data>0);
    edges = logspace(fix(log10(min(data))),ceil(log10(max(data))));
@@ -112,11 +125,11 @@ function [data, normalization, logmodel, edges, centers, dist, theta, varargs] =
    parser.CaseSensitive = false;
    parser.KeepUnmatched = true;
    parser.addRequired('data', @isnumeric);
-   parser.addParameter('normalization', 'pdf', @ischar);
-   parser.addParameter('logmodel', 'loglog', @ischar);
+   parser.addParameter('normalization', 'pdf', @ischarlike);
+   parser.addParameter('logmodel', 'loglog', @ischarlike);
    parser.addParameter('edges', logbinedges(data), @isnumeric);
    parser.addParameter('centers', logbincenters(data), @isnumeric);
-   parser.addParameter('dist', 'none', @ischar);
+   parser.addParameter('dist', 'none', @ischarlike);
    parser.addParameter('theta', 0, @isnumeric);
    parser.parse(data,varargin{:});
 
