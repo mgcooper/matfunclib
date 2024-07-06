@@ -27,6 +27,15 @@
          }
       ]
    },
+   "getFunctionConflicts":
+   {
+      "inputs":
+      [
+         {"name":"funcpath",  "kind":"ordered",    "type":["char"]},
+         {"name":"funcname",  "kind":"namevalue",  "type":["char","choices=listallmfunctions"]},
+         {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"]}
+      ]
+   },
    "getRequiredFiles":
    {
       "inputs":
