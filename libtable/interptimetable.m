@@ -13,11 +13,10 @@ function T = interptimetable(T,newtime,method,varargin)
    % determine which new times aren't in the old times and fill the
    % non-numeric values with nan but using 'nearest' interpolation works
 
-   % oldtime     =  T.Time;
+   % oldtime = T.Time;
    inum = cellfun(@isnumeric,table2cell(T(1,:)));
    data = T(:,inum);
    notdata = T(:,~inum);
-
 
    if isdatetime(newtime) && numel(newtime) == height(T)
 
