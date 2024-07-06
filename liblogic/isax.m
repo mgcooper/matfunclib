@@ -1,7 +1,7 @@
 function [ax,tf,varargout] = isax(varargin)
    %ISAX deprecated: use axescheck or isaxis
    %
-   % 
+   %
 
    % UPDATE: see axescheck - undocumented function i copied here designed to do
    % what this does so I commented this out.
