@@ -1,4 +1,5 @@
-function validateGridCoordinates(X, Y, funcname, argname1, argname2, gridOption)
+function varargout = validateGridCoordinates(X, Y, funcname, ...
+      argname1, argname2, gridOption)
    %VALIDATEGRIDCOORDINATES Validate grid coordinates X and Y.
    %
    %  VALIDATEGRIDCOORDINATES(X, Y, mfilename)
@@ -47,6 +48,14 @@ function validateGridCoordinates(X, Y, funcname, argname1, argname2, gridOption)
          validateattributes(Y, {'numeric'}, {'real', 'nonempty'}, ...
             funcname, argname2, 2)
 
+   end
+
+   switch nargout
+      case 0
+      case 1
+      case 2
+         varargout{1} = X;
+         varargout{2} = Y;
    end
 end
 %% LICENSE
