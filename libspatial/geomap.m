@@ -1,4 +1,4 @@
-function varargout = geomap(lat,lon,varargin)
+function varargout = geomap(lat, lon, varargin)
    %GEOMAP Initialize a worldmap in geographic coordinates
    %
    %  ax = geomap(lat, lon) creates a worldmap with
@@ -20,8 +20,8 @@ function varargout = geomap(lat,lon,varargin)
       ybuffer = 0;
    end
 
-   [latmin, latmax] = bounds(lat);
-   [lonmin, lonmax] = bounds(lon);
+   [latmin, latmax] = bounds(double(lat(:)));
+   [lonmin, lonmax] = bounds(double(lon(:)));
 
    latmin = latmin - (latmax - latmin) * ybuffer/100;
    latmax = latmax + (latmax - latmin) * ybuffer/100;

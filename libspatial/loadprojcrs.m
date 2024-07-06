@@ -46,6 +46,10 @@ function varargout = loadprojcrs(NAME)
       case 'psn'
          proj = projcrs(102018, 'Authority', 'ESRI');
 
+         % note:
+         % EPSG:32661 is incorrect
+         % EPSG:3411 is also incorrect (sometimes confused with NSIDC 3413)
+
       case 'utm22n'
          proj = projcrs(32622, 'Authority', 'EPSG');
 
