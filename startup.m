@@ -47,7 +47,7 @@ if usejava('desktop') % we're in the desktop (also means we're not in octave)
       % custom desktop settings
       mSettings = settings;
 
-      if ~verLessThan('matlab','9.11')
+      if ~verLessThan('matlab', '9.11')
          mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
       elseif verLessThan('matlab','9.14')
          % Make the desktop display larger. A warning is issued on r2023a.
@@ -205,9 +205,9 @@ format compact % use pi to see different formats: pi
 %% activate toolboxes and projects
 
 % active toolboxes
-toolboxes = {'magicParser', 'BrewerMap', 'CubeHelix', 'mpm', 'CDT', ...
-   'antarctic-mapping-tools', 'arctic-mapping-tools', 'gridbin', 'm_map', ...
-   'exactremap'};
+toolboxes = {'BrewerMap', 'CubeHelix', 'mpm', 'CDT', 'arctic-mapping-tools', ...
+   'antarctic-mapping-tools', 'gridbin', 'm_map', ...
+   };
 
 for n = 1:numel(toolboxes)
    try
@@ -225,7 +225,12 @@ end
 
 % add projects to the path
 try
-   pathadd(getprjsourcepath('groupstats'), true, '-end')
+   activate('bfra', silent=true, asproject=true);
+   activate('merra2', silent=true, asproject=true);
+   activate('graceGapFill', silent=true, asproject=true);
+   activate('exactremap', silent=true, asproject=true);
+   activate('groupstats', silent=true, asproject=true);
+   % pathadd(getprjsourcepath('groupstats'), true, '-end')
 catch
 end
 

@@ -73,6 +73,8 @@ function Requirements = getRequiredFiles(targetList, varargin)
    %
    % See also: installRequiredFiles, getFunctionConflicts
 
+   % NOTE: see updates to this in icemodel/
+
    % Parse inputs
    [targetFiles, referenceFiles, requirementsFileName, saveRequirementsFile] = ...
       parseinputs(targetList, mfilename, varargin{:});
