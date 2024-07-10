@@ -1,4 +1,4 @@
-function mkproject(projectname,varargin)
+function mkproject(projectname, varargin)
    %MKPROJECT Make a new project in MATLABPROJECTPATH.
    %
    %  MKPROJECT(projectname) creates a new default project in
@@ -7,8 +7,8 @@ function mkproject(projectname,varargin)
    % Description:
    %  mkproject('newproject') Creates a new folder MATLABPROJECTPATH/newproject
    %  if one does not exist. If one does exist, an option to add the folder to
-   %  the project directory is presented. 
-   %  
+   %  the project directory is presented.
+   %
    %  mkproject('newproject', 'maketoolbox', true) Copies the toolbox template
    %  into the new project folder.
    %
@@ -63,6 +63,26 @@ function mkproject(projectname,varargin)
       if opts.maketoolbox == true
          copytoolboxtemplate(projectpath, 'forcecopy', forcecopyflag, ...
             'safecopy', safercopyflag);
+
+         % replace the +tbx prefix with +<toolbox_name>
+         try
+            warning(['replacing +tbx with +%s, this feature is experimental, ' ...
+               'suggest checking the codebase and/or running tests before ' ...
+               'developing the project further.'], projectname)
+            tbx.internal.replacePackagePrefix(projectpath, ...
+               'tbx', projectname, false);
+         catch e
+            rethrow(e)
+         end
+
+         % Rename +tbx to +<toolboxname>
+         old_tbxpath = fullfile(projectpath, 'toolbox', '+tbx');
+         new_tbxpath = fullfile(projectpath, 'toolbox', ['+' projectname]);
+
+         if isfolder(old_tbxpath)
+            status = system(['mv ' old_tbxpath ' ' new_tbxpath], "-echo");
+         end
+
       end
       addproject(projectname, 'setfiles', opts.setfiles, 'setactive', opts.setactive);
    end
@@ -74,9 +94,9 @@ function [projectname, opts] = parseinputs(projectname, funcname, varargin)
    parser = inputParser;
    parser.FunctionName = funcname;
    parser.addRequired('projectname', @ischar);
-   parser.addParameter('setfiles', false, @islogical);
-   parser.addParameter('setactive', false, @islogical);
-   parser.addParameter('maketoolbox', false, @islogical);
+   parser.addParameter('setfiles', false, @islogicalscalar);
+   parser.addParameter('setactive', false, @islogicalscalar);
+   parser.addParameter('maketoolbox', false, @islogicalscalar);
    parser.parse(projectname,varargin{:});
 
    opts = parser.Results;
