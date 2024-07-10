@@ -1,42 +1,52 @@
-function replacePackagePrefix(projectpath, old_pfx, new_pfx, dryrun)
+function replacePackagePrefix(pathname, old_prefix, new_prefix, varargin)
    %REPLACEPACKAGEPREFIX Replace namespace package prefix in function files.
    %
-   % replacePackagePrefix(projectpath, old_pfx, new_pfx, true) Replaces all
-   % instances of OLD_PFX with NEW_PFX in all m-files in PROJECTPATH and all
-   % subdirectories. 
-   % 
-   % replacePackagePrefix(projectpath, old_pfx, new_pfx, false) Performs a dry
-   % run. 
-   % 
-   % See also: 
+   %  REPLACEPACKAGEPREFIX(PATHNAME, OLD_PREFIX, NEW_PREFIX, DRYRUN)
+   %
+   % Description:
+   %
+   %  replacePackagePrefix(projectpath, old_prefix, new_prefix, true) Replaces
+   %  all instances of OLD_PREFIX with NEW_PREFIX in all m-files in PROJECTPATH
+   %  and all subdirectories.
+   %
+   %  replacePackagePrefix(projectpath, old_prefix, new_prefix, false) Performs
+   %  a dry run.
+   %
+   % See also:
 
    narginchk(3, 4)
-   if nargin < 4 || isempty(dryrun)
+   if nargin < 4
       dryrun = true;
    end
 
    if isoctave
       error([mfilename ' is not octave compatible'])
    end
-   
-   [projectpath, old_pfx, new_pfx] = convertStringsToChars( ...
-      projectpath, old_pfx, new_pfx);
-   
+
+   parser = inputParser();
+   parser.FunctionName = mfilename;
+   parser.addRequired('pathname', @isscalartext)
+   parser.addRequired('old_prefix', @isscalartext)
+   parser.addRequired('new_prefix', @isscalartext)
+   parser.addOptional('dryrun', true, @islogicalscalar)
+   parser.parse(pathname, old_prefix, new_prefix, varargin{:})
+   dryrun = parser.Results.dryrun;
+
+   [pathname, old_prefix, new_prefix] = convertStringsToChars( ...
+      pathname, old_prefix, new_prefix);
+
    % Confirm that the last character of the old/new prefix is a dot
-   if ~endsWith(old_pfx, '.')
-      old_pfx = [old_pfx '.'];
+   if ~endsWith(old_prefix, '.')
+      old_prefix = [old_prefix '.'];
    end
-   if ~endsWith(new_pfx, '.')
-      new_pfx = [new_pfx '.'];
+   if ~endsWith(new_prefix, '.')
+      new_prefix = [new_prefix '.'];
    end
-   
-   % cd to the package folder where the code is saved
-   withcd(projectpath());
 
    % Generate a list of all mfiles in the project
-   list = dir(fullfile('**/*.m'));
+   list = dir(fullfile(pathname, '**/*.m'));
    list(strncmp({list.name}, '.', 1)) = [];
-   list(contains({list.folder}, 'sandbox'))
+   list(contains({list.folder}, 'sandbox')) = [];
 
    % OPEN ALL THE FILES AND REPLACE THE PREFIX
 
@@ -49,9 +59,9 @@ function replacePackagePrefix(projectpath, old_pfx, new_pfx, dryrun)
       wholefile = fscanf(fid, '%c'); fclose(fid);
 
       % replace the prefix
-      if contains(wholefile, old_pfx)
+      if contains(wholefile, old_prefix)
 
-         wholefile = strrep(wholefile, old_pfx, new_pfx);
+         wholefile = strrep(wholefile, old_prefix, new_prefix);
 
          % REWRITE THE FILE (DANGER ZONE)
          if dryrun == false
