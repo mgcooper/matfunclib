@@ -1,15 +1,49 @@
 function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
    %PARSEOPTARG parse optional scalar text parameter in variable argument list.
    %
-   % [OPT, ARGS, NARGS] = PARSEOPTARG(ARGS, VALIDOPTS, DEFAULTOPT) returns OPT,
-   % a char contained in VALIDOPTS found in ARGS, a new version of ARGS with OPT
-   % removed, and NARGS, the number of returned arguments in ARGS. If no
-   % occurences of VALIDOPTS are found in ARGS, OPT is set to DEFAULTOPT.
+   %  [OPT, ARGS, NARGS] = PARSEOPTARG(ARGS, VALIDOPTS, DEFAULTOPT)
    %
-   % PARSEOPTARG is intended to isolate a single scalar text value OPT in
-   % functions using VARARGIN as the input argument, also known as a "flag".
+   % Description
    %
-   % Example
+   %  [OPT, ARGS, NARGS] = PARSEOPTARG(ARGS, VALIDOPTS, DEFAULTOPT) returns OPT,
+   %  a char contained in ARGS found in VALIDOPTS, a new version of ARGS with
+   %  OPT removed, and NARGS, the number of returned arguments in ARGS. If no
+   %  elements of ARGS are found in VALIDOPTS, OPT is set to DEFAULTOPT.
+   %
+   %  If DEFAULTOPT is of type LOGICAL, then OPT is returned TRUE if an element
+   %  of ARGS is found in VALIDOPTS and FALSE if ARGS does not contain an
+   %  element in VALIDOPTS.
+   %
+   %  PARSEOPTARG is intended to isolate a single scalar text value OPT in
+   %  functions using VARARGIN as the input argument, also known as a "flag".
+   %  The behavior of PARSEOPTARG when DEFAULTOPT is of type LOGICAL allows the
+   %  parsed OPT to be used as a logical switch in the calling function.
+   %
+   %  Note: this function requires the input ARGS to be passed in as 'varargin'
+   %  rather than 'varargin{:}'.
+   %
+   % Inputs
+   %
+   %  ARGS - A cell array of arbitrary function input arguments. Nominally the
+   %  'varargin' cell array in a calling function.
+   %
+   %  VALIDOPTS - A cell array, string array, or character vector of text
+   %  scalars representing valid values for the optional argument.
+   %
+   %  DEFAULTOPT - The default value for the optional argument. This argument
+   %  can be a text scalar (string or character vector) or a logical scalar.
+   %
+   % Outputs
+   %
+   %  OPT - The return value (parsed value) for the optional argument. If
+   %  DEFAULTOPT is a text scalar, then OPT is returned as a text scalar. If
+   %  DEFAULTOPT is a logical scalar, then OPT is returned as a logical scalar.
+   %
+   %  ARGS - The input ARGS with the parsed OPT removed (if found in ARGS).
+   %
+   %  NARGS - The number of elements in the output ARGS.
+   %
+   % Examples
    %
    %    function demo_function
    %    % Call the example calling_function
@@ -31,30 +65,30 @@ function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
    %    end
    %
    % See also parseparampairs
-
+   %
    % Changes
    % Jan 2024 - added logical flag feature.
 
-   % Note: this function requires the input args to be passed in as 'varargin'
-   % rather than 'varargin{:}'. Although I prefer varargin, most parsing
-   % functions require csl expansion, so I might require/support it too. For
-   % now, if the calling function passes in varargin{:} which comes in here as
-   % args, and it contains a single char, the patch below will cast it to a
-   % cell, but if varargin{:} is passed in, the function will error b/c of too
-   % many inputs.
-   if ischar(args) && isrow(args)
-      args = {args};
-   end
+   % PARSE INPUTS
+   narginchk(2, 3)
 
-   %  PARSE INPUTS
+   % Require that ARGS is a cell in case a user incorrectly passes varargin{:}
+   % and it contains one element, or two elements with DEFAULTOPT omitted.
+   assert(iscell(args))
+
+   % Cast validopts to a cellstr if it is a string array or character vector.
+   validopts = tocellstr(validopts);
+
+   % Set an empty default value for the opt arg.
    if nargin < 3
       defaultopt = '';
    end
+   assert(isscalartext(defaultopt) || islogicalscalar(defaultopt))
 
    [args{1:numel(args)}] = convertStringsToChars(args{:});
-   validopts = tocellstr(validopts);
 
-   %  MAIN
+
+   % MAIN
    for thisarg = transpose(validopts(:))
       % Find possible char opts and remove the matching one if found.
       iopt = cellfun(@(a) ischar(a), args);
@@ -69,9 +103,9 @@ function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
       end
    end
 
-   %  PARSE OUTPUTS
+   % PARSE OUTPUTS
    if isempty(opt)
-      opt = defaultopt; % Initialize to default arg
+      opt = defaultopt;
    else
       if islogical(defaultopt)
          opt = true;
