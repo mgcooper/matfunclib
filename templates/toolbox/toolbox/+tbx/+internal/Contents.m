@@ -3,22 +3,48 @@
 %   Contents file for +INTERNAL and its subfolders.
 %   
 %   +INTERNAL
-%   tbx.internal.cpinfoxml        - Copy info.xml and helptoc.xml templates to dstpath without overriding
-%   tbx.internal.dependencies     - Generate a list of function and product dependencies for function
-%   tbx.internal.dependencyReport - Generate dependency report
-%   tbx.internal.filelist         - List all files in folder and (optionally) subfolders
-%   tbx.internal.findSubdir       - MFileList = findSubdir(aDirectory)
-%   tbx.internal.getcontents      - Get the contents of a specified directory
-%   tbx.internal.getfeature       - Translate toolbox name from 'ver' to feature name and vice versa
-%   tbx.internal.getversion       - Read version.txt in the toolbox root directory
-%   tbx.internal.installpath      - Get toolbox installation path
-%   tbx.internal.isoctave         - Return true if the environment is Octave
-%   tbx.internal.makecontents     - Make contents.m for each toolbox folder including packages
-%   tbx.internal.makedocs         - Publish toolbox documentation as html
-%   tbx.internal.projectpath      - Return the full path to the top-levl project directory
-%   tbx.internal.setopts          - Set toolbox options
-%   tbx.internal.showdocs         - Show help doc in browser
-%   tbx.internal.updatecontents   - Create a Contents.m file including subdirectories
-%   tbx.internal.withcd           - Temporarily cd to a directory
+%   tbx.internal.addcopyright               - ADD COPYRIGHT info to M-file
+%   tbx.internal.buildpath                  - Build full path to toolbox folder or file
+%   tbx.internal.completions                - Generate function auto-completions for string literals
+%   tbx.internal.cpinfoxml                  - Copy info.xml and helptoc.xml to dstpath without overriding
+%   tbx.internal.dependencies               - Generate function and product dependencies for function
+%   tbx.internal.dependencyReport           - Generate dependency report
+%   tbx.internal.docpath                    - Return path to toolbox doc file
+%   tbx.internal.findSubdir                 - MFileList = findSubdir(aDirectory)
+%   tbx.internal.generateTestData           - Generate data for unit tests
+%   tbx.internal.getfeature                 - Translate toolbox name from 'ver' to feature name and vice versa
+%   tbx.internal.installRequiredFiles       - Install required files from Github
+%   tbx.internal.isonpath                   - Checks if given directory ison the current MATLAB path
+%   tbx.internal.makecontents               - Make contents.m for each folder including package folders
+%   tbx.internal.makedocs                   - Publish toolbox documentation as html files
+%   tbx.internal.privatefunction            - Return handle(s) to private functions in toolbox
+%   tbx.internal.replacePackagePrefix       - Replace namespace package prefix in function files
+%   tbx.internal.repline                    - Open File to read
+%   tbx.internal.runmox
+%   tbx.internal.runtests                   - Run all tests in the test suite
+%   tbx.internal.setopts                    - Set toolbox options
+%   tbx.internal.showdocs                   - Show help doc in browser
+%   tbx.internal.showpath                   - Show the output of projectpath() and toolboxpath() to verify
+%   tbx.internal.version                    - GETVERSION read version.txt in the toolbox root directory
+%   tbx.internal.writematlabbib             - Write matlab bibtex entry to file
+%   
+%   +INTERNAL/PRIVATE
+%   tbx.internal/private.backupfile         - Create a backup file name or folder name and (optionally) a copy
+%   tbx.internal/private.cellmap            - Apply function to cell-array
+%   tbx.internal/private.convertlivescripts - Convert live script to m-files
+%   tbx.internal/private.getCases           - Return all cases handled by a switch structure
+%   tbx.internal/private.getcontents        - Get the contents of a specified directory
+%   tbx.internal/private.getRequiredFiles   - Retrieve requirements for MATLAB functions or toolboxes
+%   tbx.internal/private.installpath        - Return toolbox installation path from user preferences group
+%   tbx.internal/private.isoctave           - Return true if the environment is Octave
+%   tbx.internal/private.listfiles          - List all files in folder and (optionally) subfolders
+%   tbx.internal/private.listfolders        - Return a list of folders under a top-level directory
+%   tbx.internal/private.mpackagefolders    - List all package and sub-package folders in folder
+%   tbx.internal/private.mpackagename       - Return the package namespace name
+%   tbx.internal/private.projectpath        - Return the full path to the top-level project directory
+%   tbx.internal/private.rmdotfolders       - Remove dot folders from directory list
+%   tbx.internal/private.toolboxpath        - Return toolbox basepath
+%   tbx.internal/private.updatecontents     - Create a Contents.m file including subdirectories
+%   tbx.internal/private.withcd             - Temporarily cd to a directory
 %    
-%   This file was generated by updatecontents.m on 14 Jul 2023 at 18:12:07.
+%   This file was generated by updatecontents.m on 10 Jul 2024 at 12:12:36.
