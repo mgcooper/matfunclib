@@ -51,14 +51,18 @@ function varargout = listfiles(folderlist, opts)
       opts.pattern (1,1) string = "*"
       opts.mfiles (1,1) logical = false
       opts.matfiles (1,1) logical = false
-      opts.rmpatterns (1,:) string = ""
+      opts.rmpatterns (1,:) string = ".git"
+      opts.ignoredfolders (1, :) string = []
    end
 
    opts.pattern = parseFilePattern(opts);
 
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
-   list = vertcat(list{:});
+
+   if iscell(list)
+      list = vertcat(list{:});
+   end
 
    % Parse outputs
    switch nargout
@@ -78,8 +82,8 @@ function list = processOneFolder(folder, opts)
    list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
    list = list(~[list.isdir]);
 
-   if opts.mfiles == true
-      if opts.matfiles == true
+   if opts.mfiles
+      if opts.matfiles
          list = list(...
             strncmp(reverse({list.name}), 'm.', 2) | ...
             strncmp(reverse({list.name}), 'tam.', 4));
@@ -91,7 +95,7 @@ function list = processOneFolder(folder, opts)
    % Remove files containing the "RMPATTERNS"
    list = trimfiles(list, opts);
 
-   if opts.aslist == true
+   if opts.aslist
 
       if opts.fullpath
          list = transpose(fullfile({list.folder}, {list.name}));
@@ -100,7 +104,7 @@ function list = processOneFolder(folder, opts)
       end
 
       % convert to string array if requested
-      if opts.asstring == true
+      if opts.asstring
          list = string(list);
       end
    end
@@ -118,14 +122,18 @@ function pattern = parseFilePattern(opts)
    if startsWith(pattern, ".")
       pattern = erase(pattern, ".");
    end
-   if opts.subfolders == true
+   if opts.subfolders
       if pattern ~= ""
          pattern = strcat("**/*", pattern, "*");
       else
          pattern = "**/*"; % Prevent strcat from creating **/**
       end
    else
-      pattern = strcat("*", pattern, "*");
+      if pattern ~= ""
+         pattern = strcat("*", pattern, "*");
+      else
+         pattern = "*"; % Prevent strcat from creating ** which returns subfolders
+      end
    end
 end
 
@@ -139,7 +147,7 @@ function list = trimfiles(list, opts)
    % to distinguish whether the rmpatterns apply to the fullpath or filename.
 
    % Append default patterns that should be removed
-   rmpatterns = append(opts.rmpatterns, "~$"); % add more as needed
+   rmpatterns = [opts.rmpatterns, "~$"]; % add more as needed
 
    if opts.fullpath
       files = transpose(fullfile({list.folder}, {list.name}));

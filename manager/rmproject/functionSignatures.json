@@ -1,0 +1,11 @@
+{
+   "_schemaVersion": "1.0.0",
+   "rmproject":
+   {
+      "inputs":
+      [
+         {"name":"projectname", "kind":"required", "type":[["char", "row"], ["string", "scalar"]]},
+         {"name":"keepsource", "kind":"namevalue", "type":["logical","scalar"],"purpose":"Option", "default":"false"}
+      ]
+   }
+}

@@ -25,7 +25,7 @@
       ],
       "description":"Build full path to toolbox folder or file"
    },
-   "tbx.internal.getRequiredFiles":
+   "+tbx/+internal/private/getRequiredFiles":
    {
       "inputs":
       [
@@ -39,6 +39,21 @@
          {"name":"Info", "type":"struct", "purpose":"the list of required and missing files and products"}
       ],
       "description":"Find all required and missing files and products for toolbox"
+   },
+   "tbx.internal.replacePackagePrefix":
+   {
+      "inputs":
+      [
+         {"name":"projectpath", "kind":"required", "type":[["char", "row"],["string", "scalar"],["cell", "scalar"]], "purpose":"the project folder which contains the package namespace folder(s)"},
+         {"name":"old_prefix", "kind":"required", "type":[["char", "row"],["string", "scalar"],["cell", "scalar"]], "purpose":"the package prefix (with + omitted) which is to be removed"},
+         {"name":"new_prefix", "kind":"required", "type":[["char", "row"],["string", "scalar"],["cell", "scalar"]], "purpose":"the package prefix (with + omitted) which is to be inserted"},
+         {"name":"dryrun", "kind":"ordered", "type":["logical", "scalar"], "purpose":"Option", "default":"true"}
+      ],
+      "outputs":
+      [
+         {"name":"msg", "type":"string", "purpose":"Information about the operation"}
+      ],
+      "description":"Replace a namaspace prefix"
    },
    "tbx.internal.privatefunction":
    {

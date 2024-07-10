@@ -1,5 +1,5 @@
 function makecontents(varargin)
-   %MAKECONTENTS Make contents.m for each toolbox folder including packages.
+   %MAKECONTENTS Make contents.m for each folder including package folders.
    %
    %  makecontents() Makes a Contents.m file for each folder in the
    %  projectpath/toolbox directory. This usage assumes this file is saved in:
@@ -8,11 +8,11 @@ function makecontents(varargin)
    %  makecontents('-backup') Makes a backup of the current Contents.m file, if
    %  one exists, before updating it. The backup file is saved in the same
    %  directory with the date appended to the filename.
-   % 
+   %
    % See also: updatecontents
 
    narginchk(0, 1)
-   
+
    % Get the toolbox path and set the backup option
    tbxpath = toolboxpath(); % call private/toolboxpath function
    if nargin == 1
@@ -25,7 +25,7 @@ function makecontents(varargin)
    if ~isfolder(tbxpath)
       error('toolbox folder not found')
    end
-   
+
    % toolbox contents
    % tbxlist = what(tbxpath);
 

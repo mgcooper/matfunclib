@@ -15,7 +15,7 @@ function varargout = defaultGridData(varargin)
    else
       option = varargin{1};
    end
-   
+
    switch option
       case 'save'
          try

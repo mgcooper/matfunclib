@@ -1,11 +1,24 @@
-function tests = test_tbx
-   %%TEST_TBX Test the toolbox.
-   try
+function test_suite = test_internal
+   %%TEST_INTERNAL Test the toolbox internal functions.
+   %
+   %
+   %
+   % See also
+
+   if ~verLessThan('matlab', '9.0') % Matlab >= 2016
+
       test_functions = localfunctions(); %#ok<*NASGU>
-   catch
-      initTestSuite();
+      test_suite = functiontests(test_functions);
+
+   else % earlier versions: use Mox if it's installed
+
+      % Note: this has not been tested
+      try
+         initTestSuite();
+      catch e
+
+      end
    end
-   tests = functiontests(localfunctions);
 end
 
 % Note: setup and teardown are "fresh fixture functions" that run before and
@@ -21,7 +34,7 @@ end
 function setup(testCase)
 
    % Save the test data
-   % testCase.TestData = generateTestData(funcname);
+   % testCase.TestData = tbx.internal.generateTestData(funcname);
 
    % example test data
    % testCase.TestData.S = struct('field1', 'value1', 'field2', 'value2');
