@@ -57,10 +57,16 @@ function varargout = listfiles(folderlist, opts)
 
    opts.pattern = parseFilePattern(opts);
 
+   if opts.aslist || opts.asstring
+      opts.asstruct = false;
+   end
+
    % Create the list of files
    list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
 
-   if iscell(list)
+   % I think this was added to stack dir structs, but it failed when list was a
+   % cell array of paths i.e. opts.aslist == true, so I added opts.asstruct.
+   if iscell(list) && opts.asstruct
       list = vertcat(list{:});
    end
 
@@ -79,8 +85,7 @@ end
 function list = processOneFolder(folder, opts)
 
    % Get all files in main folder and if requested, sub folders
-   list = dir(fullfile(folder, opts.pattern));
-   list(strncmp({list.name}, '.', 1)) = [];
+   list = rmdotfolders(dir(fullfile(folder, opts.pattern)));
    list = list(~[list.isdir]);
 
    if opts.mfiles
