@@ -61,7 +61,7 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
       kwargs.GitHubUserName (1, :) string {mustBeTextScalar} ...
          = getenv('GITHUB_USER_NAME')
 
-      kwargs.installMissing (1, 1) logical {mustBeNumericOrLogical} ...
+      kwargs.testRun (1, 1) logical {mustBeNumericOrLogical} ...
          = false
    end
 
@@ -82,9 +82,9 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
       requiredFiles, projectPath, localSourcePath, remoteSourcePath);
 
    % Option to install the missing requirement locally
-   if kwargs.installMissing
+   fileList = kwargs.installPath + filesep + requirementsList;
+   if not(kwargs.testRun)
 
-      fileList = kwargs.installPath + filesep + requirementsList;
       if ~isfolder(kwargs.installPath)
          mkdir(kwargs.installPath)
       end
@@ -97,6 +97,10 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
                requirementsList(n), ME.message);
          end
       end
+   else
+      fprintf("\n Files will be installed to: \n %s \n", kwargs.installPath)
+      fprintf("\n The following files will be installed: \n")
+      disp(urlList)
    end
 end
 
