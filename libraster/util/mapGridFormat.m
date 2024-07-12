@@ -20,7 +20,7 @@ function gridFormat = mapGridFormat(X, Y)
       gridFormat = "point";
 
    elseif ~customIsUniform(unique(X(:))) && ~customIsUniform(unique(Y(:)))
-      gridFormat = 'irregular';
+      gridFormat = "irregular";
 
    elseif isvector(X) && isvector(Y)
 
