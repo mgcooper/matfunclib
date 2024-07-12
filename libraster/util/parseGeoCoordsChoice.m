@@ -35,15 +35,26 @@ function UseGeoCoordsValue = parseGeoCoordsChoice(DetectedGeoCoords, ...
 
    % Get the calling function name
    if isempty(kwargs.caller)
-      if isempty(kwargs.stacklevel)
-         kwargs.stacklevel = numel(dbstack('-completenames')) + 1;
-      end
-      kwargs.caller = mcallername(stacklevel=kwargs.stacklevel);
+
+      kwargs.caller = "the calling function";
+
+      % Decided this is confusing b/c the point in the stack where UseGeoCoords
+      % is an option is unclear and impossible to know, so require it be
+      % specified by the calling function.
+      % if isempty(kwargs.stacklevel)
+      %    kwargs.stacklevel = numel(dbstack('-completenames')) + 1;
+      % end
+      % kwargs.caller = mcallername(stacklevel=kwargs.stacklevel);
+      % kwargs.caller = upper(kwargs.caller);
+
+   else
+      kwargs.caller = upper(kwargs.caller);
    end
-   kwargs.caller = upper(kwargs.caller);
+
 
    % Initialize the warning message
    msg = "";
+   wid = string(mfilename) + ":DetectedAmbiguousCoordinates";
 
    % Determine if the default is being used without user specification
    UsingTrueByDefault = UseGeoCoordsDefaultValue && isUsingDefaultValue;
@@ -59,8 +70,8 @@ function UseGeoCoordsValue = parseGeoCoordsChoice(DetectedGeoCoords, ...
       % Detected geographic, but user specified or defaulted to false.
 
       if UsingFalseByDefault
-         msg = "Detected geographic coordinates. " ...
-            + "Set UseGeoCoords=false in " + kwargs.caller + " to override.";
+         msg = "Detected geographic coordinates. If this is incorrect, " ...
+            + "set UseGeoCoords=false in " + kwargs.caller + " to override.";
 
          UseGeoCoordsValue = true;  % Override based on detection
 
@@ -68,7 +79,7 @@ function UseGeoCoordsValue = parseGeoCoordsChoice(DetectedGeoCoords, ...
          % User explicitly specified projected, warn about the contradiction.
          msg = "Detected geographic coordinates " ...
             + "but UseGeoCoords was set false in " + kwargs.caller ...
-            + ". Assuming projected coordinate system.";
+            + ". Using projected coordinate system.";
 
          UseGeoCoordsValue = false;  % Respect user's choice despite detection
       end
@@ -77,15 +88,15 @@ function UseGeoCoordsValue = parseGeoCoordsChoice(DetectedGeoCoords, ...
       % Detected projected coordinates, but user specified geographic.
 
       if UsingTrueByDefault
-         msg = "Detected projected coordinates. " ...
-            + "Set UseGeoCoords=true in " + kwargs.caller + " to override.";
+         msg = "Detected projected coordinates. If this is incorrect, " ...
+            + "set UseGeoCoords=true in " + kwargs.caller + " to override.";
 
          UseGeoCoordsValue = false;  % Override based on detection
       else
          % User explicitly specified geographic, warn about the contradiction.
          msg = "Detected projected coordinates " ...
             + "but UseGeoCoords was set true in " + kwargs.caller ...
-            + ". Assuming geographic coordinate system.";
+            + ". Using geographic coordinate system.";
 
          UseGeoCoordsValue = true;  % Respect user's choice despite detection
       end
@@ -93,6 +104,6 @@ function UseGeoCoordsValue = parseGeoCoordsChoice(DetectedGeoCoords, ...
 
    % Output the warning message if not silent
    if not(kwargs.silent) && not(isempty(msg))
-      warning(msg + " Set silent=true to turn off this warning.")
+      warning(wid, msg + " Set silent=true to turn off this warning.")
    end
 end
