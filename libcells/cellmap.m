@@ -27,6 +27,9 @@ function varargout = cellmap(fn, varargin)
       varargout = cellfun(fn, varargin, 'UniformOutput', false);
    end
 
+   % Would be nice to return uniform output if possible ... I thought i had a
+   % method to do this ... could be in dealout
+
    % Note: I don't fully understand why, but if a cell array is passed in and
    % each element is a uniform sized array, and on the calling side the same
    % number of outputs are requested as elements of the input cell array, then
