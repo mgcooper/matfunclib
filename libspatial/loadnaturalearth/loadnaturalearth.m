@@ -16,10 +16,11 @@ function S = loadnaturalearth(varargin)
    [river, latlims, lonlims] = parseinputs(mfilename, varargin{:});
 
    % Set path to naturalearth data
-   pathdata = fullfile(getenv('USERDATAPATH'), 'naturalearth');
+   pathdata = fullfile(getenv('USERDATAPATH'), 'naturalearth', '50m_physical');
 
    if ~isnan(latlims)
-      S = shaperead(fullfile(pathdata,'ne_50m_rivers_lake_centerlines.shp'),'UseGeoCoords', true);
+      S = shaperead(fullfile(pathdata, 'ne_50m_rivers_lake_centerlines.shp'), ...
+         'UseGeoCoords', true);
       %Lat = [S(:).Lat];
       %Lon = [S(:).Lon];
 

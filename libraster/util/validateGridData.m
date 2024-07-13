@@ -1,4 +1,5 @@
-function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, argname2, argname3, gridOption)
+function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
+      argname2, argname3, gridOption)
    %VALIDATEGRIDDATA Validate gridded data for function inputs.
    %
    % See also xyzchk

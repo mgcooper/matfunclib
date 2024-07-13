@@ -1,19 +1,25 @@
-function Config()
-%CONFIG config file template
+function config()
+   %CONFIG configuration file template
+   %
+   %
+   % See also:
 
-% use setenv here, setpref in Setup
+   % use setenv here, setpref in setup.m
 
-% setenv(...)
+   % setenv(...)
 
-% temporarily turn off warnings about paths not already being on the path
-withwarnoff('MATLAB:rmpath:DirNotFound')
+   % temporarily turn off warnings about paths not already being on the path
+   withwarnoff('MATLAB:rmpath:DirNotFound')
 
-if strcmp(mcallername(), 'workon') || strcmp(mcallername(), 'configurepackage')
-   
-end
+   % This is true if this function is called by the menv project manager toolbox
+   % functions workon or configurepackage.
+   if any(strcmp(mcallername(), {'workon', 'configureproject'}))
 
-% This is true if running in desktop. Use it to suppress interactions with
-% editor such as opening or closing project files
-if usejava('desktop')
-   
+   end
+
+   % This is true if running in desktop. Use it to suppress interactions with
+   % editor such as opening or closing project files
+   if usejava('desktop')
+
+   end
 end

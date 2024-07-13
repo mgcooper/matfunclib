@@ -3,7 +3,7 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
    %CREATEMATLABPROJECT Creates a MATLAB project in the given projectFolder.
    %
    % proj = createMatlabProject(projectFolder, addProjectFiles, addChildFiles,
-   %  projectSubfolders, projectName) 
+   %  projectSubfolders, projectName)
    %
    % Inputs
    %
@@ -138,7 +138,7 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
    % Remove .git, .svn, and resources folders.
    projectSubfolders = projectSubfolders(~contains( ...
       {projectSubfolders.folder}, ignore));
-   
+
    projectSubfolders = projectSubfolders(~ismember( ...
       {projectSubfolders.name}, ignore));
 

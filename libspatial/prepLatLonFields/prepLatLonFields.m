@@ -1,8 +1,8 @@
-function S = prepLatLonFields(S,newfieldnames)
+function S = prepLatLonFields(S, newfieldnames)
    %PREPLATLONFIELDS Detect and rename latitude/longitude fields in struct S
    %
    %  S = PREPLATLONFIELDS(S)
-   %  S = PREPLATLONFIELDS(S,{'Lat','Lon'})
+   %  S = PREPLATLONFIELDS(S, {'Lat','Lon'})
    %
    % Example
    %

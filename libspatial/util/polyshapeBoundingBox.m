@@ -4,7 +4,7 @@ function bbox = polyshapeBoundingBox(poly, kwargs)
    %  bbox = polyshapeBoundingBox(poly)
    %
    % Unlike `boundingbox`, this function returns a polyshape.
-   % 
+   %
    % See also: polyshape, boundingbox
 
    arguments

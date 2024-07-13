@@ -1,18 +1,30 @@
 function [Coord1, Coord2] = geostructCoordinates(Geom, coordinateType, outputType)
    %GEOSTRUCTCOORDINATES Extract coordinates from geostruct
    %
-   %  [Coord1, Coord2] = GEOSTRUCTCOORDINATES(GEOM, OUTPUTTYPE) extracts
-   %  coordinates from the input geostruct GEOM based on the specified
-   %  OUTPUTTYPE.
+   %  [X, Y] = geostructCoordinates(Geom, "projected")
+   %  [X, Y] = geostructCoordinates(Geom, "projected", "ascell")
+   %
+   %  [Lat, Lon] = geostructCoordinates(Geom, "geographic")
+   %  [Lat, Lon] = geostructCoordinates(Geom, "geographic", "ascell")
+   %
+   %  DESCRIPTION:
+   %
+   %  [COORD1, COORD1] = GEOSTRUCTCOORDINATES(GEOM, COORDINATETYPE, OUTPUTTYPE)
+   %  extracts coordinates from the input geostruct GEOM based on the specified
+   %  COORDINATETYPE and OUTPUTTYPE. COORDINATETYPE can be "geographic" or
+   %  "projected". OUTPUTTYPE can be "ascell" or "asarray".
    %
    %  The function returns Coord1 and Coord2, which could be either Lat, Lon
-   %  or X, Y coordinates depending on the fields present in GEOM.
+   %  or X, Y coordinates depending on the COORDINATETYPE and/or the fields
+   %  present in GEOM.
    %
-   %  If GEOM contains fields 'Lat' and 'Lon', Coord1 and Coord2 will be
-   %  equivalent to Lat and Lon.
+   %  If COORDINATETYPE is "geographic" and GEOM contains fields 'Lat' and
+   %  'Lon', Coord1 and Coord2 will be taken from GEOM.Lat and GEOM.Lon. If GEOM
+   %  contains fields 'X' and 'Y', Coord1 and Coord2 will be taken from GEOM.Y
+   %  and GEOM.X.
    %
-   %  If GEOM contains fields 'X' and 'Y', Coord1 and Coord2 will be
-   %  equivalent to X and Y.
+   %  If COORDINATETYPE is "projected" and GEOM contains fields 'X' and 'Y',
+   %  Coord1 and Coord2 will be taken from GEOM.X and GEOM.Y.
    %
    %  INPUTS:
    %  Geom       - Struct with fields either 'Lat' and 'Lon' or 'X' and 'Y'
@@ -30,14 +42,15 @@ function [Coord1, Coord2] = geostructCoordinates(Geom, coordinateType, outputTyp
 
    % TODO: Change to opts.CoordinateType, opts.outputType otherwise the
    % coordinate type must be specified i.e. this is illegal:
-   % updateCoordinates(S, "ascell") b/c "ascell" is not a valid coordinate type
+   % geostructCoordinates(S, "ascell") b/c "ascell" is not a valid coordinate
+   % type.
 
    arguments
       Geom (:,:) struct
       coordinateType (1,1) string {mustBeMember(coordinateType, ...
-         ["geographic","projected"])} = "geographic"
+         ["geographic", "projected"])} = "geographic"
       outputType (1,1) string {mustBeMember(outputType, ...
-         ["ascell","asarray"])} = "asarray"
+         ["ascell", "asarray"])} = "asarray"
    end
 
    if coordinateType == "geographic"
@@ -49,8 +62,8 @@ function [Coord1, Coord2] = geostructCoordinates(Geom, coordinateType, outputTyp
 
       elseif isfield(Geom, 'X') && isfield(Geom, 'Y')
 
-         Coord1 = {Geom.X};
-         Coord2 = {Geom.Y};
+         Coord1 = {Geom.Y};
+         Coord2 = {Geom.X};
       else
          error( ...
             'Invalid input: Geostruct must contain either Lat-Lon or X-Y fields.');
