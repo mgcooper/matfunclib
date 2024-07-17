@@ -170,7 +170,7 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
                ' Rasterize may rpoduce incorrect results in this case.'])
          end
 
-         % Sum up all the Z values that in each x,y grid point:
+         % Sum up all the Z values in each x,y grid point:
          Z = accumarray([yi xi], z(:), [], [], NaN);
          % wow it worked
 

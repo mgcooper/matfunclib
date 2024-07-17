@@ -28,8 +28,7 @@ function [tfGeoCoords, tfLatLonOrder] = isGeoGrid(Lat, Lon)
 
    % Reshape to lists and remove nan
    [Lat, Lon] = deal(Lat(:), Lon(:));
-   keep = ~isnan(Lat) & ~isnan(Lon);
-   [Lat, Lon] = deal(Lat(keep), Lon(keep));
+   [Lat, Lon] = deal(Lat(~isnan(Lat)), Lon(~isnan(Lon)));
 
    % Check if coordinates are geographic with X = Lon and Y = Lat
    if ((min(Lon(:)) >= -180 && max(Lon(:)) <= 180) || ...
