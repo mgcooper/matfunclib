@@ -1,4 +1,4 @@
-function success = activate(tbname, varargin)
+function varargout = activate(tbname, varargin)
    %ACTIVATE Add toolbox to path and make it the working directory.
    %
    %  activate(TBNAME) activates toolbox TBNAME.
@@ -10,7 +10,7 @@ function success = activate(tbname, varargin)
       tbname, mfilename, varargin{:});
 
    % MAIN FUNCTION
-
+   success = false;
    if asproject
       try
          tbxpath = getprojectfolder(tbname);
@@ -20,6 +20,8 @@ function success = activate(tbname, varargin)
             cd(tbxpath);
          end
          printmessage(tbname, silent, except, asproject)
+         success = true;
+         varargout{1} = success;
          return
       catch e
          rethrow(e)
@@ -72,8 +74,9 @@ function success = activate(tbname, varargin)
    writetbdirectory(toolboxes);
 
    % Return success
+   success = true;
    if nargout == 1
-      success = true;
+      varargout{1} = success;
    else
       nargoutchk(0, 1)
    end
