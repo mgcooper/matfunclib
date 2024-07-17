@@ -162,8 +162,6 @@ function polygonFormat = parsePolygonFormat(P)
 
    run_demo = false;
    if run_demo == true
-      demo_polygonFormat(polygonFormat);
+      demo_parsePolygonFormat(polygonFormat);
    end
-
 end
-

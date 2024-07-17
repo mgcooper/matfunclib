@@ -201,8 +201,8 @@ function [S, A] = tryshaperead(fname, namedargs, reader)
       end
 
       if all(ismember({'X', 'Y'}, T.Properties.VariableNames))
-         lat = T.Y;
-         lon = T.X;
+         lat = {T.Y};
+         lon = {T.X};
       else
          % Easiest to use geostructCoordinates, but requires S not T. And if
          % this fails, it will cause problems in the final checks, which may not
@@ -233,7 +233,10 @@ function [S, A] = tryshaperead(fname, namedargs, reader)
       % this out and INSTEAD I NEED TO ADD AN OPTION TO UPDATECOORDINATES TO DO
       % THE RENAMING AND/OR REMEMBER TO USE USEGEOCOORDS
 
-      % T = renamevars(T, {'X', 'Y'}, {'Lon', 'Lat'});
+      if all(cellfun(@(v) isvariable(v, T), {'X', 'Y'})) ...
+            && none(cellfun(@(v) isvariable(v, T), {'Lon', 'Lat'}))
+         T = renamevars(T, {'X', 'Y'}, {'Lon', 'Lat'});
+      end
 
    else
       % cannot determine if geographic or projected, revisit this later
@@ -274,11 +277,17 @@ function [fname, reader, UseGeoCoords, Selector, Attributes, ...
    % attributes = [];
    % useGeoCoords = false;
 
+   % Note: I had 'reader' as an optional argument. I think this was because I
+   % thought if I strictly used arguments to shaperead for the name-value args I
+   % could parse those out as 'namedargs' and pass them to shaperead:
+   % shaperead(..., namedargs{:})
+   % But
+
    parser = inputParser();
    parser.FunctionName = funcname;
    parser.KeepUnmatched = true;
    parser.addRequired('fname', @ischarlike);
-   parser.addOptional('reader', 'shaperead', @validreader);
+   parser.addParameter('reader', 'shaperead', @validreader);
    parser.addParameter('UseGeoCoords', false, @islogical);
    parser.addParameter('Selector', [], @iscell);
    parser.addParameter('Attributes', [], @iscell);
@@ -302,5 +311,5 @@ function [fname, reader, UseGeoCoords, Selector, Attributes, ...
 end
 
 function tf = validreader(x)
-   tf = any(validatestring(x, {'shaperead', 'm_map'}));
+   tf = isoneof(x, {'shaperead', 'm_map'});
 end
