@@ -15,6 +15,8 @@ function varargout = plotMapGrid(varargin)
 
    if isempty(H)
       target = gcf;
+   else
+      target = H;
    end
 
    % Parse inputs
@@ -26,7 +28,6 @@ function varargout = plotMapGrid(varargin)
 
    % Remove X and Y and parse remaining arguments
    args = args(3:end);
-   nargs = nargin -2;
 
    % Remove the plotting option if provided
    iopt = cellfun(@ischar, args);
@@ -38,18 +39,19 @@ function varargout = plotMapGrid(varargin)
    end
 
    % Need to pass in the cell size if x,y are scalar
-   if nargs < 1
-      if isscalar(X) && isscalar(Y)
-         error('X and Y are scalar, cell size is required')
-      else
-         [gridType, cellsizex, cellsizey, tfGeoCoords] = mapGridInfo(X, Y);
-      end
-   elseif nargs == 1
-      cellsizex = args{1};
-      cellsizey = args{1};
-   elseif nargs == 2
-      cellsizex = args{1};
-      cellsizey = args{2};
+   switch numel(args)
+      case 0
+         if isscalar(X) && isscalar(Y)
+            error('X and Y are scalar, cell size is required')
+         else
+            [gridType, cellsizex, cellsizey, tfGeoCoords] = mapGridInfo(X, Y);
+         end
+      case 1
+         cellsizex = args{1};
+         cellsizey = args{1};
+      case 2
+         cellsizex = args{1};
+         cellsizey = args{2};
    end
 
    % Confirm cellsize is a scalar numeric
@@ -76,7 +78,7 @@ function H = plotGrid(target, X, Y, Xedges, Yedges, opt)
 
    H = gobjects(1, 4);
 
-   % NOTE: because I did not realize that mesh was plotting white background, 
+   % NOTE: because I did not realize that mesh was plotting white background,
    % it is possible the first version would ahve worked.
    if isgraphics(target, 'figure')
       fig = target;
