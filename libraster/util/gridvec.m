@@ -1,7 +1,7 @@
 function [X,Y] = gridvec(X,Y,varargin)
    %GRIDVEC Convert coordinate-pairs X,Y to grid vectors.
    %
-   %  [X,Y] = GRIDVEC([X,Y]) converts coordinate-pairs X,Y to grid vectors
+   %  [X,Y] = GRIDVEC(X,Y) converts coordinate-pairs X,Y to grid vectors
    %
    % Example
    %

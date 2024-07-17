@@ -6,8 +6,8 @@
       [
          {"name":"t1", "kind":"required", "type":["datetime","numeric","column"]},
          {"name":"t2", "kind":"required", "type":["datetime","numeric","column"]},
-         {"name":"dt", "kind":"required", "type":[["char", "choices={'y','mm','w','d','h','m','s'}"],["duration"]],"purpose":"Option"},
-         {"name":"CalType","kind":"ordered", "type":["char", "choices={'noleap', 'leap'}"],"default":"'leap'","purpose":"Option"},
+         {"name":"dt", "kind":"required", "type":[["char", "choices={'y','mm','w','d','h','m','s'}"], ["duration"]], "purpose":"Option"},
+         {"name":"CalType","kind":"namevalue", "type":[["choices={'noleap', 'leap'}"], ["char", "row"]], "default":"'leap'", "purpose":"Option"},
          {"name":"TimeZone", "kind":"namevalue", "type":[["choices=matlab.internal.datetime.functionSignatures.timezoneChoices()"], ["char","row"]]}
       ]
    },

@@ -5,5 +5,6 @@
 
 function callWarnAsCaller(varargin)
 
-   %    warning('test message')
+   % warning('test message')
    warnAsCaller('test message')
+end

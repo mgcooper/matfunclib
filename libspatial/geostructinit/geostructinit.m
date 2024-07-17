@@ -1,24 +1,26 @@
-function S = geostructinit(geometry,numfeatures,varargin)
+function S = geostructinit(geometry, numfeatures, varargin)
    %GEOSTRUCTINIT Initialize a geostructure S with geometry
    %
    %  S = geostructinit(geometry, numfeatures)
-   %  Creates a geostruct S of size(1,numfeatures) and specified geometry
-   %  'line','point', or 'polygon'.
+   %  S = geostructinit(geometry, numfeatures, 'fieldnames', fieldnames)
    %
-   %  S = geostructinit(geometry,numfeatures,'fieldnames',fieldnames);
-   %  Creates a geostruct S of size(1,numfeatures) and specified geometry
-   %  'line','point', or 'polygon' and fields specified by 'fieldnames'
-   %  name-value input.
+   % Description
    %
-   %  Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
+   %  S = geostructinit(geometry, numfeatures) creates a geostruct S of
+   %  size(1,numfeatures) and Geometry 'line', 'point', or 'polygon'.
+   %
+   %  S = geostructinit(geometry, numfeatures, 'fieldnames', fieldnames) creates
+   %  a geostruct S of size(1,numfeatures) and Geometry 'line', 'point', or
+   %  'polygon' and fields specified by 'fieldnames' name-value input.
+   %
+   % Author: Matt Cooper, Sep-23-2022, https://github.com/mgcooper
    %
    % See also: isgeostruct, updateBoundingBox
 
-   % parse inputs
    persistent parser
    if isempty(parser)
-      parser = inputParser;
-      parser.FunctionName = mfilename;
+      parser = inputParser();
+      parser.FunctionName = mfilename();
       parser.CaseSensitive = false;
       parser.KeepUnmatched = true;
       parser.addRequired('geometry', @ischar);
@@ -31,10 +33,10 @@ function S = geostructinit(geometry,numfeatures,varargin)
    % NOTE: the geostruct will not be a true geostruct until the BoundingBox
    % field is added, which can be achieved with updategeostruct
 
-   % make sure the geometry is capitalized
+   % Make sure the geometry is capitalized
    geometry(1) = upper(geometry(1));
 
-   % init a geo struct
+   % Initialize a geo struct
    [S(1:numfeatures).Geometry] = deal(geometry);
    [S(1:numfeatures).Lon] = deal(nan);
    [S(1:numfeatures).Lat] = deal(nan);

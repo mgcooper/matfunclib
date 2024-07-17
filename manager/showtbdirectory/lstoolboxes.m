@@ -15,7 +15,7 @@ function varargout = lstoolboxes(varargin)
    narginchk(0,1)
 
    % turn on 'more' pager
-   cleanup = onCleanup(@()onCleanupFun());
+   cleanup = onCleanup(@() onCleanupFun());
 
    % read the directory
    tbdirectory = readtbdirectory;

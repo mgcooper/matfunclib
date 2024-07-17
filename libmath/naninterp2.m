@@ -58,17 +58,23 @@ function V = naninterp2(X,Y,V,method,extrap)
 
    elseif nargin == 2
       error('unrecognized input')
+
    elseif nargin == 3 % NANINTERP2(X,Y,V)
       method = 'makima';
       extrap = NaN;
+
    elseif nargin == 4 % NANINTERP2(X,Y,V,method)
       extrap = NaN;
+
    elseif nargin == 5
+
       if strcmp(extrap, 'extrap') % NANINTERP2(X,Y,V,method,'extrap')
-         validatestring(method, {'spline', 'makima'}, mfilename, 'method', 4);
+         validatestring( ...
+            method, {'spline', 'makima'}, mfilename, 'method', 4);
+
       else % NANINTERP2(X,Y,V,method,extrapval)
-         validateattributes(extrap, {'numeric'}, {'scalar'}, ...
-            mfilename, 'extrapval', 5);
+         validateattributes( ...
+            extrap, {'numeric'}, {'scalar'}, mfilename, 'extrapval', 5);
       end
    end
 

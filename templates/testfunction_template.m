@@ -3,15 +3,27 @@ function tests = test_funcname
    tests = functiontests(localfunctions);
 end
 
-% Note: setup and teardown are "fresh fixture functions" that run before and
-% after each local test function. They are preferred over "file fixture
-% functions" that run once per test file. They are not required, but are used to
-% perform before and after actions. The only input is testCase.
-
-% verify<tab> does not complete. For a full list, try:
-% doc('Table of Verifications, Assertions, and Other Qualifications')
+% Notes on function testing framework:
 %
-% or doc verifyTrue, then scroll to the bottom for the table
+% If verify<tab> does not autocomplete, to get a full list, try:
+%  doc verifyTrue
+% Then scroll to the bottom for the complete table.
+% Also see the list at the bottom of this file.
+%
+% Unfortunately, this does not work:
+%  doc('Table of Verifications, Assertions, and Other Qualifications')
+
+% Notes from Mathworks documentation:
+
+% "File fixtures consist of setup and teardown functions shared across all the
+% tests in a file. These functions are executed once per test file. Fresh
+% fixtures consist of setup and teardown functions that are executed before and
+% after each local test function."
+
+% The "setup" and "teardown" functions are "fresh fixture functions" which run
+% before and after each local test function. They are preferred over "file
+% fixture functions" that run once per test file. They are not required, but are
+% used to perform before and after actions. The only input is testCase.
 
 function setup(testCase)
 
@@ -29,6 +41,12 @@ end
 function teardown(testCase) %#ok<INUSD>
 
 end
+
+% Notes from Mathworks documentation:
+
+% "Each of the local test functions must accept a single input, which is a
+% function test case object, testCase."
+
 
 function test_input_sign(testCase)
    % Ensure that the function returns the correct value for positive numbers
@@ -78,9 +96,30 @@ function test_function_accuracy(testCase)
 
    % verifyEqual(testCase,actual,expected,"AbsTol",abstol,"RelTol",reltol)
    % verifyNotEqual(testCase,actual,expected,"AbsTol",abstol,"RelTol",reltol)
-
-   % verifyTrue
-   % verifyFalse
 end
 
-
+% verifyTrue
+% verifyFalse
+% verifyEqual
+% verifyNotEqual
+% verifySameHandle
+% verifyNotSameHandle
+% verifyReturnsTrue
+% verifyFail
+% verifyThat
+% verifyError
+% verifyWarning
+% verifyWarningFree
+% verifyGreaterThan
+% verifyGreaterThanOrEqual
+% verifyLessThan
+% verifyLessThanOrEqual
+% verifyEmpty
+% verifyNotEmpty
+% verifySize
+% verifyLength
+% verifyNumElements
+% verifyClass
+% verifyInstanceOf
+% verifySubstring
+% verifyMatches

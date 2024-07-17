@@ -1,23 +1,26 @@
-function varargout = gridxyz(X, Y, V, GridOption, varargin)
+function varargout = gridxyz(X, Y, V, varargin)
    %GRIDXYZ grid geolocated x, y, z data
    %
-   %  [X, Y, V] = gridxyz(X, Y, V) returns geolocated data X, Y, V as a regular
-   %  grid and gap-fills missing values in V
+   %  [X, Y, V] = gridxyz(X, Y, V)
+   %  [X, Y, V] = gridxyz(X, Y, V, OutputFormat='fullgrids')
+   %  [X, Y, V] = gridxyz(X, Y, V, OutputFormat='coordinates')
+   %  [X, Y, V] = gridxyz(_, testplot=true)
    %
-   % See also
+   % Description:
+   %
+   %  [X, Y, V] = gridxyz(X, Y, V) returns geolocated data X, Y, V as a regular
+   %  grid and gap-fills missing values in V.
+   %
+   % Note that gridxyz creates fullgrids from the input X,Y regardless of their
+   % format, then uses scatteredInterpolation with nearest-neighbor
+   % extrapolation, so it is guaranteed to infill missing pixels of the fullgrid
+   % representations of X and Y. Care is needed to ensure the values returned by
+   % this function are valid if the input X,Y coordinates and data V are not
+   % fullgrids.
+   %
+   % See also: rasterize
 
    % See map2grid, need to decide which to keep
-
-   % Need to add notes - few months went by and I was unsure if the infilled
-   % data was correctly used. Key thing is here no matter what it's returned as
-   % a full grid infilled, elsewhere it needs to be accounted for, and in
-   % exactremap
-
-   % note that gridxyz creates full grids then uses scatteredInterpolation with
-   % nearest extrap so it is guaranteed to fill in missing pixels of the full grid,
-   % and I don't think it is possible to have a full grid which misses any pixels.
-   % But it is still essential to confirm the infilled data is returned to
-   % exactremap and used correctly
 
    %% notes
 
@@ -49,8 +52,14 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
    %% main code
 
    % parse inputs
-   if nargin < 4 || isempty(GridOption); GridOption = 'fullgrids'; end
-   if nargin < 5; testplot = false; else; testplot = varargin{1}; end
+   parser = inputParser();
+   parser.FunctionName = mfilename();
+   parser.addOptional('OutputFormat', 'fullgrids', @validGridFormat)
+   parser.addParameter('method', 'natural', @validInterpMethod)
+   parser.addParameter('extrap', 'none', @validExtrapMethod)
+   parser.addParameter('testplot', false, @islogicalscalar)
+   parse(parser, varargin{:})
+   kwargs = parser.Results;
 
    % validate x,y,v inputs
    [V, X, Y] = validateGridData(V, X, Y, mfilename, 'V', 'X', 'Y');
@@ -74,10 +83,11 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
    V(I(:), :) = V1(LOC(LOC>0), :);
 
    % inpaint missing values
-   V = scatteredInterpolation(X(:), Y(:), V, X(:), Y(:), 'natural', 'nearest');
+   V = scatteredInterpolation(X(:), Y(:), V, X(:), Y(:), ...
+      kwargs.method, kwargs.extrap);
 
    % send the data back in full
-   switch GridOption
+   switch kwargs.OutputFormat
       case 'fullgrids'
          V = reshape(V, size(X, 1), size(X, 2), []);
       case 'coordinates'
@@ -89,15 +99,18 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
    R = rasterref(X, Y);
 
    % use this to confirm that V is oriented the same as X, Y
-   if testplot == true
-      figure;
-      subplot(1, 2, 1);
-      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled'); hold on; % plot(P{:});
+   if kwargs.testplot
+
+      figure
+      subplot(1, 2, 1)
+      hold on
+      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled'); % plot(P{:});
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('original data')
 
-      subplot(1, 2, 2);
-      scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); hold on; % plot(P{:});
+      subplot(1, 2, 2)
+      hold on
+      scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); % plot(P{:});
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('gridded and gap filled data')
 
@@ -118,4 +131,16 @@ function varargout = gridxyz(X, Y, V, GridOption, varargin)
       case 6
          [varargout{1:nargout}] = dealout(V, R, X, Y, I, LOC);
    end
+end
+
+function tf = validGridFormat(f)
+   tf = any(validateGridFormat(f, {'fullgrids', 'coordinates'}));
+end
+
+function tf = validInterpMethod(m)
+   tf = any(validateInterpMethod(m, {'nearest', 'linear', 'natural'}));
+end
+
+function tf = validExtrapMethod(m)
+   tf = any(validatestring(m, {'nearest', 'linear', 'none'}));
 end

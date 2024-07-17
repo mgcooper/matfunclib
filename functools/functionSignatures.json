@@ -1,27 +1,27 @@
 {
    "_schemaVersion": "1.0.0",
-   "assertequal":
+   "assertEqual":
    {
-   "inputs":
+      "inputs":
       [
          {"mutuallyExclusiveGroup":
           [
              [
-               {"name":"A", "kind":"required"},
-               {"name":"B", "kind":"required"}
+                {"name":"A", "kind":"required"},
+                {"name":"B", "kind":"required"}
              ],
              [
-               {"name":"A", "kind":"required"},
-               {"name":"B", "kind":"required"},
-               {"name":"msg", "kind":"ordered", "type":["char","string"]},
-               {"name":"fmt", "kind":"ordered", "repeating":true}
+                {"name":"A", "kind":"required"},
+                {"name":"B", "kind":"required"},
+                {"name":"msg", "kind":"ordered", "type":["char","string"]},
+                {"name":"fmt", "kind":"ordered", "repeating":true}
              ],
              [
-               {"name":"A", "kind":"required"},
-               {"name":"B", "kind":"required"},
-               {"name":"errID", "kind":"required", "type":"identifier=messageid"},
-               {"name":"msg", "kind":"required", "type":["char","string"]},
-               {"name":"fmt", "kind":"ordered", "repeating":true}
+                {"name":"A", "kind":"required"},
+                {"name":"B", "kind":"required"},
+                {"name":"errID", "kind":"required", "type":"identifier=messageid"},
+                {"name":"msg", "kind":"required", "type":["char","string"]},
+                {"name":"fmt", "kind":"ordered", "repeating":true}
              ]
           ]
          }
@@ -51,5 +51,13 @@
          {"name":"Info", "type":"struct", "purpose":"the list of required and missing files and products"}
       ],
       "description":"Find all required and missing files and products for toolbox"
+   },
+   "mcallername":
+   {
+      "inputs":
+      [
+         {"name":"fileoption", "kind":"ordered", "type":["char", "row", "choices={'fullpath', 'filename', 'funcname', 'functionname'}"]},
+         {"name":"stacklevel", "kind":"namevalue", "type":["numeric", "scalar"]}
+      ]
    }
 }

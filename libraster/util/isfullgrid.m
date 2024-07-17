@@ -24,11 +24,18 @@ function tf = isfullgrid(X, Y, varargin)
    end
 
    if gridFormat == "gridvectors"
-      % This works if X, Y are gridvectors
-      tf = all(ismember( ...
-         [X(:), Y(:)], ...
-         [xfullgrid(X, Y, 'coordinates'), yfullgrid(X, Y, 'coordinates')], ...
-         'rows'));
+
+      [X2, Y2] = fullgrid(X, Y);
+      tf = all(gridmember(X2, Y2, X, Y), 'all');
+
+      % % Update: Not sure how this could have "worked" since X and Y have
+      % different number of elements.
+      % % This works if X, Y are gridvectors
+      % tf = all(ismember( ...
+      %    [X(:), Y(:)], ...
+      %    [xfullgrid(X, Y, 'coordinates'), yfullgrid(X, Y, 'coordinates')], ...
+      %    'rows'));
+
    else
       % This will fail if X, Y are gridvectors
       tf = all(ismember( ...

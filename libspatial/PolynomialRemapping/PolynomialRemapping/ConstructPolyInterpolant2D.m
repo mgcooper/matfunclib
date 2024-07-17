@@ -247,9 +247,8 @@ parfor i=1:Nd
   subYs=subYs_avg./scale;
 
   % Preparing the matrix for inversion
-  tmp1=   repmat(subXs,1,nCoef).^i1Matrix ...
-       .* ...
-          repmat(subYs,1,nCoef).^i2Matrix;
+  tmp1=repmat(subXs,1,nCoef).^i1Matrix ...
+       .* repmat(subYs,1,nCoef).^i2Matrix;
 
   % x^iy^j i,j \in 0:nPoly for the destination point
   tmp2= ((xd(i)-avgSubXs)./scale).^i1 .* ((yd(i)-avgSubYs)./scale).^i2;

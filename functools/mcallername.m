@@ -8,19 +8,22 @@ function varargout = mcallername(varargin)
    %  [MSG, LINE] = MCALLERNAME() also returns the line number of the function
    %  call.
    %
-   %  MSG = MCALLERNAME(FILEOPTION) returns the full path to the function for
-   %  the prior calling syntaxes if FILEOPTION 'fullpath', the filename without
-   %  the full path but including the .m extension if FILEOPTION 'filename', and
-   %  the function name (filename without .m extension) if FILEOPTION is
-   %  'funcname'. The default FILEOPTION is 'funcname'.
+   %  MSG = MCALLERNAME(FILEOPTION) returns the full path to the calling
+   %  function if FILEOPTION = 'fullpath', the filename including extension .m
+   %  if FILEOPTION = 'filename', and the function name (filename without .m
+   %  extension) if FILEOPTION is 'functionname' or 'funcname'. The default
+   %  FILEOPTION is 'funcname'.
    %
    %  MSG = MCALLERNAME(_, 'STACKLEVEL', RELATIVE_LEVEL) returns the name of the
-   %  function on the stack at RELATIVE_LEVEL, the number of stack levels below
-   %  this function. If RELATIVE_LEVEL = 1, the caller of this function is
+   %  function on the stack at RELATIVE_LEVEL, the number of stack levels BELOW
+   %  this function. If RELATIVE_LEVEL = 1, the CALLER of this function is
    %  returned. If RELATIVE_LEVEL = 2, the caller of that function is returned.
-   %  Default value is If RELATIVE_LEVEL = N-1, where N = numel(dbstack), and -1
+   %  Default value is RELATIVE_LEVEL = N-1, where N = numel(dbstack), and -1
    %  accounts for this function.
    %
+   %  Note: As described above, STACKLEVEL is deliberately offset by one level
+   %  to effectively remove this function from the stack. This reflects the
+   %  intended purpose of this function, which is to return the CALLERNAME.
    %
    % The stack goes from this file on top to the base workspace on bottom. If
    % this function is called from the command line, stack(1) = this file. If
@@ -36,17 +39,30 @@ function varargout = mcallername(varargin)
    %
    % See also mfilename, mfoldername
 
+   % I still did not quite figure out how I want this to behave, should
+   % stacklevel=1 return the function which calls this function? Or the function
+   % which called it? The factors to consider are the default stacklevel (N or
+   % 1) and whether flipud(stack) is used. See test_mcallername and the calling
+   % functions I made. Most likely it will sort out in practice.
+
    % input checks
    narginchk(0,Inf)
 
    % get the stack
    stack = dbstack('-completenames');
 
+   % useful for debugging:
+   % {stack.file}'
+
    % early exit if called from command line
    if numel(stack) == 1
       msg = [];
 
    else
+      % Remove this function from the stack
+      stack(1) = [];
+      % stack = flipud(stack);
+
       N = numel(stack);
 
       % parse inputs
@@ -70,7 +86,7 @@ function varargout = mcallername(varargin)
             % construct an error message using mfilename, argname, and argidx,
             % where mfilename is the parent function that called the parsing
             % function. Then the parser function would request the stack level
-            % one above itself using: mcallername(stacklevel=3). But if for some
+            % one above itself using: mcallername(stacklevel=2). But if for some
             % reason the parser function is called from base, then
             % max(stacklevel) = 2, so the min() condition enforces stacklevel=2.
             % But this returns the parser function name, so it could be better
@@ -95,17 +111,20 @@ function [stacklevel, fileoption] = parseinputs(N, funcname, varargin)
 
    [varargin{:}] = convertStringsToChars(varargin{:});
 
-   validopt = {'fullpath', 'filename', 'funcname'};
+   validopts = {'fullpath', 'filename', 'funcname', 'functionname'};
 
    % create parser
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.addOptional('fileoption', 'funcname', ...
-      @(x) ~isempty(validatestring(x, validopt)));
+   parser.addOptional('fileoption', 'funcname', @(opt) isoneof(opt, validopts));
    parser.addParameter('stacklevel', N, @isnumericscalar);
    parser.parse(varargin{:})
    stacklevel = parser.Results.stacklevel;
    fileoption = parser.Results.fileoption;
+
+   if stacklevel > N
+      stacklevel = N;
+   end
 end
 
 % set defaults
