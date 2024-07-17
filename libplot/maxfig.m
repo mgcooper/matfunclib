@@ -32,7 +32,11 @@ function varargout = maxfig(varargin)
       end
    end
 
-   if nargout == 1
-      varargout{1} = fg;
+   switch nargout
+      case 1
+         varargout{1} = fg;
+      case 2
+         varargout{1} = fg;
+         varargout{2} = gca;
    end
 end
