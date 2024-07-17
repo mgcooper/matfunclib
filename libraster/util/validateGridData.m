@@ -1,6 +1,20 @@
 function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
-      argname2, argname3, gridOption)
+      argname2, argname3, outputFormat)
    %VALIDATEGRIDDATA Validate gridded data for function inputs.
+   %
+   % [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
+   %    argname2, argname3, outputFormat)
+   %
+   % This function does not require V, X, Y to be fullgrids, but it does require
+   % the number of elements in X and Y to match the number of elements in EITHER
+   % the first OR the first two dimensions of V. By default, V, X, and Y are
+   % returned in the same size they are sent in. If OUTPUTFORMAT='coordinates',
+   % X and Y are returned as 1d lists of coordinate pairs, and V is returned as
+   % a 1d list or 2d array where its 1st dimension matches the size of X and Y.
+   % If OUTPUTFORMAT='gridvectors', then X and Y are returned as gridvectors and
+   % V is returned in the size it was sent in. If OUTPUTFORMAT='fullgrids', X,
+   % Y, and V are returned in fullgrid format, in a manner analogous to the
+   % coordinate pair option.
    %
    % See also xyzchk
 
@@ -8,17 +22,31 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
    if nargin < 5 || isempty(argname1); argname1 = 'X'; end
    if nargin < 6 || isempty(argname2); argname2 = 'Y'; end
    if nargin < 7 || isempty(argname3); argname3 = 'V'; end
-   if nargin < 8 || isempty(gridOption); gridOption = 'unspecified'; end
 
+   inputFormat = mapGridFormat(X, Y);
 
-   validateGridCoordinates(X, Y, funcname, 'X', 'Y', gridOption);
+   if nargin < 8 || isempty(outputFormat)
+      outputFormat = inputFormat;
+   end
+
+   validateGridFormat(outputFormat);
+   validateGridCoordinates(X, Y, funcname, 'X', 'Y', inputFormat);
    validateattributes(V, {'numeric', 'logical'}, {'3d'}, funcname, 'V');
 
    % If using R
    % validateattributes(V, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
    %    funcname, 'V', 3)
 
-   % Convert X and Y to columns and ensure the first two dimensions of V match X,Y
+   % Jul 2024: With V a full grid and X and Y gridvectors, the method below
+   % failed. The logic behind "size(V) must be [numel(X), numsamples]" must
+   % apply to coordinates and full grids. So I added this:
+   if strcmp('gridvectors', inputFormat)
+      [X, Y] = fullgrid(X, Y);
+   end
+
+   [inputSizeX, inputSizeY, inputSizeV] = deal(size(X), size(Y), size(V));
+
+   % Convert X and Y to columns and ensure the first two dims of V match X,Y.
    X = X(:);
    Y = Y(:);
    switch ndims(V)
@@ -27,14 +55,37 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
       case 2
          if numel(X) == numel(V)
             V = V(:);
-         end % otherwise, size(V) must be [numel(X), numsamples]
+         end
+      otherwise
+         % size(V) must be: [numel(X), numsamples] where: numel(X)=numel(Y),
+         % and numsamples could be numtimesteps etc.
    end
 
    % This will catch the case where size(V) is not [numel(X), numsamples]
    assert( numel(X) == size(V, 1), ...
-      sprintf('matfunclib:%s:inconsistentXYV', funcname), ...
+      sprintf('custom:%s:inconsistentXYV', funcname), ...
       ['Function %s expected the first two dimensions of input argument ' ...
       'V to match X and Y in size.'], upper(funcname))
+
+   % Return the data as requested or in its input size.
+   switch outputFormat
+
+      case 'gridvectors'
+         [X, Y] = gridvec(X, Y);
+         V = reshape(V, inputSizeV);
+
+      case 'fullgrids'
+         [X, Y] = fullgrid(X, Y);
+         V = reshape(V, size(X, 1), size(X, 2), []);
+
+      case 'coordinates'
+         % nothing required
+
+      otherwise
+         X = reshape(X, inputSizeX);
+         Y = reshape(Y, inputSizeY);
+         V = reshape(V, inputSizeV);
+   end
 end
 
 %% LICENSE

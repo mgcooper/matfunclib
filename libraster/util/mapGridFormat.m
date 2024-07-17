@@ -1,9 +1,13 @@
-function gridFormat = mapGridFormat(X, Y)
+function [gridFormat, gridSize] = mapGridFormat(X, Y)
    %MAPGRIDFORMAT Determine map grid format.
    %
-   %  gridFormat = mapGridFormat(X, Y) Determines if X, Y define a fullgrid,
-   %  gridvectors, or grid point coordinates.
+   %  gridFormat = mapGridFormat(X, Y)
+   %  [gridFormat, gridSize] = mapGridFormat(X, Y)
    %
+   %  Description
+   %
+   %  gridFormat = mapGridFormat(X, Y) Determines if X, Y define a fullgrid,
+   %  gridvectors, or grid coordinates.
    %
    % See also: mapGridInfo, mapGridCellSize, prepareMapGrid
 
@@ -60,6 +64,15 @@ function gridFormat = mapGridFormat(X, Y)
          'NaN elements do not match in coordinate pairs' , mfilename, 'X', 'Y')
    end
    % dx = unique(diff(X(:))); max(diff(dx))
+
+   % These might all be identical
+   switch gridFormat
+      case {'fullgrids', 'coordinates', 'irregular', 'point', 'unrecognized'}
+         gridSize = size(X);
+
+      case {'gridvectors'}
+         gridSize = [numel(Y), numel(X)];
+   end
 end
 
 %% LICENSE

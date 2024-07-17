@@ -1,15 +1,20 @@
-function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
-      prepareMapGrid(X1, Y1, GridOption)
+function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2] = ...
+      prepareMapGrid(X1, Y1, OutputFormat)
    %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis.
    %
-   % [X, Y, cellSizeX, cellSizeY, gridType, tfGeoCoords] = prepareMapGrid(X, Y)
-   % takes the input X,Y coordinate arrays or vectors that represent a regular
-   % or uniform grid and returns the following outputs:
+   % [X2, Y2] = prepareMapGrid(X1, Y1, OutputFormat)
+   % [X2, Y2, dX, dY, GridType, tfGeo] = prepareMapGrid(X1, Y1, OutputFormat)
+   %
+   % Description
+   %
+   % [X, Y, dX, dY, gridType, tfGeoCoords] = prepareMapGrid(X, Y) Accepts input
+   % X,Y coordinate arrays or vectors that represent a regular or uniform grid
+   % and returns the following outputs:
    %
    %   - X, Y: The input coordinate arrays or vectors, reoriented and gridded if
    %           necessary, to ensure they are 2-d arrays oriented West-East and
    %           North-South.
-   %   - cellSizeX, cellSizeY: Scalars, the cell size in the X and Y directions.
+   %   - dX, dY: Scalars, the cell size in the X and Y directions.
    %   - gridType: Char, the grid type ('uniform', 'regular', 'irregular').
    %   - tfGeoCoords: Boolean flag, indicates if the coordinates are geographic.
    %
@@ -58,20 +63,20 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
    Y1 = round(Y1, 10);
 
    % Determine input grid format.
-   GridFormat = mapGridFormat(X1, Y1);
+   InputFormat = mapGridFormat(X1, Y1);
 
-   % If GridOption was not provided, use fullgrids (not GridFormat)
-   if nargin < 3 || isempty(GridOption)
-      GridOption = 'fullgrids';
+   % If OutputFormat was not provided, use fullgrids (not InputFormat)
+   if nargin < 3 || isempty(OutputFormat)
+      OutputFormat = 'fullgrids';
    end
 
    % Determine the grid type, X/Y cell size, and if coordinates are geographic
-   [GridType, CellSizeX, CellSizeY, tfGeoCoords] = mapGridInfo(X1, Y1, GridFormat);
+   [GridType, dX, dY, tfGeoCoords] = mapGridInfo(X1, Y1, InputFormat);
 
-   % If GridType is irregular, then override the requested GridOption, only
+   % If GridType is irregular, then override the requested OutputFormat, only
    % 'unstructured' is compatible with subsequent methods.
-   if strcmp(GridType, 'irregular') && ~strcmp(GridOption, 'unstructured')
-      GridOption = 'unstructured';
+   if strcmp(GridType, 'irregular') && ~strcmp(OutputFormat, 'unstructured')
+      OutputFormat = 'unstructured';
    end
 
    % If longitude is wrapped from 0-360, unwrap to -180:180
@@ -85,11 +90,11 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
    % output X,Y.
    % [X1, Y1] = dealout(X2, Y2);
 
-   % Return the requested GridOption. GridType has no effect as of this time. If
-   % GridOption is "unstructured", nothing is done. If GridType is used,
+   % Return the requested OutputFormat. GridType has no effect as of this time.
+   % If OutputFormat is "unstructured", nothing is done. If GridType is used,
    % "irregular" should be treated the same way, meaning lists of coordinate
    % pairs are provided, and they are assumed to be correct.
-   switch GridOption
+   switch OutputFormat
 
       case 'gridvectors' % 1d cell-center vectors
 
@@ -97,23 +102,23 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
 
       case 'fullgrids' % 2d cell-center arrays
 
-         [X2, Y2] = fullgrid(X1, Y1, GridOption);
+         [X2, Y2] = fullgrid(X1, Y1, OutputFormat);
 
       case 'gridframes' % 2d cell-edge arrays
 
-         [X2, Y2] = fullgrid(X1, Y1, GridOption);
+         [X2, Y2] = fullgrid(X1, Y1, OutputFormat);
          [X2, Y2] = gridNodesToEdges(X2, Y2);
 
       case 'coordinates' % 1d cell center coordinates
 
-         [X2, Y2] = fullgrid(X1, Y1, GridOption);
+         [X2, Y2] = fullgrid(X1, Y1, OutputFormat);
 
          X2 = X2(:);
          Y2 = Y2(:);
 
       case 'unstructured' % inclusive of 'irregular'
 
-         % Probably do nothing, but if anything, remove / check for redundant pairs
+         % Probably do nothing. If anything, remove/check for redundant pairs
          if numel(X1) == numel(Y1)
             XY = unique([X1(:), Y1(:)], 'rows', 'stable');
             X2 = XY(:, 1);
@@ -121,11 +126,17 @@ function [X2,Y2,CellSizeX,CellSizeY,GridType,tfGeoCoords,I2,LOC1,I1,LOC2] = ...
          else
             % If here, likely means X1, Y1 are vectors of irregularly spaced
             % coordinates, e.g., if regular lat lon grid vectors were projected.
-            % This is an error.
             X2 = X1;
             Y2 = Y1;
 
-            error('X1, Y1 appear to be irregular and/or are not coordinate pairs')
+            msg = ['Detected irregular grid. ' ...
+               'Returning output grid in coordinate list format'];
+            wid = [mfilename ':ReturningIrregularGridAsCoordinateList'];
+
+            % warning(wid, msg)
+
+            % Throw an error b/c subsequent methods will fail.
+            error(wid, msg)
          end
 
    end
