@@ -20,7 +20,7 @@ function T = mkcalendar(t1,t2,dt,varargin)
    T = tocolumn(t1:dt:t2);
 
    % set the time zone
-   if TimeZone ~= "nan"
+   if TimeZone ~= "none"
       T.TimeZone = TimeZone;
    end
 
@@ -31,27 +31,31 @@ function T = mkcalendar(t1,t2,dt,varargin)
 end
 
 %% Parse inputs
-function [t1, t2, dt, CalType, TimeZone] = parseinputs(funcname, t1, t2, dt, varargin)
+function [t1, t2, dt, CalType, TimeZone] = parseinputs( ...
+      funcname, t1, t2, dt, varargin)
 
-   p = inputParser;
-   p.FunctionName = funcname;
-   p.CaseSensitive = false;
-   p.KeepUnmatched = true;
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
 
-   validoption = @(x) ~isempty(validatestring(x, {'noleap', 'leap'}));
+   validCalType = @(x) ~isempty(validatestring(x, ...
+      {'noleap', 'leap'}));
+   validTimeZone = @(x) ~isempty(validatestring(x, ...
+      ['none', matlab.internal.datetime.functionSignatures.timezoneChoices]));
 
-   p.addRequired('t1', @(x)isnumeric(x)|isdatetime(x));
-   p.addRequired('t2', @(x)isnumeric(x)|isdatetime(x));
-   p.addRequired('dt', @(x)ischar(x)|isduration(x)|iscalendarduration(x));
-   p.addOptional('CalType', 'leap', validoption);
-   p.addParameter('TimeZone', 'nan', @ischar); % 'UTC'
-   p.parse(t1, t2, dt, varargin{:});
+   parser.addRequired('t1', @(x)isnumeric(x)|isdatetime(x));
+   parser.addRequired('t2', @(x)isnumeric(x)|isdatetime(x));
+   parser.addRequired('dt', @(x)ischar(x)|isduration(x)|iscalendarduration(x));
+   parser.addParameter('CalType', 'leap', validCalType);
+   parser.addParameter('TimeZone', 'none', validTimeZone); % 'UTC'
+   parser.parse(t1, t2, dt, varargin{:});
 
-   t1 = p.Results.t1;
-   t2 = p.Results.t2;
-   dt = p.Results.dt;
-   CalType = p.Results.CalType;
-   TimeZone = p.Results.TimeZone;
+   t1 = parser.Results.t1;
+   t2 = parser.Results.t2;
+   dt = parser.Results.dt;
+   CalType = parser.Results.CalType;
+   TimeZone = parser.Results.TimeZone;
 
    if ~isdatetime(t1)
       try
