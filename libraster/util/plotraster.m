@@ -5,6 +5,16 @@ function varargout = plotraster(Z, varargin)
    % H = plotraster(Z, R)
    % H = plotraster(Z, X, Y)
    % H = plotraster(ax, _)
+   % H = plotraster(_, axis_style)
+   %
+   % Inputs
+   %
+   %  Z - raster grid
+   %  R - raster reference
+   %  X - X grid coordinates
+   %  Y - Y grid coordinates
+   %  axis_style - (optional) axis style. Values are 'tight', 'padded', 'fill',
+   %               'equal', 'image', 'square', 'normal'. Default is 'image'.
    %
    % Notes
    %

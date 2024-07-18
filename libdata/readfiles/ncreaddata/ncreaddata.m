@@ -1,19 +1,20 @@
 function data = ncreaddata(filename, kwargs)
-   %NCREADDATA Read all data in .nc file fname, or all vars in optional list
+   %NCREADDATA Read data from netcdf file.
    %
-   %  data = ncreaddata(fname) reads all variables in fname
-   %  data = ncreaddata(fname,vars) reads variables vars in fname
+   %  data = ncreaddata(filename) reads all variables in netcdf file FILENAME.
+   %  data = ncreaddata(filename, varnames=varnames) reads variables with names
+   %  matching VARNAMES in file FILENAME.
    %
    % Required inputs:
    %
-   %  fname - full path to .nc file
+   %  filename - full path to .nc file
    %
    % Optional inputs:
    %
-   %  varnames - cellstr array of chars that match the variable names in the
-   %  .nc file to read. Default behavior reads all variables.
+   %  varnames - cellstr array of chars that match variable names in the
+   %  netcdf file to read. Default behavior reads all variables.
    %
-   % Note: the data is converted to column major format
+   % Note: the data is converted to column major format.
    %
    % See also: ncparse
 
@@ -22,11 +23,15 @@ function data = ncreaddata(filename, kwargs)
    % data = ncreaddata(f);
    % R = rasterref(data.x, data.y);
 
-   arguments
+   arguments(Input)
       filename (1, :) char
       kwargs.varnames (1, :) string = string.empty()
       kwargs.reorient (1, 1) logical = true
    end
+
+   % arguments(Output, Repeating)
+   %    varargout
+   % end
 
    fileinfo = ncparse(filename);
 
@@ -59,6 +64,11 @@ function data = ncreaddata(filename, kwargs)
          data.(varnames(n)) = orientGridData(data_n, [numx, numy, numt, numz]);
       end
    end
+
+   % assign output
+   % for n = 1:nargout
+   %    varargout{n} = data.(varnames(n));
+   % end
 end
 
 function data_n = try_ncread(filename, varname, varsize)

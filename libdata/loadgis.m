@@ -201,8 +201,12 @@ function [S, A] = tryshaperead(fname, namedargs, reader)
       end
 
       if all(ismember({'X', 'Y'}, T.Properties.VariableNames))
-         lat = {T.Y};
-         lon = {T.X};
+         lat = T.Y;
+         lon = T.X;
+         if ~iscell(lat)
+            lat = {T.Y};
+            lon = {T.X};
+         end
       else
          % Easiest to use geostructCoordinates, but requires S not T. And if
          % this fails, it will cause problems in the final checks, which may not
