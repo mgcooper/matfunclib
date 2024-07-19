@@ -1,13 +1,13 @@
-function [latcells,loncells] = polycells(lat,lon)
-   %POLYCELLS Convert nan-separated polygon parts from vectors to cell arrays
+function [latcells, loncells] = coordsToCells(lat, lon)
+   %COORDSTOCELLS Convert nan-separated polygon parts from vectors to cells
    %
-   %   [LATCELLS,LONCELLS] = POLYCELLS(LAT,LON) returns the NaN-delimited
+   %   [LATCELLS,LONCELLS] = COORDSTOCELLS(LAT,LON) returns the NaN-delimited
    %   segments of the vectors LAT and LON as N-by-1 cell arrays with one
    %   polygon segment per cell.  LAT and LON must be the same size and have
    %   identically-placed NaNs.  The polygon segments are column vectors if
    %   LAT and LON are column vectors, and row vectors otherwise.
    %
-   % See also: POLYVEC
+   % See also: cellsToCoords
 
    if isempty(lat) && isempty(lon)
       latcells = reshape({}, [0 1]);

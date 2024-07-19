@@ -82,7 +82,10 @@ function [Coord1, Coord2] = geostructCoordinates(Geom, coordinateType, outputTyp
 
    end
 
+   % Ensure the data are columns
+   [Coord1, Coord2] = deal(Coord1(:), Coord2(:));
+
    if outputType == "asarray"
-      [Coord1, Coord2] = polyvec(Coord1, Coord2);
+      [Coord1, Coord2] = cellsToCoords(Coord1, Coord2);
    end
 end
