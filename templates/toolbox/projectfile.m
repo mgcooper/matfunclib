@@ -1,5 +1,5 @@
 function proj = projectfile(buildOption, projectName, codeFolders, opts)
-   %PROJECTFILE file to create a matlab project
+   %PROJECTFILE File to create a matlab project.
    %
    % proj = projectfile('MyProject', 'toolbox') creates a new project called
    % MyProject.prj and adds all files in the toolbox/ directory to the project.
@@ -9,7 +9,7 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    % missing dependencies to toolbox/+tbx/private/. Use this prior to packaging
    % the toolbox for release, so all files are available.
    %
-   % See also buildfile, setupfile
+   % See also: buildfile, setupfile
 
    % Define the options to add folders and files
 
@@ -112,19 +112,17 @@ function mustBeValidOption(option)
       throwAsCaller(MException(eid,msg))
    end
 end
-
-% % This is from teh delete project section. It is based on my initial attempts to
-% % create a project programmatically in icom-msd project create_matlab_project
-% % script where I had to close it first b/c I had just created it, but I am not
-% % acutally sure it has to be closed.
-% try
-%    projectRootFolder = currentProject().RootFolder;
-% catch e
-%    if strcmp(e.message, 'No project is currently loaded.')
-%       openProject(projectFolder)
+% This is from teh delete project section. It is based on my initial attempts to
+% create a project programmatically in icom-msd project create_matlab_project
+% script where I had to close it first b/c I had just created it, but I am not
+% acutally sure it has to be closed.
+%    try
 %       projectRootFolder = currentProject().RootFolder;
+%    catch e
+%       if strcmp(e.message, 'No project is currently loaded.')
+%          openProject(projectFolder)
+%          projectRootFolder = currentProject().RootFolder;
+%       end
 %    end
-% end
-% close(currentProject);
-% matlab.project.deleteProject(projectRootFolder);
-% return
+%    close(currentProject); matlab.project.deleteProject(projectRootFolder);
+%    return

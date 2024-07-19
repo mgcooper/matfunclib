@@ -4,6 +4,9 @@ manager/workoff/functionSignatures.json
 manager/activate/functionSignatures.json
 manager/deactivate/functionSignatures.json
 
+# ignore Project resources/ folder
+**/resources/*
+
 # ignore "submodules" (just repos in subfolders)
 exactextract*
 
