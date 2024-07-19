@@ -32,9 +32,15 @@ function [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot
    end
    Image = cat(3,Image(:,:,3),Image(:,:,2),Image(:,:,1));   % put in RGB order
 
-   % This was done at this point in the scripts but I think I left it out of 
+   % This was done at this point in the scripts but I think I left it out of
    % the function b/c it isn't necessary since the image is cropped
    % Image = imadjustn(Image); % brighten the image
+
+   if testplot == 1
+      figure
+      mapshow(Image, R);
+      title('Full, Original Image');
+   end
 
    % crop the image if requested
    if cropimage == true
@@ -63,8 +69,9 @@ function [Image, R] = processLandsat(filelist, cropimage, enhanceimage, testplot
    % figure; imshow(Jcrop); title('enhanced'); figontop;
 
    if testplot == 1
-      figure; mapshow(Image,Rimg); title('Full Image');
-      figure; mapshow(Image,Rcrop); title('Cropped Image'); hold on;
+      figure
+      mapshow(Image, R);
+      title('Enhanced, cropped image');
    end
 end
 

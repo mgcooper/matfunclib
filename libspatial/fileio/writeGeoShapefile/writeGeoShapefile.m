@@ -65,7 +65,7 @@ function coords = writeGeoShapefile(S, filename, varargin)
       % coords = prepLatLonFields(coords,{'Lat','Lon'});
    end
 
-   [npts,natts] = size(coords);
+   [npts, ~] = size(coords);
 
    % add a Geometry field if missing
    if ~isfield(coords,'Geometry')
@@ -93,7 +93,7 @@ function coords = writeGeoShapefile(S, filename, varargin)
 
       figure;
 
-      switch lower(geometry)
+      switch lower(Geometry)
          case 'point'
             geoscatter(coords.Latitude,coords.Longitude,'filled')
          case {'line','polygon'}
@@ -189,7 +189,11 @@ function coords = preplatlon(coords)
       if isscalar(coords)  % should never be true
          coords = renamestructfields(coords,fields{ilat},'Lat');
       else
-         coords = renameNonScalarStructField(coords,fields{ilat},'Lat');
+         % Jul 2024 - I removed renameNonScalarStructField. I may have
+         % refactored renamestructfields to work for nonscalar. But this will
+         % cause an error here so I can test next time I call this.
+         coords = [];
+         % coords = renameNonScalarStructField(coords,fields{ilat},'Lat');
       end
    end
 
@@ -213,9 +217,10 @@ function coords = preplatlon(coords)
    % now rename to 'Lat' or 'Lon', so don't use pickLat/Lon anymore
    if all(~ismember(fields(ilon),'Lon'))
       if isscalar(coords)  % should never be true
-         coords   = renamestructfields(coords,fields{ilon},'Lon');
+         coords = renamestructfields(coords,fields{ilon},'Lon');
       else
-         coords   = renameNonScalarStructField(coords,fields{ilon},'Lon');
+         % coords = renameNonScalarStructField(coords,fields{ilon},'Lon');
+         coords = []; % see notes in other section wehre I did this to trigger an error
       end
    end
 end

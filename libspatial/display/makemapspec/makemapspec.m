@@ -13,6 +13,7 @@ function S = makemapspec(geometry,varargin)
    parser.addRequired('geometry', @ischar);
    parser.addParameter('numfeatures', 1, @isnumeric);
    parser.parse(geometry, varargin{:});
+   numfeatures = parser.Results.numfeatures;
 
    c = distinguishable_colors(numfeatures);
    for n = 1:numfeatures

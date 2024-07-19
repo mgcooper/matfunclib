@@ -12,8 +12,8 @@ function varargout = loadhydrorivers(varargin)
    %
    % See also: loadnaturalearth
 
-   [Region, BoundingBox, ClipGeometry, ClipFile, ...
-      latlims, lonlims, savefile] = parseinputs(mfilename, varargin{:});
+   [Region, BoundingBox, ClipGeometry, ClipFile, latlims, lonlims, ...
+      savefile, validregions] = parseinputs(mfilename, varargin{:});
 
    % convert BoundingBox from [lonmin,latmin;lonmax,latmax] ([xmin,ymin;xmax,ymax]
    % for map coordinates) to latlim/lonlim format for ingeoquad:
@@ -139,8 +139,8 @@ function fname = gethydroshedsfname(Region,validregions,ftype)
    % plotm(lat,lon);
 end
 
-function [Region, BoundingBox, ClipGeometry, ClipFile, ...
-      latlims, lonlims, savefile] = parseinputs(mfilename, varargin)
+function [Region, BoundingBox, ClipGeometry, ClipFile, latlims, lonlims, ...
+      savefile, validregions] = parseinputs(mfilename, varargin)
 
    validregions = {'Global','Africa','Arctic','Asia','Australasia', ...
       'Europe', 'Greenland','NorthAmerica','SouthAmerica','Siberia'};
