@@ -16,7 +16,13 @@ function varargout = plotpolygon(P, PlotOpts)
    end
    PlotOpts = namedargs2cell(PlotOpts);
 
-   if isa(P,'polyshape')
+   hold on
+
+   if iscell(P) && all(all(cellfun(@(p) isa(p, 'polyshape'), P)))
+      P = [P{:}];
+   end
+
+   if isa(P, 'polyshape')
       % Remove empty polyshapes
       keep = arrayfun(@(n) ~isempty(P(n).Vertices), 1:numel(P));
       P = P(keep);
@@ -25,22 +31,16 @@ function varargout = plotpolygon(P, PlotOpts)
 
    elseif iscell(P)
 
-      if all(cellfun(@(p) isa(p, 'polyshape'), P))
-
-         % Probably easier to cast to an array and plot it directly
-         H = cellfun(@(p) plot(p, PlotOpts{:}), P);
-      else
+      if isvector(P)
          H = cellfun(@(p) plot(p(:, 1), p(:, 2), PlotOpts{:}), P);
-      end
 
-      % H = cellfun(@(x, y) plot(x, y, PlotOpts{:}), P(:, 1), P(:, 2));
+      elseif ismatrix(P)
+         H = cellfun(@(x, y) plot(x, y, PlotOpts{:}), P(:, 1), P(:, 2));
+      end
 
    elseif ismatrix(P)
       H = plot(P(:, 1), P(:, 2), PlotOpts{:});
    end
-
-   % For reference, if PX,PY cell arrays are passed in:
-   % cellfun(@plot, PX, PY);
 
    if nargout == 1
       varargout{1} = H;
