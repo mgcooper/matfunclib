@@ -1,5 +1,12 @@
 {
    "_schemaVersion": "1.0.0",
+   "isgeostruct":
+   {
+      "inputs":
+      [
+         {"name":"S",   "kind":"required",   "type":["struct"]}
+      ]
+   },
    "geostructinit":
    {
       "inputs":

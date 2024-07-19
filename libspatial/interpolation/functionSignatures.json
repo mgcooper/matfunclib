@@ -1,17 +1,31 @@
 {
-  "_schemaVersion": "1.0.0",
-  "interpolationPoints":
-  {
-     "inputs":
-     [
-        {"name":"poly",         "kind":"required",  "type":["numeric"]},
-        {"name":"xgrid",        "kind":"required",  "type":["numeric"]},
-        {"name":"ygrid",        "kind":"required",  "type":["numeric"]},
-        {"name":"buffer",       "kind":"required",  "type":["numeric","scalar"]},
-        {"name":"newRes",       "kind":"required",  "type":["numeric","scalar"]},
-        {"name":"makeplot",     "kind":"namevalue", "type":["logical"]},
-        {"name":"plotvar",      "kind":"namevalue", "type":["numeric"]},
-        {"name":"pointinterp",  "kind":"namevalue", "type":["logical"]}
-     ]
-  }
+   "_schemaVersion": "1.0.0",
+   "interpolationPoints":
+   {
+      "inputs":
+      [
+         {"name":"poly",         "kind":"required",  "type":["numeric"]},
+         {"name":"xgrid",        "kind":"required",  "type":["numeric"]},
+         {"name":"ygrid",        "kind":"required",  "type":["numeric"]},
+         {"name":"buffer",       "kind":"required",  "type":["numeric","scalar"]},
+         {"name":"newRes",       "kind":"required",  "type":["numeric","scalar"]},
+         {"name":"makeplot",     "kind":"namevalue", "type":["logical"]},
+         {"name":"plotvar",      "kind":"namevalue", "type":["numeric"]},
+         {"name":"pointinterp",  "kind":"namevalue", "type":["logical"]}
+      ]
+   },
+   "pointsInPoly":
+   {
+      "inputs":
+      [
+         {"name":"x",            "kind":"required",  "type":["numeric"]},
+         {"name":"y",            "kind":"required",  "type":["numeric"]},
+         {"name":"poly",         "kind":"required",  "type":["numeric"]},
+         {"name":"buffer",       "kind":"namevalue", "type":["numeric","scalar"]},
+         {"name":"xbuffer",      "kind":"namevalue", "type":["numeric","scalar"]},
+         {"name":"ybuffer",      "kind":"namevalue", "type":["numeric","scalar"]},
+         {"name":"makeplot",     "kind":"namevalue", "type":["logical"]},
+         {"name":"bufferbox",    "kind":"namevalue", "type":["logical"]}
+      ]
+   }
 }
