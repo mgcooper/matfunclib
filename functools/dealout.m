@@ -2,6 +2,7 @@ function varargout = dealout(varargin)
    %DEALOUT deal out function outputs
    %
    % [argout1, argout2] = dealout(argin1, argin2, ..., arginN]
+   % [cellArrayOutput{1:nargout}] = dealout(argin1, argin2, ..., arginN);
    % [cellArrayOutput{1:nargout}] = dealout(cellArrayInput{:});
    % [-] = dealout(structInput);
    % [-] = dealout(struct2cell(structInput));
