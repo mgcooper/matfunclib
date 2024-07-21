@@ -5,14 +5,19 @@ function data = ncreaddata(filename, kwargs)
    %  data = ncreaddata(filename, varnames=varnames) reads variables with names
    %  matching VARNAMES in file FILENAME.
    %
-   % Required inputs:
+   % Inputs (Required):
    %
    %  filename - full path to .nc file
    %
-   % Optional inputs:
+   % Inputs (Optional):
    %
    %  varnames - cellstr array of chars that match variable names in the
    %  netcdf file to read. Default behavior reads all variables.
+   %
+   % Outputs
+   %
+   %  data - a structure containing the variables and a table of info similar to
+   %  the one returned by ncinfo.
    %
    % Note: the data is converted to column major format.
    %
