@@ -1,4 +1,4 @@
-function proj = createMatlabProject(projectFolder, addProjectFiles, ...
+function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
       addChildFiles, projectSubfolders, projectName, ignoreFolders)
    %CREATEMATLABPROJECT Creates a MATLAB project in the given projectFolder.
    %
@@ -99,6 +99,11 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
 
    % Update dependencies
    updateDependencies(proj);
+
+   % Return the project object if requested
+   if nargout
+      varargout{1} = proj;
+   end
 end
 
 function [projectSubfolders, projectFiles] = getProjectFolders( ...
