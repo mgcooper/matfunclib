@@ -14,14 +14,29 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    % Define the options to add folders and files
 
    % Parse the option
-   arguments
+   arguments(Input)
+
       buildOption (1,:) string {mustBeMember(buildOption, ...
-         ["create", "delete", "update", "resolve"])} = "create"
-      projectName (1,1) string = string(NaN)
-      codeFolders (:,1) string = string(NaN)
-      opts.depsFolder (1,1) string = string(NaN)
-      opts.addCodeFiles (1,1) logical = true;
-      opts.addProjectFiles (1,1) logical = false;
+         ["create", "delete", "update", "resolve"])} ...
+         = "create"
+
+      projectName (1,1) string ...
+         = string(NaN)
+
+      codeFolders (:,1) string ...
+         = string(NaN)
+
+      opts.depsFolder (1,1) string ...
+         = string(NaN)
+
+      opts.addCodeFiles (1,1) logical ...
+         = true
+
+      opts.addProjectFiles (1,1) logical ...
+         = false
+
+      opts.ignoreFolders (:,1) string ...
+         = ["sandbox", "testbed"]
    end
 
    % Define the main project folder
@@ -38,9 +53,12 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
       if isfolder(fullfile(projectFolder, 'toolbox'))
          codeFolders = "toolbox";
       else
-         error(['No toolbox/ directory found.' newline ...
-            'To specify which folders to add to the project, try:' newline ...
-            'makeproject(projectname, toolboxfolders)'])
+         eid = ['custom:' mfilename ':CodeFolderMissingOrNotFound'];
+         msg = ['No codeFolder specified. Default toolbox/ folder not found.' ...
+            newline 'To specify which folders to add to the project, try:' ...
+            newline '   projectfile("' char(buildOption) '", "' ...
+            char(projectName) '", codeFolder)'];
+         error(eid, msg)
       end
    end
 
@@ -57,7 +75,7 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
       case 'create'
          % Create the project
          proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
-            opts.addCodeFiles, codeFolders, projectName);
+            opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
 
       case 'resolve'
          % Resolve dependencies
