@@ -15,11 +15,9 @@ function [P, PX, PY] = parsePolygons(P, kwargs)
    %
    % See also:
 
-   % This can be very slow for multi-polygon inputs. For exactremap, P needs to
-   % be a polyshape to get area intersections in remapOnePolygon, BUT ONLY FOR
-   % THE POLYGONS THAT ARE INVOLVED IN THE CALCULATION. A better method would
-   % trim both X,Y and P to the minimum bounding boxes but then custom indexing
-   % will be required to convert between the inputs and outputs.
+   % NOTE: See merra.monthlyWaterBalance parsepoly subfunction for an example of
+   % how a "mergepolygons" option could be added here if the input P is a multi
+   % polygon and it needs to be returned as one merged outline
 
    arguments
       P
@@ -49,79 +47,22 @@ function [P, PX, PY] = parsePolygons(P, kwargs)
    end
    assert(all(cellfun(@(p) isa(p, 'polyshape'), P)));
 
-
-   % Below here shouldn't be needed but keep until it finds a home.
+   if kwargs.aspolyshape
+      P = vertcat(P{:});
+   end
 
    % Determine the input format (cell vector, coordinate list, etc.)
    % inputFormat = parsePolygonFormat(P);
-
-   % switch inputFormat
+   % validatePolygonFormat(inputFormat);
    %
-   %    case 'PolyshapeCellVector'
+   % % Repair the polygons - shouldn't be needed b/c repairPolyshape is called by
+   % % mkpolyshape but keep until tested with a nan-delimited multipart polygon
    %
-   %       validateattributes(P, {'cell'}, {'column'}, ...
-   %          kwargs.mfilename, kwargs.argname, kwargs.argidx);
-   %
-   %    case 'CoordinateCellVector'
-   %
-   %       validateattributes(P, {'cell'}, {'column'}, ...
-   %          kwargs.mfilename, kwargs.argname, kwargs.argidx);
-   %
-   %    case 'CoordinateCellArray'
-   %
-   %       validateattributes(P, {'cell'}, {'2d', 'ncols', 2}, ...
-   %          kwargs.mfilename, kwargs.argname, kwargs.argidx);
-   %
-   %    case 'PolyshapeVector'
-   %
-   %       validateattributes(P, {'polyshape'}, {'column'}, ...
-   %          kwargs.mfilename, kwargs.argname, kwargs.argidx);
-   %
-   %    case 'CoordinateArray'
-   %
-   %       validateattributes(P, {'numeric'}, {'2d', 'ncols', 2}, ...
-   %          kwargs.mfilename, kwargs.argname, kwargs.argidx);
-   %
-   %       % This still may be needed here
-   %       % P = arraymap(@(p) p, P.regions);
-   %
-   %       % For reference, an older method I thought was necessary
-   %       % P = parseNanDelimitedPolygons(P);
-   %
-   %    otherwise
-   %       error('Unrecognized polygonFormat')
-   % end
-   %
-   % % Convert P to a cell array of polyshapes.
-   % if kwargs.repairGeometry
-   %
-   %    P = cellmap(@(x,y) mkpolyshape(x,y), PX, PY);
-   % else
-   %
-   %    P = cellmap(@(x,y) polyshape(x,y), PX, PY);
-   % end
-   %
-   % % Repair the polygons - This should no longer be necessary because I moved
-   % % the entire contents of repairPolyshape into mkpolyshape. However, the
-   % % original workflow used "polyshape" where "mkpolyshape" is now used in the
-   % % above if-else blocks and I had to stop developing this abruptly and did not
-   % % take good notes on where I left off. When I picked back up I passed in a
-   % % cell array of x,y vertices rather than a nan-delimited list, which works
-   % % well with mkpolyshape, but it's possible there's something about
-   % % nan-delimited for the case where a single polygon is passed in but it
-   % % happens to have multi-parts that I still want this here.
-   % %
    % % P = cellmap(@repairPolyshape, P);
    % % P = nonEmptyCells(P);
-   %
+   % %
    % % Put the X,Y vertices back into cell arrays
    % PX = cellmap( @(P) P.Vertices(:, 1), P);
    % PY = cellmap( @(P) P.Vertices(:, 2), P);
    % % Note, set 'Uniform' true to get a polyshape vector rather than cell array
-   %
-   % % % This was in the main for the case where Numel = 1, to get the full area
-   % % px = P.Vertices(:, 1);
-   % % py = P.Vertices(:, 2);
-   % %
-   % % [PX, PY] = polyjoin({px}, {py}) ;
 end

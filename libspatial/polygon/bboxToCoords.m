@@ -37,6 +37,10 @@ function [xcoords, ycoords] = bboxToCoords(varargin)
    narginchk(1,2)
    if nargin == 1
       bbox = varargin{1};
+      if ispolyshape(bbox)
+         [xcoords, ycoords] = bbox.boundingbox();
+         return
+      end
       validateattributes(bbox, {'numeric'}, {'size',[2 2]}, mfilename, 'BBOX', 1)
 
    elseif nargin == 2
