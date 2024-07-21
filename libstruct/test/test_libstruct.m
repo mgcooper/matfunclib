@@ -4,8 +4,8 @@
 
 
 % Create a layered struct
-% S = struct('field1', 'value1', 'field2', 'value2'); % 
-% 
+% S = struct('field1', 'value1', 'field2', 'value2'); %
+%
 % S.S2 = S;
 
 %
@@ -27,9 +27,9 @@ S = arrayfun(@(s, y) setfield(s, 'c', y), S, 3:12);
 clear S
 S = struct();
 for n = 1:10
-    S(n).a = n;
-    S(n).b = n+1;
-    S(n).c = n+2;
+   S(n).a = n;
+   S(n).b = n+1;
+   S(n).c = n+2;
 end
 
 % Deal method
@@ -56,16 +56,17 @@ c = num2cell(3:12);
 % % whereas this will put the individual values in each row, as desired:
 % C = num2cell(fields);
 % [S(:).(fieldname)] = deal(C{:});
-% 
+%
 % % and these will fail:
 % [S(1:numel(fields)).(fieldname)] = fields;
 % [S.(fieldname)] = fields;
 % S(:).(fieldname) = deal(fields);
-% S.(fieldname) = deal(fields); 
+% S.(fieldname) = deal(fields);
 
 if isempty(newfieldnames)
-   newfieldnames = cellstr(inputname(2));
-   
+   % newfieldnames = cellstr(inputname(2));
+   newfieldnames = cellstr('newfieldname'); % Jul 2024 temporary fix to inputname
+
 elseif ischar(newfieldnames) || isstring(newfieldnames)
    newfieldnames = cellstr(newfieldnames);
 end
@@ -86,13 +87,13 @@ end
 
 % could go about it like this:
 % switch class(field)
-%    
+%
 %    case 'cell'
 %       [S.(fieldname)] = field{:};
-%    
+%
 %    case 'double'
 %       [S.(1:numfeatures).(fieldname)]  = deal(field);
-% end   
+% end
 
 
 %% test catstructs
@@ -121,36 +122,36 @@ isequal(S4,S5)
 
 
 % Note: I added this, it only works if A and S have identical fieldnames,
-   % which is not the intention of this fucntion
-   A = cell2struct(cellfun(@vertcat, struct2cell(A),       ...
-      struct2cell(S), 'uni', 0), fieldnames(A));
-   
-   
+% which is not the intention of this fucntion
+A = cell2struct(cellfun(@vertcat, struct2cell(A),       ...
+   struct2cell(S), 'uni', 0), fieldnames(A));
+
+
 %% test catstructfields
 
 % % Example 1: cat two structs with identical field names
-% 
+%
 % % for reference, this creates a non-scalar struct
 % % S1 = struct('a',[1,2,3],'b',[4,5,6],'c',{'dog','cat'});
-% 
+%
 % S1.a = [1,2,3];
 % S1.b = [4,5,6];
 % S1.c = {'dog','cat'};
-% 
+%
 % S2.a = [4,5,6];
 % S2.b = [1,2,3];
 % S2.c = {'fish','horse'};
-% 
+%
 % % Example 2: cat two structs with identical field names
 % S3.e = [7,8,9];
 % S3.f = [true,false,false];
 % S3.g = {'fish','horse'};
-% 
+%
 % S4.a = [7,8,9];
 % S4.b = [false,true,true];
 % S4.g = {'bird','mouse'};
 % S4.h = [1,2,3];
-% 
+%
 % F = cellfun(@fieldnames,{S1,S2,S3,S4},'uni',0);
 
 % F = cellfun(@fieldnames,varargin,'uni',0);
@@ -164,7 +165,7 @@ isequal(S4,S5)
 % f = cellfun(@(x) intersect(x,F{1}),F,'uni',0);
 % f = f(~cellfun('isempty',f));
 % f = f(argmin(cellfun('prodofsize',f)));
-% 
+%
 % % from here I could use the common fields
 
 % this says which fieldnames are equal to the first set of fieldnames
@@ -217,7 +218,7 @@ end
 % Z=false;
 % for n=1:N
 %    for m=n+1:N
-%       Z = Z || isequal(varargin{n},varargin{m}); 
+%       Z = Z || isequal(varargin{n},varargin{m});
 %    end
 % end
 

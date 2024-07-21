@@ -51,7 +51,8 @@
       "inputs":
       [
          {"name":"S",         "kind":"required",   "type":["struct"]},
-         {"name":"fields",    "kind":"required",   "type":["cell","char"]}
+         {"name":"fields",    "kind":"required",   "type":["cell","char"]},
+         {"name":"option",    "kind":"ordered",    "type":["string","char","choices={'drop', 'keep'}"], "default":"drop"}
       ]
    },
    "structsort":
