@@ -61,8 +61,11 @@ function varargout = gridxyz(X, Y, V, varargin)
    parse(parser, varargin{:})
    kwargs = parser.Results;
 
+   % NOTE: Calling validateGridData is sensible if the purpose is to grid xyz
+   % data which is already gridded but is not in fullgrid format ... but
+   % otherwise this will fail so I commented it out.
    % validate x,y,v inputs
-   [V, X, Y] = validateGridData(V, X, Y, mfilename, 'V', 'X', 'Y');
+   % [V, X, Y] = validateGridData(V, X, Y, mfilename, 'V', 'X', 'Y');
 
    % keep the original data
    X1 = X;

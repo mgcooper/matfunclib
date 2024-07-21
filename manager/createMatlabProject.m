@@ -1,5 +1,5 @@
-function proj = createMatlabProject(projectFolder, addProjectFiles, ...
-      addChildFiles, projectSubfolders, projectName)
+function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
+      addChildFiles, projectSubfolders, projectName, ignoreFolders)
    %CREATEMATLABPROJECT Creates a MATLAB project in the given projectFolder.
    %
    % proj = createMatlabProject(projectFolder, addProjectFiles, addChildFiles,
@@ -44,16 +44,24 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
    % projectSubfolders.
 
    arguments
-      projectFolder (1,1) string {mustBeFolder}
+      projectFolder (1,1) string {mustBeFolder} = pwd()
       addProjectFiles logical = false
-      addChildFiles logical = false
+      addChildFiles logical = true
       projectSubfolders (:,1) string = string(NaN)
       projectName string = string(NaN)
+      ignoreFolders (1, :) string = ""
    end
 
-   if isempty(projectName)
+   if isempty(projectName) || ismissing(projectName)
       [~, projectName, ~] = fileparts(projectFolder);
       projectName = string(projectName);
+   end
+
+   defaultIgnore = [".git",".svn","resources"];
+   if isempty(ignoreFolders)
+      ignoreFolders = defaultIgnore;
+   else
+      ignoreFolders = [ignoreFolders, defaultIgnore];
    end
 
    % % This doesn't work b/c the project name is converted to a valid varname
@@ -65,7 +73,8 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
 
    % Get a list of all sub-folders to add to the project.
    % This step is performed first because creating the project generates new folders.
-   projectSubfolders = getProjectFolders(projectFolder, projectSubfolders);
+   projectSubfolders = getProjectFolders(projectFolder, ...
+      projectSubfolders, ignoreFolders);
 
    % Create a new project
    proj = matlab.project.createProject( ...
@@ -90,10 +99,15 @@ function proj = createMatlabProject(projectFolder, addProjectFiles, ...
 
    % Update dependencies
    updateDependencies(proj);
+
+   % Return the project object if requested
+   if nargout
+      varargout{1} = proj;
+   end
 end
 
 function [projectSubfolders, projectFiles] = getProjectFolders( ...
-      projectFolder, projectSubfolders)
+      projectFolder, projectSubfolders, ignoreFolders)
    %GETPROJECTFOLDERS Returns a list of subfolders within projectFolder.
    %
    % projectSubfolders: String array. A list of specific subfolders to be
@@ -110,19 +124,16 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
    % ones, and use addFile on all of them, but for now, I return the subfolders,
    % and addFolderIncludingChildFiles takes care of recursive files.
 
-   % Folders to ignore
-   ignore = {'.git','.svn','resources'};
-
    % Get all subfolders
    allSubfolders = rmdotfolders(dir(fullfile(projectFolder, '**/*')));
    allSubfolders = allSubfolders([allSubfolders.isdir]);
 
    % Remove .git, .svn, and resources folders.
-   allSubfolders = allSubfolders(~contains({allSubfolders.folder},ignore));
-   allSubfolders = allSubfolders(~ismember({allSubfolders.name},ignore));
+   allSubfolders = allSubfolders(~contains({allSubfolders.folder},ignoreFolders));
+   allSubfolders = allSubfolders(~ismember({allSubfolders.name},ignoreFolders));
 
    % If no subfolders are specified, use all subfolders (except ignored ones).
-   if ismissing(projectSubfolders)
+   if ismissing(projectSubfolders) || isempty(projectSubfolders)
       projectSubfolders = allSubfolders;
    else
       % Use the specified projectSubfolders
@@ -137,10 +148,10 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
 
    % Remove .git, .svn, and resources folders.
    projectSubfolders = projectSubfolders(~contains( ...
-      {projectSubfolders.folder}, ignore));
+      {projectSubfolders.folder}, ignoreFolders));
 
    projectSubfolders = projectSubfolders(~ismember( ...
-      {projectSubfolders.name}, ignore));
+      {projectSubfolders.name}, ignoreFolders));
 
    % Convert from dir struct to full path.
    projectSubfolders = fullfile( ...

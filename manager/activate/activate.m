@@ -21,7 +21,9 @@ function varargout = activate(tbname, varargin)
          end
          printmessage(tbname, silent, except, asproject)
          success = true;
-         varargout{1} = success;
+         if nargout == 1
+            varargout{1} = success;
+         end
          return
       catch e
          rethrow(e)

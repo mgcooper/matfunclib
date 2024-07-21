@@ -1,5 +1,5 @@
 function proj = projectfile(buildOption, projectName, codeFolders, opts)
-   %PROJECTFILE file to create a matlab project
+   %PROJECTFILE File to create a matlab project.
    %
    % proj = projectfile('MyProject', 'toolbox') creates a new project called
    % MyProject.prj and adds all files in the toolbox/ directory to the project.
@@ -9,19 +9,34 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    % missing dependencies to toolbox/+tbx/private/. Use this prior to packaging
    % the toolbox for release, so all files are available.
    %
-   % See also buildfile, setupfile
+   % See also: buildfile, setupfile
 
    % Define the options to add folders and files
 
    % Parse the option
-   arguments
+   arguments(Input)
+
       buildOption (1,:) string {mustBeMember(buildOption, ...
-         ["create", "delete", "update", "resolve"])} = "create"
-      projectName (1,1) string = string(NaN)
-      codeFolders (:,1) string = string(NaN)
-      opts.depsFolder (1,1) string = string(NaN)
-      opts.addCodeFiles (1,1) logical = true;
-      opts.addProjectFiles (1,1) logical = false;
+         ["create", "delete", "update", "resolve"])} ...
+         = "create"
+
+      projectName (1,1) string ...
+         = string(NaN)
+
+      codeFolders (:,1) string ...
+         = string(NaN)
+
+      opts.depsFolder (1,1) string ...
+         = string(NaN)
+
+      opts.addCodeFiles (1,1) logical ...
+         = true
+
+      opts.addProjectFiles (1,1) logical ...
+         = false
+
+      opts.ignoreFolders (:,1) string ...
+         = ["sandbox", "testbed"]
    end
 
    % Define the main project folder
@@ -38,9 +53,12 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
       if isfolder(fullfile(projectFolder, 'toolbox'))
          codeFolders = "toolbox";
       else
-         error(['No toolbox/ directory found.' newline ...
-            'To specify which folders to add to the project, try:' newline ...
-            'makeproject(projectname, toolboxfolders)'])
+         eid = ['custom:' mfilename ':CodeFolderMissingOrNotFound'];
+         msg = ['No codeFolder specified. Default toolbox/ folder not found.' ...
+            newline 'To specify which folders to add to the project, try:' ...
+            newline '   projectfile("' char(buildOption) '", "' ...
+            char(projectName) '", codeFolder)'];
+         error(eid, msg)
       end
    end
 
@@ -57,7 +75,7 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
       case 'create'
          % Create the project
          proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
-            opts.addCodeFiles, codeFolders, projectName);
+            opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
 
       case 'resolve'
          % Resolve dependencies
@@ -112,19 +130,17 @@ function mustBeValidOption(option)
       throwAsCaller(MException(eid,msg))
    end
 end
-
-% % This is from teh delete project section. It is based on my initial attempts to
-% % create a project programmatically in icom-msd project create_matlab_project
-% % script where I had to close it first b/c I had just created it, but I am not
-% % acutally sure it has to be closed.
-% try
-%    projectRootFolder = currentProject().RootFolder;
-% catch e
-%    if strcmp(e.message, 'No project is currently loaded.')
-%       openProject(projectFolder)
+% This is from teh delete project section. It is based on my initial attempts to
+% create a project programmatically in icom-msd project create_matlab_project
+% script where I had to close it first b/c I had just created it, but I am not
+% acutally sure it has to be closed.
+%    try
 %       projectRootFolder = currentProject().RootFolder;
+%    catch e
+%       if strcmp(e.message, 'No project is currently loaded.')
+%          openProject(projectFolder)
+%          projectRootFolder = currentProject().RootFolder;
+%       end
 %    end
-% end
-% close(currentProject);
-% matlab.project.deleteProject(projectRootFolder);
-% return
+%    close(currentProject); matlab.project.deleteProject(projectRootFolder);
+%    return

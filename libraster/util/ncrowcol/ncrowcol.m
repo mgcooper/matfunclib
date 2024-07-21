@@ -55,9 +55,15 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
    % Assume a data var was provided rather than char variable name
    waschar = ischar(ncvar);
    if waschar
+
       info = kwargs.ncinfo;
-      ivar = ismember({info.Variables.Name}, ncvar);
-      varsize = info.Variables(ivar).Size;
+      if isncstruct(info)
+         ivar = ismember({info.Variables.Name}, ncvar);
+         varsize = info.Variables(ivar).Size;
+      elseif isnctable(info)
+         ivar = ismember(info.Name, ncvar);
+         varsize = info.Size{ivar};
+      end
    end
 
    % % check if input is geographic or projected
@@ -127,13 +133,15 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
          start = [r(1), c(1), 1, 1];
          count = [rowcount(r), colcount(c), size(ncvar,3), size(ncvar,4)];
       else
-         warning( ...
-            'This function does not support 4-d or higher dimension variables');
+         wid = ['custom:' mfilename ':4DVariablesNotSupported'];
+         warning(wid, ...
+            '%s does not support 4-d or higher dimension variables', mfilename);
       end
 
    else
-      disp(['warning: row/col indexing may be unreliable for 1-d vars ' ...
-         newline 'if variable name is provided instead of variable']);
+      wid = ['custom:' mfilename ':RowColIndexingUnreliable'];
+      warning(wid, ['row/col indexing may be unreliable for 1-d vars ' ...
+         'if variable name is provided instead of variable.']);
 
       if numel(varsize) == 1
          start = r(1);
@@ -148,8 +156,9 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
          start = [r(1), c(1), 1, 1];
          count = [rowcount(r), colcount(c), varsize(3), varsize(4)];
       else
-         warning( ...
-            'This function does not support 4-d or higher dimension variables');
+         wid = ['custom:' mfilename ':4DVariablesNotSupported'];
+         warning(wid, ...
+            '%s does not support 4-d or higher dimension variables', mfilename);
       end
    end
 

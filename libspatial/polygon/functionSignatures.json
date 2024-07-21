@@ -1,0 +1,10 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotbbox":
+  {
+     "inputs":
+     [
+        {"name":"bbox",  "kind":"required", "type":["numeric","2d"]}
+     ]
+  }
+}

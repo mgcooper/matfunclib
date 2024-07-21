@@ -42,7 +42,7 @@ function varargout = listfiles(folderlist, opts)
    % See also: mfilename, mcallername, mfoldername, ismfile
 
    arguments
-      folderlist (1,:) string = pwd()
+      folderlist (:,1) string = pwd()
       opts.subfolders (1,1) logical = false
       opts.asstruct (1,1) logical = true
       opts.aslist (1,1) logical = false
@@ -62,12 +62,22 @@ function varargout = listfiles(folderlist, opts)
    end
 
    % Create the list of files
-   list = cellmap(@(folder) processOneFolder(folder, opts), folderlist);
+   list = arraymap(@(folder) processOneFolder(folder, opts), folderlist);
 
    % I think this was added to stack dir structs, but it failed when list was a
    % cell array of paths i.e. opts.aslist == true, so I added opts.asstruct.
-   if iscell(list) && opts.asstruct
-      list = vertcat(list{:});
+   % Update: When folder is non-scalar, list is a cell array where each element
+   % is a cell array of files in a subfolder. I think that's why I had vertcat,
+   % and it failed when list was scalar b/c it tried to vertcat all the
+   % individual paths into one char array. So I added the numel > 1 check.
+   % But I am not sure if other use cases depend on the files being in separate
+   % cell elements, so I commented that out and added the aslist check.
+   if iscell(list)
+      if opts.asstruct % || numel(list) > 1
+         list = vertcat(list{:});
+      elseif numel(list) > 1 && opts.aslist
+         list = vertcat(list{:});
+      end
    end
 
    % Parse outputs

@@ -2,8 +2,22 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
       argname2, argname3, outputFormat)
    %VALIDATEGRIDDATA Validate gridded data for function inputs.
    %
+   % [V, X, Y] = validateGridData(V, X, Y)
    % [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
    %    argname2, argname3, outputFormat)
+   %
+   % Inputs
+   %  V - gridded (raster) data, NxMxP, where M and P can be 1 or higher.
+   %  X - X grid coordinates, NxM
+   %  Y - Y grid coordinates, NxM
+   %  funcname - (optional) the calling function name. If not provided, the
+   %             calling function name is retrieved from the stack.
+   %  argname1 - (optional) the first argument name. Default is 'V'.
+   %  argname2 - (optional) the second argument name. Default is 'X'.
+   %  argname3 - (optional) the third argument name. Default is 'Y'.
+   %  outputFormat - (optional) the output grid format. Options are 'fullgrids',
+   %                 'coordinates', or 'gridvectors'. Default is determined by
+   %                 the input format.
    %
    % This function does not require V, X, Y to be fullgrids, but it does require
    % the number of elements in X and Y to match the number of elements in EITHER
@@ -19,9 +33,9 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
    % See also xyzchk
 
    if nargin < 4 || isempty(funcname); funcname = mcallername(); end
-   if nargin < 5 || isempty(argname1); argname1 = 'X'; end
-   if nargin < 6 || isempty(argname2); argname2 = 'Y'; end
-   if nargin < 7 || isempty(argname3); argname3 = 'V'; end
+   if nargin < 5 || isempty(argname1); argname1 = 'V'; end
+   if nargin < 6 || isempty(argname2); argname2 = 'X'; end
+   if nargin < 7 || isempty(argname3); argname3 = 'Y'; end
 
    inputFormat = mapGridFormat(X, Y);
 
@@ -31,7 +45,26 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
 
    validateGridFormat(outputFormat);
    validateGridCoordinates(X, Y, funcname, 'X', 'Y', inputFormat);
-   validateattributes(V, {'numeric', 'logical'}, {'3d'}, funcname, 'V');
+   validateattributes(V, {'cell', 'numeric', 'logical'}, {'3d'}, funcname, argname1);
+
+   wascell = iscell(V);
+   if ~wascell
+      V = {V};
+   end
+   for n = 1:numel(V)
+      [V{n}, X, Y] = validateOneGrid(V{n}, X, Y, funcname, argname3, ...
+         inputFormat, outputFormat);
+   end
+   if ~wascell
+      assert(numel(V) == 1)
+      V = V{1};
+   end
+end
+
+function [V, X, Y] = validateOneGrid(V, X, Y, funcname, argname3, ...
+      inputFormat, outputFormat)
+
+   validateattributes(V, {'numeric', 'logical'}, {'3d'}, funcname, argname3);
 
    % If using R
    % validateattributes(V, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
