@@ -86,11 +86,7 @@ function [R, X, Y] = rasterref(X, Y, varargin)
 
    % Actually rasterize depends on rasterref ... and rasterref remains
    % dependable if we know we're working with a full grid, so allow it.
-   warning( ...
-      ['rasterref may produce incorrect results if the input X, Y do not ' ...
-      'contain at least one member of all unique coordinates in the full-grid ' ...
-      'representation of the total extent of X and Y. If this is not the case, ' ...
-      'try rasterize with "extrap=true"'])
+   % ... moved warning from here to isfullgrid check
 
    %% Prepare inputs
 
@@ -102,16 +98,21 @@ function [R, X, Y] = rasterref(X, Y, varargin)
    [X, Y, cellType, mapProj, UseGeoCoords] = parseinputs( ...
       X, Y, mfilename, varargin{:});
 
+   if ~isfullgrid(X(:), Y(:))
+      wid = ['custom:' mfilename ':NonFullGridInput'];
+      warning(wid,  ...
+         ['Input X and Y coordinates do not represent fullgrids. ' ...
+         'Returning a raster reference object for their fullgrid ' ...
+         'representation, including cells which are missing from ' ...
+         'X and Y. To register the data associated with the input ' ...
+         'X and Y coordinates to the raster reference object returned ' ...
+         'by this function, try RASTERIZE with "extrap=true"'], mfilename)
+   end
+
    % Convert grid vectors to mesh, ensure the X,Y arrays are oriented W-E and
    % N-S, get an estimate of the grid resolution, and determine if the data is
    % geographic or planar.
-
-   % Test - confirm if all input X, Y are in the grid X, Y
-   X1 = X; Y1 = Y;
    [X, Y, cellsizeX, cellsizeY] = prepareMapGrid(X, Y, 'fullgrids');
-
-   % [LI2, LOC1] = gridmember(X, Y, X1, Y1);
-   % sum(LI2(:))
 
    % extend the lat/lon limits by 1/2 cell in both directions
    halfX = cellsizeX/2;
@@ -272,7 +273,8 @@ function [X, Y, cellType, mapProj, UseGeoCoords] = ...
    UsingDefault = ismember('UseGeoCoords', parser.UsingDefaults);
 
    UseGeoCoords = parseGeoCoordsChoice(tfGeoCoords, UseGeoCoords, ...
-      UseGeoCoordsDefault, UsingDefault, silent=parser.Results.silent);
+      UseGeoCoordsDefault, UsingDefault, silent=parser.Results.silent, ...
+      caller=funcname);
 end
 
 function tf = validateProjection(x)
