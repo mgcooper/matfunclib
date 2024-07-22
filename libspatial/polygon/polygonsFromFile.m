@@ -1,6 +1,6 @@
-function P = polygonsFromFile(P, kwargs)
+function [P, sf] = polygonsFromFile(P, kwargs)
 
-   arguments
+   arguments(Input)
       P {mustBeFile}
       kwargs.UseGeoCoords (1, 1) logical = false
    end
@@ -10,7 +10,7 @@ function P = polygonsFromFile(P, kwargs)
       [plat, plon] = geostructCoordinates(sf, "geographic", "ascell");
       P = [plon, plat];
    else
-      eid = ['exactremap:' mfilename ':InvalidFileFormat'];
+      eid = ['custom:' mfilename ':InvalidFileFormat'];
       msg = '%s supports shapefiles at this time.';
       error(eid, msg, mfilename)
    end
