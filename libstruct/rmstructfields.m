@@ -9,6 +9,7 @@ function S = rmstructfields(S, fields, option)
    %  S = rmstructfields(S, fields, option) removes or keeps fields from S, a
    %  scalar or non-scalar struct. FIELDS is a cellstr array of field names,
    %  char, or string. OPTION specifies whether to 'drop' or 'keep' the fields.
+   %  The default OPTION is 'drop', which replicates standard rmfield behavior.
    %
    % % Example with scalar struct
    %  s.a = 1; s.b = 2; s.c = 3;
@@ -35,6 +36,9 @@ function S = rmstructfields(S, fields, option)
    % See also: rmfield, commonfields, addstructfields, catstructfields
 
    % Check inputs
+   if nargin < 3
+      option = 'drop';
+   end
    validateattributes(S, {'struct'}, {'nonempty'}, mfilename, 'S', 1)
    option = validatestring(option, {'drop', 'keep'}, mfilename, 'option', 3);
 
