@@ -1,4 +1,4 @@
-function [P, PX, PY] = parsePolygons(P, kwargs)
+function [P, PX, PY, inputP] = parsePolygons(P, kwargs)
    %PARSEPOLYGONS Convert polygon representation to a cell array of polyshapes.
    %
    %  [P, PX, PY] = parsePolygons(P, kwargs) Converts input P to a cell array of
@@ -19,7 +19,7 @@ function [P, PX, PY] = parsePolygons(P, kwargs)
    % how a "mergepolygons" option could be added here if the input P is a multi
    % polygon and it needs to be returned as one merged outline
 
-   arguments
+   arguments(Input)
       P
       kwargs.mfilename string {mustBeTextScalarOrEmpty} = mcallername(stacklevel=3)
       kwargs.argname string {mustBeTextScalarOrEmpty} = ""
@@ -32,8 +32,11 @@ function [P, PX, PY] = parsePolygons(P, kwargs)
 
    withwarnoff('MATLAB:polyshape:repairedBySimplify');
 
+   % If P is a file, assign the full shapefile to inputP, otherwise assign P.
    if ~ispolygon(P) && isfile(P)
-      P = polygonsFromFile(P, 'UseGeoCoords', kwargs.UseGeoCoords);
+      [P, inputP] = polygonsFromFile(P, 'UseGeoCoords', kwargs.UseGeoCoords);
+   else
+      inputP = P;
    end
 
    % Prepare the polyshapes.

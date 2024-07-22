@@ -7,39 +7,70 @@ y = (2:11)';
 z = (3:12)';
 V0 = table(x, y, z, 'VariableNames', {'x', 'y', 'z'});
 
-originalVariableNames = string(V0.Properties.VariableNames);
+originalNames = string(V0.Properties.VariableNames);
 
 %% test with one input
-[V, returnedVariableNames, InputClass, missingVariables] = parseVariables(V0);
+[V, returnedNames, InputClass, missingNames, extraNames] = parseVariables(V0);
 
 assert(istable(V))
 assertEqual(InputClass, 'table')
-assertEqual(returnedVariableNames, originalVariableNames)
-assertEqual(missingVariables, string.empty(1, 0))
+assertEqual(returnedNames, originalNames)
+assertEqual(missingNames, string.empty(1, 0))
+assertEqual(extraNames, string.empty(1, 0))
 
-%% test with VariableNames input
+%% test with expected VariableNames input and dropExtraNames false
 
-keepVariableNames = 'x';
+expectedNames = 'x';
 
-[V, returnedVariableNames, InputClass, missingVariables] = parseVariables( ...
-   V0, keepVariableNames);
-
-assert(istable(V))
-assertEqual(InputClass, 'table')
-assertEqual(returnedVariableNames, keepVariableNames)
-assertEqual(missingVariables, string.empty(1, 0))
-
-%% test with missing variable
-
-keepVariableNames = {'x', 'a'};
-
-[V, returnedVariableNames, InputClass, missingVariables] = parseVariables( ...
-   V0, keepVariableNames);
+[V, returnedNames, InputClass, missingNames, extraNames] = parseVariables( ...
+   V0, expectedNames, dropExtraNames=false);
 
 assert(istable(V))
 assertEqual(InputClass, 'table')
-assertEqual(returnedVariableNames, "x")
-assertEqual(missingVariables, "a")
+assertEqual(returnedNames, originalNames)
+assertEqual(missingNames, string.empty(1, 0))
+assertEqual(extraNames, setdiff(originalNames, expectedNames));
 
+%% test with expected VariableNames input and dropExtraNames true
+
+expectedNames = 'x';
+
+[V, returnedNames, InputClass, missingNames, extraNames] = parseVariables( ...
+   V0, expectedNames, dropExtraNames=true);
+
+assert(istable(V))
+assertEqual(InputClass, 'table')
+assertEqual(returnedNames, expectedNames)
+assertEqual(missingNames, string.empty(1, 0))
+assertEqual(extraNames, setdiff(originalNames, expectedNames));
+assert(isempty(intersect(returnedNames, extraNames)))
+
+%% test with missing variable and dropExtraNames false
+
+expectedNames = {'x', 'a'};
+
+[V, returnedNames, InputClass, missingNames, extraNames] = parseVariables( ...
+   V0, expectedNames, dropExtraNames=false);
+
+assert(istable(V))
+assertEqual(InputClass, 'table')
+assertEqual(returnedNames, originalNames)
+assertEqual(missingNames, "a")
+assertEqual(extraNames, setdiff(originalNames, expectedNames));
+
+
+%% test with missing variable and dropExtraNames true
+
+expectedNames = {'x', 'a'};
+
+[V, returnedNames, InputClass, missingNames, extraNames] = parseVariables( ...
+   V0, expectedNames, dropExtraNames=true);
+
+assert(istable(V))
+assertEqual(InputClass, 'table')
+assertEqual(returnedNames, "x")
+assertEqual(missingNames, "a")
+assertEqual(extraNames, setdiff(originalNames, expectedNames));
+assert(isempty(intersect(returnedNames, extraNames)))
 
 
