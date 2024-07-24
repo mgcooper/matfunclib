@@ -11,11 +11,11 @@ function tbl = synchronizeTimeTables(tbl, kwargs)
    %
    % but to generalize it, need to add / inherit all the other retime options.
 
-   arguments (Repeating)
+   arguments(Input,Repeating)
       tbl timetable
    end
 
-   arguments (Input)
+   arguments(Input)
       kwargs.dt (1, 1) = caldays(1)
       kwargs.newTimes (:, 1) datetime = NaT
       kwargs.newTimeStep (1, 1) = "daily"

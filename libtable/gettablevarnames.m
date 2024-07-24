@@ -1,18 +1,27 @@
-function varnames = gettablevarnames(T, typename)
-   %GETTABLEVARNAMES Return table var names as a cell array.
+function varnames = gettablevarnames(tbl, typename)
+   %GETTABLEVARNAMES Return tabular object VariableNames values as a cell array.
    %
-   %  varnames = gettablevarnames(T)
+   %  varnames = gettablevarnames(tbl)
+   %  varnames = gettablevarnames(tbl, class)
+   %
+   % Description
+   %  varnames = gettablevarnames(tbl) returns all values in the VariableNames
+   %  propery of tabular object tbl.
+   %  varnames = gettablevarnames(tbl, class) returns values in the
+   %  VariableNames propery of tabular object tbl for variables of type CLASS.
+   %  The VARTYPE function is used to find matching types.
    %
    % See also: gettableunits
 
-   varnames = T.Properties.VariableNames;
-
    if nargin == 1
+      % Return all variable names
+      varnames = tbl.Properties.VariableNames;
       return
    end
 
-   % otherwise, return by type
-   varnames = gettablevarnames(T(:,vartype(typename)));
+   % Return by type
+   varnames = gettablevarnames(tbl(:, vartype(typename)));
 
-   % varnames = varnames(tablevartypeindices(T,typename));
+   % Legacy method
+   % varnames = varnames(tablevartypeindices(T, typename));
 end

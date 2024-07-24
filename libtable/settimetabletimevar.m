@@ -1,3 +1,3 @@
-function T = settimetabletimevar(T)
-   T = renametimetabletimevar(T);
+function tbl = settimetabletimevar(tbl)
+   tbl = renametimetabletimevar(tbl);
 end

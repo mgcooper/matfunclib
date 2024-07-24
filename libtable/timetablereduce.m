@@ -1,4 +1,4 @@
-function NewData = timetablereduce(Data,varargin)
+function NewData = timetablereduce(Data, varargin)
    %TIMETABLEREDUCE Statistically reduce timetable data to mean, std, and ci
    %
    % NewData = timetablereduce(Data,'keeptime',true) keeps the time column in

@@ -1,22 +1,22 @@
-function T = trimtimetable(T,t1,t2)
+function ttbl = trimtimetable(ttbl, t1, t2)
    %TRIMTIMETABLE trim timetable to dates that span t1,t2 inclusive
    %
    %
    % See also
 
    % parse inputs
-   [T, t1, t2] = parseinputs(T, t1, t2, mfilename);
+   [ttbl, t1, t2] = parseinputs(ttbl, t1, t2, mfilename);
 
    % trim the time table
-   ok = isbetween(T.Time,t1,t2);
-   T = T(ok,:);
+   ok = isbetween(ttbl.Time,t1,t2);
+   ttbl = ttbl(ok,:);
 end
 
-function [T, t1, t2] = parseinputs(T, t1, t2, funcname);
-   p = inputParser;
-   p.FunctionName = funcname;
-   p.CaseSensitive = false;
-   p.KeepUnmatched = true;
+function [T, t1, t2] = parseinputs(T, t1, t2, funcname)
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
 
    validx = @(x)validateattributes(x,{'timetable'},{'nonempty'}, ...
       'trimtimetable','T',1);
@@ -25,13 +25,13 @@ function [T, t1, t2] = parseinputs(T, t1, t2, funcname);
    validz = @(x)validateattributes(x,{'datetime'},{'nonempty'}, ...
       'trimtimetable','t2',3);
 
-   addRequired( p,'T',  validx );
-   addRequired( p,'t1', validy );
-   addRequired( p,'t2', validz );
+   addRequired( parser,'T',  validx );
+   addRequired( parser,'t1', validy );
+   addRequired( parser,'t2', validz );
 
-   parse(p,T,t1,t2);
+   parse(parser,T,t1,t2);
 
-   T = p.Results.T;
-   t1 = p.Results.t1;
-   t2 = p.Results.t2;
+   T = parser.Results.T;
+   t1 = parser.Results.t1;
+   t2 = parser.Results.t2;
 end

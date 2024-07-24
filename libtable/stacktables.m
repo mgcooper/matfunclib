@@ -1,4 +1,4 @@
-function T = stacktables(tbls,opts)
+function tblstack = stacktables(tbls, opts)
    %STACKTABLES vertically concatenate tables.
    %
    % Author: Matt Cooper
@@ -48,10 +48,10 @@ function T = stacktables(tbls,opts)
    %
    %  *variables of the same name must also be of the same datatype.
 
-   arguments (Repeating)
+   arguments(Input, Repeating)
       tbls tabular
    end
-   arguments
+   arguments(Input)
       opts.MergeCustomProps (1,1) logical = true
       opts.KeepRowNames (1,1) logical = true
    end
@@ -100,7 +100,7 @@ function T = stacktables(tbls,opts)
    end
 
    % Remove temporary ids
-   T = removevars(t1,rowKey);
+   tblstack = removevars(t1,rowKey);
 
    % Collect rownames, which may or may not exist
    if all(cellfun(@istable, tbls))
@@ -118,11 +118,11 @@ function T = stacktables(tbls,opts)
       % This will succeed if each table has rownames. If there are duplicates,
       % they are added as a new variable, otherwise as the RowNames property.
       try
-         T.Properties.RowNames = rownames;
+         tblstack.Properties.RowNames = rownames;
       catch e
          if strcmp(e.identifier, 'MATLAB:table:DuplicateRowNames')
             % There are duplicate rownames, add them as a new column
-            T.rowNames = string(rownames);
+            tblstack.rowNames = string(rownames);
          end
 
          if strcmp(e.identifier, 'MATLAB:table:IncorrectNumberOfRowNames')
@@ -132,8 +132,9 @@ function T = stacktables(tbls,opts)
             rethrow(e)
 
             % % One or more tables does not have rownames
-            % T.rowNames = ...
-            %    [string(rownames); repelem(missing, height(T)-numel(rownames))'];
+            % tblstack.rowNames = ...
+            %    [string(rownames);
+            %    repelem(missing, height(tblstack)-numel(rownames))'];
          end
       end
 
@@ -146,22 +147,23 @@ function T = stacktables(tbls,opts)
 
    % Merge custom properties
    if opts.MergeCustomProps
-      customProps = cellfun(@(tbl) tbl.Properties.CustomProperties, tbls, 'un', 0);
+      customProps = cellfun(@(tbl) ...
+         tbl.Properties.CustomProperties, tbls, 'UniformOutput', false);
 
       if any(~cellfun(@(props) isempty(fieldnames(props)), customProps))
-         T.Properties.CustomProperties = mergeCustomProps(tbls{:});
+         tblstack.Properties.CustomProperties = mergeCustomProps(tbls{:});
       end
    end
 end
 
-function T = tblchars2string(T)
+function tbl = tblchars2string(tbl)
    try
-      idxchar = cellfun(@ischar, table2cell(T(1, :)));
-      T.(T.Properties.VariableNames{idxchar}) = string(T{:, idxchar});
+      idxchar = cellfun(@ischar, table2cell(tbl(1, :)));
+      tbl.(tbl.Properties.VariableNames{idxchar}) = string(tbl{:, idxchar});
 
       % Using vartype, in case it is more robust
-      % varchar = string(T(1, vartype("char")).Properties.VariableNames);
-      % T.(varchar) = string(T{:, vartype('char')});
+      % varchar = string(tbl(1, vartype("char")).Properties.VariableNames);
+      % tbl.(varchar) = string(tbl{:, vartype('char')});
    catch
    end
 end

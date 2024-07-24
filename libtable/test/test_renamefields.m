@@ -20,13 +20,13 @@ end
 
 function testRenameStructFieldsEmptyOldFieldsError(testCase)
    s = struct('a', 1, 'b', 2, 'c', 3);
-   verifyError(testCase, @() renamefields(s, [], "X"), ...
+   testCase.verifyError( @() renamefields(s, [], "X"), ...
       'custom:renamefields:mustBeOneNewNamePerOldName');
 end
 
 function testRenameTableFieldsEmptyOldFieldsError(testCase)
    T = table([1; 2; 3], [4; 5; 6], 'VariableNames', {'A', 'B'});
-   verifyError(testCase, @() renamefields(T, [], "X"), ...
+   testCase.verifyError( @() renamefields(T, [], "X"), ...
       'custom:renamefields:mustBeOneNewNamePerOldName');
 end
 
@@ -52,19 +52,19 @@ function testRenameTableVariables(testCase)
    T = table([1; 2; 3], [4; 5; 6], 'VariableNames', {'A', 'B'});
    [newTable, found] = renamefields(T, ["A", "B"], ["X", "Y"]);
    expectedTable = table([1; 2; 3], [4; 5; 6], 'VariableNames', {'X', 'Y'});
-   verifyEqual(testCase, newTable, expectedTable);
-   verifyEqual(testCase, string(found), ["A", "B"]);
+   testCase.verifyEqual(newTable, expectedTable);
+   testCase.verifyEqual(string(found), ["A", "B"]);
 end
 
 function testMismatchedNamesLength(testCase)
    T = table([1; 2; 3], [4; 5; 6], 'VariableNames', {'A', 'B'});
-   verifyError(testCase, @() renamefields(T, ["A", "B"], "X"), ...
+   testCase.verifyError( @() renamefields(T, ["A", "B"], "X"), ...
       'custom:renamefields:mustBeOneNewNamePerOldName');
 end
 
 function testNonStructOrTableInput(testCase)
    T = [1; 2; 3];
-   verifyError(testCase, @() renamefields(T, ["A", "B"], ["X", "Y"]), ...
+   testCase.verifyError(@() renamefields(T, ["A", "B"], ["X", "Y"]), ...
       'custom:renamefields:inputMustBeStructOrTable');
 end
 
@@ -72,6 +72,6 @@ function testNonexistentFields(testCase)
    s = struct('a', 1, 'b', 2);
    [newStruct, found] = renamefields(s, ["a", "c"], ["alpha", "gamma"]);
    expectedStruct = struct('alpha', 1, 'b', 2);
-   verifyEqual(testCase, newStruct, expectedStruct);
-   verifyEqual(testCase, string(found), "a");  % Only 'a' was found and renamed
+   testCase.verifyEqual(newStruct, expectedStruct);
+   testCase.verifyEqual(string(found), "a");  % Only 'a' was found and renamed
 end

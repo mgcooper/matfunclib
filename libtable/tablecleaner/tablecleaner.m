@@ -90,7 +90,7 @@ function [T,QA] = cleantable(QA,T,whichrow,regularize,newtime,method)
    dtfreq = dtcounts./(sum(dtcounts)+1);
 
    % choose the most frequent timestep for retiming
-   mostfrequentstep = dtsteps(findmax(dtfreq));
+   mostfrequentstep = dtsteps(findglobalmax(dtfreq));
 
    % save this information
    QA.uniquetimes = uniquetimes;

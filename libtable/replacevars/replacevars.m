@@ -1,14 +1,17 @@
-function T = replacevars(T, VarNames, NewVars, varargin)
-   %REPLACEVARS replace vars in table T with new vars.
+function tbl = replacevars(tbl, VarNames, NewVars, varargin)
+   %REPLACEVARS replace vars in table with new vars.
    %
-   % Syntax
+   %  tbl = replacevars(tbl, VarNames, NewVars)
+   %  tbl = replacevars(tbl, VarNames, NewVars, NewVarNames=NewVarNames)
    %
-   %  T = REPLACEVARS(T,VarNames,NewVars) replaces columns with variable names
-   %  VarNames with columns of NewVars. VarNames is a cell array of variable
-   %  names that match values of T.Properties.VariableNames. NewVars is an array
-   %  with second dimension (width) equal to numel(VarNames).
+   % Description
    %
-   %  T = REPLACEVARS(T,VarNames,NewVars,'NewVarNames',NewVarNames) also
+   %  tbl = REPLACEVARS(tbl,VarNames,NewVars) replaces columns with variable
+   %  names VarNames with columns of NewVars. VarNames is a cell array of
+   %  variable names that match values of tbl.Properties.VariableNames. NewVars
+   %  is an array with second dimension (width) equal to numel(VarNames).
+   %
+   %  tbl = REPLACEVARS(tbl,VarNames,NewVars,'NewVarNames',NewVarNames) also
    %  replaces the VarNames with NewVarNames.
    %
    % Example
@@ -20,36 +23,36 @@ function T = replacevars(T, VarNames, NewVars, varargin)
    % convertvars
 
    % parse inputs
-   [T, VarNames, NewVars, NewVarNames] = parseinputs( ...
-      T, VarNames, NewVars, mfilename, varargin{:});
+   [tbl, VarNames, NewVars, NewVarNames] = parseinputs( ...
+      tbl, VarNames, NewVars, mfilename, varargin{:});
 
    % replace vars
-   T = removevars(T,VarNames);
-   V = gettablevarnames(T);
+   tbl = removevars(tbl,VarNames);
+   V = gettablevarnames(tbl);
    V = [V NewVarNames];
 
    for n = 1:size(NewVars,2)
-      T = addvars(T,NewVars(:,n));
+      tbl = addvars(tbl,NewVars(:,n));
    end
-   T = settablevarnames(T,V);
+   tbl = settablevarnames(tbl,V);
 end
 
-function [T, VarNames, NewVars, NewVarNames] = parseinputs(T, VarNames, ...
+function [tbl, VarNames, NewVars, NewVarNames] = parseinputs(tbl, VarNames, ...
       NewVars, funcname, varargin)
 
-   p = inputParser;
-   p.FunctionName = funcname;
-   p.CaseSensitive = false;
-   p.KeepUnmatched = true;
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
 
-   validVarNames = @(x)all(ismember(x, gettablevarnames(T)));
+   validVarNames = @(x)all(ismember(x, gettablevarnames(tbl)));
 
-   addRequired(p, 'T', @istabular);
-   addRequired(p, 'VarNames', validVarNames );
-   addRequired(p, 'NewVars' );
-   addParameter(p,'NewVarNames', VarNames, @ischarlike);
+   addRequired(parser, 'tbl', @istabular);
+   addRequired(parser, 'VarNames', validVarNames );
+   addRequired(parser, 'NewVars' );
+   addParameter(parser,'NewVarNames', VarNames, @ischarlike);
 
-   parse(p,T,VarNames,NewVars,varargin{:});
+   parse(parser,tbl,VarNames,NewVars,varargin{:});
 
-   NewVarNames = p.Results.NewVarNames;
+   NewVarNames = parser.Results.NewVarNames;
 end

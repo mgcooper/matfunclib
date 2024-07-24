@@ -1,27 +1,32 @@
-function T = tablechars2double(T)
+function tbl = tablechars2double(tbl)
+   %tablechars2double
+   %
+   %  tbl = tablechars2double(tbl)
+   %
+   % See also:
 
-   ichar = find(tablevartypeindices(T,'char'));
+   ichar = find(tablevartypeindices(tbl,'char'));
 
-   newvars = str2double(table2array(T(:,ichar)));
-   varnames = T.Properties.VariableNames(ichar);
+   newvars = str2double(table2array(tbl(:,ichar)));
+   varnames = tbl.Properties.VariableNames(ichar);
 
    for n = 1:numel(varnames)
-      T.(varnames{n})   = newvars(:,n);
+      tbl.(varnames{n})   = newvars(:,n);
    end
 
    % Note: some other ways to access the table info
-   % charvars = T(1,vartype("char")).Properties.VariableNames
+   % charvars = tbl(1,vartype("char")).Properties.VariableNames
 
-   % ichar = cellfun(@ischar,table2cell(T(1,:)));
-   % T.(T.Properties.VariableNames{ichar}) = str2double(T{:, vartype('char')});
+   % ichar = cellfun(@ischar,table2cell(tbl(1,:)));
+   % tbl.(tbl.Properties.VariableNames{ichar}) = str2double(tbl{:, vartype('char')});
 
 
    % old way, very slow
-   %    tf = cellfun(@isnumeric,table2cell(T(1,:)));
+   %    tf = cellfun(@isnumeric,table2cell(tbl(1,:)));
    %    istr = find(~tf);
    %    for n = 1:numel(istr)
    %
-   %       T.(istr(n)) = str2double(T.(istr(n)));
+   %       tbl.(istr(n)) = str2double(tbl.(istr(n)));
    %
    %    end
 end

@@ -86,11 +86,11 @@ function mergedProps = mergeCustomProps(tbls, opts)
                end
             end
          else
-            %          % This may work, but I think it assumes the first tbl has no unique props
-            %          % If property does not exist in merged properties, add it
-            %          T = addprop(T, propName, "table");
-            %          T.Properties.CustomProperties.(propname) = prop2;
-            %          mergedProps.(propName) = T.Properties.CustomProperties.(propname);
+            % % This may work, but I think it assumes the first tbl has no unique props
+            % % If property does not exist in merged properties, add it
+            % T = addprop(T, propName, "table");
+            % T.Properties.CustomProperties.(propname) = prop2;
+            % mergedProps.(propName) = T.Properties.CustomProperties.(propname);
          end
       end
    end

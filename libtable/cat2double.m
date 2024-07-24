@@ -1,5 +1,8 @@
-function data = cat2double(catdata, silent)
+function dbls = cat2double(catdata, varargin)
    %CAT2DOUBLE Convert categorical data to double.
+   %
+   %    dbls = cat2double(catdata)
+   %    dbls = cat2double(catdata, silent=true)
    %
    % This function converts a categorical array to a double array. It uses the
    % 'findgroups' function to group the categorical data and convert the group
@@ -46,42 +49,49 @@ function data = cat2double(catdata, silent)
    %
    % See also: CATEGORICAL, FINDGROUPS, STR2DOUBLE
 
-   if nargin < 2
-      silent = false;
+   if nargin > 1
+      assert(numel(varargin) == 2)
+      [check, silent] = deal(varargin{:});
+      validatestring(check, {'silent'}, mfilename, 'WARNFLAG', 2);
    end
 
    % Ensure input is categorical
-   if ~iscategorical(catdata) && silent == false
-      warning('cat2double:InputNotCategorical', ...
-         'Input data must be categorical, not %s', class(catdata));
+   if ~iscategorical(catdata) && ~silent
+      wid = 'cat2double:InputNotCategorical';
+      msg = 'Input data must be categorical, not %s';
+      warning(wid, msg, class(catdata));
    end
+
+   shape = size(catdata);
 
    % Obtain unique groups in the data
    [G, ID] = findgroups(catdata);
 
    % Try to convert categories to double
-   numdata = str2double(string(ID));
+   dbls = str2double(string(ID));
 
    % Handle missing and undefined categories
-   missing_idx = ismissing(ID);
-   numdata(missing_idx) = NaN;
+   wasmissing = ismissing(ID);
+   dbls(wasmissing) = NaN;
 
    % Check if all categories could be converted
-   if any(isnan(numdata) & ~missing_idx)
-      error(['All categories must be convertible to double. ' ...
-         'Check if there are non-numeric categories in your data.']);
+   if any( isnan(dbls) & ~wasmissing )
+      eid = ['custom:' mfilename ':nonNumericCategories'];
+      msg = ['All categories must be convertible to double. ' ...
+         'Check if there are non-numeric categories in your data.'];
+      error(eid, msg);
    end
 
    % Map the categorical data to its numeric equivalent
-   data = numdata(G);
+   dbls = dbls(G);
 
    % Ensure output is a column vector
-   data = data(:);
+   dbls = dbls(:);
 end
 
 % BSD 3-Clause License
 %
-% Copyright (c) YYYY, Matt Cooper (mgcooper)
+% Copyright (c) 2024, Matt Cooper (mgcooper)
 % All rights reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -20,11 +20,11 @@ function [sharedProps, uniqueProps] = allCustomProps(tbls, opts)
    %
    % See also: stacktables
 
-   arguments (Repeating)
+   arguments(Repeating)
       tbls table
    end
 
-   arguments
+   arguments(Input)
       opts.asstrings (1,1) logical = false
    end
 

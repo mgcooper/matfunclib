@@ -1,7 +1,7 @@
-function T = settableprops(T, propnames, proptypes, propvals)
+function tbl = settableprops(tbl, propnames, proptypes, propvals)
    %SETTABLEPROPS Assign custom properties to tabular object.
    %
-   % T = settableprops(T,propnames,proptypes,propvals)
+   % tbl = settableprops(tbl,propnames,proptypes,propvals)
    %
    %
    % Matt Cooper, 04-May-2023, https://github.com/mgcooper
@@ -9,21 +9,22 @@ function T = settableprops(T, propnames, proptypes, propvals)
    % See also: settableunits
 
    % Input checks
-   [propnames, proptypes, propvals] = parseinputs(T, propnames, proptypes, propvals);
+   [propnames, proptypes, propvals] = parseinputs( ...
+      tbl, propnames, proptypes, propvals);
 
    % true false if the prop already exists
-   hasprop = cellfun(@(prop) isprop(T, prop), propnames);
+   hasprop = cellfun(@(prop) isprop(tbl, prop), propnames);
 
    for n = 1:numel(propnames)
       if ~hasprop(n)
-         T = addprop(T, propnames{n}, proptypes{n});
+         tbl = addprop(tbl, propnames{n}, proptypes{n});
       end
-      T.Properties.CustomProperties.(propnames{n}) = propvals{n};
+      tbl.Properties.CustomProperties.(propnames{n}) = propvals{n};
    end
 end
 
 %% Parse inputs
-function [propnames, proptypes, propvals] = parseinputs(T, ...
+function [propnames, proptypes, propvals] = parseinputs(tbl, ...
       propnames, proptypes, propvals)
    % Let built-in addprop do most of the input checking
 
@@ -31,8 +32,8 @@ function [propnames, proptypes, propvals] = parseinputs(T, ...
    % proptypes, and propvals is confusing. In general, it needs to be 1:1, but
    % for convenience I allow (as one example): propnames = 'latitude', proptypes
    % = 'variable', and propvals = [an array with one value per table variable].
-   % Using addprop, it would be T = addprop(T, propname, proptype) followed by
-   % T.Properties.CustomProperties.(propname) = propvals. But to also allow
+   % Using addprop, it would be tbl = addprop(tbl, propname, proptype) followed
+   % by tbl.Properties.CustomProperties.(propname) = propvals. But to also allow
    % multiple props to be set in one call to this function, I need propnames and
    % proptypes to be cell arrays so I can loop over them. So the confusion that
    % is coming up involves ensuring propnames, proptypes, and propvals are all
@@ -63,7 +64,7 @@ function [propnames, proptypes, propvals] = parseinputs(T, ...
    % just one property name, and the # of values equals the # of variables,
    % assume the property name applies to each variable.
    if numel(propnames) ~= numel(propvals)
-      if numel(propnames) == 1 && numel(propvals) == width(T)
+      if numel(propnames) == 1 && numel(propvals) == width(tbl)
          propvals = {[propvals{:}]};
       end
    end
@@ -83,7 +84,7 @@ end
 
 % % This was how I started to handle the checks but above might work. NOTE: this
 % was here before I added the section with "if numel(propnames) == 1 &&
-% numel(propvals) == width(T)".
+% numel(propvals) == width(tbl)".
 % if numel(propnames) ~= numel(propvals) && ~iscell(propvals)
 %    if isscalar(propvals) || istabular(propvals)
 %       propvals = {propvals};
@@ -95,9 +96,9 @@ end
 % end
 
 % % Would be nice if this worked, but the encapsulation of table in a cell
-% doesn't work in the arguments block.
+% doesn'tbl work in the arguments block.
 % arguments
-%    T (:,:) table
+%    tbl (:,:) table
 %    propnames (1,:) string
 %    propvals (1,:) cell
 %    proptypes (1,:) string {mustBeMember(proptypes,{'table','variable'})} = "table"

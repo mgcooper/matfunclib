@@ -1,10 +1,15 @@
-function T = tablecells2categorical(T)
+function tbl = tablecells2categorical(tbl)
+   %tablecells2categorical
+   %
+   %  tbl = tablecells2categorical(tbl)
+   %
+   % See also
 
-   icells = cellfun(@iscell,table2cell(T(1,:)));
-   newvars = categorical(table2array(T(:,icells)));
-   varnames = T.Properties.VariableNames(icells);
+   icells = cellfun(@iscell,table2cell(tbl(1,:)));
+   newvars = categorical(table2array(tbl(:,icells)));
+   varnames = tbl.Properties.VariableNames(icells);
 
    for n = 1:numel(varnames)
-      T.(varnames{n}) = newvars(:,n);
+      tbl.(varnames{n}) = newvars(:,n);
    end
 end

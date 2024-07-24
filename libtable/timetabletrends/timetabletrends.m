@@ -1,12 +1,47 @@
-function [Trends,Tab] = timetabletrends(T,varargin)
-   %TIMETABLETRENDS
+function [trends_tbl, ab_tbl] = timetabletrends(ttbl, varargin)
+   %TIMETABLETRENDS Compute trends from data in timetable columns.
+   %
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl)
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, Time=Time)
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, varnames=varnames)
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, method=method)
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, quantile=quantile)
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, timestep=timestep)
+   %
+   %  Description
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl) computes linear trends in
+   %    the data stored in each column of TTBL using ordinary least squares
+   %    linear regression, using the Time dimension as the regressor. The
+   %    evaluated trends timeseries are returned as a timetable TRENDS_TBL. The
+   %    estimated parameters of the linear equation are returned in AB_TBL.
+   %
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, Time=Time) uses the
+   %    provided datetime vector TIME as the regressor.
+   %
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, varnames=varnames) computes
+   %    trends for VARNAMES which match values of the VariableNames property of
+   %    the input TTBL.
+   %
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, method=method) computes
+   %    trends using the specified METHOD. Valid methods are "ols" (ordinary
+   %    least squares), "ts" (Thiel-Sen or time-series regression), and "qtl"
+   %    (quantile regression). If method="qtl", the additional name-value
+   %    argument quantile=quantile becomes required.
+   %
+   %    [trends_tbl, ab_tbl] = timetabletrends(ttbl, timestep=timestep) uses the
+   %    provided TIMESTEP to set the VariableUnits property of the output
+   %    TRENDS_TBL. If TIMESTEP is not provided, the timestep is inferred from
+   %    the TIME datetime vector.
+   %
+   %
+   % See also:
 
-   % Make sure to check trenddecomp once I have R2021b or above see JUST toolbox
-   % in mysource see MTA toolbox in mysource see ChangeDetection in mysource
+   % Check trenddecomp for >=R2021b, see JUST toolbox.
+   % also see MTA and ChangeDetection toolboxes.
 
    % PARSE INPUTS
-   [T, Time, vars, method, timestep, quantile] = parseinputs( ...
-      T, mfilename, varargin{:});
+   [ttbl, time, names, method, timestep, qtl] = parseinputs( ...
+      ttbl, mfilename, varargin{:});
 
    % NOTE: The timestep checking produces a regressor TimeX so the regression on
    % time duration, not the actual time, so if the time is year, then the
@@ -18,36 +53,36 @@ function [Trends,Tab] = timetabletrends(T,varargin)
    % minutes, or seconds, no months
 
    % if not provided, use the Time variable in the table
-   if isnat(Time)
-      T = renametimetabletimevar(T); % make T time variable T.Time
-      Time = T.Time;
+   if isnat(time)
+      ttbl = renametimetabletimevar(ttbl);
+      time = ttbl.Time;
    end
 
    % if not provided, get the variable names in the table (and units)
-   if string(vars) == "unset"
-      vars = gettablevarnames(T);
-      units = gettableunits(T);
+   if string(names) == "unset"
+      names = gettablevarnames(ttbl);
+      units = gettableunits(ttbl);
    else
-      units = gettableunits(T,vars);
+      units = gettableunits(ttbl, names);
    end
 
    % get the units
    if isempty(units)
-      units = repmat("unset",1,numel(vars));
+      units = repmat("unset", 1, numel(names));
 
       % commented this out b/c it errors when varnames are passed in
-      % T.Properties.VariableUnits = units;
+      % tbl.Properties.VariableUnits = units;
    end
 
-   ntime = height(Time);
-   nvars = numel(vars);
+   ntime = height(time);
+   nvars = numel(names);
 
    % find nan-indices inan = isnan(Data);
 
    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    % work in progress
 
-   [timestep,TimeX] = settimestep(T, Time, timestep);
+   [timestep, TimeX] = settimestep(ttbl, time, timestep);
 
    % FOR NOW, just use elapsedTime to make a regressor, that way the function
    % returns the trends and timeseries with same units as input
@@ -55,26 +90,26 @@ function [Trends,Tab] = timetabletrends(T,varargin)
    %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    % Part 1 - compute the trends
-   ab = nan(2,nvars);
+   ab = nan(2, nvars);
 
    for n = 1:nvars
-      thisvar  = vars{n};
+      thisvar = names{n};
 
       try
          switch method
             case 'ols'
-               ab(:,n)  = olsfit(TimeX,T.(thisvar));
+               ab(:,n) = olsfit(TimeX, ttbl.(thisvar));
             case 'ts'
-               ab(:,n)  = tsregr(TimeX,T.(thisvar));
+               ab(:,n) = tsregr(TimeX, ttbl.(thisvar));
             case 'qtl'
-               ab(:,n)  = quantreg(TimeX,T.(thisvar),qtl);
+               ab(:,n) = quantreg(TimeX, ttbl.(thisvar), qtl);
          end
       catch
       end
    end
 
-   % Convert to table
-   Tab = array2table(ab,'VariableNames',vars,'RowNames',{'a','b'});
+   % Create a parameter results table
+   ab_tbl = array2table(ab, 'VariableNames', names, 'RowNames', {'a','b'});
 
 
    % Part 2 - evaluate the trend timeseries
@@ -82,70 +117,71 @@ function [Trends,Tab] = timetabletrends(T,varargin)
    tvars = cell(1,nvars);
    for n = 1:nvars
 
-      thisvar = vars{n};
-      thisab = Tab.(thisvar);
+      thisvar = names{n};
+      thisab = ab_tbl.(thisvar);
       tstr(:,n) = thisab(1) + thisab(2).*TimeX;
-      tstr(:,n) = setnan(tstr(:,n),[],isnan(T.(thisvar)));
+      tstr(:,n) = setnan(tstr(:,n), [], isnan(ttbl.(thisvar)));
 
       % to append 'trend' after each variable name, so Trends can be
-      % synchronized with input table T, use this, otherwise if sending back
+      % synchronized with input table tbl, use this, otherwise if sending back
       % Trends without the original data, use the og varnames tvars{n}    =
       % [thisvar 'trend'];
 
       tvars{n} = thisvar;
-
    end
 
-   % Convert to timetable
-   Trends = array2timetable(tstr,'VariableNames',tvars,'RowTimes',Time);
+   % Create a timetable of predicted trend values
+   trends_tbl = array2timetable(tstr, 'VariableNames', tvars, 'RowTimes', time);
 
-   % synchronize with the original table if they are the same size holding off
-   % on this for now
+   % Synchronize with the original table if they are the same size.
+   % Holding off on this for now.
 
-   % add the ab values as a property
-   Trends = addprop(Trends,   {  'TrendIntercept', 'TrendSlope'}, ...
-      {  'variable',       'variable'  } );
+   % Add the ab values as a property
+   trends_tbl = addprop(trends_tbl, ...
+      { 'TrendIntercept', 'TrendSlope'}, ...
+      { 'variable',       'variable'  } );
 
-   % update the properties
-   Trends.Properties.CustomProperties.TrendIntercept    = ab(1,:);
-   Trends.Properties.CustomProperties.TrendSlope        = ab(2,:);
+   % Update the properties
+   trends_tbl.Properties.CustomProperties.TrendIntercept ...
+      = ab(1,:);
+   trends_tbl.Properties.CustomProperties.TrendSlope ...
+      = ab(2,:);
 
-   % add the regressor
-   Trends.TimeX = TimeX;
+   % Add the regressor.
+   trends_tbl.TimeX = TimeX;
 
-   % update units, including TimeX. Trends has same units as the data
+   % Update units, including TimeX. Trends has same units as the data.
    units{end+1} = timestep.Format;
 
-   Trends.Properties.VariableUnits = units;
+   trends_tbl.Properties.VariableUnits = units;
 
-   % now add /timestep to the ab (trend slope) units
+   % Add /timestep to the ab (trend slope) units.
    for n = 1:numel(units)-1
       units{n} = [units{n} '/' timestep.Format];
    end
-   Tab.Properties.VariableUnits = units(1:end-1);
-
+   ab_tbl.Properties.VariableUnits = units(1:end-1);
 end
 
-function [timestep,TimeX] = settimestep(T,Time,timestep)
+function [timestep, TimeX] = settimestep(ttbl, time, timestep)
 
    % NOTE: need to reconcile this with timetabletimestep.m NOTE: right now
    % elapsedTime and dTime are not returned. elapsedTime might be useful for
    % computing the total change
 
    % get the time unit, duration, and timestep
-   elapsedTime    =  max(Time) - min(Time);  % will be in hh:mm:ss
-   dTime          =  diff(Time);             % timestep in hh:mm:ss
+   elapsedTime    =  max(time) - min(time);  % will be in hh:mm:ss
+   dTime          =  diff(time);             % timestep in hh:mm:ss
 
    % if no timestep was provided, check if there is a timestep property
    if string(timestep) == "unset" % isnan(timestep) || isnat(timestep)
 
-      timestep = T.Properties.TimeStep; % note: this is a calendarDuration
+      timestep = ttbl.Properties.TimeStep; % note: this is a calendarDuration
 
-      % because T.Properties.TimeStep returns a duration, I set timestep in the
+      % because tbl.Properties.TimeStep returns a duration, I set timestep in the
       % if/switch below to durations, otherwise I would have 'years' in place of
       % years(1) in the next block, and after that, a switch that sets the
       % timestep in duration and the format, but I don't have a way to convert
-      % T.Properties.TimeStep to 'years','days','minutes', etc.
+      % tbl.Properties.TimeStep to 'years','days','minutes', etc.
 
       % if not, try to infer the timestep
       if isempty(timestep)
@@ -204,7 +240,7 @@ function [timestep,TimeX] = settimestep(T,Time,timestep)
    % in at least one case, it got here and timestep was NaN (duration), but
    % timetabletimestep returned the correct timestep, so call that
    if isnan(timestep)
-      try timestep = timetabletimestep(T);
+      try timestep = timetabletimestep(ttbl);
       end
    end
 
@@ -239,29 +275,29 @@ function [timestep,TimeX] = settimestep(T,Time,timestep)
 end
 
 %% INPUT PARSER
-function [T, Time, vars, method, timestep, quantile] = parseinputs( ...
-      T, mfilename, varargin)
+function [ttbl, time, varnames, method, timestep, qtl] = parseinputs( ...
+      ttbl, mfilename, varargin)
 
    parser = inputParser;
    parser.FunctionName = mfilename;
    parser.PartialMatching = true;
 
-   parser.addRequired('T', @istimetable);
+   parser.addRequired('ttbl', @istimetable);
    parser.addParameter('Time', NaT, @isdatetime);
    parser.addParameter('timestep', 'unset', @ischarlike);
    parser.addParameter('varnames', 'unset', @ischarlike);
    parser.addParameter('method', 'ols', @ischarlike);
    parser.addParameter('anomalies', true, @islogical);
    parser.addParameter('quantile', NaN, @isnumeric);
-   parser.parse(T, varargin{:});
+   parser.parse(ttbl, varargin{:});
 
-   Time = parser.Results.Time;
-   vars = parser.Results.varnames;
-   method = parser.Results.method;
+   time = parser.Results.Time;
    timestep = parser.Results.timestep;
-   quantile = parser.Results.quantile;
+   varnames = parser.Results.varnames;
+   method = parser.Results.method;
+   qtl = parser.Results.quantile;
 
-   if string(method) == "qtl" && isnan(quantile)
+   if string(method) == "qtl" && isnan(qtl)
       error('must provide quantile for method ''qtl''')
    end
 end
