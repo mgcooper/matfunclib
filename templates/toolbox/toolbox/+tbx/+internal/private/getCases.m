@@ -107,7 +107,7 @@ function varargout = getCases(varargin)
     doError = false;
     if nargin > 0
 
-        assert(all(cellfun('isclass', varargin, 'char')),...
+        assert(all(cellfun(@ischar, varargin)),...
             'All input arguments to GETCASES must be of type ''char''.');
 
         doEval  = any(strcmpi(varargin, 'eval'));

@@ -9,10 +9,39 @@ function report = dependencies(funcname,option)
    %     depends on, the functions that each of those depends on, and the
    %     products that each of those depends on.
    %
+   %  Example
+   %
+   %    % Generate a dependency report.
+   %    funcname = 'my_pkg_demo.m';
+   %    report = tbx.internal.dependencies(funcname, 'report');
+   %
+   %    % Note: if returned as table:
+   %    deps = report.function_dependencies
+   %
+   %    % Sort the list:
+   %    deps = cellfun(@(x)strrep(x,[fileparts(x) filesep],''),deps,'uni',0);
+   %    deps = sort(string(deps));
+   %    report.function_dependencies = deps;
+   %
+   %    % Save the list:
+   %    fsave = fullfile(pwd, 'dependencies.mat');
+   %    save(fsave, 'report');
+   %
+   %    % Save as a textfile in the top-level:
+   %    fsave = strrep(fsave, 'mat', 'txt');
+   %    fid = fopen(fsave,'w');
+   %    n = 0;
+   %    while n<numel(deps)
+   %       n = n+1;
+   %       fprintf(fid,'%s\n',deps{n});
+   %    end
+   %    fclose(fid);
+   %
    % See also: Setup
 
-   % use this to generate a list of all functions in the package, then cycle
-   % over all of them and find the dependencies
+   % Use this to generate a list of all functions in the package, then cycle
+   % over all of them and find the dependencies:
+   %
    % funcpath = fileparts(which('pkg.func'));
    % funclist = getlist(funcpath,'.m');
 
@@ -159,7 +188,7 @@ function report = resolvedependencies(funclist,funcname)
    % behavior in the toolbox but the core functionality should
 
    %%
-   
+
    % % if the commented loop in baseflow.dependencies.m is used, this is required
    % dependentFunctions = unique(vertcat(allDependencies.function_dependencies{:}));
 
@@ -167,22 +196,22 @@ function report = resolvedependencies(funclist,funcname)
    % % added this to figure out which functions were responsible for some
    % % functions that were returned as required but sholdn't be like the Cupid
    % % toolbox
-   % 
+   %
    % Depends = cell(numel(funclist),3);
    % for n = 1:numel(funclist)
-   % 
+   %
    %    % this is needed if getlist is used
    %    % thisfunc = [funcpath filesep funclist(n).name];
-   % 
+   %
    %    thisfunc = funclist{n};
    %    [fl,pl] = matlab.codetools.requiredFilesAndProducts(thisfunc);
    %    fl = transpose(fl);
-   % 
+   %
    %    Depends{n,1} = thisfunc;
    %    Depends{n,2} = fl;
    %    Depends{n,3} = {pl(:).Name}';
    % end
-   % 
+   %
    % Depends = cell2table(Depends,'VariableNames',...
    %    {'function_name','function_dependencies','product_dependencies'});
 end

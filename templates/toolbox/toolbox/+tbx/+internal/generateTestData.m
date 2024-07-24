@@ -27,17 +27,17 @@ end
 
 function varargout = load_example_data
 
-   datapath = tbx.internal.projectpath('data');
+   datapath = tbx.internal.buildpath('data');
 
    % An example of custom data loading to deal with matlab-octave
    % incompatibilities (datetime/datenum in this case)
-   if tbx.internal.isoctave
+   if isoctave
 
-      load(fullfile(datapath,'example_data_octave.mat'),'X','Y','T');
+      load(fullfile(datapath, 'example_data_octave.mat'), 'X','Y','T');
       T = datenum(T); %#ok<*DATNM>
 
    else
-      load(fullfile(datapath,'example_data_matlab.mat'),'X','Y','T');
+      load(fullfile(datapath, 'example_data_matlab.mat'), 'X','Y','T');
    end
 
    [varargout{1:nargout}] = deal(X, Y, T);

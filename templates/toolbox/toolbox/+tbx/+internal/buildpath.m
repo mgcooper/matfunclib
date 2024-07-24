@@ -9,7 +9,7 @@ function fullpath = buildpath(varargin)
    % FULLPATH = BUILDPATH() Returns the full path to the toolbox/ folder.
    %
    % FULLPATH = BUILDPATH(FOLDERNAME) Returns the full path to the
-   % toolbox/FOLDERNAME folder. 
+   % toolbox/FOLDERNAME folder.
    %
    % FULLPATH = BUILDPATH(FOLDERNAME, FILENAME) Returns the full path to the
    % toolbox/FOLDERNAME/FILENAME file.
@@ -17,7 +17,7 @@ function fullpath = buildpath(varargin)
    % FULLPATH = BUILDPATH(varargin) Recursively appends the contents of varargin
    % to the toolbox/ folder.
    %
-   % See also: 
+   % See also:
 
    % Ensure inputs are chars
    args = parseinputs(varargin{:});
@@ -25,7 +25,10 @@ function fullpath = buildpath(varargin)
 
    % Recursively validate sub-folders and append them to the path string.
    for subpath = args(:)'
-      validatestring(subpath{:}, listfolders(fullpath), mfilename, 'SUBFOLDER');
+      if ~contains(subpath, '.')
+         validatestring(subpath{:}, ...
+            listfolders(fullpath), mfilename, 'SUBFOLDER');
+      end
       fullpath = fullfile(fullpath, subpath{:});
    end
 end
