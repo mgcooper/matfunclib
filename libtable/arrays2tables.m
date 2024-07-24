@@ -72,7 +72,7 @@ function C = arrays2tables(C, kwargs)
       % props.?matlab.tabular.TimetableProperties
    end
 
-   [ArrayNames, ColumnNames, bycolumn, asstruct, astimetables, RowTimes] ...
+   [ArrayNames, ColNames, bycolumn, asstruct, astimetables, Time] ...
       = dealout(kwargs);
 
    wasstruct = isstruct(C);
@@ -83,7 +83,7 @@ function C = arrays2tables(C, kwargs)
 
    if iscell(C)
 
-      maybewarn(asstruct, bycolumn, ColumnNames, ArrayNames, mfilename)
+      maybewarn(asstruct, bycolumn, ColNames, ArrayNames, mfilename)
 
    else
       validateattributes(C, ...
@@ -100,38 +100,38 @@ function C = arrays2tables(C, kwargs)
 
    if astimetables
 
-      if isempty(RowTimes)
+      if isempty(Time)
          assert(all(cellfun(@istimetable, C)))
 
-         RowTimes = onearray.(C.Properties.DimensionNames{1});
+         Time = onearray.(C.Properties.DimensionNames{1});
       else
-         assert(all(cellfun(@(a) height(a) == height(RowTimes), C)))
+         assert(all(cellfun(@(a) height(a) == height(Time), C)))
       end
    end
 
-   if isempty(ColumnNames) && istabular(onearray)
-      ColumnNames = onearray.Properties.VariableNames;
+   if isempty(ColNames) && istabular(onearray)
+      ColNames = onearray.Properties.VariableNames;
    end
 
    if bycolumn
-      [ArrayNames, ColumnNames] = deal(ColumnNames, ArrayNames);
+      [ArrayNames, ColNames] = deal(ColNames, ArrayNames);
    end
 
    if bycolumn
 
       C = arrayfun(@(ia) ...
-         createOneTable(ia, C, ColumnNames, astimetables, RowTimes), ...
+         createOneTable(ia, C, ColNames, astimetables, Time), ...
          1:size(onearray, 2), 'UniformOutput', false);
 
    else % byarray - create one table from each array in V
 
       if astimetables
          C = cellfun(@(a) ...
-            array2timetable(a, 'VariableNames', ColumnNames, ...
-            'RowTimes', RowTimes), C, 'UniformOutput', false);
+            array2timetable(a, 'VariableNames', ColNames, 'RowTimes', Time), ...
+            C, 'UniformOutput', false);
       else
          C = cellfun(@(a) ...
-            array2table(a, 'VariableNames', ColumnNames), ...
+            array2table(a, 'VariableNames', ColNames), ...
             C, 'UniformOutput', false);
       end
    end
