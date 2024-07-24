@@ -29,26 +29,31 @@ function parser = createParser(functionName, varargin)
    %    {'ax', gca, @(x) bfra.validation.isaxis(x)}, ...
    %    {'method', 'ols', @(x) ischar(x)} } );
 
-   p = magicParser; %#ok<*USENS>
-   p.addRequired('functionName',@(x)ischar(x)|isstring(x));
-   p.addParameter('RequiredArguments',cell(0),@(x)iscell(x));
-   p.addParameter('RequiredValidations',cell(0),@(x)iscell(x));
-   p.addParameter('OptionalArguments',cell(0),@(x)iscell(x));
-   p.addParameter('OptionalDefaults',cell(0),@(x)iscell(x));
-   p.addParameter('OptionalValidations',cell(0),@(x)iscell(x));
-   p.addParameter('ParameterArguments',cell(0),@(x)iscell(x));
-   p.addParameter('ParameterDefaults',cell(0),@(x)iscell(x));
-   p.addParameter('ParameterValidations',cell(0),@(x)iscell(x));
-   p.parseMagically('caller');
+   % PARSE INPUTS TO THIS FUNCTION
+   parser = inputParser; %#ok<*USENS>
+   parser.addRequired('functionName', @isscalartext);
+   parser.addParameter('RequiredArguments', cell(0), @iscell);
+   parser.addParameter('RequiredValidations', cell(0), @iscell);
+   parser.addParameter('OptionalArguments', cell(0), @iscell);
+   parser.addParameter('OptionalDefaults', cell(0), @iscell);
+   parser.addParameter('OptionalValidations', cell(0), @iscell);
+   parser.addParameter('ParameterArguments', cell(0), @iscell);
+   parser.addParameter('ParameterDefaults', cell(0), @iscell);
+   parser.addParameter('ParameterValidations', cell(0), @iscell);
+   parser.parse(functionName, varargin{:});
+
+   % Jul 2024 - changed from magic to inputParser but did not update the rest
+   % since this is not used and may not be functional, then moved to testbed.
 
    % see this, saved in mysource/matlab/manager, but i cannot tell what it does
-   % that p.parse and then using p.Results doesn't already do ... actually looking
-   % more carefully the varargin2opt function doesn't use inputParser but the _tiny
-   % version does
+   % that p.parse and then using p.Results doesn't already do ... actually
+   % looking more carefully the varargin2opt function doesn't use inputParser
+   % but the _tiny version does
    % https://github.com/MarcinKonowalczyk/varargin2opt.git
 
-   parser = magicParser;
-   % parser.FunctionName = functionName;
+   %% CREATE OUTPUT PARSER
+
+   parser = inputParser;
    parser.FunctionName = mfilename;
 
    % cycle over default parser options - KeepUnmatched etc.
