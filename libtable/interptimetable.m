@@ -1,8 +1,8 @@
 function T = interptimetable(T,newtime,method,varargin)
    %INTERPTIMETABLE Interpolate timetable to a new timestep.
    %
-   % T = interptimetable(T,newtime,method) retimes table T to new time step NEWTIME
-   % using interpolation method METHOD.
+   % T = interptimetable(T,newtime,method) retimes table T to new time step
+   % NEWTIME using interpolation method METHOD.
    %
    % See also: synchronize, retime
 
