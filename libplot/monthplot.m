@@ -1,7 +1,7 @@
-function h = monthplot(data, varargin)
+function monthplot(data, varargin)
    %MONTHPLOT Plot data against an axis from 1:12 labeled with months MMM
    %
-   %  h = monthplot(data, varargin)
+   %  monthplot(data, varargin)
    %
    % See also
 
@@ -10,19 +10,19 @@ function h = monthplot(data, varargin)
    % formats
 
    % parse inputs
-   p = inputParser;
-   p.FunctionName = mfilename;
-   p.addRequired('data', @isnumeric);
-   p.addParameter('useax', nan, @isaxis);
-   p.addParameter('wateryear', false, @islogical);
-   p.addParameter('plottype', 'line', @ischar);
-   p.parse(data, varargin{:});
-   
-   useax = p.Results.useax;
-   plottype = p.Results.plottype;
-   wateryear = p.Results.wateryear;
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.addRequired('data', @isnumeric);
+   parser.addParameter('useax', nan, @isaxis);
+   parser.addParameter('wateryear', false, @islogical);
+   parser.addParameter('plottype', 'line', @ischar);
+   parser.parse(data, varargin{:});
 
-   load('months.mat','months');
+   useax = parser.Results.useax;
+   plottype = parser.Results.plottype;
+   wateryear = parser.Results.wateryear;
+
+   months = load('months.mat').('months');
 
    if wateryear == true
       months = [months(10:12) months(1:9)];
@@ -52,20 +52,20 @@ function h = monthplot(data, varargin)
    % dt is the timestep of the actual data, in hours
    % dx is the timestep you want labeled on the figure
 
-   legacy = false;
-   if legacy == true
-      t = timebuilder(yri,moi,dayi,yrf,mof,dayf,dt);
-      t2 = time_builder(yri,moi,yrf,mof);
-      [si,ei] = dateInds(yri,moi,dayi,yrf,mof,dayf,t);
-      xdates = t(:,7);
-      xticks = t2(:,7);
-      xlabels = datestr(xticks,dateformat);
-
-      h = plot(xdates,data);
-
-      set(gca, 'box', 'off' , ...
-         'xtick'         ,   xticks                      , ...
-         'xticklabel'    ,   xlabels                      , ...
-         'xlim'          ,   [xticks(1) xticks(end)]     );
-   end
+   % legacy = false;
+   % if legacy == true
+   %    t = timebuilder(yri,moi,dayi,yrf,mof,dayf,dt);
+   %    t2 = timebuilder(yri,moi,yrf,mof);
+   %    [si,ei] = dateInds(yri,moi,dayi,yrf,mof,dayf,t);
+   %    xdates = t(:,7);
+   %    xticks = t2(:,7);
+   %    xlabels = datestr(xticks,dateformat);
+   %
+   %    h = plot(xdates,data);
+   %
+   %    set(gca, 'box', 'off' , ...
+   %       'xtick'         ,   xticks                      , ...
+   %       'xticklabel'    ,   xlabels                      , ...
+   %       'xlim'          ,   [xticks(1) xticks(end)]     );
+   % end
 end

@@ -36,7 +36,7 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
    GL = nan(nyears, 1);
    GH = nan(nyears, 1);
 
-   % note: water year + snow correction substantially changes the GL timing 
+   % note: water year + snow correction substantially changes the GL timing
 
    for n = 1:nyears
 
@@ -54,12 +54,12 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
          if ~isnan(imin(n))
             scatter(imin(n), GraceMY(imin(n), n), 'filled');
          else
-            mytextbox('no min found', 10, 10);
+            textbox('no min found', 10, 10);
          end
          if ~isnan(imax(n))
             scatter(imax(n), GraceMY(imax(n), n), 'filled');
          else
-            mytextbox('no max found', 10, 30);
+            textbox('no max found', 10, 30);
          end
          title(num2str(year(G.Time(1))+n-1)); pause; clf;
       end

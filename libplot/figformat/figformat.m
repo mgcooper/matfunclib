@@ -66,6 +66,10 @@ function h = figformat(varargin)
    suppliedaxis         = p.Results.suppliedaxis;
    suppliedfigure       = p.Results.suppliedfigure;
    suppliedline         = p.Results.suppliedline;
+   xgridvec             = p.Results.xgrid;
+   ygrid                = p.Results.ygrid;
+   xgridminor           = p.Results.xgridminor;
+   ygridminor           = p.Results.ygridminor;
    unmatched            = p.Unmatched;
 
    % if an axis is provided, only apply settings to that object (note that
