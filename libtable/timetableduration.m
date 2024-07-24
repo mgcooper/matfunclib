@@ -1,4 +1,4 @@
-function numtime = timetableduration(T,timeunit)
+function numtime = timetableduration(ttbl, timeunit)
 
    % this needs some work ... calculations on datetimes will return true
    % values so stuff like leap years already being removed will yield
@@ -11,7 +11,7 @@ function numtime = timetableduration(T,timeunit)
 
    switch timeunit
       case 'years'
-         numtime  = year(T.Time(end)) - year(T.Time(1)) + 1;
+         numtime  = year(ttbl.Time(end)) - year(ttbl.Time(1)) + 1;
       case 'days'
          numtime = days(data.Time(end)-data.Time(1));
    end

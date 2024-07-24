@@ -1,10 +1,15 @@
-function T = tablecells2double(T)
+function tbl = tablecells2double(tbl)
+   %tablecells2double
+   %
+   %  tbl = tablecells2double(tbl)
+   %
+   % See also:
 
-   icells = find(tablevartypeindices(T,'cell'));
-   newvars = str2double(table2array(T(:,icells)));
-   varnames = T.Properties.VariableNames(icells);
+   icells = find(tablevartypeindices(tbl,'cell'));
+   newvars = str2double(table2array(tbl(:,icells)));
+   varnames = tbl.Properties.VariableNames(icells);
 
    for n = 1:numel(varnames)
-      T.(varnames{n}) = newvars(:,n);
+      tbl.(varnames{n}) = newvars(:,n);
    end
 end

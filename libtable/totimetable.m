@@ -24,10 +24,10 @@ function TT = totimetable(A, props)
    % where you have to use array2timetable
 
    % PARSE INPUTS
-   arguments (Repeating)
+   arguments(Input, Repeating)
       A
    end
-   arguments
+   arguments(Input)
       props.?matlab.tabular.TimetableProperties
    end
 

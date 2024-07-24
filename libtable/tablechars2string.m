@@ -1,20 +1,25 @@
-function T = tablechars2string(T)
+function tbl = tablechars2string(tbl)
+   %tablechars2string
+   %
+   %  tbl = tablechars2string(tbl)
+   %
+   % See also:
 
-   ichar = find(tablevartypeindices(T,'char'));
-   newvars = string(table2array(T(:,ichar)));
-   varnames = T.Properties.VariableNames(ichar);
+   ichar = find(tablevartypeindices(tbl,'char'));
+   newvars = string(table2array(tbl(:,ichar)));
+   varnames = tbl.Properties.VariableNames(ichar);
 
    for n = 1:numel(varnames)
-      T.(varnames{n}) = newvars(:,n);
+      tbl.(varnames{n}) = newvars(:,n);
    end
 
    % This should work but has not been tested on multiple char vars
-   % ichar = find(tablevartypeindices(T,'char'));
-   % T.(T.Properties.VariableNames{ichar}) = string(T{:,ichar});
+   % ichar = find(tablevartypeindices(tbl,'char'));
+   % tbl.(tbl.Properties.VariableNames{ichar}) = string(tbl{:,ichar});
 
    % Another way to access the properties
-   % charvars = T(1,vartype("char")).Properties.VariableNames
+   % charvars = tbl(1,vartype("char")).Properties.VariableNames
 
    % In one step
-   % T.(string(T(1,vartype("char")).Properties.VariableNames)) = string(T{:, vartype('char')});
+   % tbl.(string(tbl(1,vartype("char")).Properties.VariableNames)) = string(tbl{:, vartype('char')});
 end

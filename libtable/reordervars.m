@@ -1,15 +1,15 @@
-function T = reordervars(T, neworderVarnames, opts)
-   %REORDERVARS One line description of function.
+function tbl = reordervars(tbl, orderednames, kwargs)
+   %REORDERVARS Reorder variables in tabular object.
    %
    % Syntax
-   %  T = REORDERVARS(T, NEWORDERVARNAMES)
-   %  T = REORDERVARS(T, NEWORDERVARNAMES, keepMissingVars=false)
+   %  TBL = REORDERVARS(TBL, ORDEREDNAMES)
+   %  TBL = REORDERVARS(TBL, ORDEREDNAMES, keepMissingVars=false)
    %
    % Description
-   %  T = REORDERVARS(T, NEWORDERVARNAMES) Reorders the variables (columns) of
-   %  input table T by the order of NEWORDERVARNAMES.
-   %  T = REORDERVARS(T, NEWORDERVARNAMES, keepMissingVars=false) Removes
-   %  variables in input table T which are not present in NEWORDERVARNAMES.
+   %  TBL = REORDERVARS(TBL, ORDEREDNAMES) Reorders the variables (columns) of
+   %  input table TBL by the order of ORDEREDNAMES.
+   %  TBL = REORDERVARS(TBL, ORDEREDNAMES, keepMissingVars=false) Removes
+   %  variables in input table TBL which are not present in ORDEREDNAMES.
    %
    % Example
    %
@@ -25,26 +25,26 @@ function T = reordervars(T, neworderVarnames, opts)
    % See also:
 
    % PARSE ARGUMENTS
-   arguments (Input)
-      T (:, :) tabular
-      neworderVarnames (1, :) string {mustBeText}
-      opts.keepMissingVars (1, 1) logical {mustBeNumericOrLogical} = true
+   arguments(Input)
+      tbl (:, :) tabular
+      orderednames (1, :) string {mustBeText}
+      kwargs.keepMissingVars (1, 1) logical {mustBeNumericOrLogical} = true
    end
 
    % MAIN CODE
-   varNames = T.Properties.VariableNames;
-   keepPositionVarnames = varNames(~ismember(varNames, neworderVarnames));
-   movePositionVarnames = varNames(ismember(varNames, neworderVarnames));
-   [~, newPositions] = ismember(neworderVarnames, movePositionVarnames);
-   movePositionVarnames = movePositionVarnames(newPositions);
+   names = tbl.Properties.VariableNames;
+   keepPositionNames = names(~ismember(names, orderednames)) ;
+   movePositionNames = names( ismember(names, orderednames)) ;
+   [~, newPositions] = ismember(orderednames, movePositionNames);
+   movePositionNames = movePositionNames(newPositions);
 
    % At this time, non-common vars are moved to the end, not interleaved.
-   if opts.keepMissingVars
-      movePositionVarnames = [movePositionVarnames, keepPositionVarnames];
+   if kwargs.keepMissingVars
+      movePositionNames = [movePositionNames, keepPositionNames];
    end
 
    % Reorder the vars.
-   T = T(:, [movePositionVarnames, keepPositionVarnames]);
+   tbl = tbl(:, [movePositionNames, keepPositionNames]);
 
    % CHECKS
    % assert()

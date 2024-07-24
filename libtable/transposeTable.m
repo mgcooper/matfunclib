@@ -1,27 +1,27 @@
-function [tableTransposed] = transposeTable(tableIn, opts)
+function [tblTransposed] = transposeTable(tbl, opts)
    %TRANSPOSETABLE Transpose a table.
    %
-   % [tableTransposed] = transposeTable(tableIn)
+   % [tblTransposed] = transposeTable(tbl)
    %
    % See also:
    arguments
-      tableIn table
-      opts.RowNames string = tableIn.Properties.VariableNames
-      opts.VarNames string = tableIn.Properties.RowNames
+      tbl table
+      opts.RowNames string = tbl.Properties.VariableNames
+      opts.VarNames string = tbl.Properties.RowNames
    end
    rowNames = opts.RowNames;
    varNames = opts.VarNames;
-      
+
    if notempty(varNames) %  && (numel(rowNames) == numel(varNames))
 
       % Expected case, transpose data and swap rowNames for varNames
-      tableTransposed = array2table(tableIn{:, :}', 'RowNames', rowNames, ...
+      tblTransposed = array2table(tbl{:, :}', 'RowNames', rowNames, ...
          'VariableNames', varNames);
 
-   elseif numel(varNames) == height(tableIn)
+   elseif numel(varNames) == height(tbl)
 
       % Special case, transpose data but keep variable names
-      tableTransposed = array2table(tableIn{:, :}', 'VariableNames', varNames);
+      tblTransposed = array2table(tbl{:, :}', 'VariableNames', varNames);
    else
       error('Table has no rownames')
    end

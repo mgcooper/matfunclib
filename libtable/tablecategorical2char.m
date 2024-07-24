@@ -1,16 +1,16 @@
-function T = tablecategorical2char(T)
+function tbl = tablecategorical2char(tbl)
    %TABLECATEGORICAL2CHAR convert categorical table variables to char
    %
-   % T = tablecategorical2char(T)
+   % tbl = tablecategorical2char(tbl)
    %
    % See also
 
    idx = vartype('categorical');
-   newvars = T(:,idx);
+   newvars = tbl(:,idx);
    varnames = newvars.Properties.VariableNames;
    newvars = cellstr(table2array(newvars));
 
    for n = 1:numel(varnames)
-      T.(varnames{n}) = newvars(:,n);
+      tbl.(varnames{n}) = newvars(:,n);
    end
 end

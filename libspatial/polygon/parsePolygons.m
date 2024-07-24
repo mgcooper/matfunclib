@@ -1,8 +1,15 @@
-function [P, PX, PY, inputP] = parsePolygons(P, kwargs)
+function [P, PX, PY, inputP, wasfile, attrs] = parsePolygons(P, kwargs)
    %PARSEPOLYGONS Convert polygon representation to a cell array of polyshapes.
    %
+   %  [P, PX, PY] = parsePolygons(P)
+   %  [_, inputP, wasfile, attrs] = parsePolygons(P)
+   %  [_] = parsePolygons(P, repairGeometry=false)
+   %  [_] = parsePolygons(P, aspolyshape=true)
+   %
+   % Description
    %  [P, PX, PY] = parsePolygons(P, kwargs) Converts input P to a cell array of
-   %  polyshapes and cell arrays of X and Y coordinates.
+   %  polyshapes and cell arrays of X and Y coordinates. Use aspolyshape=true to
+   %  return P as a polyshape vector.
    %
    % Inputs
    %  P - Polygons. Can be a vector or cell array of X,Y verts, a scalar or
@@ -12,8 +19,11 @@ function [P, PX, PY, inputP] = parsePolygons(P, kwargs)
    %  P - Cell array of polyshapes
    %  PX - Cell array of polyshape X-coordinates
    %  PY - Cell array of polyshape Y-coordinates
+   %  inputP - the input P, or if input P is a file, the data read into memory.
+   %  wasfile - logical flag indicating if P was a file.
+   %  attrs - attribute table if P was a file with an attribute table.
    %
-   % See also:
+   % See also: parsePolygonFormat
 
    % NOTE: See merra.monthlyWaterBalance parsepoly subfunction for an example of
    % how a "mergepolygons" option could be added here if the input P is a multi
@@ -33,8 +43,10 @@ function [P, PX, PY, inputP] = parsePolygons(P, kwargs)
    withwarnoff('MATLAB:polyshape:repairedBySimplify');
 
    % If P is a file, assign the full shapefile to inputP, otherwise assign P.
-   if ~ispolygon(P) && isfile(P)
+   wasfile = ~ispolygon(P) && isfile(P);
+   if wasfile
       [P, inputP] = polygonsFromFile(P, 'UseGeoCoords', kwargs.UseGeoCoords);
+      % TODO: parse attributes.
    else
       inputP = P;
    end
@@ -50,7 +62,7 @@ function [P, PX, PY, inputP] = parsePolygons(P, kwargs)
    end
    assert(all(cellfun(@(p) isa(p, 'polyshape'), P)));
 
-   if kwargs.aspolyshape
+   if kwargs.aspolyshape || ~kwargs.ascell
       P = vertcat(P{:});
    end
 

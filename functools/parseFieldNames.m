@@ -5,7 +5,12 @@ function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
       expected (1, :) string = string.empty(1, 0)
       kwargs.ExcludePropertyNames (1, 1) logical = true
    end
-
+   arguments(Output)
+      names (1, :) string
+      found (1, :) string
+      extra (1, :) string
+      missing (1, :) string
+   end
 
    [names, found, extra, missing] = deal(string.empty(1, 0));
    switch class(V)

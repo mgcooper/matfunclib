@@ -1,7 +1,7 @@
 function [V, VarNames, InputClass, MissingNames, ExtraNames] = ...
       parseVariables(V, ExpectedNames, kwargs)
    %PARSEVARIABLES Parse variables and variable names from table or struct.
-   %  
+   %
    %  [V, VarNames, InputClass] = parseVariables(V)
    %  [_, MissingNames, ExtraNames] = parseVariables(V, ExpectedNames)
    %  [_] = parseVariables(_, dropExtraNames=true)

@@ -1,4 +1,4 @@
-function T = tablevarconvert(T,inputtype,outputtype,varargin)
+function tbl = tablevarconvert(tbl,inputtype,outputtype,varargin)
    %TABLEVARCONVERT
    %
    %
@@ -6,49 +6,42 @@ function T = tablevarconvert(T,inputtype,outputtype,varargin)
 
    % i did not finish this, not sure the best approach
 
-   p=magicParser;
-   p.FunctionName=mfilename;
-   p.addRequired('T',@(x)istable(x)||@(x)istimetable(x));
-   p.addRequired('inputtype',@(x)ischar(x));
-   p.addRequired('outputtype',@(x)ischar(x));
-   p.parseMagically('caller');
-
    switch inputtype
       case 'numeric'
-         idx = cellfun(@isnumeric,table2cell(T(1,:)));
+         idx = cellfun(@isnumeric,table2cell(tbl(1,:)));
 
       case 'categorical'
-         idx = cellfun(@iscategorical,table2cell(T(1,:)));
+         idx = cellfun(@iscategorical,table2cell(tbl(1,:)));
 
       case 'char'
-         idx = cellfun(@ischar,table2cell(T(1,:)));
+         idx = cellfun(@ischar,table2cell(tbl(1,:)));
 
       case 'string'
-         idx = cellfun(@isstring,table2cell(T(1,:)));
+         idx = cellfun(@isstring,table2cell(tbl(1,:)));
 
       case 'cell'
-         idx = cellfun(@iscell,table2cell(T(1,:)));
+         idx = cellfun(@iscell,table2cell(tbl(1,:)));
 
       case 'notnumeric'
-         idx = not(cellfun(@isnumeric,table2cell(T(1,:))));
+         idx = not(cellfun(@isnumeric,table2cell(tbl(1,:))));
    end
 
    switch outputtype
       case 'numeric'
-         idx = cellfun(@isnumeric,table2cell(T(1,:)));
+         idx = cellfun(@isnumeric,table2cell(tbl(1,:)));
 
       case 'categorical'
-         idx = cellfun(@iscategorical,table2cell(T(1,:)));
+         idx = cellfun(@iscategorical,table2cell(tbl(1,:)));
 
       case 'char'
-         T  = tablecategorical2char(T);
+         tbl  = tablecategorical2char(tbl);
 
       case 'string'
-         idx = cellfun(@isstring,table2cell(T(1,:)));
+         idx = cellfun(@isstring,table2cell(tbl(1,:)));
 
       case 'cell'
-         idx = cellfun(@iscell,table2cell(T(1,:)));
+         idx = cellfun(@iscell,table2cell(tbl(1,:)));
       case 'notnumeric'
-         idx = not(cellfun(@isnumeric,table2cell(T(1,:))));
+         idx = not(cellfun(@isnumeric,table2cell(tbl(1,:))));
    end
 end

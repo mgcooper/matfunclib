@@ -1,43 +1,43 @@
-function TT = struct2timetable(Struct,varargin)
+function TT = struct2timetable(S, varargin)
 
-   p                 = inputParser;
-   p.FunctionName    = mfilename;
-   p.CaseSensitive   = false;
-   p.KeepUnmatched   = true;
+   parser = inputParser();
+   parser.FunctionName = mfilename;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
 
-   defaultRowTimes   = NaT;
-   defaultVarNames   = fieldnames(Struct);
-   defaultVarUnits   = {};
-   defaultRowNames   = {};
+   defaultRowTimes = NaT;
+   defaultVarNames = fieldnames(S);
+   defaultVarUnits = {};
+   defaultRowNames = {};
 
-   validStruct    = @(x)validateattributes(x,{'struct'},{'nonempty'},            ...
-      'struct2timetable','Struct',1);
-   validTime      = @(x)validateattributes(x,{'datetime'},{'nonempty'},          ...
+   validStruct = @(x) validateattributes(x,{'struct'},{'nonempty'}, ...
+      'struct2timetable','S',1);
+   validTime = @(x) validateattributes(x,{'datetime'},{'nonempty'}, ...
       'struct2timetable','RowTimes');
-   validVarNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+   validVarNames = @(x) validateattributes(x,{'cellstr','string'},{'nonempty'}, ...
       'struct2timetable','VariableNames');
-   validVarUnits  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+   validVarUnits = @(x) validateattributes(x,{'cellstr','string'},{'nonempty'}, ...
       'struct2timetable','VariableUnits');
-   validRowNames  = @(x)validateattributes(x,{'cellstr','string'},{'nonempty'},  ...
+   validRowNames = @(x) validateattributes(x,{'cellstr','string'},{'nonempty'}, ...
       'struct2timetable','RowNames');
 
-   addRequired(   p,'Struct',                         validStruct          );
-   addParameter(  p,'RowTimes',     defaultRowTimes,  validTime            );
-   addParameter(  p,'VariableNames',defaultVarNames,  validVarNames        );
-   addParameter(  p,'VariableUnits',defaultVarUnits,  validVarUnits        );
-   addParameter(  p,'RowNames',     defaultRowNames,  validRowNames        );
-   addParameter(  p,'AsArray',      false,            @(x)islogical(x)     );
+   parser.addRequired('S', validStruct);
+   parser.addParameter('RowTimes', defaultRowTimes, validTime);
+   parser.addParameter('VariableNames', defaultVarNames, validVarNames);
+   parser.addParameter('VariableUnits', defaultVarUnits, validVarUnits);
+   parser.addParameter('RowNames', defaultRowNames, validRowNames);
+   parser.addParameter('AsArray', false, @islogicalscalar);
 
-   parse(p,Struct,varargin{:});
+   parse(parser, S, varargin{:});
 
-   Struct         = p.Results.Struct;
-   RowTimes       = p.Results.RowTimes;
-   VariableNames  = p.Results.VariableNames;
-   VariableUnits  = p.Results.VariableUnits;
-   RowNames       = p.Results.RowNames;
-   AsArray        = p.Results.AsArray;
+   S = parser.Results.S;
+   RowTimes = parser.Results.RowTimes;
+   VariableNames = parser.Results.VariableNames;
+   VariableUnits = parser.Results.VariableUnits;
+   RowNames = parser.Results.RowNames;
+   AsArray = parser.Results.AsArray;
 
-   T  = struct2table(Struct,'AsArray',AsArray,'RowNames',RowNames);
+   T = struct2table(S,'AsArray',AsArray,'RowNames',RowNames);
 
    % I think I can just let table2timetable handle this
    if isnat(RowTimes)

@@ -1,11 +1,11 @@
-function T = settablevariablecontinuity(T,continuity)
+function tbl = settablevariablecontinuity(tbl,continuity)
    %SETTABLEVARIABLECONTINUITY Set variable continuity in table.
 
-   % if we don't know a-priori, use 'unset'. If we knew which variables
+   % if we don'tbl know a-priori, use 'unset'. If we knew which variables
    % were continuous we could set here. Temperature would be 'continuous',
    % precipitation would be 'step'
 
-   numvars  = width(T);
+   numvars = width(tbl);
 
    if nargin == 1
       continuity = cellstr(repmat('unset',numvars,1))';
@@ -15,5 +15,5 @@ function T = settablevariablecontinuity(T,continuity)
       error('need one value of continuity per variable')
    end
 
-   T.Properties.VariableContinuity = continuity;
+   tbl.Properties.VariableContinuity = continuity;
 end
