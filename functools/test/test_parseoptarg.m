@@ -7,9 +7,9 @@ function testDefaultOption(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option1';
    [opt, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, opt, default_option);
-   verifyEqual(testCase, inargs, outargs);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(opt, default_option);
+   testCase.verifyEqual(inargs, outargs);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testValidOption(testCase)
@@ -17,9 +17,9 @@ function testValidOption(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option1';
    [opt, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, opt, 'option2');
-   verifyEqual(testCase, {42, 'hello'}, outargs);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(opt, 'option2');
+   testCase.verifyEqual({42, 'hello'}, outargs);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testMultipleValidOptions(testCase)
@@ -27,9 +27,9 @@ function testMultipleValidOptions(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option3';
    [opt, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, opt, 'option1');
-   verifyEqual(testCase, outargs, {'option2', 'hello'});
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(opt, 'option1');
+   testCase.verifyEqual(outargs, {'option2', 'hello'});
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testRemainingArguments(testCase)
@@ -37,8 +37,8 @@ function testRemainingArguments(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option3';
    [~, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, outargs, {42, 'hello'});
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(outargs, {42, 'hello'});
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testArgumentCount(testCase)
@@ -46,8 +46,8 @@ function testArgumentCount(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option3';
    [~, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, nargs, 2);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(nargs, 2);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testNoArguments(testCase)
@@ -55,9 +55,9 @@ function testNoArguments(testCase)
    valid_options = {'option1', 'option2'};
    default_option = 'option1';
    [~, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEmpty(testCase, outargs);
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEmpty(outargs);
 end
 
 function testOnlyValidOptions(testCase)
@@ -65,10 +65,10 @@ function testOnlyValidOptions(testCase)
    valid_options = inargs;
    default_option = 'option3';
    [opt, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, opt, 'option1');
-   verifyEqual(testCase, outargs, {'option2'});
-   verifyEqual(testCase, nargs, 1);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(opt, 'option1');
+   testCase.verifyEqual(outargs, {'option2'});
+   testCase.verifyEqual(nargs, 1);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testDefaultOptionIsLogical(testCase)
@@ -76,6 +76,6 @@ function testDefaultOptionIsLogical(testCase)
    valid_options = {'option1', 'option2'};
    default_option = true;  % logical default option
    [opt, outargs, nargs] = parseoptarg(inargs, valid_options, default_option);
-   verifyEqual(testCase, opt, true);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(opt, true);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
