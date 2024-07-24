@@ -69,7 +69,7 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
 
          % if we first transform a:
          ab(1) = exp(ab(1));
-         yfit  = log(ab(1).*xfit.^b);
+         yfit  = log(ab(1).*xfit.^ab(2));
 
          % if we don't:
          % yfit  = ab(1) + ab(2).*log(xfit);
