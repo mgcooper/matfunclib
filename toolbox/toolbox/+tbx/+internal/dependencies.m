@@ -1,6 +1,10 @@
 function report = dependencies(funcname,option)
    % DEPENDENCIES Generate function and product dependencies for function.
    %
+   %        NOTE: This is not to be used! This is near functional but makes some
+   %        assumptions such as installing into a util/ folder and overall needs
+   %        to be checked or removed in favor of installRequiredFiles.
+   %  
    %  Input
    %     funcname = char of any function name
    %
@@ -44,6 +48,7 @@ function report = dependencies(funcname,option)
    %
    % funcpath = fileparts(which('pkg.func'));
    % funclist = getlist(funcpath,'.m');
+   
 
    [pkgname, pkgfolder] = mpackagename();
 
@@ -61,7 +66,7 @@ function report = dependencies(funcname,option)
    % this loads the saved dependencies.mat file and checks against util/
    if opts.check == true
       report = dependencycheck(pkgfolder);
-      return;
+      return
    end
 
    funcpath = fileparts(which(funcname));
@@ -77,16 +82,17 @@ function report = dependencies(funcname,option)
    elseif opts.missing == true
       report = getmissingdependencies(funclist,funcname,pkgname,pkgfolder);
    elseif opts.installed == true
-      report = getinstalleddependencies(funclist);
+      % subfunction getinstalleddependencies is missing, check baseflow tbx.
+      % report = getinstalleddependencies(funclist);
    elseif opts.resolve == true
-      report = resolvedependencies(funclist,funcname);
+      report = resolvedependencies(funclist,funcname,pkgfolder,pkgname);
    end
 end
 
 function report = getdependencyreport(funclist,prodlist,funcname,pkgfolder)
 
    % get a list of dependencies that are not toolbox functions, i.e. those that
-   % need to be included in util/
+   % need to be installed.
    % report = funclist;
    skip = {pkgfolder, funcname, 'ExtractNameVal', 'Cupid'};
    keep = true(numel(funclist),1);
@@ -99,10 +105,10 @@ function report = getdependencyreport(funclist,prodlist,funcname,pkgfolder)
 end
 
 function report = dependencycheck(pkgfolder)
-   load(fullfile(getinstallpath(), pkgfolder, 'private', 'dependencies.mat'), 'report')
+   load(fullfile(installpath(), pkgfolder, 'private', 'dependencies.mat'), 'report')
    deps = report.function_dependencies;
-   deps = deps(~isfile(fullfile(getinstallpath(), 'util', deps)));
-   deps = deps(~isfolder(strrep(fullfile(getinstallpath(), 'util', deps),'.m','')));
+   deps = deps(~isfile(fullfile(installpath(), 'util', deps)));
+   deps = deps(~isfolder(strrep(fullfile(installpath(), 'util', deps),'.m','')));
    % convert to table and return
    if isempty(deps)
       report.missing_dependencies = 'all dependencies are installed';
@@ -158,7 +164,7 @@ function report = getmissingdependencies(funclist,funcname,pkgname,pkgfolder)
 end
 
 %% internal use
-function report = resolvedependencies(funclist,funcname)
+function report = resolvedependencies(funclist,funcname,pkgfolder,pkgname)
 
    % cycle through the dependent functions and copy them to util/
 
@@ -179,7 +185,7 @@ function report = resolvedependencies(funclist,funcname)
    else
       for n = 1:numel(report.missing_dependencies)
          [~,fname,ext] = fileparts(report.missing_dependencies{n});
-         destpath = fullfile(getinstallpath(),'util',[fname,ext]);
+         destpath = fullfile(installpath(),'util',[fname,ext]);
          copyfile(report.missing_dependencies{n},destpath);
       end
    end
