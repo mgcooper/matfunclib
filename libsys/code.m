@@ -15,7 +15,8 @@ function varargout = code(cmd)
    [~, codesrc] = system('which code');
    if isempty(codesrc)
       try
-         [~, codesrc] = jsystem('which code');
+         % commented this out b/c I cannot find where this function is
+         % [~, codesrc] = jsystem('which code');
       catch
          if ismac()
             codesrc = '/usr/local/bin/code';

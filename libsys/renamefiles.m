@@ -33,9 +33,10 @@ function Info = renamefiles(FileList,varargin)
    parser.parse(FileList, varargin{:});
    args = parser.Results;
 
+
    % check if .git exists in the base folder to avoid losing git history
    BasePath = FileList(1).folder;
-   if isfolder([BasePath filesep '.git']) && useGitMove == false
+   if isfolder([BasePath filesep '.git']) && args.useGitMove
       msg = ['.git folder detected but useGitMove is false. press ' ...
          '''y'' to continue or any other key to cancel.'];
       disp(msg);
@@ -87,26 +88,26 @@ function Info = renamefiles(FileList,varargin)
       Name = FileList(n).name;
       File = fullfile(Path, Name);
 
-      if useNewFileNames
+      if args.useNewFileNames
          newName = NewFileNames{n};
       else
          newName = Name;
       end
-      if usePrefix
+      if args.usePrefix
          newName = [Prefix newName];
       end
-      if useSuffix
+      if args.useSuffix
          newName = [newName Suffix];
       end
 
       newFile = fullfile(Path, newName);
 
-      if dryrun == true
+      if args.dryrun
          disp(['moving ' Name ' to ' newName]);
          continue
       else
 
-         if useGitMove
+         if args.useGitMove
             [status,msg] = system(['git mv ' File ' ' newFile]);
          else
             [status,msg] = movefile(File, newFile);
