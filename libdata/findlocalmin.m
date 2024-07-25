@@ -10,19 +10,19 @@ function [mininds, minvals] = findlocalmin(data, k, varargin)
 
    % if there is no local min, use the global min value
    if isempty(mininds)
-      [mininds,minvals] = findmin(data,k,varargin{:});
+      [mininds,minvals] = findglobalmin(data,k,varargin{:});
       warning('no local minima found, using global min, check edges');
       return
    end
 
-   [imin,minvals] = findmin(data(mininds),k,varargin{:});
+   [imin,minvals] = findglobalmin(data(mininds),k,varargin{:});
    mininds = mininds(imin);
 
    % if no local min is found, issue error
    if isempty(mininds); error('No local min found'); end
 
    % if the global min is lower than the local min, use it
-   globalmin = findmin(data,1);
+   globalmin = findglobalmin(data,1);
    if all(data(globalmin)<data(mininds))
       if k==1
          mininds = globalmin;

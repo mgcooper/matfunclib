@@ -82,7 +82,7 @@ function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
 
    % Add all top-level files
    if addProjectFiles
-      projectFiles = dir(fullfile(projectFolder,'*.m'));
+      projectFiles = dir(fullfile(projectFolder, '*.m'));
       projectFiles = fullfile({projectFiles.folder}', {projectFiles.name}');
       cellfun(@(file) proj.addFile(file), projectFiles);
    end
@@ -125,7 +125,8 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
    % and addFolderIncludingChildFiles takes care of recursive files.
 
    % Get all subfolders
-   allSubfolders = rmdotfolders(dir(fullfile(projectFolder, '**/*')));
+   allSubfolders = dir(fullfile(projectFolder, '**/*'));
+   allSubfolders(strncmp({allSubfolders.name}, '.', 1)) = [];
    allSubfolders = allSubfolders([allSubfolders.isdir]);
 
    % Remove .git, .svn, and resources folders.
@@ -158,6 +159,28 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
       {projectSubfolders.folder}', {projectSubfolders.name}');
 
    % Get a list of all files in the project folder.
-   projectFiles = listfiles(projectSubfolders, "subfolders", true, ...
-      "aslist", true, "fullpath", true);
+   if isempty(projectSubfolders)
+      % This occurs when the folder has no subfolders. Could generate a list of
+      % files in the top level folder, but that's what addProjectFiles is for.
+      %
+      % projectFiles = dir(fullfile(projectFolder, '*.m'));
+
+      projectFiles = projectSubfolders;
+   else
+
+      % The only problem with this is it does not ignore the folders which were
+      % removed from projectSubfolders above, but this gets all the files in teh
+      % project without calling listfiles. Plus these files aren't even used in
+      % the main function.
+      projectFiles = dir(fullfile(projectFolder, '**/*'));
+      projectFiles(strncmp({projectFiles.name}, '.', 1)) = [];
+      projectFiles = projectFiles(~[projectFiles.isdir]);
+      projectFiles = fullfile({projectFiles.folder}', {projectFiles.name}');
+
+
+      % listfiles is the only dependency so use the method above.
+      %projectFiles = listfiles(projectSubfolders, "subfolders", true, ...
+      %   "aslist", true, "fullpath", true);
+   end
+
 end

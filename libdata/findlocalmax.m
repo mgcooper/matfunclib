@@ -10,12 +10,12 @@ function [maxinds, maxvals] = findlocalmax(indata, k, varargin)
 
    % if there is no local max, use the global max value
    if isempty(maxinds)
-      [maxinds,maxvals] = findmax(indata,k,varargin{:});
+      [maxinds,maxvals] = findglobalmax(indata,k,varargin{:});
       warning('no local maxima found, using global max, check edges');
       return
    end
 
-   [imax,maxvals] = findmax(indata(maxinds),k,varargin{:});
+   [imax,maxvals] = findglobalmax(indata(maxinds),k,varargin{:});
    maxinds = maxinds(imax);
 
    % if no local max is found, issue error
@@ -26,7 +26,7 @@ function [maxinds, maxvals] = findlocalmax(indata, k, varargin)
    % catch ME
    %     if strcmp(ME.identifier,'')
    %         % use the global max value
-   %         [maxinds,maxvals] = findmax(indata,k,varargin{:});
+   %         [maxinds,maxvals] = findglobalmax(indata,k,varargin{:});
    %         return;
    %     end
    % end
