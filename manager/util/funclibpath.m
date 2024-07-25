@@ -4,7 +4,7 @@ function varargout = funclibpath(option)
    %  OLDPATH = FUNCLIBPATH() Returns the value of MATLABFUNCTIONPATH env. var.
    %  OLDPATH = FUNCLIBPATH('rmpath') Removes MATLABFUNCTIONPATH from path.
    %  OLDPATH = FUNCLIBPATH('addpath') Adds MATLABFUNCTIONPATH to path.
-   % 
+   %
    % See also:
 
    narginchk(0, 1)
@@ -62,6 +62,7 @@ function oldpath = setfunclibpath(option)
    oldpath = path;
 
    if strcmp(option, 'rmpath')
+      % Note: this removes $HOME/MATLAB not matfunclib
       rmpath(genpath(getenv('MATLABUSERPATH')))
       return
    end
