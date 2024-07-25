@@ -1,9 +1,12 @@
 # MATLAB Toolbox
 
-1. Rename github .github and vscode .vscode
-2. Run projectfile when ready
-3. Delete toolboxPackaging and create the actual toolbox package when ready
-4. Same for Contents.m
+- Look things over generally
+- Update userhooks
+- Run tests, fix any bad namespace references or failed +internal methods
+- Update gettingStarted.mlx
+- Run projectfile when ready
+- Delete _Contents.m and run tbx.internal.makecontents
+- Delete _toolboxPackaging and create the actual toolbox package when ready
 
 ## Getting Started
 
