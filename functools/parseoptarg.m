@@ -77,7 +77,7 @@ function [opt, args, nargs] = parseoptarg(args, validopts, defaultopt)
    assert(iscell(args))
 
    % Cast validopts to a cellstr if it is a string array or character vector.
-   validopts = tocellstr(validopts);
+   validopts = cellstr(validopts);
 
    % Set an empty default value for the opt arg.
    if nargin < 3
