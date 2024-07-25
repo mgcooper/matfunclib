@@ -1,55 +1,77 @@
-function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
-      addChildFiles, projectSubfolders, projectName, ignoreFolders)
-   %CREATEMATLABPROJECT Creates a MATLAB project in the given projectFolder.
+function varargout = createMatlabProject(projectFolder, projectName, ...
+      addProjectFiles, addProjectFolders, addChildFiles, projectSubfolders, ...
+      ignoredSubFolders)
+   %CREATEMATLABPROJECT Create a new MATLAB project.
    %
-   % proj = createMatlabProject(projectFolder, addProjectFiles, addChildFiles,
-   %  projectSubfolders, projectName)
+   %    proj = createMatlabProject(projectFolder, projectName, ...
+   %       addProjectFiles, addProjectFolders, addChildFiles, ...
+   %       projectSubfolders, ignoredSubFolders)
    %
-   % Inputs
+   % Description
    %
-   % projectFolder: String. The parent folder of the project.
+   %  This function creates a new MATLAB project, adds files and/or folders in
+   %  the projectFolder to the project, and recursively adds files from all
+   %  projectSubfolders if addChildFiles is true. Finally, it updates the
+   %  dependencies of the project.
    %
-   % addProjectFiles: Logical. If true, the function adds all files in the
-   % top-level projectFolder to the project.
+   % Inputs (all optional)
    %
-   % addChildFiles: Logical. If true, the function recursively adds all files
-   % in subfolders of projectFolder or projectSubfolders.
+   %  PROJECTFOLDER - The parent (top level) project folder (scalar text). Can
+   %  be a full path or name from which the full path is constructed using the
+   %  MATLABPROJECTPATH environment variable. The default is pwd().
    %
-   % projectSubfolders: String array. Each string is a subfolder in
-   % projectFolder containing project files that will be added to the project.
-   % If projectSubfolders is not empty and addChildFiles is true, only files
-   % in projectSubfolders are added to the project.
+   %  PROJECTNAME - Scalar text used for the .prj filename. If not provided, the
+   %  PROJECTFOLDER folder name is used for PROJECTNAME. The .prj filename is
+   %  constructed automatically by the function matlab.project.createProject,
+   %  which capitalizes the first letter only, for instance, <Projectname>.prj.
+   %  Thus if PROJECTFOLDER="/path/to/my/awesomeproject", and PROJECTNAME is not
+   %  supplied, PROJECTNAME will be "awesomeproject", and the .prj file will be
+   %  Awesomeproject.prj. Provide a value for PROJECTNAME to use an alternative
+   %  such as CamelCase: <AwesomeProjectName>.prj. The default is PROJECTFOLDER.
    %
-   % projectName: String (Optional). Specifies the .prj filename. If not
-   % provided, the name of the projectFolder is used as the projectName.
+   %  ADDPROJECTFILES - Flag (logical scalar) to control if all files in the
+   %  top-level PROJECTFOLDER are added to the project. The default is false.
+   %
+   %  ADDPROJECTFOLDERS - Flag (logical scalar) to control if all folders in the
+   %  top-level PROJECTFOLDER are added to the project. Note that files within
+   %  these folders are not added unless ADDCHILDFILES is true. The default is
+   %  false.
+   %
+   %  ADDCHILDFILES - Flag (logical scalar) to control if all files in
+   %  PROJECTFOLDER and PROJECTSUBFOLDERS are recursively added to the project.
+   %  The default is false.
+   %
+   %  PROJECTSUBFOLDERS - String array specifying which subfolders of
+   %  PROJECTFOLDER should be added to the project. If ADDPROJECTFILES is false,
+   %  but ADDCHILDFILES is true and PROJECTSUBFOLDERS is not empty, then all
+   %  PROJECTSUBFOLDERS and files within them are added to the project,
+   %  regardless of the value of ADDPROJECTFOLDERS (which is specific to how the
+   %  top-level folders/files are treated). Use this to ignore certain files
+   %  and/or folders in the top level of a project (such as LICENSE or any other
+   %  file), instead restricting project-managed files to a subfolder, such as a
+   %  toolbox/ folder. The default is an empty string.
+   %
+   %  IGNOREDSUBFOLDERS - String array of subfolders within PROJECTFOLDER to be
+   %  ignored when adding folders and files to the project. Use this to
+   %  selectively ignore certain folders such as those ignored by your version
+   %  control system.
    %
    % Outputs
    %
-   % proj: The MATLAB project object.
+   %  PROJ: The MATLAB project object.
    %
-   % This function creates a new MATLAB project, adds files from the
-   % projectFolder to the project, and recursively adds files from all
-   % projectSubfolders if addChildFiles is true. Finally, it updates the
-   % dependencies of the project.
+   % See also: projectfile
 
-   % TODO: use the second output from getProjectFolders subfunction to
-   % recursively call addFiles rather than addFolderIncludingChildFiles b/c the
-   % latter adds .DS_Store etc. I decided to use addFolderIncludingChildFiles
-   % because in projectfile.m, I set addChildFiles true and addProjectFiles
-   % false, and pass in 'toolbox' for projectSubfolders, so
-   % addFolderIncludingChildFiles gets called on the toolbox folder, and I don't
-   % need the second output from getProjectFolders, which is a cleaner file list
-   % w/o the .DS_Store etc. Similarly, in the `if addProjectFiles` section, I
-   % use dir with *.m, but this doesn't get used if 'toolbox' is passed in for
-   % projectSubfolders.
+   % TODO: these need to be name-value.
 
    arguments
       projectFolder (1,1) string {mustBeFolder} = pwd()
-      addProjectFiles logical = false
-      addChildFiles logical = true
-      projectSubfolders (:,1) string = string(NaN)
       projectName string = string(NaN)
-      ignoreFolders (1, :) string = ""
+      addProjectFiles (1, 1) logical = false
+      addProjectFolders (1, 1) logical = false
+      addChildFiles (1, 1) logical = false
+      projectSubfolders (:,1) string = string(NaN)
+      ignoredSubFolders (1, :) string = ""
    end
 
    if isempty(projectName) || ismissing(projectName)
@@ -58,23 +80,40 @@ function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
    end
 
    defaultIgnore = [".git",".svn","resources"];
-   if isempty(ignoreFolders)
-      ignoreFolders = defaultIgnore;
+   if isempty(ignoredSubFolders)
+      ignoredSubFolders = defaultIgnore;
    else
-      ignoreFolders = [ignoreFolders, defaultIgnore];
+      ignoredSubFolders = [ignoredSubFolders, defaultIgnore];
    end
 
-   % % This doesn't work b/c the project name is converted to a valid varname
-   % % Check if a project with the same name already exists
-   % projectPath = fullfile(projectFolder, projectName + ".prj");
-   % if isfile(projectPath)
-   %     error("A project with the name '%s' already exists in '%s'.", projectName, projectFolder)
+   % % This doesn't work b/c the project name is converted to a valid varname %
+   % Check if a project with the same name already exists projectPath =
+   % fullfile(projectFolder, projectName + ".prj"); if isfile(projectPath)
+   %     error("A project with the name '%s' already exists in '%s'.",
+   %     projectName, projectFolder)
    % end
 
-   % Get a list of all sub-folders to add to the project.
-   % This step is performed first because creating the project generates new folders.
-   projectSubfolders = getProjectFolders(projectFolder, ...
-      projectSubfolders, ignoreFolders);
+   % Get a list of all sub-folders to add to the project. This step is performed
+   % first because creating the project generates new folders.
+   [projectSubfolders, ~] = getProjectFolders(projectFolder, ...
+      projectSubfolders, ignoredSubFolders);
+
+   % Note: the second output of getProjectFolders (projectFiles) is a list of
+   % all files in all subfolders, and the top level (I think). It is a cleaner
+   % list, but I decided against passing it directly to proj.addFile, instead I
+   % use proj.addFolderIncludingChildFiles which achieves the same thing but
+   % adds all files e.g. .DS_Store. Overall I think its better this way though
+   % b/c Projects want to manage all subfolders and files, and I don't think
+   % there's any harm in adding all files. 
+   % 
+   % However, this was also done to make it easier to only add the toolbox/
+   % folder e.g., the following would only add the toolbox/ folder:
+   %     addProjectFiles=false
+   %     addProjectFolders=false,
+   %     addChildFiles=true
+   %     projectSubfolders="toolbox"
+   % 
+   % This is how makeproject/projectfile is configured.
 
    % Create a new project
    proj = matlab.project.createProject( ...
@@ -88,13 +127,17 @@ function varargout = createMatlabProject(projectFolder, addProjectFiles, ...
    end
 
    % Recursively add all files in all projectSubfolders.
-   if addChildFiles
-      cellfun(@(folder) ...
-         proj.addFolderIncludingChildFiles(folder), projectSubfolders);
-   else
-      % Add only files in the top-level of each projectSubfolder
-      cellfun(@(folder) ...
-         proj.addFile(folder), projectSubfolders);
+   if addProjectFolders
+
+      if addChildFiles
+         % Add files in each projectSubfolder and their subfolders.
+         cellfun(@(folder) ...
+            proj.addFolderIncludingChildFiles(folder), projectSubfolders);
+      else
+         % Add files in the top-level of each projectSubfolder
+         cellfun(@(folder) ...
+            proj.addFile(folder), projectSubfolders);
+      end
    end
 
    % Update dependencies
@@ -177,10 +220,8 @@ function [projectSubfolders, projectFiles] = getProjectFolders( ...
       projectFiles = projectFiles(~[projectFiles.isdir]);
       projectFiles = fullfile({projectFiles.folder}', {projectFiles.name}');
 
-
       % listfiles is the only dependency so use the method above.
       %projectFiles = listfiles(projectSubfolders, "subfolders", true, ...
       %   "aslist", true, "fullpath", true);
    end
-
 end
