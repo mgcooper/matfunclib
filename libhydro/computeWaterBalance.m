@@ -20,6 +20,11 @@ function PER = computeWaterBalance(Data, varargin)
    %
    %  Outputs
    %
+   %     PER.avg : The average PER over all timesteps (all months). Obtain the
+   %     annual average PER from the PER.annual.avg.<MMM> table, using a month
+   %     of your choice to define a water-year. For instance, use
+   %     PER.annual.avg.Jan to obtain the
+   %
    %     PER.annual.PER : annual P-E-R i.e. for each year, sum P,E, and R over
    %     12 months, with 12-month periods beginning on each of the 12 calendar
    %     months, then compute P-E-R for each year
@@ -38,16 +43,19 @@ function PER = computeWaterBalance(Data, varargin)
    % Matt Cooper, 20-Feb-2022, mgcooper@github.com
    %
    % See also annualdMdt graceSnowCorrect merraWaterBalance
+   %
+   % Note: the annual PER values are somewhat confusing because I compute them
+   % using each month as a starting month. think of these like water years
+   % starting on each month, so for example, water year 2000 goes from oct1 1999
+   % to sep30 2000, so most of the wy is in year 2000, but the same protocol for
+   % a february 'water year' means the wy starts on feb 1 1999 and goes to jan
+   % 31 2000 so most of the water year is in 1999
 
    % parse inputs
    [Data, snowcorrect, wateryear] = parseinputs(Data, mfilename, varargin{:});
 
-   % the annual PER values are somewhat confusing because I compute them using
-   % each month as a starting month. think of these like water years starting
-   % on each month, so for example, water year 2000 goes from oct1 1999 to
-   % sep30 2000, so most of the wy is in year 2000, but the same protocol for
-   % a february 'water year' means the wy starts on feb 1 1999 and goes to jan
-   % 31 2000 so most of the water year is in 1999
+   % Ensure the variable names are the shorthand ones
+
 
    % define functions to compute annual sums and seasonal averages
    % Fsum = @(x) sum(x, 'includenan');

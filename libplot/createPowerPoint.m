@@ -57,27 +57,27 @@ function varargout = createPowerPoint(kwargs)
    %     if clobber, then template = the file
    %     else, template = the default or specified template
    % else, the template = the default or specified template
-   
+
    % if not file, create a new one
    % if is file and clobber, back up the old one and make a new one
    % if is file and append, append to the old one
 
    slidesFile = char(fullfile(kwargs.pathname, filename));
-   
+
    % Get the backup out of the way
    if isfile(slidesFile) && kwargs.makebackup
-      
+
    end
 
    if USE_EXPORTTOPPTX
 
       if not(isfile(slidesFile)) || (isfile(slidesFile) && kwargs.clobber)
-         
+
          % Create a new pptx file from the template
          templatefile = fullfile( ...
             fileparts(which('exportToPPTX.m')), templatename);
          assert(isfile(templatefile))
-         
+
          slides = exportToPPTX(templatefile);
 
          % Create a title slide.
@@ -96,15 +96,15 @@ function varargout = createPowerPoint(kwargs)
 
          % This fails with default ppt b/c there is no "Title Slide" Layout
          % slide1 = slides.addSlide('Master', 1, 'Layout', 'Title Slide');
-      
+
       elseif isfile(slidesFile) && ~kwargs.clobber
-         
+
          % Update the existing pptx file.
          slides = exportToPPTX(slidesFile);
       end
-      
+
    else
-      
+
       % This is where I am reconciling the two, moving logic from here into
       % subfunctions, and then the if-else can be removed and USE_EXPORTTOPPTX
       % passed into each function to handle each case.
@@ -113,23 +113,27 @@ function varargout = createPowerPoint(kwargs)
 
          slides = createNewSlides(slidesFile, USE_EXPORTTOPPTX);
 
-      elseif isfile(slidesFile) % this should be implied: && ~kwargs.clobber 
-         
+      elseif isfile(slidesFile) % this should be implied: && ~kwargs.clobber
+
          % THis is getting confusing. But if block is clear, if it is not a file
          % or it is but clobber is true, make a new one. Otherwise it is a
          % file and clobber is false, so then the question is whether to
          % back up the existing one and overwrite the thing from scratch or
          % append.  The thing I cannot figure out is parsing clobber vs append.
-         % i want to avoid creating a backup every time I append 
-         
+         % i want to avoid creating a backup every time I append
+
          if kwargs.append
          else
             slides = updateSlides(slidesFile, USE_EXPORTTOPPTX);
          end
-         
+
 
          % Replace slidesFile with the updated file for the close/open step.
-         slidesFile = updatedSlidesFile;
+         % Jul 2024 - replaced updatedSlidesFile on rhs with slides.
+         % updatedSlidesFile is undefined but is the argument name in the
+         % updateSlides function so likely a copy paste error.
+         slidesFile = slides;
+         %slidesFile = updatedSlidesFile;
       end
 
       % Add a title slide. If updating, this inserts a separator slide.
@@ -258,15 +262,15 @@ end
 function slides = createNewSlides(slidesFile, USE_EXPORTTOPPTX)
 
    if USE_EXPORTTOPPTX
-      % For now I kept the USE_EXPORTTOPPTX logic in the main section, but 
+      % For now I kept the USE_EXPORTTOPPTX logic in the main section, but
       % note that when creating new slides, including clobber, the slides
       % can be created here with slides = exportToPPTX() or
       % exportToPPTX(templatefile), but also exportToPPTX(slidesFile), and in
-      % the latter case, when it is saved at the end it will overwrite the 
+      % the latter case, when it is saved at the end it will overwrite the
       % existing one if clobber=true. Need to walk carefully through the logic
       % on exportToPPTX but I think this will help with combining the logic.
    else
-      slides = Presentation(slidesFile);
+      slides = mlreportgen.ppt.Presentation(slidesFile);
    end
 end
 
@@ -279,15 +283,20 @@ function slides = updateSlides(slidesFile, USE_EXPORTTOPPTX)
       % then replace the filename and thus on close it will resave as a new file
       % slides = exportToPPTX(slidesFile);
    else
-      slides = Presentation(updatedSlidesFile, slidesFile);
+      slides = mlreportgen.ppt.Presentation(updatedSlidesFile, slidesFile);
    end
 end
 
 
 function slides = insertTitleSlide(slides, Title, Subtitle)
+   % Jul 2024 - added slide1 input argument to address codeissues. Not sure if
+   % slide1 was supposed to be "slides" ... actually I think it is so I
+   % removed slide1 input and commented them out and replaced with "slides".
    add(slides, 'Title Slide');
-   replace(slide1, 'Title', Title);
-   replace(slide1, 'Subtitle', Subtitle);
+   replace(slides, 'Title', Title);
+   replace(slides, 'Subtitle', Subtitle);
+   % replace(slide1, 'Title', Title);
+   % replace(slide1, 'Subtitle', Subtitle);
 end
 
 function USE_EXPORTTOPPTX = chooseReportGenerator(kwargs)

@@ -1,38 +1,37 @@
-function runtests()
-    %
-    % run tests with code coverage
-    %
-    % USAGE::
-    %
-    %   run_tests()
-    %
-    % (C) Copyright 2022 Remi Gau
+function runmox()
+   %
+   % run tests with code coverage
+   %
+   % USAGE::
+   %
+   %   run_tests()
+   %
+   % (C) Copyright 2022 Remi Gau
 
-    % Not sure if I want runtests in the top level or not, see other runtests
-    % versions in tests/
-    
-    tic;
+   % Not sure if I want runtests in the top level or not, see other runtests
+   % versions in tests/
 
-    cd(fileparts(mfilename('fullpath')));
+   tic;
 
-    fprintf('\nHome is %s\n', getenv('HOME'));
+   cd(fileparts(mfilename('fullpath')));
 
-    folder_to_cover = fullfile(pwd, 'src');
+   fprintf('\nHome is %s\n', getenv('HOME'));
 
-    test_folder = fullfile(pwd, 'tests');
+   folder_to_cover = fullfile(pwd, 'src');
 
-    success = moxunit_runtests(test_folder, ...
-                               '-verbose', '-recursive', '-with_coverage', ...
-                               '-cover', folder_to_cover, ...
-                               '-cover_xml_file', 'coverage.xml', ...
-                               '-cover_html_dir', fullfile(pwd, 'coverage_html'));
+   test_folder = fullfile(pwd, 'tests');
 
-    if success
-        system('echo 0 > test_report.log');
-    else
-        system('echo 1 > test_report.log');
-    end
+   success = moxunit_runtests(test_folder, ...
+      '-verbose', '-recursive', '-with_coverage', ...
+      '-cover', folder_to_cover, ...
+      '-cover_xml_file', 'coverage.xml', ...
+      '-cover_html_dir', fullfile(pwd, 'coverage_html'));
 
-    toc;
+   if success
+      system('echo 0 > test_report.log');
+   else
+      system('echo 1 > test_report.log');
+   end
 
+   toc;
 end

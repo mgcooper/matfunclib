@@ -1,120 +1,124 @@
 function H = hyetograph(time,flow,prec,varargin)
-%HYETOGRAPH Plots a discharge rainfall hyetograph
-%
-%  H = hyetograph(time,flow,ppt) plots hyetograph using data in flow and ppt
-%
-%  H = hyetograph(time,flow,ppt,t1,t2) plots hyetograph using data in flow and
-%  ppt for time period bounded by datetimes t1 and t2
-%
-% Example, how to later access the plot objects
-%  H = hyetograph(...);
-%
-% Find specific handles using 'Tag' or 'Name'
-%
-% fig = findobj(H, 'Name', 'Hyetograph');
-% ax_streamflow = findobj(H, 'Tag', 'StreamflowAxis');
-% ax_precipitation = findobj(H, 'Tag', 'PrecipitationAxis');
-%
-% See also
+   %HYETOGRAPH Plot a discharge rainfall hyetograph
+   %
+   %  H = hyetograph(time,flow,prec) plots hyetograph using discharge data in
+   %  FLOW and precipitation data in PREC.
+   %
+   %  H = hyetograph(time,flow,prec,t1,t2) plots hyetograph for time period
+   %  bounded by datetimes t1 and t2.
+   %
+   % Examples
+   %
+   % Create a hyetograph and then later access the plot objects:
+   %    H = hyetograph(...);
+   %
+   % Find specific handles using 'Tag' or 'Name':
+   %
+   %    fig = findobj(H, 'Name', 'Hyetograph');
+   %    ax_streamflow = findobj(H, 'Tag', 'StreamflowAxis');
+   %    ax_precipitation = findobj(H, 'Tag', 'PrecipitationAxis');
+   %
+   % See also
 
-%------------------------------------------------------------------------------
-p = magicParser; %#ok<*NODEF,*USENS>
-p.FunctionName = mfilename;
-p.addRequired('time',                     @(x)isnumeric(x)|isdatetime(x)   );
-p.addRequired('flow',                     @(x)isnumeric(x)                 );
-p.addRequired('prec',                     @(x)isnumeric(x)                 );
-p.addOptional('t1',     min(time),        @(x)isnumeric(x)|isdatetime(x)   );
-p.addOptional('t2',     max(time),        @(x)isnumeric(x)|isdatetime(x)   );
-p.addParameter('units', {'mm','cm d-1'},  @(x)ischarlike(x)                );
-% p.addParameter('ax',    gca,              @(x)isaxis(x)                    );
-p.parseMagically('caller');
-%------------------------------------------------------------------------------
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.addRequired('time', @isdatelike);
+   parser.addRequired('flow', @isnumeric);
+   parser.addRequired('prec', @isnumeric);
+   parser.addOptional('t1', min(time), @isdatelike);
+   parser.addOptional('t2', max(time), @isdatelike);
+   parser.addParameter('units', {'mm', 'cm d-1'}, @ischarlike);
+   parser.parse(time, flow, prec, varargin{:});
+   t1 = parser.Results.t1;
+   t2 = parser.Results.t2;
+   units = parser.Results.units;
 
-% initialize container for output handles
-H = gobjects(4,1); % figure, ax1, plot1, plot2
+   % initialize container for output handles
+   H = gobjects(4,1); % figure, ax1, plot1, plot2
 
-% % get the figure handle
-fig = gcf; 
-fig.Name = 'Hyetograph';
-fig.Tag = 'HyetographFigure';
-% fig.Position = [10,10,400,300];
-% fig.Renderer = 'painters';
+   % % get the figure handle
+   fig = gcf;
+   fig.Name = 'Hyetograph';
+   fig.Tag = 'HyetographFigure';
+   % fig.Position = [10,10,400,300];
+   % fig.Renderer = 'painters';
 
-% k = fig.Parent;
-% k.Parent.Position = [360 198 400 300];
+   % k = fig.Parent;
+   % k.Parent.Position = [360 198 400 300];
 
-% convert to columns
-time = time(:);
-prec = prec(:);
-flow = flow(:);
+   % convert to columns
+   time = time(:);
+   prec = prec(:);
+   flow = flow(:);
 
-% convert to datetime
-if ~isdatetime(time); time = datetime(time,'ConvertFrom','datenum'); end
-if ~isdatetime(t1); t1 = datetime(t1,'ConvertFrom','datenum'); end
-if ~isdatetime(t2); t2 = datetime(t2,'ConvertFrom','datenum'); end
+   % convert to datetime
+   if ~isdatetime(time); time = datetime(time,'ConvertFrom','datenum'); end
+   if ~isdatetime(t1); t1 = datetime(t1,'ConvertFrom','datenum'); end
+   if ~isdatetime(t2); t2 = datetime(t2,'ConvertFrom','datenum'); end
 
-% trim to t1,t2 timespan
-prec = prec(isbetween(time,t1,t2));
-flow = flow(isbetween(time,t1,t2));
-time = time(isbetween(time,t1,t2));
+   % trim to t1,t2 timespan
+   prec = prec(isbetween(time,t1,t2));
+   flow = flow(isbetween(time,t1,t2));
+   time = time(isbetween(time,t1,t2));
 
-% process units
-units = siUnitsToTex(units);
+   % process units
+   units = siUnitsToTex(units);
 
-% get default colors
-colors = get(0,'defaultaxescolororder');
+   % get default colors
+   colors = get(0,'defaultaxescolororder');
 
-% Create plot
-yyaxis left;
-h1 = plot(time,flow,'-o','MarkerSize',4,'MarkerFaceColor',colors(1,:), ...
-   'MarkerEdgeColor','none','Tag','StreamflowPlot');
-ax = gca;
-ax.Tag = 'HyetographAxis';
+   % Create plot
+   yyaxis left
+   h1 = plot(time,flow,'-o','MarkerSize',4,'MarkerFaceColor',colors(1,:), ...
+      'MarkerEdgeColor','none','Tag','StreamflowPlot');
+   ax = gca;
+   ax.Tag = 'HyetographAxis';
 
-% % With yyaxis, there is only one axis, so I don't track them separately
-% ax1 = gca;
-% ax1.Tag = 'StreamflowAxis';
+   % % With yyaxis, there is only one axis, so I don't track them separately
+   % ax1 = gca;
+   % ax1.Tag = 'StreamflowAxis';
 
-% Set the remaining axes properties
-set(ax,'XMinorGrid','on','YMinorGrid','on');
-grid(ax,'on');
+   % Set the remaining axes properties
+   set(ax,'XMinorGrid','on','YMinorGrid','on');
+   grid(ax,'on');
 
-% hacky way to make space so the precip bars do not obscure the streamflow
-% ylim([ax.YLim(1),1.5*ax.YLim(2)]);
+   % hacky way to make space so the precip bars do not obscure the streamflow
+   % ylim([ax.YLim(1),1.5*ax.YLim(2)]);
 
-% Create ylabel
-ylabel(['Streamflow (' units{1} ')'],'Color',colors(1,:),'Interpreter','tex');
+   % Create ylabel
+   ylabel(['Streamflow (' units{1} ')'],'Color',colors(1,:),'Interpreter','tex');
 
-% Create second plot
-yyaxis right; % varargin{:} goes on bar if needed
-h2 = bar(time,prec,'FaceColor',colors(2,:),'EdgeColor','none',...
-   'Tag','PrecipitationPlot');
+   % Create second plot
+   yyaxis right; % varargin{:} goes on bar if needed
+   h2 = bar(time,prec,'FaceColor',colors(2,:),'EdgeColor','none',...
+      'Tag','PrecipitationPlot');
 
-% % With yyaxis, there is only one axis, so I don't track them separately
-% ax2 = gca;
-% ax2.Tag = 'PrecipitationAxis';
+   % % With yyaxis, there is only one axis, so I don't track them separately
+   % ax2 = gca;
+   % ax2.Tag = 'PrecipitationAxis';
 
-% Create ylabel
-ylabel(['Precipitation (' units{2} ')'],'Color',colors(2,:),'Interpreter','tex');
-axis(ax,'ij');
+   % Create ylabel
+   ylabel(['Precipitation (' units{2} ')'],'Color',colors(2,:),'Interpreter','tex');
+   axis(ax,'ij');
 
-% return control to left axis
-yyaxis left
+   % return control to left axis
+   yyaxis left
 
-% Set the remaining axes properties
-% set(ax,'Color','none','XAxisLocation','top','XTickLabel','');
-% ylim([0,1.5*ax.YLim(2)]);
+   % Set the remaining axes properties
+   % set(ax,'Color','none','XAxisLocation','top','XTickLabel','');
+   % ylim([0,1.5*ax.YLim(2)]);
 
-% this should make the hyetograph and hydrograph not overlap
+   % this should make the hyetograph and hydrograph not overlap
 
-% this shouldn't be needed with yyaxis functionality
-% ax2.XTick = ax1.XTick;
+   % this shouldn't be needed with yyaxis functionality
+   % ax2.XTick = ax1.XTick;
 
-% Package output
-H(1) = fig;
-H(2) = ax;
-H(3) = h1;
-H(4) = h2;
+   % Package output
+   H(1) = fig;
+   H(2) = ax;
+   H(3) = h1;
+   H(4) = h2;
+end
 
 %% create space between discharge and precip bars
 
@@ -217,4 +221,3 @@ H(4) = h2;
 % ypos2(2)                =   ypos2(2)/1.8;
 % AX(1).YLabel.Position   =   ypos1;
 % AX(2).YLabel.Position   =   ypos2;
-

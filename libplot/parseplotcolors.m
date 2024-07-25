@@ -19,7 +19,7 @@ function C = parseplotcolors(C)
 
    if tryrgb
       % Cast strings and chars to cellstr
-      C = tocellstr(convertStringsToChars(C));
+      C = cellstr(convertStringsToChars(C));
       try
          C = rgb(C{:});
       catch e2
@@ -38,24 +38,24 @@ function C = parseplotcolors(C)
 end
 
 % function C = parseplotcolors(C)
-% 
+%
 %    % This was my original approach before I found validatecolor. This is not
-%    % quite finished but it's close 
-%    
+%    % quite finished but it's close
+%
 %    % Convert strings or chars to cellstr. matlab.graphics.internal.convertToRGB
 %    % and rgb both accept cellstr arrays and return nx3 numeric arrays, but do
 %    % not accept char vectors representing multiple colors e.g. 'rbym', so
 %    % casting to cellstr enables one syntax in subsequent calls
 %    if (ischar(C) && isrow(C)) || iscellstr(C) || isstring(C)
-% 
+%
 %       C = convertStringsToChars(C);
 %       if ~iscellstr(C) %#ok<*ISCLSTR>
 %          C = {C};
 %       end
-% 
+%
 %       % Attempt to convert the colors into RGB triplets
 %       [rgbmat, notok] = matlab.graphics.internal.convertToRGB(C);
-% 
+%
 %       if isempty(notok)
 %          % If all colors were successfully converted, replace the input with
 %          % the new RGB triplets.
@@ -64,7 +64,7 @@ end
 %          % Defer throwing an error for now in case the input is a special
 %          % keyword (i.e. 'default' or 'factory').
 %          badColorName = notok(1);
-% 
+%
 %          % Try rgb, which accepts the 949 most common names for colors
 %          try
 %             C = rgb(C{:});

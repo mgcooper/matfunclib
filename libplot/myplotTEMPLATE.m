@@ -5,7 +5,7 @@ function varargout = myplotTEMPLATE(varargin)
    nargoutchk(0, 1);
 
    % might be nice to have:
-   [ax, washeld, wasfigure, varargin] = prepareGraphics(varargin{:}); %#ok<ASGLU>
+   % [ax, washeld, wasfigure, varargin] = prepareGraphics(varargin{:}); %#ok<ASGLU>
    % And move the isempty(h) ... stuff inside that
 
    % Parse optional axes flag

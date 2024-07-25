@@ -15,30 +15,30 @@ ab2     = olsfit(x,y2);
 ab3     = olsfit(x,y3);
 ab4     = olsfit(x,y4);
 
-% figure; 
+% figure;
 % scatter(x,y1); hold on;
 % scatter(x,y2);
 % scatter(x,y3);
 % scatter(x,y4);
 % abline
-% 
-% figure; 
+%
+% figure;
 % scatter(x,y1,'filled'); hold on;
 % scatter(x,y2,'filled');
 % scatter(x,y3,'filled');
 % scatter(x,y4,'filled');
 % abline
-% 
+%
 % % use different color order than default
-% figure; 
+% figure;
 % scatter(x,y1,45,c(3,:),'filled'); hold on;
 % scatter(x,y2,45,c(4,:),'filled');
 % scatter(x,y3,45,c(5,:),'filled');
 % scatter(x,y4,45,c(6,:),'filled');
 % abline
-% 
+%
 % % specifiy marker face color after the fact
-% figure; 
+% figure;
 % h(1) = scatter(x,y1,'filled'); hold on;
 % h(2) = scatter(x,y2,'filled');
 % h(3) = scatter(x,y3,'filled');
@@ -47,10 +47,10 @@ ab4     = olsfit(x,y4);
 %     h(n).MarkerFaceColor = c(n+2,:);
 % end
 % abline
-% 
+%
 % % change marker face color to none after the fact then modify
 % % markeredgecolor
-% figure; 
+% figure;
 % h(1) = scatter(x,y1,'filled'); hold on;
 % h(2) = scatter(x,y2,'filled');
 % h(3) = scatter(x,y3,'filled');
@@ -60,9 +60,9 @@ ab4     = olsfit(x,y4);
 %     h(n).MarkerEdgeColor = c(n+2,:);
 % end
 % abline
-% 
+%
 % % opposite of above (confirmed setting edge to 'none' and to another color)
-% figure; 
+% figure;
 % h(1) = scatter(x,y1,'filled'); hold on;
 % h(2) = scatter(x,y2,'filled');
 % h(3) = scatter(x,y3,'filled');
@@ -75,33 +75,33 @@ ab4     = olsfit(x,y4);
 %    h(n).MarkerEdgeColor = c(n+3,:);
 % end
 % abline
-% 
-% 
+%
+%
 % % specify the colororder
-% figure; 
+% figure;
 % h(1) = scatter(x,y1,'filled'); hold on;
 % h(2) = scatter(x,y2,'filled');
 % h(3) = scatter(x,y3,'filled');
 % h(4) = scatter(x,y4,'filled');
 % set(gca,'ColorOrder',c(4:end,:));
 % abline
-% 
+%
 % % SWITCH TO PLOT TYPE MARKER
-% 
+%
 % figure;
 % plot(x,y1,'o'); hold on;
 % plot(x,y2,'o');
 % plot(x,y3,'o');
 % plot(x,y4,'o');
 % abline
-% 
+%
 % figure;
 % plot(x,y1,'o','Color',c(3,:)); hold on;
 % plot(x,y2,'o','Color',c(4,:));
 % plot(x,y3,'o','Color',c(5,:));
 % plot(x,y4,'o','Color',c(6,:));
 % abline
-% 
+%
 % % my fix for this broke the two above (fixed it)
 % figure;
 % plot(x,y1,'o','MarkerEdgeColor',c(3,:)); hold on;
@@ -109,15 +109,15 @@ ab4     = olsfit(x,y4);
 % plot(x,y3,'o','MarkerEdgeColor',c(5,:));
 % plot(x,y4,'o','MarkerEdgeColor',c(6,:));
 % abline
-% 
-% % 
+%
+% %
 % figure;
 % plot(x,y1,'o','MarkerFaceColor',c(3,:),'MarkerEdgeColor',c(3,:)); hold on;
 % plot(x,y2,'o','MarkerFaceColor',c(4,:),'MarkerEdgeColor',c(4,:));
 % plot(x,y3,'o','MarkerFaceColor',c(5,:),'MarkerEdgeColor',c(5,:));
 % plot(x,y4,'o','MarkerFaceColor',c(6,:),'MarkerEdgeColor',c(6,:));
 % abline
-% 
+%
 % % mix and match - works! (if marker face color matches edge)
 % figure;
 % plot(x,y1,'o','MarkerFaceColor','none','MarkerEdgeColor',c(3,:)); hold on;
@@ -125,9 +125,9 @@ ab4     = olsfit(x,y4);
 % plot(x,y3,'o','MarkerFaceColor',c(1,:),'MarkerEdgeColor',c(5,:));
 % plot(x,y4,'o','MarkerFaceColor',c(2,:),'MarkerEdgeColor',c(6,:));
 % abline
-% 
+%
 % % now try specifiying the colors
-% figure; 
+% figure;
 % scatter(x,y1); hold on;
 % scatter(x,y2);
 % scatter(x,y3);
@@ -138,7 +138,7 @@ ab4     = olsfit(x,y4);
 % abline(ab4(2),ab4(1),'Color',c(4,:));
 
 % now try not specifiying the colors
-figure; 
+figure;
 scatter(x,y1); hold on;
 scatter(x,y2);
 scatter(x,y3);
@@ -148,13 +148,15 @@ abline(ab2(2),ab2(1));
 abline(ab3(2),ab3(1));
 abline(ab4(2),ab4(1));
 
-figure; 
+% Jul 2024 - abL/abH are not defined so I commented out those lines to address
+% codeissues
+figure;
 myscatter(x,y1,c(1,:)); hold on;
 myscatter(x,y2,c(2,:));
 abline;
-abline(abL(2),abL(1));
-abline(abL(2),abL(1),'Color',c(1,:))
-abline(abH(2),abH(1),'Color',c(2,:))
+% abline(abL(2),abL(1));
+% abline(abL(2),abL(1),'Color',c(1,:))
+% abline(abH(2),abH(1),'Color',c(2,:))
 
 
 
@@ -164,12 +166,14 @@ abline(abH(2),abH(1),'Color',c(2,:))
 % scatter(TGH,SGH,45,c(4,:),'filled');
 plot(x,y1,45,c(3,:),'filled'); hold on;
 plot(x,y2,45,c(4,:),'filled');
-abline(abL(2),abL(1));
-abline(abL(2),abL(1),'Color',c(3,:))
+% Jul 2024 - abL/abH are not defined so I commented out those lines to address
+% codeissues
+% abline(abL(2),abL(1));
+% abline(abL(2),abL(1),'Color',c(3,:))
 
 
 % this works
-figure; 
+figure;
 scatter(x,y1,45,c(3,:),'filled'); hold on;
 scatter(x,y2,45,c(4,:),'filled');
 abline

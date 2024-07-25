@@ -10,21 +10,21 @@ function testBasicNameValuePairExtraction(testCase)
    [outargs, pairs, nargs, rmpair] = parseparampairs(inargs);
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1,0));
-   verifyEqual(testCase, pairs, inargs);
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEmpty(testCase, rmpair);
+   testCase.verifyEqual(outargs, cell(1,0));
+   testCase.verifyEqual(pairs, inargs);
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEmpty(rmpair);
 
    % Test case 2: Remove property 'Name1'
    [outargs, pairs, nargs, rmpair] = parseparampairs(inargs, 'Name1');
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1,0));
-   verifyEqual(testCase, pairs, {'arg1', 'arg2', 'Name2', 'Value2'});
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, rmpair, {'Name1', 'Value1'});
+   testCase.verifyEqual(outargs, cell(1,0));
+   testCase.verifyEqual(pairs, {'arg1', 'arg2', 'Name2', 'Value2'});
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(rmpair, {'Name1', 'Value1'});
 end
 
 function testNoNameValuePair(testCase)
@@ -33,9 +33,9 @@ function testNoNameValuePair(testCase)
    % requires intelligent use by the caller.
    inargs = {42, 'hello'};
    [outargs, pairs, nargs, ~] = parseparampairs(inargs);
-   verifyEqual(testCase, outargs, {42});
-   verifyEqual(testCase, pairs, {'hello'});
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(outargs, {42});
+   testCase.verifyEqual(pairs, {'hello'});
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testOutputAsStruct(testCase)
@@ -46,48 +46,48 @@ function testOutputAsStruct(testCase)
    [outargs, pairs, nargs, ~] = parseparampairs(inargs, 'asstruct');
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1,0));
-   verifyEqual(testCase, fieldnames(pairs), {'arg1'; 'Name1'; 'Name2'});
-   verifyEqual(testCase, pairs.Name1, 'Value1');
-   verifyEqual(testCase, pairs.Name2, 'Value2');
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(outargs, cell(1,0));
+   testCase.verifyEqual(fieldnames(pairs), {'arg1'; 'Name1'; 'Name2'});
+   testCase.verifyEqual(pairs.Name1, 'Value1');
+   testCase.verifyEqual(pairs.Name2, 'Value2');
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
 
    % NOTE: this is the correct functionality but incorrect function usage:
-   verifyEqual(testCase, pairs.arg1, 'arg2');
+   testCase.verifyEqual(pairs.arg1, 'arg2');
 end
 
 function testRemoveSpecificPair(testCase)
    inargs = {'Color', 'blue', 'Size', 10};
    [outargs, pairs, nargs, rmpairs] = parseparampairs(inargs, 'Size');
-   verifyEmpty(testCase, outargs);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, pairs, {'Color', 'blue'});
-   verifyEqual(testCase, rmpairs, {'Size', 10});
+   testCase.verifyEmpty(outargs);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(pairs, {'Color', 'blue'});
+   testCase.verifyEqual(rmpairs, {'Size', 10});
 end
 
 function testAllNameValuePairs(testCase)
    inargs = {'Color', 'blue', 'Size', 10};
    [outargs, pairs, nargs, ~] = parseparampairs(inargs);
-   verifyEmpty(testCase, outargs);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, pairs, inargs);
+   testCase.verifyEmpty(outargs);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(pairs, inargs);
 end
 
 function testNonStringElementsBeforeString(testCase)
    inargs = {42, 3.14, 'Color', 'blue'};
    [args, pairs, nargs, ~] = parseparampairs(inargs);
-   verifyEqual(testCase, args, {42, 3.14});
-   verifyEqual(testCase, pairs, {'Color', 'blue'});
-   verifyEqual(testCase, nargs, numel(args));
+   testCase.verifyEqual(args, {42, 3.14});
+   testCase.verifyEqual(pairs, {'Color', 'blue'});
+   testCase.verifyEqual(nargs, numel(args));
 end
 
 function testWithoutAstypeOption(testCase)
    inargs = {'Color', 'blue', 'Size', 10};
    [args, pairs, nargs, ~] = parseparampairs(inargs);
-   verifyEmpty(testCase, args);
-   verifyEqual(testCase, nargs, numel(args));
-   verifyEqual(testCase, pairs, {'Color', 'blue', 'Size', 10});
+   testCase.verifyEmpty(args);
+   testCase.verifyEqual(nargs, numel(args));
+   testCase.verifyEqual(pairs, {'Color', 'blue', 'Size', 10});
 end
 
 
@@ -99,10 +99,10 @@ function testNoCharArgs(testCase)
    [outargs, pairs, nargs, ~] = parseparampairs(inargs);
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1, 0));
-   verifyEqual(testCase, pairs, {'Name1', 'Value1', 'Name2', 'Value2'});
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
+   testCase.verifyEqual(outargs, cell(1, 0));
+   testCase.verifyEqual(pairs, {'Name1', 'Value1', 'Name2', 'Value2'});
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
 end
 
 function testMultipleRmProps(testCase)
@@ -114,44 +114,44 @@ function testMultipleRmProps(testCase)
    [outargs, pairs, nargs, rmpairs] = parseparampairs(inargs, rmprops);
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1, 0));
-   verifyEqual(testCase, pairs, {'arg1', 'arg2'});
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, rmpairs, {'Name1', 'Value1', 'Name2', 'Value2'});
+   testCase.verifyEqual(outargs, cell(1, 0));
+   testCase.verifyEqual(pairs, {'arg1', 'arg2'});
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(rmpairs, {'Name1', 'Value1', 'Name2', 'Value2'});
 
    % Test case 1a: Remove multiple properties, pass rmprops as a csl:
    [outargs, pairs, nargs, rmpairs] = parseparampairs(inargs, rmprops{:});
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1, 0));
-   verifyEqual(testCase, pairs, {'arg1', 'arg2'});
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, rmpairs, {'Name1', 'Value1', 'Name2', 'Value2'});
+   testCase.verifyEqual(outargs, cell(1, 0));
+   testCase.verifyEqual(pairs, {'arg1', 'arg2'});
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(rmpairs, {'Name1', 'Value1', 'Name2', 'Value2'});
 
    % Test case 2a: asstruct output type, pass rmprops as a cell array:
    [outargs, pairs, nargs, rmpairs] = parseparampairs(inargs, ...
       'asstruct', rmprops);
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1, 0));
-   verifyEqual(testCase, pairs.arg1, 'arg2');
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, rmpairs.Name1, 'Value1');
-   verifyEqual(testCase, rmpairs.Name2, 'Value2');
+   testCase.verifyEqual(outargs, cell(1, 0));
+   testCase.verifyEqual(pairs.arg1, 'arg2');
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(rmpairs.Name1, 'Value1');
+   testCase.verifyEqual(rmpairs.Name2, 'Value2');
 
    % Test case 2b: asstruct output type, pass rmprops as a csl:
    [outargs, pairs, nargs, rmpairs] = parseparampairs(inargs, ...
       'asstruct', rmprops{:});
 
    % Assertions
-   verifyEqual(testCase, outargs, cell(1, 0));
-   verifyEqual(testCase, pairs.arg1, 'arg2');
-   verifyEqual(testCase, nargs, 0);
-   verifyEqual(testCase, nargs, numel(outargs));
-   verifyEqual(testCase, rmpairs.Name1, 'Value1');
-   verifyEqual(testCase, rmpairs.Name2, 'Value2');
+   testCase.verifyEqual(outargs, cell(1, 0));
+   testCase.verifyEqual(pairs.arg1, 'arg2');
+   testCase.verifyEqual(nargs, 0);
+   testCase.verifyEqual(nargs, numel(outargs));
+   testCase.verifyEqual(rmpairs.Name1, 'Value1');
+   testCase.verifyEqual(rmpairs.Name2, 'Value2');
 end
 

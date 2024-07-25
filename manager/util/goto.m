@@ -1,4 +1,4 @@
-function varargout = goto(tbname)
+function goto(tbname)
    %GOTO cd to toolbox folder
    %
    % Syntax
@@ -32,7 +32,7 @@ function varargout = goto(tbname)
 
    % CHECKS
    assert(isfolder(tbsrcpath))
-   
+
    % Go to the folder
    cd(tbsrcpath)
 
@@ -42,9 +42,9 @@ function varargout = goto(tbname)
 end
 
 %% LOCAL FUNCTIONS
-function cleanupfunc
-
-end
+% function cleanupfunc
+%
+% end
 
 %% TESTS
 

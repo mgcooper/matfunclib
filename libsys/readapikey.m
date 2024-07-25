@@ -1,4 +1,4 @@
-function obj = readapikey(API_Key)
+function obj = readapikey(API_Key, timeout, url)
 
    % copied from yair altman's code, just a placeholder in case thi scomes on
    % handy, expecting to use it to read a .env file ... actually that was just

@@ -1,9 +1,18 @@
 function varargout = runtests(varargin)
    %RUNTESTS Run all tests in the test suite.
    %
-   %  result = runtests() Runs all tests in the test/ and/or tests/ folder.
-   %  result = runtests(TESTS) Runs all tests in the specified folder(s).
-   %  result = runtests(_, 'Debug', true) Runs all tests in verbose debug mode.
+   %  result = tbx.internal.runtests()
+   %  result = tbx.internal.runtests(_, 'Debug', true)
+   %
+   % Description
+   %  result = tbx.internal.runtests() Runs all tests in the tests/
+   %  and/or test/ folder.
+   %
+   %  result = tbx.internal.runtests(TESTS) Runs all tests in the
+   %  specified folder(s).
+   %
+   %  result = tbx.internal.runtests(_, 'Debug', true) Runs all tests in
+   %  verbose debug mode.
    %
    % Note: The only name-value argument currently supported is 'Debug', and in
    % this mode, debugging is configured using the following plugins:

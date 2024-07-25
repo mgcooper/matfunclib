@@ -20,25 +20,25 @@ time = 0;
 
 % Run the energy balance model
 while time < total_time
-    % Calculate albedo based on ice cover
-    if T < T_ice_threshold
-        alpha = alpha_ice_covered;
-    else
-        alpha = alpha_ice_free;
-    end
+   % Calculate albedo based on ice cover
+   if T < T_ice_threshold
+      alpha = alpha_ice_covered;
+   else
+      alpha = alpha_ice_free;
+   end
 
-    % Calculate net incoming solar radiation
-    Qin = S0 * (1 - alpha) / 4;
+   % Calculate net incoming solar radiation
+   Qin = S0 * (1 - alpha) / 4;
 
-    % Calculate outgoing longwave radiation
-    Qout = epsilon * sigma * T^4;
+   % Calculate outgoing longwave radiation
+   Qout = epsilon * sigma * T^4;
 
-    % Update temperature based on energy balance
-    dT = (Qin - Qout) * time_step;
-    T = T + dT;
+   % Update temperature based on energy balance
+   dT = (Qin - Qout) * time_step;
+   T = T + dT;
 
-    % Update time
-    time = time + time_step;
+   % Update time
+   time = time + time_step;
 end
 
 % Display final temperature
