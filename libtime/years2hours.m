@@ -1,4 +1,4 @@
 function hours = years2hours(years)
-    
-    hours = years*24*365;
 
+   hours = years*24*365;
+end

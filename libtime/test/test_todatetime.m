@@ -6,7 +6,7 @@ format shortG
 
 datetoday = datetime('today');
 
-% Note: for YYYYMMDD format, the datetime equivalent will use hour 1, 
+% Note: for YYYYMMDD format, the datetime equivalent will use hour 1,
 
 % Define test data
 testdata.datetime.t1 = datetime(0, 1, 1, 0, 0, 0);
@@ -33,7 +33,7 @@ testdata.yyyymmdd.t3 = 20220101;
 % thismonth = month(datetoday);
 % thisday = day(datetoday);
 % if thismonth < 10
-% 
+%
 % end
 % testdata.datetime.t3 = cat(2, year(now), month(now), day(now));
 
@@ -81,58 +81,58 @@ assertEqual('yyyymmdd', dtype)
 
 
 % %% Test function accuracy
-% 
+%
 % % Test function accuracy using assert
 % expected = [];
 % returned = todatetime( );
 % assert(isequal(returned, expected));
-% 
+%
 % % Test function accuracy using assert with tolerance
 % tol = 20*eps;
 % assert(abs(returned - expected) < tol);
-% 
+%
 % % Test with edge cases (Inf, NaN, very large/small numbers)
 % assert(isnan(todatetime(NaN)));
 % assert(isinf(todatetime(Inf)));
 % assert(abs(todatetime(1e200) - 1e200) < 1e-10); % replace with theoretical result
-% 
+%
 % %% Test error handling
-% 
+%
 % % This uses the custom local functions to mimic the testsuite features like
 % % verifyError in a script-based testing framework. See the try-catch versions
 % % further down for another way to test error handling.
-% 
+%
 % testdiag = "description of this test";
 % eid = 'matfunclib:libname:todatetime';
-% 
+%
 % % verify failure
 % assertError(@() todatetime('inputs that error'), eid, testdiag)
-% 
+%
 % % verify success
 % assertSuccess(@() todatetime('inputs that dont error'), eid, testdiag)
-% 
+%
 % %% Test type handling
-% 
+%
 % % Test different types, if the function is expected to handle them
-% 
+%
 % expected = []; % add expected value for double type
 % assert(isequal(todatetime(X), expected));
-% 
+%
 % expected = []; % add expected value for single type
 % assert(isequal(todatetime(single(X)), single(expected)));
-% 
+%
 % expected = []; % add expected value for logical type
 % assert(isequal(todatetime(logical(X)), expected));
-% 
+%
 % expected = []; % add expected value for int16 type
 % assert(isequal(todatetime(int16(X)), expected)); % int16
-% 
+%
 % %% Test dimension handling
-% 
+%
 % % Test different dimensions
 % assert(isequal(todatetime([2 3]), [4 6])); % 1D array
 % assert(isequal(todatetime([2 3; 4 5]), [4 6; 8 10])); % 2D array
-% 
+%
 % %% Test empty inputs
 % try
 %    todatetime();
@@ -140,7 +140,7 @@ assertEqual('yyyymmdd', dtype)
 % catch ME
 %    assert(strcmp(ME.identifier, 'MATLAB:minrhs'));
 % end
-% 
+%
 % %% Test invalid inputs
 % try
 %    todatetime('invalid');
@@ -151,7 +151,7 @@ assertEqual('yyyymmdd', dtype)
 %    % otherwise, might be:
 %    % assert(strcmp(ME.identifier, 'MATLAB:invalidInput'));
 % end
-% 
+%
 % %% Test too many input arguments
 % try
 %    todatetime(1,2,3,4,5,6,7);

@@ -33,7 +33,7 @@ function [tf, yyyy, mm, dd] = isyyyymmdd(t, varargin)
    %   - The function does not, by default, determine if the date is valid, only
    %   if the format is consistent with yyyyMMdd. For instance, it does not
    %   account for leap years or the varying number of days in each month,
-   %   meaning 20190219 will be validated as true by this function. 
+   %   meaning 20190219 will be validated as true by this function.
    %   - To require valid dates, set the optional input 'validateDate', true.
    %
    % See also: str2double, datenum
