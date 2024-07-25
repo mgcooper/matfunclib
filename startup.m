@@ -74,16 +74,21 @@ setenv('MATLABUSERPATH', fullfile(HOMEPATH, 'MATLAB'));
 % Set main user project path
 setenv('USERPROJECTPATH', fullfile(HOMEPATH, 'myprojects'));
 
-% Set $HOME/MATLAB and $HOME/MATLAB/projects/matfunclib to make the setenv
-% syntax that follows more compact.
+% Next two make the setenv syntax that follows more compact.
+% Changing these two, plus  should be sufficient to update
+% the base $HOME/MATLAB environment, including matfunclib.
+
+% $HOME/MATLAB
 MATLABPATH = getenv('MATLABUSERPATH');
+
+% $HOME/MATLAB/projects/matfunclib
 MATFUNCLIB = fullfile(MATLABPATH, 'projects/matfunclib');
 
 %% MATFUNCLIB paths
 
 % MATFUNCLIB path.
-setenv('MATLABFUNCTIONPATH', MATFUNCLIB);
-setenv('MATLABTEMPLATEPATH', fullfile(MATFUNCLIB, 'templates'));
+setenv('MATLABFUNCTIONPATH',  MATFUNCLIB);
+setenv('MATLABTEMPLATEPATH',  fullfile(MATFUNCLIB, 'templates'));
 
 % MATFUNCLIB subfolders.
 setenv('TBJSONACTIVATEPATH',  fullfile(MATFUNCLIB, 'manager/activate'));
@@ -95,25 +100,25 @@ setenv('PRJJSONWORKOFFPATH',  fullfile(MATFUNCLIB, 'manager/workoff'));
 setenv('TBDIRECTORYPATH',     fullfile(MATLABPATH, 'directory'));
 setenv('PROJECTDIRECTORYPATH',fullfile(MATLABPATH, 'directory'));
 
-setenv('FEXFUNCTIONPATH',  fullfile(MATLABPATH,'fexlib')); % file exchange
-setenv('FEXPACKAGEPATH',   fullfile(MATLABPATH,'fexpackages'));
+setenv('FEXFUNCTIONPATH',     fullfile(MATLABPATH, 'fexlib'));  % file exchange
+setenv('FEXPACKAGEPATH',      fullfile(MATLABPATH, 'fexpackages'));
 
 %% Below here depends on variables set in bash startup
 
 setenv('GITHUB_USER_NAME', 'mgcooper');
 
 % user data
-setenv('USERDATAPATH',  fullfile(HOMEPATH,'work/data'));
-setenv('USERGISPATH',   fullfile(HOMEPATH,'work/data/interface/GIS_data'));
+setenv('USERDATAPATH',  fullfile(HOMEPATH, 'work','data'));
+setenv('USERGISPATH',   fullfile(HOMEPATH, 'work','data','interface','GIS_data'));
 
 % project and source code
-setenv('MATLABPROJECTPATH',fullfile(HOMEPATH,'myprojects/matlab'));
-setenv('MATLABSOURCEPATH', fullfile(HOMEPATH,'mysource/matlab'));
+setenv('MATLABPROJECTPATH',fullfile(HOMEPATH,'myprojects','matlab'));
+setenv('MATLABSOURCEPATH', fullfile(HOMEPATH,'mysource','matlab'));
 
 % e3sm
-setenv('E3SMINPUTPATH',    fullfile(getenv('USERDATAPATH'),'e3sm/input'));
-setenv('E3SMOUTPUTPATH',   fullfile(getenv('USERDATAPATH'),'e3sm/output'));
-setenv('E3SMTEMPLATEPATH', fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
+setenv('E3SMINPUTPATH',    fullfile(getenv('USERDATAPATH'),'e3sm','input'));
+setenv('E3SMOUTPUTPATH',   fullfile(getenv('USERDATAPATH'),'e3sm','output'));
+setenv('E3SMTEMPLATEPATH', fullfile(getenv('USERDATAPATH'),'e3sm','templates'));
 
 % Google Drive
 % setenv('USERGDRIVEPATH', fullfile(getenv('HOME'), ...
@@ -128,7 +133,7 @@ setenv('USER_MERRA_PATH', fullfile(getenv('USERDATAPATH'), 'merra2'));
 % ignore = {'old_projects'; 'myProjects'};
 
 % Generate a list of all sub-folders
-subpaths = strsplit(genpath(getenv('MATLABUSERPATH')), pathsep);
+subpaths = strsplit(genpath(MATLABPATH), pathsep);
 
 % Remove ignored folders
 ignorePaths = {'.git'; '.svn'; '.'; '..'; };
@@ -137,10 +142,10 @@ keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 % custom remove for octave compatibility
 if inoctave
    ignorePaths = [ignorePaths; {
-      fullfile(getenv('MATLABFUNCTIONPATH'), 'libtext', 'printf'); ...
-      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'iscomplex'); ...
-      fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'ifelse'); ...
-      fullfile(getenv('MATLABFUNCTIONPATH'), 'libstruct', 'numfields'); ...
+      fullfile(MATFUNCLIB, 'libtext', 'printf'); ...
+      fullfile(MATFUNCLIB, 'liblogic', 'iscomplex'); ...
+      fullfile(MATFUNCLIB, 'liblogic', 'ifelse'); ...
+      fullfile(MATFUNCLIB, 'libstruct', 'numfields'); ...
       fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
       }];
 end
@@ -157,7 +162,7 @@ subpaths = horzcat(subpaths{:});
 addpath(subpaths, '-end');
 
 % Add these paths to the top to ensure they are not shadowed by built-ins
-addpath(fullfile(getenv('MATLABFUNCTIONPATH'), 'libstats'), '-begin');
+addpath(fullfile(MATFUNCLIB, 'libstats'), '-begin');
 
 %% Figure defaults
 

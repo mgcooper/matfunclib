@@ -29,8 +29,8 @@ if usejava('desktop')
    % from projects.m finish:
    % Save the current project and exit the projects() logic
    try
-      projects('save', projects('active'));
-      projects('close');
+      % projects('save', projects('active'));
+      % projects('close');
    catch
    end
 
