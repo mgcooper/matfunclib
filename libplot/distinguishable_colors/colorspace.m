@@ -119,8 +119,14 @@ if isstr(Str)
    DestSpace = alias(DestSpace);
 else
    SrcSpace = 1;             % No source pre-transform
-   DestSpace = Conversion;
-   if any(size(Conversion) ~= 3), error('Transformation matrix must be 3x3.'); end
+   
+   % mgc replaced "Conversion" with "Str" since Conversion is sent in to this
+   % function but called Str here. I assume it never got here when I use this
+   % function b/c Conversion is supposed to be a string and this is the "else"
+   % condition so maybe it's an unusual code path and just never got here.
+   % DestSpace = Conversion; 
+   DestSpace = Str; 
+   if any(size(Str) ~= 3), error('Transformation matrix must be 3x3.'); end
 end
 return;
 

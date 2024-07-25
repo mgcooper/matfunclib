@@ -42,7 +42,7 @@ function pauseSaveFig(savekey,filename,obj,varargin)
          commandwindow
       end
    else
-      exportgraphics(gcf,fname,'Resolution',300);
+      exportgraphics(gcf,filename,'Resolution',300);
       commandwindow
    end
 end

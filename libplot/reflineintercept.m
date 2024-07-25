@@ -4,7 +4,7 @@ function intercept = reflineintercept(x,y,slope,refpoint,modeltype,xyref)
    % intercept = reflineintercept(x,y,slope,refpoint,'linear')
    % intercept = reflineintercept(x,y,slope,refpoint,'power')
    % intercept = reflineintercept(_, 'x')
-   % 
+   %
    % This function works by finding the value of the x or y-data that is nearest
    % to the refpoint, then finds the corresponding x or y-value, then forces the
    % line to pass through that point. The default assumption is that the
@@ -24,17 +24,18 @@ function intercept = reflineintercept(x,y,slope,refpoint,modeltype,xyref)
          switch modeltype
 
             case 'power'
-               intercept = refpoint/x(findmin(abs(y-refpoint),1,'first'))^slope;
+               intercept = refpoint/x(findglobalmin(abs(y-refpoint),1,'first'))^slope;
 
                % % this finds all points within a neighborhood of refpoint
-               %             ydiffs = abs(y-refpoint);
-               %             ymean = mean(y,'omitnan');
-               %             yref = mean(y(ydiffs./ymean<0.15),'omitnan');
-               %             xref = mean(x(ydiffs./ymean<0.15),'omitnan');
-               %             intercept = yref/xref^slope;
+               % ydiffs = abs(y-refpoint);
+               % ymean = mean(y,'omitnan');
+               % yref = mean(y(ydiffs./ymean<0.15),'omitnan');
+               % xref = mean(x(ydiffs./ymean<0.15),'omitnan');
+               % intercept = yref/xref^slope;
 
             case 'linear'
-               intercept = refpoint-x(findmin(abs(y-refpoint),1000,'first'))*slope;
+               intercept = refpoint - ...
+                  x(findglobalmin(abs(y-refpoint),1000,'first')) * slope;
          end
 
       case 'x'
@@ -42,13 +43,15 @@ function intercept = reflineintercept(x,y,slope,refpoint,modeltype,xyref)
          switch modeltype
 
             case 'power'
-               intercept = y(findmin(abs(y-refpoint),1,'first'))/refpoint^slope;
+               intercept = ...
+                  y(findglobalmin(abs(y-refpoint),1,'first')) / refpoint^slope;
 
                % might be better to use this, but it doesn't work if mask
                % intercept = yrefpoint/mean(x.^slope);
 
             case 'linear'
-               intercept = y(findmin(abs(y-refpoint),1,'first'))-refpoint*slope;
+               intercept = ...
+                  y(findglobalmin(abs(y-refpoint),1,'first')) - refpoint*slope;
          end
    end
 end

@@ -29,7 +29,7 @@ function varargout = scatterc(x,y,sz,c,opts)
 
 
    % PARSE OUTPUTS
-   [varargout{1:nargout}] = dealout(argout1, argout2);
+   % [varargout{1:nargout}] = dealout(argout1, argout2);
 
 end
 
@@ -43,7 +43,7 @@ end
 % ## add octave tests here
 
 %% LICENSE
-% 
+%
 % BSD 3-Clause License
 %
 % Copyright (c) 2023, Matt Cooper (mgcooper)
