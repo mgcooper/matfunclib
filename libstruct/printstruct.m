@@ -45,6 +45,13 @@ function varargout = printstruct(S, varargin)
       'maxarraylength',       75             ...
       };
    vals = setargs(def, varargin);
+   
+   % mgc assign these directly (they're "assignin"'d by setargs which codetools
+   % doesn't like)
+   nindent = vals.nindent;
+   sortfields = vals.sortfields;
+   printcontents = vals.printcontents;
+   maxarraylength = vals.maxarraylength;
 
    if nargin==0
       mfile_showhelp;

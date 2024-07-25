@@ -53,10 +53,11 @@ function [result, why] = isequalstruct(struct1, struct2, funh2string, ignorenan)
    if nargin < 4
       ignorenan = false;
    end
-   why = struct('Reason','','Where','');
+   emptychar = '';
+   why = struct('Reason', emptychar, 'Where', emptychar);
    if any(size(struct1) ~= size(struct2))
       result = false;
-      why = struct('Reason','Sizes are different',Where,'');
+      why = struct('Reason', 'Sizes are different', 'Where', emptychar);
       return
    end
    fields1 = fieldnames(struct1);
