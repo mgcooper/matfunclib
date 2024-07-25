@@ -3,7 +3,7 @@ function ax = coverlay(cm, varargin)
    %
    % coverlay(cm,figh,Name,Value,...) Overlay any figure with contour lines as
    % defined by the ContourMatrix.
-   % 
+   %
    % Syntax:
    %   coverlay(cm) - overlay current figure with contours defined by cm.
    %   coverlay(cm,figh) - overlay figure pointed by figh with contours.
@@ -33,7 +33,7 @@ function ax = coverlay(cm, varargin)
    %     - Fixed error when Image figure is passed as input (parsegraphics)
    %     - Added support for held state
    %     - Added axes return argument
-   % 
+   %
    % See also: contourc, clabel
 
    % Parse possible axes input.
@@ -63,12 +63,12 @@ function ax = coverlay(cm, varargin)
          done = true;
       end
    end
-   
+
    % Restore hold state
    set(ax, 'NextPlot', washeld);
 
    if nargout == 1
-      varargout{1} = H;
+      varargout{1} = ax;
    end
 end
 
