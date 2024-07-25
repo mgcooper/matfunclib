@@ -102,6 +102,7 @@ function projectlist = buildprojectlist(opts)
    defaultproj = projectlist(end,:);
    defaultproj.name = {'default'};
    try
+      % Note: $HOME/MATLAB not matfunclib. This is the 'default' project.
       defaultproj.folder = getenv('MATLABUSERPATH');
    catch
       defaultproj.folder = userpath;

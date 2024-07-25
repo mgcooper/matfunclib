@@ -64,53 +64,60 @@ else
    % by the user dotfiles, so there is no need to set PATH.
 end
 
-%% set user paths
+%% Set user paths
 
 % This path can change, but changing MATLABUSERPATH will break many functions.
 % Unfortunately, I should have used MATLABHOMEPATH for this variable, and
 % MATLABUSERPATH should point to the same path returned by 'userpath'.
-setenv('MATLABUSERPATH',fullfile(HOMEPATH,'MATLAB'));
+setenv('MATLABUSERPATH', fullfile(HOMEPATH, 'MATLAB'));
 
-% I set this to make the setenv statements syntax more compact:
-MATLABPATH = getenv('MATLABUSERPATH');      % matlab home
+% Set main user project path
+setenv('USERPROJECTPATH', fullfile(HOMEPATH, 'myprojects'));
 
-% user project path
-setenv('USERPROJECTPATH',fullfile(HOMEPATH,'myprojects'));
+% Set $HOME/MATLAB and $HOME/MATLAB/projects/matfunclib to make the setenv
+% syntax that follows more compact.
+MATLABPATH = getenv('MATLABUSERPATH');
+MATFUNCLIB = fullfile(MATLABPATH, 'projects/matfunclib');
 
-% matlab functions
-setenv('MATLABFUNCTIONPATH',fullfile(MATLABPATH,'matfunclib'));
-setenv('MATLABTEMPLATEPATH',fullfile(MATLABPATH,'matfunclib/templates'));
+%% MATFUNCLIB paths
 
-% manager
-setenv('TBDIRECTORYPATH',fullfile(MATLABPATH,'directory'));
-setenv('PROJECTDIRECTORYPATH',fullfile(MATLABPATH,'directory'));
-setenv('TBJSONACTIVATEPATH',fullfile(MATLABPATH,'matfunclib/manager/activate'));
-setenv('TBJSONDEACTIVATEPATH',fullfile(MATLABPATH,'matfunclib/manager/deactivate'));
-setenv('PRJJSONWORKONPATH',fullfile(MATLABPATH,'matfunclib/manager/workon'));
-setenv('PRJJSONWORKOFFPATH',fullfile(MATLABPATH,'matfunclib/manager/workoff'));
+% MATFUNCLIB path.
+setenv('MATLABFUNCTIONPATH', MATFUNCLIB);
+setenv('MATLABTEMPLATEPATH', fullfile(MATFUNCLIB, 'templates'));
+
+% MATFUNCLIB subfolders.
+setenv('TBJSONACTIVATEPATH',  fullfile(MATFUNCLIB, 'manager/activate'));
+setenv('TBJSONDEACTIVATEPATH',fullfile(MATFUNCLIB, 'manager/deactivate'));
+setenv('PRJJSONWORKONPATH',   fullfile(MATFUNCLIB, 'manager/workon'));
+setenv('PRJJSONWORKOFFPATH',  fullfile(MATFUNCLIB, 'manager/workoff'));
+
+% MATLABPATH subfolders. Manager directory paths are not under source control.
+setenv('TBDIRECTORYPATH',     fullfile(MATLABPATH, 'directory'));
+setenv('PROJECTDIRECTORYPATH',fullfile(MATLABPATH, 'directory'));
+
+setenv('FEXFUNCTIONPATH',  fullfile(MATLABPATH,'fexlib')); % file exchange
+setenv('FEXPACKAGEPATH',   fullfile(MATLABPATH,'fexpackages'));
+
+%% Below here depends on variables set in bash startup
 
 setenv('GITHUB_USER_NAME', 'mgcooper');
 
-% file exchange
-setenv('FEXFUNCTIONPATH',fullfile(MATLABPATH,'fexfunclib'));
-setenv('FEXPACKAGEPATH',fullfile(MATLABPATH,'fexpackages'));
-
 % user data
-setenv('USERDATAPATH',fullfile(HOMEPATH,'work/data'));
-setenv('USERGISPATH',fullfile(HOMEPATH,'work/data/interface/GIS_data'));
+setenv('USERDATAPATH',  fullfile(HOMEPATH,'work/data'));
+setenv('USERGISPATH',   fullfile(HOMEPATH,'work/data/interface/GIS_data'));
 
 % project and source code
 setenv('MATLABPROJECTPATH',fullfile(HOMEPATH,'myprojects/matlab'));
-setenv('MATLABSOURCEPATH',fullfile(HOMEPATH,'mysource/matlab'));
+setenv('MATLABSOURCEPATH', fullfile(HOMEPATH,'mysource/matlab'));
 
 % e3sm
-setenv('E3SMINPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/input'));
-setenv('E3SMOUTPUTPATH',fullfile(getenv('USERDATAPATH'),'e3sm/output'));
-setenv('E3SMTEMPLATEPATH',fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
+setenv('E3SMINPUTPATH',    fullfile(getenv('USERDATAPATH'),'e3sm/input'));
+setenv('E3SMOUTPUTPATH',   fullfile(getenv('USERDATAPATH'),'e3sm/output'));
+setenv('E3SMTEMPLATEPATH', fullfile(getenv('USERDATAPATH'),'e3sm/templates'));
 
 % Google Drive
-setenv('USERGDRIVEPATH', fullfile(getenv('HOME'), ...
-   'Library/CloudStorage/GoogleDrive-guycooper@g.ucla.edu/My Drive'));
+% setenv('USERGDRIVEPATH', fullfile(getenv('HOME'), ...
+%    'Library/CloudStorage/GoogleDrive-guycooper@g.ucla.edu/My Drive'));
 
 % merra toolbox
 setenv('USER_MERRA_PATH', fullfile(getenv('USERDATAPATH'), 'merra2'));
@@ -230,7 +237,6 @@ try
    activate('graceGapFill', silent=true, asproject=true);
    activate('exactremap', silent=true, asproject=true);
    activate('groupstats', silent=true, asproject=true);
-   % pathadd(getprjsourcepath('groupstats'), true, '-end')
 catch
 end
 

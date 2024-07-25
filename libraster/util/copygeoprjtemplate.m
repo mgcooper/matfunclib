@@ -2,7 +2,7 @@ function copygeoprjtemplate(geoshpfname)
    %COPYGEOPRJTEMPLATE Copy .prj file to shapefile destination.
    %
    %  copygeoprjtemplate(geoshpfname)
-   % 
+   %
    % See also:
 
    if contains(geoshpfname,'.shp')
@@ -14,7 +14,6 @@ function copygeoprjtemplate(geoshpfname)
       disp('appending .prj to filename');
    end
 
-   src = fullfile(getenv('MATLABUSERPATH'), ...
-      'matfunclib/templates/geoprojtemplate.prj');
+   src = fullfile(getenv('MATLABTEMPLATEPATH'), 'geoprojtemplate.prj');
    copyfile(src, geoshpfname);
 end
