@@ -74,6 +74,10 @@
 
 % Changelog
 %{
+2024/Jul
+    (mgc): Various fixes to suppress codeissues complaints about 'all', e.g. the
+    use of 'char' in cellfun and fopen('all'). Not sure which was required.
+
 2018/June
     Removed affiliation info & updated license
 
@@ -133,7 +137,8 @@ function varargout = getCases(varargin)
     % Load relevant code
     try
         fid = fopen(fileName);
-        OC  = onCleanup(@() any(fid==fopen('all')) && fclose(fid));
+        fidall = 'all';
+        OC  = onCleanup(@() any(fid==fopen(fidall)) && fclose(fid));
     catch ME
         ME2 = MException([mfilename ':io_error'],...
                          'Could not open source file.');
@@ -167,7 +172,7 @@ function varargout = getCases(varargin)
     % which is hard to keep track of. This makes it easier:
     callsite = [false(callsite-1,1); true; false(numel(code)-callsite,1)];
     code = [code num2cell(callsite)];
-    code = code(~cellfun('isempty', code(:,1)),:); % Remove empty lines
+    code = code(~cellfun('isempty', code(:,1)), :); % Remove empty lines
     clear callsite
 
     % Remove block comments
@@ -188,7 +193,7 @@ function varargout = getCases(varargin)
 
     % Remove other comment lines
     code(:,1) = regexprep(code(:,1), '^%.*$', '');
-    code      = code(~cellfun('isempty', code(:,1)),:);
+    code      = code(~cellfun('isempty', code(:,1)), :);
 
     % Remove trailing comments
     % NOTE: we have to be careful not to delete percent signs
@@ -201,8 +206,8 @@ function varargout = getCases(varargin)
     % http://stackoverflow.com/questions/17359425/how-to-remove-trailing-comments-via-regexp
     %
     code(:,1) = regexprep(code(:,1), ...
-                          '((^|\n)(([\]\)}\w.]''+|[^''%])+|''[^''\n]*(''''[^''\n]*)*'')*)[^\n]*',...
-                          '$1');
+       '((^|\n)(([\]\)}\w.]''+|[^''%])+|''[^''\n]*(''''[^''\n]*)*'')*)[^\n]*',...
+       '$1');
 
     % Recombine all continued lines
     continued = regexp(code(:,1), '\.\.\..*');
@@ -214,7 +219,7 @@ function varargout = getCases(varargin)
             end
         end
     end
-    code = code(~cellfun('isempty', code(:,1)),:);
+    code = code(~cellfun('isempty', code(:,1)), :);
     clear continued
 
     % Remove any leading strings and other irrelevant code
@@ -237,8 +242,8 @@ function varargout = getCases(varargin)
     end
 
     % Remove everything before the first 'switch' and after the last 'end'
-    firstSwitch = find(switchLines, 1,'first');
-    lastEnd     = find(endLines, 1,'last');
+    firstSwitch = find(switchLines, 1, 'first');
+    lastEnd     = find(endLines, 1, 'last');
     keep        = firstSwitch:lastEnd;
 
     code        = code(keep,:);
@@ -258,7 +263,8 @@ function varargout = getCases(varargin)
     openBlock = {'for' 'while' 'try' 'if' 'function' 'spmd' 'parfor'};
     openLines = switchLines;
     for ii = 1:numel(openBlock)
-        openLines = openLines + findValidKeywords(openBlock{ii}); end
+        openLines = openLines + findValidKeywords(openBlock{ii}); 
+    end
 
     clear openBlock ii
 
@@ -271,14 +277,16 @@ function varargout = getCases(varargin)
 
         if endLines(line)
             if ~closed
-                closeLine = line; end
+                closeLine = line; 
+            end
             closed = closed + endLines(line);
         end
 
         if openLines(line)
             closed = closed - openLines(line);
             if closed == 0
-                nestRange = [nestRange line:closeLine]; end  %#ok<AGROW>
+                nestRange = [nestRange line:closeLine]; %#ok<AGROW>
+            end
         end
 
         if closed < 0
@@ -294,7 +302,6 @@ function varargout = getCases(varargin)
                 break;
             end
         end
-
     end
 
     % Invalid call site; repeat this error
@@ -326,14 +333,16 @@ function varargout = getCases(varargin)
 
         if openLines(line)
             if ~opened
-                openLine = line; end
+                openLine = line; 
+            end
             opened = opened + openLines(line);
         end
 
         if endLines(line)
             opened = opened - endLines(line);
             if opened == 0
-                nestRange = [nestRange openLine:line]; end  %#ok<AGROW>
+                nestRange = [nestRange openLine:line]; %#ok<AGROW>
+            end
         end
 
         if opened < 0
@@ -350,7 +359,6 @@ function varargout = getCases(varargin)
                 break;
             end
         end
-
     end
 
     % Chop off all code after the corresponding 'end'. Also, we don't need
@@ -396,19 +404,22 @@ function varargout = getCases(varargin)
         end
 
         if success
-            cases = newCases; end
-
+            cases = newCases;
+        end
         clear newCases success
     end
 
     if doError
         % Get the 'switch' value as well.
-        switchValue = regexp(code{1}, '[,;\s]*switch\s+([{}[]()''\w]*)[,\s]*$', 'tokens');
+        switchValue = regexp(code{1}, ...
+           '[,;\s]*switch\s+([{}[]()''\w]*)[,\s]*$', 'tokens');
+        
         switchValue = switchValue{1};
 
         caseStr = cellfun(@(x)['''' regexprep(x,'%','%%') ''', '], ...
                           cases(1:end-1),...
                           'UniformOutput', false);
+        
         caseStr = cat(2, caseStr{:}, ' and ''', cases{end}, '''.');
 
         % TODO: num2str() is not sufficient
@@ -432,9 +443,10 @@ function varargout = getCases(varargin)
         if any(valids)
             % check for invalid leading characters; remove when found
             valids(valids) = ...
-                ~cellfun('isempty', regexp(code(valids,1), ['^.*[,;\s]+' keyword '[\s%,;]*((\.)\1\1)*'])) | ...
-                ~cellfun('isempty', regexp(code(valids,1), ['^' keyword '[\s%,;]*((\.)\1\1)*']));
+                ~cellfun('isempty', ...
+                regexp(code(valids,1), ['^.*[,;\s]+' keyword '[\s%,;]*((\.)\1\1)*'])) ...
+                | ~cellfun('isempty', ...
+                regexp(code(valids,1), ['^' keyword '[\s%,;]*((\.)\1\1)*']));
         end
     end
-
 end

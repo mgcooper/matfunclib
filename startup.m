@@ -89,6 +89,7 @@ MATFUNCLIB = fullfile(MATLABPATH, 'projects/matfunclib');
 % MATFUNCLIB path.
 setenv('MATLABFUNCTIONPATH',  MATFUNCLIB);
 setenv('MATLABTEMPLATEPATH',  fullfile(MATFUNCLIB, 'templates'));
+setenv('MATLAB_TOOLBOX_TEMPLATE_PATH',  fullfile(MATFUNCLIB, 'toolbox'));
 
 % MATFUNCLIB subfolders.
 setenv('TBJSONACTIVATEPATH',  fullfile(MATFUNCLIB, 'manager/activate'));
