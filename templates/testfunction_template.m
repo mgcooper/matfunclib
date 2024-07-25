@@ -27,10 +27,10 @@ end
 
 function setup(testCase)
 
-   % Save the test data
-   testCase.TestData = generateTestData(funcname);
+   % Function that generates test data
+   % testCase.TestData = generateTestData(funcname);
 
-   % example test data
+   % Generate test data
    testCase.TestData.S = struct('field1', 'value1', 'field2', 'value2');
 
    % see various built in "Fixture" functions to perform common setup and
@@ -49,38 +49,43 @@ end
 
 
 function test_input_sign(testCase)
-   % Ensure that the function returns the correct value for positive numbers
+   % Ensure that the function returns the correct result for positive numbers
    returned = funcname(abs(X));
    expected = [];
-   verifyEqual(testCase, returned, expected);
+   testCase.verifyEqual(returned, expected);
 
-   % Ensure that the function returns the correct value for negative numbers
+   % Ensure that the function returns the correct result for negative numbers
    returned = funcname(-abs(X));
    expected = [];
-   verifyEqual(testCase, returned, expected);
+   testCase.verifyEqual(returned, expected);
 
-   % Ensure that the function returns the correct sum for zero input
-   returned = add(0,0);
+   % Ensure that the function returns the correct result for zero input
+   returned = funcname(0, 0);
    expected = 0;
-   verifyEqual(testCase, returned, expected);
+   testCase.verifyEqual(returned, expected);
 end
 
 function test_input_validation(testCase)
 
    % Ensure the function raises an error when given non-scalar inputs
-   verifyError(testCase, @()funcname([1,2],3), "MATLAB:validation:IncompatibleSize");
+   testCase.verifyError(@() ...
+      funcname([1,2],3), "MATLAB:validation:IncompatibleSize");
 
    % Ensure the function raises an error when given non-numeric inputs
-   verifyError(testCase, @()funcname(1,"2"), "MATLAB:validators:mustBeNumeric");
+   testCase.verifyError(@() ...
+      funcname(1,"2"), "MATLAB:validators:mustBeNumeric");
 
    % Ensure the function raises an error when given too few input arguments
-   verifyError(testCase, @() funcname(), "MATLAB:minrhs");
+   testCase.verifyError(@() ...
+      funcname(), "MATLAB:minrhs");
 
    % Ensure the function raises an error when given too many input arguments
-   verifyError(testCase, @() funcname(1,2,3,4,5,6,7), "MATLAB:TooManyInputs");
+   testCase.verifyError(@() ...
+      funcname(1,2,3,4,5,6,7), "MATLAB:TooManyInputs");
 
    % Test invalid inputs
-   verifyError(testCase, @() numfields('char'), "MATLAB:validation:UnableToConvert");
+   testCase.verifyError(@() ...
+      funcname('invalid_input'), "MATLAB:validation:UnableToConvert");
    % if argument block is used, the eid is MATLAB:validation:UnableToConvert
    % otherwise, it might be MATLAB:invalidInput
 end
@@ -90,12 +95,12 @@ function test_function_accuracy(testCase)
    TestData = testCase.TestData;
 
    % Test function accuracy using TestData
-   expected = []; %
+   expected = [];
    returned = funcname(TestData);
-   verifyEqual(testCase, returned, expected);
+   testCase.verifyEqual(returned, expected);
 
-   % verifyEqual(testCase,actual,expected,"AbsTol",abstol,"RelTol",reltol)
-   % verifyNotEqual(testCase,actual,expected,"AbsTol",abstol,"RelTol",reltol)
+   % testCase.verifyEqual(actual,expected,"AbsTol",abstol,"RelTol",reltol)
+   % testCase.verifyNotEqual(actual,expected,"AbsTol",abstol,"RelTol",reltol)
 end
 
 % verifyTrue

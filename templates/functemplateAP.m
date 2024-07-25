@@ -11,7 +11,7 @@ function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
    %  Y = FUNCNAME(X,'flag') description.
    %  Y = FUNCNAME(_, 'opts.name1', opts.value1, 'opts.name2', opts.value2)
    %
-   % Example
+   % Examples
    %
    %
    % Input Arguments
@@ -42,14 +42,14 @@ function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
       fromclass.?matlab.graphics.chart.primitive.Line
       % for ?syntax call metaclass on the object:
       % mc=metaclass(line()),name=mc.Name
-      
+
       % override a default property:
       fromclass.Color {mustBeMember(fromclass.Color,{'red','blue'})} = "blue"
    end
 
    % get the class defaults
    fromclass = metaclassDefaults(fromclass, ?matlab.graphics.chart.primitive.Line);
-   
+
    % Override default fromclass props
    ResetFields = {'JitterOutliers','Notch'};
    ResetValues = {true,'on'};
@@ -67,6 +67,10 @@ function varargout = functemplate(X,flag,folder,style,localopts,fromclass)
 
    % MAIN CODE
    cleanup = onCleanup(@() cleanupfunc());
+
+   % Code that creates arguments
+   argout1 = [];
+   argout2 = [];
 
    % To add to functemplate: failures = MException.empty;
 
