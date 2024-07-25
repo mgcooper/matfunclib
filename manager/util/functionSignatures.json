@@ -65,6 +65,13 @@
          {"name":"tbname","kind":"ordered","type":["char","choices=gettbnamelist"],"purpose":"Option"}
       ]
    },
+   "goto":
+   {
+      "inputs":
+      [
+         {"name":"tbname", "kind":"ordered", "type":["char", "choices=gettbnamelist"]}
+      ]
+   },
    "isactive":
    {
       "inputs":
