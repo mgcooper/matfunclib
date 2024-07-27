@@ -1,4 +1,22 @@
 function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
+   %PARSEFIELDNAMES
+   %
+   %  [names, found, extra, missing] = parseFieldNames(obj, expectedNames)
+   %  [names, found, extra, missing] = parseFieldNames(names, expectedNames)
+   %  [_] = parseVariables(_, ExcludePropertyNames=false)
+   %
+   % Inputs
+   %  NAMES - a string or cellstr array of variable names.
+   %  OBJ - an object with a names-like property (e.g., table or struct) for
+   %  which the names can be retrieved with the FIELDNAMES function.
+   %
+   % Outputs
+   %  NAMES - the input variable names or field/varnames present in OBJ.
+   %  FOUND - names found in both NAMES and EXPECTEDNAMES.
+   %  EXTRA - names present in NAMES which are not in EXPECTEDNAMES.
+   %  MISSING - names present in EXPECTEDNAMES which are missing from NAMES.
+   %
+   % See also
 
    arguments(Input)
       V
@@ -22,9 +40,17 @@ function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
          else
             names = fieldnames(V);
          end
+      case {'char', 'cell', 'string'}
+         names = cellstr(V);
+
       otherwise
-         % error('Unsupported InputClass: %s', InputClass);
-         return
+         try
+            names = fieldnames(V);
+         catch e
+            % rethrow(e)
+            % error('Unsupported InputClass: %s', InputClass);
+            return
+         end
    end
 
    % Find names which are also in expected names. Does not depend on order.
