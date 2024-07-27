@@ -1,65 +1,83 @@
 function C = arrays2tables(C, kwargs)
-   %ARRAYS2TABLES Convert arrays or tables in a struct or cell into timetables.
+   %ARRAYS2TABLES Convert array of 2d arrays into array of tables or timetables.
    %
    %    tbls = arrays2tables(arrays)
    %    tbls = arrays2tables(arrays, ArrayNames=ArrayNames)
    %    tbls = arrays2tables(arrays, ColumnNames=ColumnNames)
-   %    tbls = arrays2tables(arrays, astimetables=true, time=time)
+   %    tbls = arrays2tables(arrays, asstruct=true)
+   %    tbls = arrays2tables(arrays, astimetables=true, RowTimes=time)
    %    tbls = arrays2tables(arrays, bycolumn=true)
    %
    % Description
    %
-   %    This function converts numeric matrices, tables, or timetables stored in
-   %    a struct or a cell array into timetables. The output timetables are
-   %    constructed either directly from the input arrays, or by concatenating
+   %    This function converts numeric 2d matrices ("arrays") stored in a struct
+   %    array, cell array, or 3d matrix into tables or timetables. Output tables
+   %    are constructed either directly from input arrays, or by concatenating
    %    columns taken individually from each input array to create new arrays.
-   %    Specify the optional argument BYCOLUMN=TRUE to create one timetable for
-   %    each respective column of regularly sized input arrays.
+   %    Specify the optional argument BYCOLUMN=TRUE to create one table for each
+   %    respective column of regularly sized input arrays. The input arrays can
+   %    themselves be tables or timetables; use arrays2tables to convert between
+   %    them or construct new tables using columnwise concatenation.
    %
    % Inputs (Required)
    %
    %    C - Container of input arrays. Can be a cell array containing one array
    %    per element, a struct containing one array per field, or a 3d numeric
-   %    array where each page along the 3rd dimension is taken as one array.
-   %    Each individual array is either a numeric matrix, table, or a timetable.
+   %    array where each page along the 3rd dimension is taken as one 2d array.
+   %    Each array is either a 2d numeric matrix, table, or a timetable. Each
+   %    input array is converted to either a table or a timetable and returned
+   %    as elements or fields of output C.
    %
    % Inputs (Optional name-value pairs)
    %
-   %    ArrayNames - Names for each input array. If C is a struct, ArrayNames
-   %    can be obtained from the fieldnames of C.
+   %    ARRAYNAMES - Names for each input array. If C is a struct, default
+   %    ARRAYNAMES are obtained from the fieldnames of C. Specify ARRAYNAMES to
+   %    override this. If C is not a struct but is returned as one by specifying
+   %    ASSTRUCT=TRUE, the ARRAYNAMES argument becomes required to construct the
+   %    fieldnames of output C.
    %
    %    COLUMNNAMES - Names for the variables (columns) of input arrays. If the
-   %    arrays are tables or timetables, COLUMNNAMES can be obtained from their
-   %    VariableNames property. Specify COLUMNNAMES to override this.
+   %    arrays are tables or timetables, default COLUMNNAMES are obtained from
+   %    their VariableNames property. Specify COLUMNNAMES to override this. If
+   %    the input arrays are numeric matrices, COLUMNNAMES becomes required to
+   %    set the VariableNames property of output tables. See the documentation
+   %    for BYCOLUMN to understand the behavior of COLUMNNAMES and ARRAYNAMES
+   %    when BYCOLUMN=TRUE.
    %
-   %    ASSTRUCT - Logical flag to return the output container C as a struct
-   %    (default: false). By default, C is returned as a cell array if the input
-   %    type was 'cell' or a 3d numeric matrix, or a struct if the input type
-   %    was 'struct'. Set ASSTRUCT=TRUE to return tables packaged into a struct
-   %    regardless of the input type of C. In this case, the ArrayNames and
-   %    COLUMNNAMES arguments become required.
+   %    ASSTRUCT - Logical flag to return C as a struct. The default value
+   %    depends on its input type; C is returned as a cell array if its input
+   %    type was either 'cell' or a 3d numeric matrix, or as a struct if its
+   %    input type was 'struct'. Set ASSTRUCT=TRUE to return C as a struct
+   %    regardless of its input type. If ASSTRUCT=TRUE, the ARRAYNAMES argument
+   %    becomes required if C was not input as a struct.
    %
-   %    ASTIMETABLES - Logical flag indicating if output tables should be
-   %    returned as timetables (default: false). If ASTIMETABLES=TRUE, either
-   %    the input arrays must be timetables so the RowTimes property can be
-   %    obtained from them, or the ROWTIMES argument is required.
+   %    ASTIMETABLES - Logical flag to return output arrays as timetables (TRUE)
+   %    or as tables (FALSE). The default value is FALSE. If ASTIMETABLES=TRUE,
+   %    the input arrays must either be timetables, from which default values
+   %    for ROWTIMES can be obtained from their RowTimes property, or the
+   %    ROWTIMES argument is required.
    %
-   %    ROWTIMES - Datetime array to construct the output timetables. The length
-   %    of ROWTIMES must match the first dimension of each input array. If the
+   %    ROWTIMES - Datetime array to construct output timetables. The length of
+   %    ROWTIMES must match the first dimension of each input array. If the
    %    input arrays are timetables, ROWTIMES can be obtained directly from
    %    them. Specify ROWTIMES to override this.
    %
-   %    BYCOLUMN - Logical flag to control how input arrays map to output arrays
-   %    (default: false). If BYCOLUMN=TRUE, output arrays are constructed by
-   %    concatenating respective columns of input arrays, such that output array
-   %    1 is comprised of column 1 from each input array concatenated along the
-   %    second dimension, and so on. In this case, ArrayNames and COLUMNAMES are
-   %    swapped: ArrayNames become the VariableNames of returned tables, and
-   %    COLUMNAMES become the fieldnames of C if C is returned as a struct,
-   %    otherwise C is returned as a cell array and the input COLUMNAMES (which
-   %    have become ArrayNames) have no meaning in this context.
+   %    BYCOLUMN - Logical flag to control how input arrays map to output
+   %    arrays. Note that "output arrays" are tables (or timetables) stored as
+   %    individual elements of C. If BYCOLUMN=TRUE, output arrays are
+   %    constructed by concatenating respective columns of input arrays, such
+   %    that output array 1 is comprised of column 1 from each input array
+   %    concatenated along the second dimension. This procedure is repeated to
+   %    produce N output arrays, each with M columns, from M input arrays, each
+   %    with N columns.
    %
-   % See also
+   %    If BYCOLUMN=TRUE, ARRAYNAMES and COLUMNAMES are swapped: ARRAYNAMES
+   %    become the VariableNames of returned tables, and COLUMNAMES become the
+   %    fieldnames of C if C is returned as a struct, otherwise C is returned as
+   %    a cell array and the input COLUMNAMES (which have become ARRAYNAMES)
+   %    have no meaning in this context.
+   %
+   % See also: array2table
 
    arguments(Input)
       C
