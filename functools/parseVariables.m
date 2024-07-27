@@ -61,7 +61,7 @@ function [V, VarNames, InputClass, MissingNames, ExtraNames] = ...
       switch InputClass
          case 'struct'
             V = rmfield(V, ExtraNames);
-         case 'table'
+         case {'table', 'timetable'}
             V = removevars(V, ExtraNames);
          otherwise
       end

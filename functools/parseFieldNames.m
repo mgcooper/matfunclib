@@ -34,7 +34,7 @@ function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
    switch class(V)
       case 'struct'
          names = fieldnames(V);
-      case 'table'
+      case {'table', 'timetable'}
          if kwargs.ExcludePropertyNames
             names = V.Properties.VariableNames;
          else
