@@ -1,4 +1,4 @@
-function [varargout] = prepCurveData( varargin )
+function [varargout] = prepCurveData(varargin)
    %PREPCURVEDATA Prepare data for curve fitting.
    %
    %  Transform data, if necessary, for the fitCurveData function as follows:
@@ -28,8 +28,8 @@ function [varargout] = prepCurveData( varargin )
    %
    %  Data = PREPCURVEDATA(modeltype) return default curve data for model type
    %  specified by char/string-scalar `modeltype`. Valid options are
-   %  'linear','exponential','power','semilogx','semilogy'. 'semilogy' is the same
-   %  as 'exponential'.
+   %  'linear','exponential','power','semilogx','semilogy'. 'semilogy' is the
+   %  same as 'exponential'.
    %
    %
    % Example
@@ -40,53 +40,66 @@ function [varargout] = prepCurveData( varargin )
    %
    % See also: genCurveData, fitCurveData, plotCurveData
 
-   % input parsing
-   parser = inputParser;
-   parser.FunctionName = mfilename;
-   parser.CaseSensitive = false;
-   parser.KeepUnmatched = true;
+   % parse inputs
+   [x, y, w] = parseinputs(mfilename, varargin{:});
 
-   validstrings = {'default','linear','exponential','power','semilogx','semilogy'};
-   validoption = @(x)any(validatestring(x,validstrings));
+   % If x is empty then replace it by an index vector the same size and shape as y
+   if isempty(x)
+      x = reshape(1:numel(y), size(y));
+   end
 
-   parser.addOptional(    'x',                       @(x)isnumeric(x)     );
-   parser.addOptional(    'y',                       @(x)isnumeric(x)     );
-   parser.addOptional(    'w',        ones(size(x)), @(x)isnumeric(x)     );
-   parser.addOptional(    'modeltype','default',     validoption          );
+   % If weights is empty then return a vector of ones the same size and shape as y
+   if isempty(w)
+      try
+         w = ones(size(y));
+      catch
+         w = ones(size(x));
+      end
+   end
 
-   parser.parse(varargin{:});
-
-
-   % I didn't finish this ... inputparser might be too much to deal with
-   % defaultCurveData
-
-   % if input X is empty, it needs to replaced by a index vector for YIN
-   [x,y,w] = prepInputs(x,y,w);
-
-   % The inputs must all have the same number of elements
-   assertInputsHaveSameNumElements( varargin{:} );
-
-   % Prepare the data for fitting
-   [varargout{1:nargin}] = prepareFittingData( varargin{:} );
-end
-
-
-function assertInputsHaveSameNumElements( x, y, w )
-   % assertInputsHaveSameNumElements Ensure that all inputs have the same number
-   % of elements
+   % Ensure that all inputs have the same number of elements
    if numel(x) ~= numel(y) || (nargin == 3 && numel(x) ~= numel(w) )
       error(message('libstats:prepCurveData:unequalNumel'));
    end
+
+   x = double(real(x(:)));
+   y = double(real(y(:)));
+   w = double(real(w(:)));
+   notok = isnan(x) | isnan(y) | isinf(x) | isinf(y);
+   x(notok) = [];
+   y(notok) = [];
+   w(notok) = [];
+
+   % Send back the data
+   switch nargout
+      case 1
+         varargout = {x};
+      case 2
+         varargout = {x,y};
+      case 3
+         varargout = {x,y,w};
+   end
 end
 
-function [x, y, w] = prepInputs( x, y, w )
-   % prepInputs If x is empty then replace it by an index vector the same size and
-   % shape as y. If weights (w) is empty then return a vector of ones the same size
-   % and shape as y.
-   if isempty(x)
-      x = reshape(1:numel(y),size(y));
-   end
-   if isempty(w)
-      w = ones(size(y));
-   end
+%% input parser
+function [x, y, w, modeltype] = parseinputs(mfilename, varargin)
+
+   parser = inputParser;
+   parser.FunctionName = mfilename;
+   parser.KeepUnmatched = true;
+
+   validstrings = {
+      'default','linear','exponential','power','semilogx','semilogy'};
+   validoption = @(x) any(validatestring(x, validstrings));
+
+   parser.addOptional('x', [], @isnumeric);
+   parser.addOptional('y', [], @isnumeric);
+   parser.addOptional('w', [], @isnumeric);
+   parser.addOptional('modeltype','default', validoption);
+
+   parser.parse(varargin{:});
+   x = parser.Results.x;
+   y = parser.Results.y;
+   w = parser.Results.w;
+   modeltype = parser.Results.modeltype;
 end

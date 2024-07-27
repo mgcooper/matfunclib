@@ -1,7 +1,11 @@
-function [ab,yfit,xfit] = olsfit(x,y,varargin)
-   %OLSFIT ordinary least squares regression
+function [ab, yfit, xfit] = olsfit(x, y, varargin)
+   %OLSFIT ordinary least squares linear regression
    %
-   % [ab,stats] = gmrfit(x,y)
+   %  [ab, yfit, xfit] = olsfit(x, y)
+   %  [ab, yfit, xfit] = olsfit(x, y, 'linear')
+   %  [ab, yfit, xfit] = olsfit(x, y, 'semilogy')
+   %  [ab, yfit, xfit] = olsfit(x, y, 'semilogx')
+   %  [ab, yfit, xfit] = olsfit(x, y, 'loglog')
    %
    % See also: mlefit, pcafit, gmrfit, rmafit, yorkfit
 
@@ -9,21 +13,21 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
    if nargin == 2
       logopt = 'linear';
    else
-      logopt   = varargin{1};
+      logopt = varargin{1};
    end
 
    % although prepareCurveData will do this, it issues an error which can
    % be annoying and/or confusing
-   x  = x(:);
-   y  = y(:);  % only single linear regression is supported
+   x = x(:);
+   y = y(:);  % only single linear regression is supported
 
    % assume nan values in y should dictate removal of x,y values
-   [y,naninds] = rmnan(y);
-   x(naninds)  = [];
+   [y, naninds] = rmnan(y);
+   x(naninds) = [];
 
-   [x,y] = prepareCurveData(x,y);
+   [x, y] = prepCurveData(x, y);
 
-   xfit = linspace(0.98*min(x),1.02.*max(x),100);
+   xfit = linspace(0.98 * min(x), 1.02 * max(x), 100);
 
    switch logopt
       case 'semilogy'
@@ -36,12 +40,14 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
    end
 
    if isempty(x) || isempty(y)
-      ab = [nan; nan]; yfit = nan(size(y)); xfit = nan(size(x));
-      return;
+      ab = [nan; nan];
+      yfit = nan(size(y));
+      xfit = nan(size(x));
+      return
    end
 
    N = numel(x);
-   ab = [ones(N,1),x]\y;
+   ab = [ones(N,1),x] \ y;
 
    % the log functions assume models of the form:
    % log(y) = log(a) + b*log(x)     ->    y     = a*x^b
@@ -54,13 +60,13 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
 
          % if we first transform a:
          ab(1) = exp(ab(1));
-         yfit  = ab(1).*exp(ab(2).*xfit);
+         yfit  = ab(1) * exp(ab(2) * xfit);
 
          % if we don't:
-         % yfit  = exp(ab(1) + ab(2).*xfit);
+         % yfit  = exp(ab(1) + ab(2) * xfit);
 
          % if we leave the fit in semilog space (yfit is log(yhat)):
-         % yfit = ab(1) + ab(2).*xfit;
+         % yfit = ab(1) + ab(2) * xfit;
 
       case 'semilogx'
 
@@ -69,31 +75,53 @@ function [ab,yfit,xfit] = olsfit(x,y,varargin)
 
          % if we first transform a:
          ab(1) = exp(ab(1));
-         yfit  = log(ab(1).*xfit.^ab(2));
+         yfit  = log(ab(1) * xfit .^ ab(2));
 
          % if we don't:
-         % yfit  = ab(1) + ab(2).*log(xfit);
+         % yfit  = ab(1) + ab(2) * log(xfit);
          % ab(1) = exp(ab(1));
 
          % in the second case, ab(1) is a in: e^y = a*x^b
 
          % if we leave the fit in log-log space (xfit is log(xhat)):
-         % yfit = ab(1) + ab(2).*log(xfit);
+         % yfit = ab(1) + ab(2) * log(xfit);
 
       case 'loglog'
 
+         % % before transforming a back:
+         % figure
+         % hold on
+         % plot(x, y, 'o'); % note: x,y are logged
+         % plot(log(xfit), ab(1) + ab(2) * log(xfit))
+
          % if we first transform a:
          ab(1) = exp(ab(1));
-         yfit  = ab(1).*xfit.^ab(2);
+         yfit  = ab(1) * xfit .^ ab(2);
+
+         % % after transforming a back:
+         % figure
+         % hold on
+         % plot(x, y, 'o')
+         % plot(log(xfit), log(yfit));
+         %
+         % figure
+         % hold on
+         % loglog(exp(x), exp(y), 'o');
+         % plot(xfit, yfit);
+         %
+         % figure
+         % hold on
+         % plot(exp(x), exp(y), 'o');
+         % plot(xfit, yfit);
 
          % if we don't:
-         % yfit = exp(ab(1) + ab(2).*log(xfit));
+         % yfit = exp(ab(1) + ab(2) * log(xfit));
 
          % if we leave the fit in log-log space (yfit is log(yhat)):
-         % yfit = ab(1) + ab(2).*log(xfit);
+         % yfit = ab(1) + ab(2) * log(xfit);
 
       otherwise
-         yfit = ab(1) + xfit.*ab(2);
+         yfit = ab(1) + ab(2) * xfit;
    end
 
    % clarifying the governing forms of the semilog models:
