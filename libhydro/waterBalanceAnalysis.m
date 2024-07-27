@@ -1,41 +1,42 @@
-function PER = computeWaterBalance(Data, varargin)
-   %computeWaterBalance Compute water balance dS/dt = P-E-R and trends in each.
+function PER = waterBalanceAnalysis(Data, varargin)
+   %waterBalanceAnalysis Compute water balance dS/dt=P-E-R and trends in each.
    %
-   %  PER = computeWaterBalance(Data) returns struct PER containing timetables
+   %  PER = waterBalanceAnalysis(Data) returns struct PER containing timetables
    %  of annual, monthly, and seasonal water balance components from the monthly
-   %  components in Data.
+   %  components in Data.a
    %
-   %  PER = computeWaterBalance(Data,'snowcorrect',true) optionally applies a
+   %  PER = waterBalanceAnalysis(Data,'snowcorrect',true) optionally applies a
    %  snow bias correction to remove the influence of above-ground snowpack
    %  storage on computed dS/dt trends. There must be a column in Data named
    %  'SW'.
    %
-   %  PER = computeWaterBalance(Data,'wateryear',true) optionally specifies that
-   %  the data in Data are on a water year calendar. Assumes the first month is
-   %  10/1 of the first year in the data record, and 9/1 is the last month.
+   %  PER = waterBalanceAnalysis(Data,'wateryear',true) optionally specifies
+   %  that the data in Data are on a water year calendar. Assumes the first
+   %  month is 10/1 of the first year in the data record, and 9/1 is the last
+   %  month.
    %
    %  Inputs
    %
-   %     Data - timetable of water balance components [cm/yr] posted monthly
+   %     DATA  timetable of water balance components [cm/yr] posted monthly
    %
    %  Outputs
    %
-   %     PER.avg : The average PER over all timesteps (all months). Obtain the
+   %     PER.AVG - The average PER over all timesteps (all months). Obtain the
    %     annual average PER from the PER.annual.avg.<MMM> table, using a month
    %     of your choice to define a water-year. For instance, use
    %     PER.annual.avg.Jan to obtain the
    %
-   %     PER.annual.PER : annual P-E-R i.e. for each year, sum P,E, and R over
+   %     PER.ANNUAL.PER - Annual P-E-R i.e. for each year, sum P,E, and R over
    %     12 months, with 12-month periods beginning on each of the 12 calendar
    %     months, then compute P-E-R for each year
    %
-   %     PER.annual.ab : the linear regression intercept (a) and slope (b) of
+   %     PER.ANNUAL.AB - the linear regression intercept (a) and slope (b) of
    %     the annual P-E-R values from the step above against time in years
    %
-   %     PER.monthly.PER : as above, P-E-R for each month (not annual sums
+   %     PER.MONTHLY.PER - as above, P-E-R for each month (not annual sums
    %     centered on each month, the actual monthly P-E-R)
    %
-   %     PER.monthly.ab : the linear regression as above on the monthly P-E-R
+   %     PER.MONTHLY.AB - the linear regression as above on the monthly P-E-R
    %
    %     PER.seasonal ... analogous with monthly but for three-month averages
    %
@@ -54,27 +55,34 @@ function PER = computeWaterBalance(Data, varargin)
    % parse inputs
    [Data, snowcorrect, wateryear] = parseinputs(Data, mfilename, varargin{:});
 
-   % Ensure the variable names are the shorthand ones
+   % Ensure there are an even number of years
+   assert(mod(height(Data), 12) == 0)
 
+   % Ensure the variable names include P, E, R
+   [~, found, other] = parseFieldNames(Data, {'P', 'E', 'R'});
 
-   % define functions to compute annual sums and seasonal averages
+   if notall(ismember(found, {'P', 'E', 'R'}))
+      error('Provide a table or struct with P, E, R fields.')
+   end
+
+   % Define functions to compute annual sums and seasonal averages.
    % Fsum = @(x) sum(x, 'includenan');
    Favg  = @(x) mean(x, 'includenan');
    Favg1 = @(x,y,z,idx)   mean( x(:,idx)-y(:,idx)-z(:,idx),2           );
    Favg2 = @(x,y,z,s,idx) mean( x(:,idx)-y(:,idx)-z(:,idx)-s(:,idx),2  );
 
-   % make an annual calendar
+   % Make an annual calendar.
    nmonths = height(Data);
-   nyears = nmonths/12;
-   Time = tocolumn(Data.Time(1):calyears(1):Data.Time(end));
+   nyears = nmonths / 12;
+   time = tocolumn( Data.Time(1):calyears(1):Data.Time(end) );
 
-   % make a cell array of months
-   months = cellstr(datestr(Data.Time(1:12),'mmm'));
+   % Make a cell array of months.
+   months = cellstr(datestr(Data.Time(1:12), 'mmm'));
 
-   if wateryear == true
+   if wateryear
       seasons = {...
          'ON','OND','NDJ','DJF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','AS'};
-      Time = Time+calmonths(3); % shift forward to Jan 1 of the water year
+      time = time+calmonths(3); % shift forward to Jan 1 of the water year
    else
       seasons = {...
          'JF','JFM','FMA','MAM','AMJ','MJJ','JJA','JAS','ASO','SON','OND','ND'};
@@ -85,12 +93,10 @@ function PER = computeWaterBalance(Data, varargin)
    E = transpose(reshape(Data.E, 12, nyears));
    R = transpose(reshape(Data.R, 12, nyears));
 
-   if snowcorrect == true
-      if sum(contains(Data.Properties.VariableNames, 'SW')) == 0
-         error('no SW variable in provided table')
-      else
-         SW = reshape(Data.SW, 12, nyears);
-      end
+   if snowcorrect
+      assert(ismember('SW', other), ...
+         'no SW (snow water) variable in provided table')
+      SW = reshape(Data.SW, 12, nyears);
    end
 
    % init the monthly, seasonal, and annual dS/dt arrays
@@ -103,15 +109,12 @@ function PER = computeWaterBalance(Data, varargin)
    abSS = nan(2, 12);
    abSA = nan(2, 12);
 
-
    % 1. annual timeseries of monthly dSdt for each month
-
-   if snowcorrect == true
+   if snowcorrect
       dSdtM = P-E-R-SW;
    else
       dSdtM = P-E-R;
    end
-
 
    % 2. annual timeseries of annual dSdt using each month as a starting month
 
@@ -130,9 +133,9 @@ function PER = computeWaterBalance(Data, varargin)
 
       % annual timeseries of annual (12-month sum) dSdt for each month
       if snowcorrect == true
-         dSdtA(:,month)  = tocolumn(MA.P-MA.E-MA.R-MA.SW);
+         dSdtA(:,month) = tocolumn(MA.P - MA.E - MA.R - MA.SW);
       else
-         dSdtA(:,month)  = tocolumn(MA.P-MA.E-MA.R);
+         dSdtA(:,month) = tocolumn(MA.P - MA.E - MA.R);
       end
 
       % to check the effect of snow correction on trends:
@@ -141,10 +144,10 @@ function PER = computeWaterBalance(Data, varargin)
       % trendplot(year(T),dSdt-tocolumn(SW(n,:)),'leg','dSdt-SW','use',gca)
 
       % for reference, this accomplishes the same thing as the retime step:
-      % PA    = sum(reshape(Merra.P(i1:i2),12,nyears-1));
-      % EA    = sum(reshape(Merra.E(i1:i2),12,nyears-1));
-      % RA    = sum(reshape(Merra.R(i1:i2),12,nyears-1));
-      % SWA   = sum(reshape(Merra.SW(i1:i2),12,nyears-1));
+      % PA = sum(reshape(Merra.P(i1:i2),12,nyears-1));
+      % EA = sum(reshape(Merra.E(i1:i2),12,nyears-1));
+      % RA = sum(reshape(Merra.R(i1:i2),12,nyears-1));
+      % SWA = sum(reshape(Merra.SW(i1:i2),12,nyears-1));
    end
 
    % mask the last values which are partial sums for all but the first month
@@ -163,10 +166,10 @@ function PER = computeWaterBalance(Data, varargin)
       end
 
       % apply the snow correction or not and compute P-E-R
-      if snowcorrect == true
-         dSdtS(:,month) = Favg2(P,E,R,SW,idx);
+      if snowcorrect
+         dSdtS(:, month) = Favg2(P, E, R, SW, idx);
       else
-         dSdtS(:,month) = Favg1(P,E,R,idx);
+         dSdtS(:, month) = Favg1(P, E, R, idx);
       end
    end
 
@@ -174,20 +177,20 @@ function PER = computeWaterBalance(Data, varargin)
    if size(dSdtM, 1) > 2
       for month = 1:12
 
-         abSM(:,month) = olsfit(year(Time),dSdtM(:,month));
-         abSS(:,month) = olsfit(year(Time),dSdtS(:,month));
-         abSA(:,month) = olsfit(year(Time),dSdtA(:,month));
+         abSM(:,month) = olsfit(year(time), dSdtM(:,month));
+         abSS(:,month) = olsfit(year(time), dSdtS(:,month));
+         abSA(:,month) = olsfit(year(time), dSdtA(:,month));
 
-         % use this to omit the last year
+         % Use this to omit the last year.
          % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
       end
    end
 
    % save the period-average PER, and the calendar-year trend
    PER.avg           = mean(Data.S, 'omitnan');
-   PER.annual.PER    = array2timetable(dSdtA,'VariableNames',months,'RowTimes',Time);
-   PER.monthly.PER   = array2timetable(dSdtM,'VariableNames',months,'RowTimes',Time);
-   PER.seasonal.PER  = array2timetable(dSdtS,'VariableNames',seasons,'RowTimes',Time);
+   PER.annual.PER    = array2timetable(dSdtA,'VariableNames',months,'RowTimes',time);
+   PER.monthly.PER   = array2timetable(dSdtM,'VariableNames',months,'RowTimes',time);
+   PER.seasonal.PER  = array2timetable(dSdtS,'VariableNames',seasons,'RowTimes',time);
    PER.annual.ab     = array2table(abSA,'VariableNames',months);
    PER.monthly.ab    = array2table(abSM,'VariableNames',months);
    PER.seasonal.ab   = array2table(abSS,'VariableNames',seasons);
@@ -212,37 +215,44 @@ function [Data, snowcorrect, wateryear] = parseinputs(Data, funcname, varargin)
    parser.FunctionName = funcname;
    parser.PartialMatching = true;
    parser.addRequired('Data', @istimetable);
-   parser.addParameter('snowcorrect', false, @islogical);
-   parser.addParameter('wateryear', false, @islogical);
+   parser.addParameter('snowcorrect', false, @islogicalscalar);
+   parser.addParameter('wateryear', false, @islogicalscalar);
    parser.parse(Data, varargin{:});
 
    snowcorrect = parser.Results.snowcorrect;
    wateryear = parser.Results.wateryear;
+
+   Data.Properties.DimensionNames{1} = 'Time';
 end
 
-% % the old annual:
+% the old annual:
 % PER.annual.PER = mean(P(:)-E(:)-R(:));
 % PER.annual.ab = olsfit(year(T),mean(P-E-R,1));
 
-% this should be about 1 mm/day: mean(MA.P.*10./365.25)
-% this should be about 1 cm/yr: mean(dSdtA(:,1),'omitnan')
-% this should be 1.04 cm/yr: mean(dSdtA(8:end-1,1),'omitnan')
+% this should be about 1 mm/day:
+% mean(MA.P.*10./365.25)
+%
+% this should be about 1 cm/yr:
+% mean(dSdtA(:,1),'omitnan')
+%
+% this should be 1.04 cm/yr:
+% mean(dSdtA(8:end-1,1),'omitnan')
 
 % % this shows the difference when including the last year or not
-% trendplot(year(T),dSdtA(:,1),'leg','all years');
-% trendplot(year(T(1:end-1)),dSdtA(1:end-1,1),'leg','no last year','use',gca)
+% trendplot(year(T), dSdtA(:,1), 'leg', 'all years');
+% trendplot(year(T(1:end-1)), dSdtA(1:end-1,1), 'leg', 'no last year', 'use', gca)
 %
-% trendplot(year(T(8:end)),dSdtA((8:end),1),'leg','all years');
-% trendplot(year(T(8:end-1)),dSdtA(8:end-1,1),'leg','no last year','use',gca)
+% trendplot(year(T(8:end)), dSdtA((8:end),1), 'leg', 'all years');
+% trendplot(year(T(8:end-1)), dSdtA(8:end-1,1), 'leg', 'no last year', 'use', gca)
 
-% macfig;
+% maxfig
 % for n = 1:12
 %    dSdt = tocolumn(P(n,:)-E(n,:)-R(n,:));
 %    trendplot(MerraA.Time,dSdt,'leg',months{n},'use',gca)
 %    pause; clf
 % end
 %
-% macfig;
+% maxfig
 % for n = 1:11
 %    dSdt = tocolumn(mean(P(n:n+1,:))-mean(E(n:n+1,:))-mean(R(n:n+1,:)));
 %    trendplot(MerraA.Time,dSdt,'leg',months{n},'use',gca)
@@ -259,12 +269,12 @@ end
 % SJ = tocolumn(P(1,:)-E(1,:)-R(1,:));
 %
 %
-% macfig;
+% maxfig
 % trendplot(MerraA.Time,MerraA.S,'leg','dS/dt','use',gca)
 % trendplot(MerraA.Time,tocolumn(mean(P)-mean(E)-mean(R)),'leg','dS/dt','use',gca)
-% trendplot(MerraA.Time,tocolumn(P(8,:)-E(8,:)-R(8,:)),'leg','dS/dt (A)','use',gca)
-% trendplot(MerraA.Time,tocolumn(P(9,:)-E(9,:)-R(9,:)),'leg','dS/dt (S)','use',gca)
-% trendplot(MerraA.Time,tocolumn(P(10,:)-E(10,:)-R(10,:)),'leg','dS/dt (O)','use',gca)
-% trendplot(MerraA.Time,tocolumn(P(12,:)-E(12,:)-R(12,:)),'leg','dS/dt (D)','use',gca)
-% trendplot(MerraA.Time,tocolumn(P(1,:)-E(1,:)-R(1,:)),'leg','dS/dt (J)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(8,:)-E(8,:)-R(8,:)),'leg','dS/dt(A)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(9,:)-E(9,:)-R(9,:)),'leg','dS/dt(S)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(10,:)-E(10,:)-R(10,:)),'leg','dS/dt(O)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(12,:)-E(12,:)-R(12,:)),'leg','dS/dt(D)','use',gca)
+% trendplot(MerraA.Time,tocolumn(P(1,:)-E(1,:)-R(1,:)),'leg','dS/dt(J)','use',gca)
 % trendplot(MerraA.Time,SASO(:),'leg','dS/dt (ASO)','use',gca)
