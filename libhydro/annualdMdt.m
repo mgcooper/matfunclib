@@ -1,4 +1,4 @@
-function [dMdt, Mt] = annualdMdt(M, Time, kwargs)
+function [dMdt, Mt, M, Time] = annualdMdt(M, Time, kwargs)
    %ANNUALDMDT Compute annual mass differences from monthly stores.
    %
    %    [DMDT, MT] = ANNUALDMDT(M, TIME)
@@ -193,16 +193,14 @@ function [dMdt, Mt] = annualdMdt(M, Time, kwargs)
    % compute the first bimonthly average, which is nan, and an extra last month,
    % which is not nan but was only needed to compute the final annual
    % difference, which is in dMdt(N-12). Remove these extra values.
-   Mt = Mt(2:end-1);
-   dMdt = dMdt(2:end-1);
-   Time = Time(2:end-1);
+   [Mt, dMdt, M, Time] = deal(Mt(2:N-1), dMdt(2:N-1), M(2:N-1), Time(2:N-1));
 
    % Plot the result if requested.
    if kwargs.plotflag
       figure
       hold on
-      plot(Time, Mt)
-      plot(Time, M(2:end-1), ':')
+      plot(Time, Mt, '-')
+      plot(Time, M, ':')
       legend('Bimonthly Averages', 'Original Data')
    end
 

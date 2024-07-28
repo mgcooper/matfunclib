@@ -19,7 +19,7 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
 
    % try adjusting to cal years
 
-   if opts.wateryear == true
+   if opts.wateryear
       i1 = find(month(G.Time) == 10, 1, 'first');
       i2 = find(month(G.Time) == 9, 1, 'last');
    else
@@ -47,10 +47,14 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
       imin(n) = imin(n) + opts.validmonthsmin(1) - 1;
       imax(n) = imax(n) + opts.validmonthsmax(1) - 1;
 
-      if opts.plotcheck == true
-         if n == 1; figure; end
+      if opts.plotcheck
 
-         monthplot(GraceMY(:,n), 'wateryear', opts.wateryear); hold on;
+         if n == 1
+            figure
+         end
+         hold on
+
+         monthplot(GraceMY(:,n), 'wateryear', opts.wateryear);
          if ~isnan(imin(n))
             scatter(imin(n), GraceMY(imin(n), n), 'filled');
          else
@@ -67,21 +71,21 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
 
    % note: if the monthly data have been converted to anomalies, then the
    % monthly means will be ~zero,
-   if opts.plotfig == true
+   if opts.plotfig
 
-      macfig('size','horizontal');
+      macfig('size','horizontal')
 
-      subplot(1,3,1);
-      monthplot(mean(GraceMY,2,'omitnan'),'wateryear',opts.wateryear);
+      subplot(1,3,1)
+      monthplot(mean(GraceMY,2,'omitnan'),'wateryear',opts.wateryear)
       set(gca,'XTickLabelRotation',45)
       ylabel('S, annual average')
 
-      subplot(1,3,2);
-      monthplot(imin(~isnan(imin)),'plottype','hist');
-      xlabel('min month');
+      subplot(1,3,2)
+      monthplot(imin(~isnan(imin)),'plottype','hist')
+      xlabel('min month')
 
-      subplot(1,3,3);
-      monthplot(imax(~isnan(imax)),'plottype','hist');
+      subplot(1,3,3)
+      monthplot(imax(~isnan(imax)),'plottype','hist')
       xlabel('max month')
 
       % subplot(1,3,2); histogram(imin(~isnan(imin))); xlabel('min month');
@@ -94,7 +98,6 @@ function [G, opts] = parseinputs(G, mfilename, varargin)
 
    parser = inputParser;
    parser.FunctionName = mfilename;
-   parser.PartialMatching = true;
    parser.addRequired('G', @istimetable);
    parser.addParameter('wateryear', false, @islogical);
    parser.addParameter('minaftermax', false, @islogical);

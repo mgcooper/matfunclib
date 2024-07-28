@@ -13,7 +13,7 @@ function correctedG = graceSnowCorrect(G, SW, varargin)
    % parse inputs
    [G, SW, bimonthly, makeplot] = parseinputs(G, SW, mfilename, varargin{:});
 
-   if bimonthly == true
+   if bimonthly
 
       % the data have to be organized as timetables with each column a month
       % from Jan to Dec, and each row a year.
@@ -40,9 +40,9 @@ function correctedG = graceSnowCorrect(G, SW, varargin)
       nmo = nyr*12;
 
       if G.Time(1).Month == 1
-         T = tocolumn(datetime(iyr,imo,1):calmonths(1):datetime(iyr+nyr-1,12,1));
+         T = transpose(datetime(iyr,imo,1):calmonths(1):datetime(iyr+nyr-1,12,1));
       elseif G.Time(1).Month == 10 % assume water years
-         T = tocolumn(G.Time(1):calmonths(1):G.Time(end));
+         T = transpose(G.Time(1):calmonths(1):G.Time(end));
       end
 
       % reshape carefully. this is done so G and SW are compatible with G and
@@ -63,7 +63,7 @@ function correctedG = graceSnowCorrect(G, SW, varargin)
       G = tmpM.G;
    end
 
-   if makeplot == true % keep a copy of the original data
+   if makeplot % keep a copy of the original data
       Gcopy = G;
    end
 
@@ -96,7 +96,7 @@ function correctedG = graceSnowCorrect(G, SW, varargin)
    % I confirmed there is no need to anomaly again
    % do I want to return it back as a monthly table?
 
-   if makeplot == true
+   if makeplot
       % compare the og grace to snow-corrected grace
       trendplot(T,Gcopy,'leg','no correction');
       trendplot(T,correctedG.G,'use',gca,'leg','with correction');

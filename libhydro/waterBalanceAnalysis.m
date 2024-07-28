@@ -22,7 +22,13 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %    PER = waterBalanceAnalysis(MonthlyData) returns struct PER containing
    %    timetables of annual, monthly, and seasonal water balance components
    %    from the monthly components in MonthlyData. MonthlyData must be a
-   %    timetable which contain variables P, E, and R.
+   %    timetable which contain variables P, E, and R with units [length]/yr.
+   %    Note "year" is in the denominator - the data are posted monthly but
+   %    should be in units of [length]/yr so that averaging over a 12-month
+   %    period returns the annual average value in units length/year, whereas
+   %    summing over a 12 month period would be incorrect (it would require
+   %    dividing by 12 or better yet accounting for the number of days per month
+   %    and then dividing by days per year).
    %
    %    PER = waterBalanceAnalysis(MonthlyData,'RemoveSnowMass',true) optionally
    %    applies a snow bias correction to remove the influence of above-ground
