@@ -1,16 +1,22 @@
 function varargout = setprojectfolder(projectname,projectfolder,projectlist)
    %SETPROJECTFOLDER set the activefolder property for a project
    %
-   %     projlist = setprojectfolder(projname,projfolder) sets the
-   %     projectlist.activefolder for project indicated by projname in the saved
-   %     project list directory to the provided projfolder.
+   %    projlist = setprojectfolder(projname, projfolder)
+   %    projlist = setprojectfolder(projname,projfolder,projlist)
+   %    projlist = setprojectfolder(projectfolder)
    %
-   %     projlist = setprojectfolder(projname,projfolder,projlist) sets the
-   %     projectlist.activefolder for project indicated by projname in the
-   %     project list projlist to the provided projfolder.
+   % Description
    %
-   %     projlist = setprojectfolder(projectfolder) sets the activefolder
-   %     attribute of the current active project to projectfolder
+   %    PROJLIST = SETPROJECTFOLDER(PROJNAME,PROJFOLDER) sets the
+   %    projectlist.activefolder for project indicated by projname in the saved
+   %    project list directory to the provided projfolder.
+   %
+   %    PROJLIST = SETPROJECTFOLDER(PROJNAME,PROJFOLDER,PROJLIST) sets the
+   %    projectlist.activefolder for project indicated by projname in the
+   %    project list projlist to the provided projfolder.
+   %
+   %    PROJLIST = SETPROJECTFOLDER(PROJFOLDER) sets the activefolder
+   %    attribute of the current active project to projectfolder
    %
    % Example
    %

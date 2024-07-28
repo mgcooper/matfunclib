@@ -1,19 +1,25 @@
 function projfolder = getprojectfolder(varargin)
    %GETPROJECTFOLDER get the activefolder property of project
    %
-   %     projfolder = getprojectfolder() returns the activefolder
-   %     attribute for the activeproject in the projectlist directory
+   %    projfolder = getprojectfolder()
+   %    projfolder = getprojectfolder(projname)
+   %    projfolder = getprojectfolder(_, 'namespace')
    %
-   %     projfolder = getprojectfolder(projname) returns the activefolder
-   %     attribute for project projname in the projectlist directory
+   % Description
    %
-   %     projfolder = getprojectfolder(___,'namespace') returns the namespace
-   %     folder for the prior syntax. The namespace folder is the
-   %     projlist.folder attribute, i.e. the parent folder containing the root
-   %     of the project, which can differ from the activefolder property. The
-   %     default behavior returns projlist.activefolder
+   %    PROJFOLDER = GETPROJECTFOLDER() returns the ACTIVEFOLDER attribute for
+   %    the active project in the projectlist directory.
    %
-   % See also setprojectfolder
+   %    PROJFOLDER = GETPROJECTFOLDER(PROJNAME) returns the activefolder
+   %    attribute for project projname in the projectlist directory
+   %
+   %    PROJFOLDER = GETPROJECTFOLDER(_, 'NAMESPACE')  returns the namespace
+   %    folder for the prior syntax. The namespace folder is the projlist.folder
+   %    attribute, i.e. the parent folder containing the root of the project,
+   %    which can differ from the activefolder property. The default behavior
+   %    returns projlist.activefolder.
+   %
+   % See also: setprojectfolder
 
    %  NOTE: it seems like getprojectfolder(projname) wouldn't work based on the
    %  optionParser section, but it does. This needs to change. It has to do do
@@ -26,8 +32,10 @@ function projfolder = getprojectfolder(varargin)
    %  is not a char. If I did  not allow projlist to come in then it would be
    %  much easier and in fact I should do that
 
-   % NOTE: need to rewrite this, its incredibly dumb. Ran into an error where a
-   % string was passed in for project name, so had to add this:
+   % Ensure inputs are chars
+   % [varargin{:}] = convertStringsToChars(varargin{:});
+
+   % This might be needed for octave:
    for n = 1:numel(varargin)
       if isstring(varargin{n})
          varargin{n} = char(varargin{n});
@@ -36,7 +44,7 @@ function projfolder = getprojectfolder(varargin)
 
    % set default option to return the activefolder then parse the input
    validopts = {'activefolder','namespace'};
-   opts = optionParser(validopts,varargin);
+   opts = optionParser(validopts, varargin);
 
    if nargin < 1
       opts.activefolder = true;

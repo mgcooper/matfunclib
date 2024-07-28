@@ -81,10 +81,16 @@ setenv('USERPROJECTPATH', fullfile(HOMEPATH, 'myprojects'));
 % $HOME/MATLAB
 MATLABPATH = getenv('MATLABUSERPATH');
 
-% $HOME/MATLAB/projects/matfunclib
-MATFUNCLIB = fullfile(MATLABPATH, 'projects/matfunclib');
+% $HOME/MATLAB/projects
+MATLAB_PROJECTS_PATH = fullfile(getenv('MATLABUSERPATH'), 'projects');
 
-%% MATFUNCLIB paths
+% $HOME/MATLAB/projects/matfunclib
+MATFUNCLIB = fullfile(MATLAB_PROJECTS_PATH, 'matfunclib');
+
+%% MATLAB_PROJECTS_PATH paths
+
+% MATLAB_PROJECTS_PATH.
+setenv('MATLAB_PROJECTS_PATH',  MATLAB_PROJECTS_PATH);
 
 % MATFUNCLIB path.
 setenv('MATLABFUNCTIONPATH',  MATFUNCLIB);

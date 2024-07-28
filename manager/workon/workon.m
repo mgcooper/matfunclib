@@ -13,15 +13,20 @@ function workon(varargin)
    %
    % See also: workoff, manager, addproject
    %
-   %  Updates 30 Jan 2023, only call workoff when switching to a new project 16
-   %  Jan 2023, save current project activefiles and close before opening new
-   %  one 11 Jan 2023, support for activefiles; added Setup, Install, and
-   %  Startup to Config source on startup behavior. 30 Dec 2022, if Config.m
-   %  exists in project directory, source it on goto. 23 Nov 2022, added support
-   %  for projects in USERPROJECTPATH in addition to MATLABPROJECPATH by adding
-   %  it to buildprojectdirectory and adding method from activate.m that reads
-   %  the folder from projectdirectory to build the projectpath instead of
-   %  appending projectname to the MATLABPROJECTPATH environment variable
+   %  Updates
+   %  25 Jul 2024, replaced USERPROJECTPATH with MATLAB_PROJECTS_PATH. Note this
+   %  is not used in this function.
+   %  30 Jan 2023, only call workoff when switching to a new project.
+   %  16 Jan 2023, save current project activefiles and close before opening new
+   %  one.
+   %  11 Jan 2023, support for activefiles; added Setup, Install, and Startup to
+   %  Config source on startup behavior.
+   %  30 Dec 2022, if Config.m exists in project directory, source it on goto.
+   %  23 Nov 2022, added support for projects in USERPROJECTPATH in addition to
+   %  MATLABPROJECPATH by adding it to buildprojectdirectory and adding method
+   %  from activate.m that reads the folder from projectdirectory to build the
+   %  projectpath instead of appending projectname to the MATLABPROJECTPATH
+   %  environment variable.
 
    % TODO add if usejava('desktop') methods to not open or save editor files
 
@@ -115,7 +120,7 @@ function [projname, updatefiles, force] = parseinputs(funcname, varargin)
 
    projectnames = cat(1,cellstr(projectdirectorylist),'default');
    validproject = @(x)any(validatestring(x,projectnames));
-   
+
    parser = inputParser;
    parser.FunctionName = funcname;
    parser.addOptional('projectname', getactiveproject(), validproject);
@@ -128,7 +133,7 @@ function [projname, updatefiles, force] = parseinputs(funcname, varargin)
    force = parser.Results.force;
 end
 
-function onCleanupFun(projectlist) %#ok<*DEFNU> 
+function onCleanupFun(projectlist) %#ok<*DEFNU>
    % this is how I would do it if i always passed projectlist around between
    % functions and never allowed it to be written during a function call, only
    % written here on cleanup:
