@@ -1,12 +1,23 @@
-function [GL,GH,imin,imax] = graceMinMax(G,varargin)
+function [GL, GH, imin, imax] = graceMinMax(G, time, varargin)
    %GRACEMINMAX Compute minimum and maximum monthly GRACE values annually.
    %
+   %    [GL, GH, imin, imax] = graceMinMax(G, time)
+   %    [GL, GH, imin, imax] = graceMinMax(G, time, aswateryears=true)
+   %    [GL, GH, imin, imax] = graceMinMax(G, time, minaftermax=true)
+   %    [GL, GH, imin, imax] = graceMinMax(G, time, plotfig=true)
+   %    [GL, GH, imin, imax] = graceMinMax(G, time, validmonthsmin=validmonths)
+   %    [GL, GH, imin, imax] = graceMinMax(G, time, validmonthsmax=validmonths)
    %
+   % Description
+   %
+   %    [GL, GH, imin, imax] = graceMinMax(G, time)
    %
    % See also: graceSnowCorrect graceGapFill
 
+   % note: water year + snow correction substantially changes the GL timing
+
    % parse iputs
-   [G, opts] = parseinputs(G, mfilename, varargin{:});
+   [G, time, opts] = parseinputs(G, time, mfilename, varargin{:});
 
    % for min/max, use calendar year, or any method that doesn't break the year
    % around Jul-Nov (to find the min) or Apr - Jun (to find the max)
@@ -19,53 +30,50 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
 
    % try adjusting to cal years
 
-   if opts.wateryear
-      i1 = find(month(G.Time) == 10, 1, 'first');
-      i2 = find(month(G.Time) == 9, 1, 'last');
+   if opts.aswateryears
+      i1 = find(month(time) == 10, 1, 'first');
+      i2 = find(month(time) == 9, 1, 'last');
    else
-      i1 = find(month(G.Time) == 1, 1, 'first');
-      i2 = find(month(G.Time) == 12, 1, 'last');
+      i1 = find(month(time) == 1, 1, 'first');
+      i2 = find(month(time) == 12, 1, 'last');
    end
 
-   tempM = G(i1:i2, :);
-   nyears = height(tempM.G)/12;
-   GraceMY = reshape(tempM.G, 12, nyears); % month-by-year
+   % Reshape G to [month x year]
+   G = G(i1:i2, :);
+   N = height(G) / 12;
+   G = reshape(G, 12, N);
 
-   imin = nan(nyears, 1);
-   imax = nan(nyears, 1);
-   GL = nan(nyears, 1);
-   GH = nan(nyears, 1);
+   % Compute min and max values each year
+   [imin, imax, GL, GH] = deal(nan(N, 1));
+   for n = 1:N
 
-   % note: water year + snow correction substantially changes the GL timing
-
-   for n = 1:nyears
-
-      [imin(n),GL(n)] = findglobalmin(GraceMY(opts.validmonthsmin,n),1,'last');
-      [imax(n),GH(n)] = findglobalmax(GraceMY(opts.validmonthsmax,n),1,'last');
+      [imin(n), GL(n)] = findglobalmin(G(opts.validmonthsmin,n), 1, 'last');
+      [imax(n), GH(n)] = findglobalmax(G(opts.validmonthsmax,n), 1, 'last');
 
       % correct for validmonths offset
       imin(n) = imin(n) + opts.validmonthsmin(1) - 1;
       imax(n) = imax(n) + opts.validmonthsmax(1) - 1;
 
       if opts.plotcheck
-
          if n == 1
             figure
          end
          hold on
 
-         monthplot(GraceMY(:,n), 'wateryear', opts.wateryear);
+         monthplot(G(:,n), 'wateryear', opts.aswateryears)
          if ~isnan(imin(n))
-            scatter(imin(n), GraceMY(imin(n), n), 'filled');
+            scatter(imin(n), G(imin(n), n), 'filled')
          else
-            textbox('no min found', 10, 10);
+            textbox('no min found', 10, 10)
          end
          if ~isnan(imax(n))
-            scatter(imax(n), GraceMY(imax(n), n), 'filled');
+            scatter(imax(n), G(imax(n), n), 'filled')
          else
-            textbox('no max found', 10, 30);
+            textbox('no max found', 10, 30)
          end
-         title(num2str(year(G.Time(1))+n-1)); pause; clf;
+         title(num2str(year(time(1))+n-1))
+         pause
+         clf
       end
    end
 
@@ -76,7 +84,7 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
       macfig('size','horizontal')
 
       subplot(1,3,1)
-      monthplot(mean(GraceMY,2,'omitnan'),'wateryear',opts.wateryear)
+      monthplot(mean(G,2,'omitnan'),'wateryear',opts.aswateryears)
       set(gca,'XTickLabelRotation',45)
       ylabel('S, annual average')
 
@@ -94,18 +102,19 @@ function [GL,GH,imin,imax] = graceMinMax(G,varargin)
 end
 
 %% INPUT PARSER
-function [G, opts] = parseinputs(G, mfilename, varargin)
+function [G, Time, opts] = parseinputs(G, Time, mfilename, varargin)
 
    parser = inputParser;
    parser.FunctionName = mfilename;
-   parser.addRequired('G', @istimetable);
-   parser.addParameter('wateryear', false, @islogical);
-   parser.addParameter('minaftermax', false, @islogical);
-   parser.addParameter('plotfig', false, @islogical);
-   parser.addParameter('plotcheck', false, @islogical);
-   parser.addParameter('validmonthsmin', 1:12, @isnumeric);
-   parser.addParameter('validmonthsmax', 1:12, @isnumeric);
-   parser.parse(G, varargin{:});
+   parser.addRequired('G', @isnumericvector);
+   parser.addRequired('Time', @isdatelike);
+   parser.addParameter('aswateryears', false, @islogicalscalar);
+   parser.addParameter('minaftermax', false, @islogicalscalar);
+   parser.addParameter('plotfig', false, @islogicalscalar);
+   parser.addParameter('plotcheck', false, @islogicalscalar);
+   parser.addParameter('validmonthsmin', 1:12, @isnumericvector);
+   parser.addParameter('validmonthsmax', 1:12, @isnumericvector);
+   parser.parse(G, Time, varargin{:});
 
    opts = parser.Results;
 end
