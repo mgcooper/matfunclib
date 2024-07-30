@@ -22,41 +22,39 @@ function F = privatefunction(funcName)
    % See also: completions, listfolders, listfiles, projectpath
 
    % Validate input
-   try
-      funcName = char(funcName);
-   catch
-   end
-   if nargin > 0 && ~ischar(funcName)
-      error('Invalid input. Expected a string for function name.');
+   if nargin > 0 && ~ischar(convertStringsToChars(funcName))
+      error('Invalid input. Expected a string or char for function name.');
    end
 
    cwd = pwd();
    job = onCleanup(@(~) cd(cwd));
 
    % Get a list of all private functions in the toolbox
-   allfolders = listfolders(projectpath(), -1, 'fullpaths');
-   allprivate = allfolders(contains(allfolders, 'private'));
+   allfolderslist = listfolders(projectpath(), -1, 'fullpaths');
+   allprivatefolders = allfolderslist(contains(allfolderslist, 'private'));
 
    % If called with no input, return a struct of function handles to all private
    % functions, organized by the parent folders.
    returnAllFunctions = false;
    if nargin < 1
-      F = cell(numel(allprivate), 1);
+      F = cell(numel(allprivatefolders), 1);
       returnAllFunctions = true;
    end
 
-   for n = 1:numel(allprivate)
-      funcList = listfiles(allprivate{n}, 'aslist', true, 'mfiles', true);
+   for n = 1:numel(allprivatefolders)
+      funcList = listfiles(allprivatefolders{n}, 'aslist', true, 'mfiles', true);
       funcList = erase(funcList, '.m');
 
+      % cd to the private folder parent so the private function is in scope
+      cd(allprivatefolders{n});
+      
       if returnAllFunctions
-
-         % cd to the parent of the private folder
-         cd(fileparts(allprivate{n}));
-         H = cellfun(@str2func, funcList, 'UniformOutput', false);
-         F{n} = cell2struct(H, cellfun(@func2str, H, 'uni', 0), 1);
+         H = cellfun(@str2func, funcList, 'UniformOutput', 0);
+         F{n} = cell2struct(H, cellfun(@func2str, H, 'UniformOutput', 0), 1);
       else
          if ismember(funcName, funcList)
+            % H = cellfun(@str2func, funcList, 'UniformOutput', 0);
+            % H = cellfun(@str2func, {funcName}, 'UniformOutput', 0);
             F = str2func(funcName);
 
             % use this to confirm correct scoping
@@ -76,7 +74,7 @@ function F = privatefunction(funcName)
 
    % Convert to a function module (struct)
    if returnAllFunctions
-      [~, privateFolders] = fileparts(fileparts(allprivate));
+      [~, privateFolders] = fileparts(fileparts(allprivatefolders));
       privateFolders = erase(privateFolders, {'+', '@'});
       F = cell2struct(F, privateFolders, 1);
    end

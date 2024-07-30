@@ -17,7 +17,7 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    arguments(Input)
 
       buildOption (1,:) string {mustBeMember(buildOption, ...
-         ["create", "delete", "update", "resolve"])} ...
+         ["create", "delete", "update", "resolve", "listfiles"])} ...
          = "create"
 
       projectName (1,1) string ...
@@ -47,7 +47,43 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
       [~, projectName] = fileparts(projectFolder);
    end
 
-   % Define the sub folders to add to the project
+   switch buildOption
+
+      case 'delete'
+         % Delete the project
+         % TODO: Add warning with user input "y" or "n".
+         try
+            close(currentProject);
+            matlab.project.deleteProject(projectFolder);
+         catch
+         end
+         return
+
+      case 'create'
+         % Define the sub folders to add to the project
+         codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
+            projectName, buildOption, mfilename);
+
+         % Create the project
+         proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
+            opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
+
+      case 'resolve'
+         % Resolve dependencies
+         resolveDependencies(projectFolder, opts.depsFolder)
+
+      case 'listfiles'
+         % This should probably be an internal function or in a new namespace
+         % convention such as +project but put here for now.
+         proj = currentProject;
+         list = [proj.Files.Path].';
+   end
+end
+
+%% subfunctions
+function codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
+      projectName, buildOption, mfilename)
+
    if ismissing(codeFolders)
 
       if isfolder(fullfile(projectFolder, 'toolbox'))
@@ -61,29 +97,8 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
          error(eid, msg)
       end
    end
-
-   switch buildOption
-
-      case 'delete'
-         % Delete the project
-         try
-            matlab.project.deleteProject(projectFolder);
-         catch
-         end
-         return
-
-      case 'create'
-         % Create the project
-         proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
-            opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
-
-      case 'resolve'
-         % Resolve dependencies
-         resolveDependencies(projectFolder, opts.depsFolder)
-   end
 end
-
-%% subfunctions
+%%
 function resolveDependencies(projectFolder, depsFolder)
 
    depsFolder = fullfile(projectFolder, depsFolder);
