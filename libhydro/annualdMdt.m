@@ -5,7 +5,7 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, bimonthly=false)
    %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, extraside="left")
    %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, extraside="right")
-   %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, astimetables=false)
+   %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, astimetable=false)
    %    [dMdt, Mbar, M, Time] = annualdMdt(M, Time, ascolumn=true)
    %
    % Description:
@@ -67,7 +67,7 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    %    to resolve the ambiguity when only one side has an extra value. The
    %    default value is BOTH.
    %
-   %    ASTIMETABLES - (optional, name-value) Logical flag to control whether
+   %    ASTIMETABLE - (optional, name-value) Logical flag to control whether
    %    outputs DMDT and MBAR are returned as timetables. The default value is
    %    TRUE.
    %
@@ -86,6 +86,9 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    %
    %    MBAR - Bimonthly average M, returned as a timetable of size [years x
    %    12]. Specify ASCOLUMN=TRUE to return as [months x 1].
+   %
+   %    Note: If ASTIMETABLE=TRUE and ASCOLUMN=TRUE, both DMDT and MBAR will be
+   %    returned as timetables with one column named, respectively, dMdt and M.
    %
    %  ** NOTE ON WATER YEARS **
    %
@@ -160,13 +163,13 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    % See also:
 
    arguments
-      M (:, 1)
-      Time (:, 1)
+      M (:, 1) double
+      Time (:, 1) datetime
       kwargs.bimonthly (1, 1) logical = true
       kwargs.extraside (1, 1) string {mustBeMember(...
          kwargs.extraside, ["left", "right", "both", "none", "unknown"])} ...
          = "unknown"
-      kwargs.astimetables (1, 1) logical = true
+      kwargs.astimetable (1, 1) logical = true
       kwargs.ascolumn (1, 1) logical = false
       kwargs.plotflag (1, 1) logical = false
    end
@@ -195,8 +198,8 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    end
 
    % Remove the extra values on either side used for bi-monthly averaging.
-   [Mbar, dMdt, M, Time] = deal( ...
-      Mbar(2:N-1), dMdt(2:N-1), M(2:N-1), Time(2:N-1));
+   keep = 2:N-1;
+   [Mbar, dMdt, M, Time] = deal(Mbar(keep), dMdt(keep), M(keep), Time(keep));
 
    % Plot the result if requested.
    if kwargs.plotflag
@@ -216,6 +219,12 @@ function [M, T] = prepareBimonthly(M, T, extraside, bimonthly)
 
       assert(mod(nmonths, 12) == 0, ['input data must be posted monthly, ' ...
          'for an even number of annual periods.']);
+
+      % Repeat the first and last month to ensure length(M) == nmonths+2.
+      % Bimonthly averaging of these repeats will return the original values.
+      M = [M(1); M; M(end)];
+      T = [T(1); T; T(end)];
+
    else
 
       if mod(nmonths, 12) == 0
@@ -266,15 +275,15 @@ function [Mbar, dMdt] = prepareOutputs(Mbar, dMdt, M, Time, kwargs)
    % Keep as a column [year*month x 1] or return a matrix [year x month]
    if kwargs.ascolumn
 
-      if kwargs.astimetables
+      if kwargs.astimetable
          % Return timetables with a single monthly column:
-         Mbar = timetable(Mbar, 'RowTimes', Time);
-         dMdt = timetable(dMdt, 'RowTimes', Time);
+         Mbar = timetable(Mbar, 'RowTimes', Time, 'VariableNames', {'M'});
+         dMdt = timetable(dMdt, 'RowTimes', Time, 'VariableNames', {'dMdt'});
       end
 
    else
       % Reshape to a matrix [year x month].
-      numyears = (N-2) / 12;
+      numyears = N / 12;
       Mbar = transpose(reshape(Mbar, 12, numyears));
       dMdt = transpose(reshape(dMdt, 12, numyears));
 
@@ -283,7 +292,7 @@ function [Mbar, dMdt] = prepareOutputs(Mbar, dMdt, M, Time, kwargs)
       month = cellstr(datestr(Time(1:12), 'mmm'));
 
       % Convert to timetables unless otherwise requested.
-      if kwargs.astimetables
+      if kwargs.astimetable
 
          % Create timetables
          Mbar = array2timetable(Mbar, 'RowTimes', times, 'VariableNames', month);
