@@ -1,38 +1,39 @@
 function [I, Lia, Locb] = intersectn(X, opts)
    %INTERSECTN Find common elements in multiple arrays.
    %
-   % I = INTERSECTN(X1, X2)
-   % [I, Lia, Locb] = INTERSECTN(X1, X2, ..., XN)
-   % [I, Lia, Locb] = INTERSECTN(_, "WindowSize", W)
-   % [I, Lia, Locb] = INTERSECTN(_, "ComparisonMethod", "all")
+   %    I = INTERSECTN(X1, X2)
+   %    [I, Lia, Locb] = INTERSECTN(X1, X2, ..., XN)
+   %    [I, Lia, Locb] = INTERSECTN(_, "WindowSize", W)
+   %    [I, Lia, Locb] = INTERSECTN(_, "ComparisonMethod", "all")
    %
    % Description:
-   % The function INTERSECTN finds common elements among multiple input arrays
-   % and optionally considers elements as common if they are within a specified
-   % window. The function returns the common elements and indices of these
-   % elements in the original arrays.
+   %    The function INTERSECTN finds common elements among multiple input
+   %    arrays and optionally considers elements as common if they are within a
+   %    specified window. The function returns the common elements and indices
+   %    of these elements in the original arrays.
    %
    % ComparisonMethod "all":
-   % Finds elements that are common to all input arrays, optionally within a
-   % specified window size.
+   %    Finds elements that are common to all input arrays, optionally within a
+   %    specified window size.
    %
    % ComparisonMethod "any":
-   % Finds elements that are common to at least two arrays, optionally within
-   % a specified window size.
+   %    Finds elements that are common to at least two arrays, optionally within
+   %    a specified window size.
    %
    % Inputs:
-   % X - Cell array of input arrays.
-   % opts - Struct with fields:
-   %   ComparisonMethod: Either "any" or "all" (default "any").
-   %   WindowSize: Scalar window size (default 0).
-   %   ClosestMatch: Boolean flag to find closest match within WindowSize (default false).
+   %    X - Cell array of input arrays.
+   %    OPTS - Struct with fields:
+   %      * ComparisonMethod: Either "any" or "all" (default "any").
+   %      * WindowSize: Scalar window size (default 0).
+   %      * ClosestMatch: Boolean flag to find closest match within WindowSize
+   %      (default false).
    %
    % Outputs:
-   % I - Array of common elements.
-   % Lia - Cell array of logical vectors, indicating the presence of common
-   %       elements in each input array.
-   % Locb - Cell array of index vectors, indicating the indices of common
-   %        elements in the output array I for each input array.
+   %    I - Array of common elements.
+   %    LIA - Cell array of logical vectors, indicating the presence of common
+   %    elements in each input array.
+   %    LOCB - Cell array of index vectors, indicating the indices of common
+   %    elements in the output array I for each input array.
    %
    % See also: INTERSECT, UNIQUE, ISMEMBER
 

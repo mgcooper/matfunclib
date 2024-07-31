@@ -164,9 +164,9 @@ end
 
 function [timestep, TimeX] = settimestep(ttbl, time, timestep)
 
-   % NOTE: need to reconcile this with timetabletimestep.m NOTE: right now
-   % elapsedTime and dTime are not returned. elapsedTime might be useful for
-   % computing the total change
+   % NOTE: need to reconcile this with timetabletimestep.m 
+   % NOTE: right now elapsedTime and dTime are not returned. elapsedTime might
+   % be useful for computing the total change
 
    % get the time unit, duration, and timestep
    elapsedTime    =  max(time) - min(time);  % will be in hh:mm:ss
@@ -182,6 +182,11 @@ function [timestep, TimeX] = settimestep(ttbl, time, timestep)
       % years(1) in the next block, and after that, a switch that sets the
       % timestep in duration and the format, but I don't have a way to convert
       % tbl.Properties.TimeStep to 'years','days','minutes', etc.
+
+      if iscalendarduration(timestep) && isequal(timestep, calmonths(1))
+         % if the timestep is calmonth this will fail b/c its not a regular unit
+         % of time.
+      end
 
       % if not, try to infer the timestep
       if isempty(timestep)
@@ -208,7 +213,10 @@ function [timestep, TimeX] = settimestep(ttbl, time, timestep)
             if y == 1
                timestep = years(1);
             elseif m == 1
-               timestep = months(1);
+               % timestep = calmonths(1);
+               % see timetabletimestep - need to replace this entire subfunction
+               % with a call to that function
+               timestep = timetabletimestep(ttbl);
             elseif d == 1
                timestep = days(1);
 
@@ -269,9 +277,10 @@ function [timestep, TimeX] = settimestep(ttbl, time, timestep)
          TimeX = seconds([0; cumsum(dTime)]);
    end
 
-   % % note, this works directly on dTime, w/o converting format dTime    =
-   % diff(Time); Tdays    =  [0; days(cumsum(dTime))]; Tyears   =  [0;
-   % years(cumsum(dTime))];
+   % % note, this works directly on dTime, w/o converting format
+   % dTime = diff(Time);
+   % Tdays = [0; days(cumsum(dTime))];
+   % Tyears = [0; years(cumsum(dTime))];
 end
 
 %% INPUT PARSER
