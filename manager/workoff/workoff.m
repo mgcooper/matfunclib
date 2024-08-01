@@ -1,18 +1,23 @@
 function workoff(varargin)
    %WORKOFF Deactivate project and (optionally) update activefiles.
    %
-   %  WORKOFF(PROJECTNAME) removes project paths, unsets env vars, updates the
-   %  activefiles property of the projectdirectory to the currently open files,
-   %  and sets the 'default' project active.
+   %    workoff(projectname)
+   %    workoff('myproject', 'updatefiles', false)
    %
-   %  WORKOFF() Without any arguments deactivates the current active project and
-   %  activates project "default".
+   %  Description
    %
-   %  WORKOFF(_,'UPDATEFILES', FALSE) Does not update the activefiles
-   %  list associated with MYPROJECT to the current open files. Default is true,
-   %  the current open files are saved to the activefiles property for
-   %  MYPROJECT. This syntax also works if PROJECTNAME is not provided as
-   %  described above.
+   %    WORKOFF(PROJECTNAME) removes project paths, unsets env vars, updates the
+   %    activefiles property of the projectdirectory to the currently open
+   %    files, and sets the 'default' project active.
+   %
+   %    WORKOFF() Without any arguments deactivates the current active project
+   %    and activates project "default".
+   %
+   %    WORKOFF(_,'UPDATEFILES', FALSE) Does not update the activefiles list
+   %    associated with MYPROJECT to the current open files. Default is true,
+   %    the current open files are saved to the activefiles property for
+   %    MYPROJECT. This syntax also works if PROJECTNAME is not provided as
+   %    described above.
    %
    % See also: workon, manager, addproject
 
@@ -62,7 +67,7 @@ function workoff(varargin)
    closeopenfiles();
 
    % if this is not the default project, remove the project paths
-   if ~strcmpi(projname,'default')
+   if ~strcmpi(projname, 'default')
 
       % full path to project folder
       projpath = getprojectfolder(projname); % use 'namespace' for old behavior
@@ -81,13 +86,10 @@ function [projname, updatefiles] = parseinputs(funcname, varargin)
    parser = inputParser;
    parser.FunctionName = funcname;
 
-   projectnames = cat(1,cellstr(projectdirectorylist),'default');
-   validproject = @(x)any(validatestring(x,projectnames));
-
-   parser.addOptional('projectname',getactiveproject,validproject);
-   parser.addParameter('updatefiles',true,@islogical);
+   parser.addOptional('projectname', getactiveproject(), @validateProjectName);
+   parser.addParameter('updatefiles', true, @islogicalscalar);
    parser.parse(varargin{:});
 
-   projname = parser.Results.projectname;
+   projname = char(parser.Results.projectname);
    updatefiles = parser.Results.updatefiles;
 end

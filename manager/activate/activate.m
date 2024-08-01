@@ -65,10 +65,10 @@ function varargout = activate(tbname, varargin)
    tbpath = toolboxes.source{tbidx};
 
    % Add toolbox paths
-   pathadd(tbpath, true, pathloc, except, "addpath", true);
+   pathadd(tbpath, true, pathloc, except, 'addpath', true);
 
    % cd to the activated tb if requested
-   if strcmp(postset, "goto")
+   if strcmp(postset, 'goto')
       cd(tbpath);
    end
 
@@ -89,9 +89,11 @@ function printmessage(tbname, silent, except, asproject)
    if not(silent)
 
       msg = ['activating ' tbname];
-      if ~isempty(except)
-         msg = strjoin([msg, 'except', except]);
+
+      if notempty(except)
+         msg = strjoin({msg, 'except', except{:}}); %#ok<CCAT>
       end
+
       if asproject
          msg = [msg, ' ', 'asproject'];
       end
@@ -108,19 +110,19 @@ function [tbname, except, pathloc, posthook, silent, asproject] = ...
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = funcname;
-      parser.addRequired('tbname', @ischarlike);
+      parser.addRequired('tbname', @isscalartext);
       parser.addOptional('posthook', 'none', @(x) any(validatestring(x, {'goto'})));
-      parser.addParameter('except', string.empty(), @ischarlike);
-      parser.addParameter('pathloc', '-end', @ischarlike);
+      parser.addParameter('except', {}, @ischarlike);
+      parser.addParameter('pathloc', '-end', @isscalartext);
       parser.addParameter('silent', false, @islogicalscalar);
       parser.addParameter('asproject', false, @islogicalscalar);
-      parser.addParameter('userhooks', '', @(x) isfile(x)); % not implemented
+      parser.addParameter('userhooks', '', @isfile); % not implemented
    end
    parser.parse(tbname, varargin{:});
    tbname = char(parser.Results.tbname);
-   except = string(parser.Results.except);
+   except = cellstr(parser.Results.except); % can be multiple tbx names
+   pathloc = char(parser.Results.pathloc);
+   posthook = char(parser.Results.posthook);
    silent = parser.Results.silent;
-   posthook = string(parser.Results.posthook);
-   pathloc = string(parser.Results.pathloc);
    asproject = parser.Results.asproject;
 end

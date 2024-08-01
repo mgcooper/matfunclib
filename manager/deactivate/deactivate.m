@@ -9,14 +9,15 @@ function deactivate(tbname, varargin)
    % Parse inputs.
    parser = inputParser;
    parser.FunctionName = mfilename;
-   parser.addRequired('tbname', @ischarlike)
+   parser.addRequired('tbname', @isscalartext)
    parser.addParameter('asproject', false, @islogicalscalar);
    parser.parse(tbname, varargin{:})
+   tbname = char(tbname);
 
    % Special case - deactivate a project
    if parser.Results.asproject
       try
-         pathadd(getprojectfolder(tbname), rmpath=true);
+         pathadd(getprojectfolder(tbname), 'rmpath', true);
          return
       catch e
          rethrow(e)
@@ -43,7 +44,8 @@ function deactivate(tbname, varargin)
    else
       [tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
       if ~isempty(wid)
-         warning(wid, msg); return
+         warning(wid, msg);
+         return
       end
       disp(['deactivating ' tbname]); % alert the user
       toolboxes = deactivateToolbox(tbname, toolboxes);
@@ -59,10 +61,10 @@ function toolboxes = deactivateToolbox(tbname, toolboxes)
       'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
    tbidx = findtbentry(toolboxes, tbname);
    tbpath = toolboxes.source{tbidx};
-   pathadd(tbpath, rmpath=true); % remove toolbox paths
+   pathadd(tbpath, 'rmpath', true); % remove toolbox paths
    toolboxes.active(tbidx) = false; % set the active state
 end
 
 function tbdir = defaulttbdir
-   [~,tbdir] = fileparts(pwd); % if no path was provided, use pwd
+   [~, tbdir] = fileparts(pwd); % if no path was provided, use pwd
 end

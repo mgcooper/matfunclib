@@ -12,7 +12,7 @@ function msg = copytoolboxtemplate(projectname, opts)
 
    % Set required paths
    PROJECT_NAME = projectname;
-   MATLAB_PROJECT_PATH = getenv('MATLABPROJECTPATH');
+   MATLAB_PROJECTS_PATH = getenv('MATLAB_PROJECTS_PATH');
    MATLAB_TOOLBOX_TEMPLATE_PATH = getenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
 
    % Build the full path to the toolbox template
@@ -28,18 +28,23 @@ function msg = copytoolboxtemplate(projectname, opts)
    % folder, and 3) is an existing project. If not, make the folder and copy the
    % toolbox template there.
 
-   % Assumptions
+   % These are designed for the case where projectname is a full path. They
+   % confirm if 1) the path is to a folder within MATLAB_PROJECTS_PATH
+   % (isValidParentPath), and 2) if the projectname folder already exists.
+   isValidParentPath = false;
    isExistingProject = false;
-   isValidPath = false;
 
    WAS_COPIED = false;
 
    if isempty(fileparts(PROJECT_NAME))
-      % PROJECT_NAME is a char, build the full path
-      tbxpath = fullfile(MATLAB_PROJECT_PATH, PROJECT_NAME);
+      % PROJECT_NAME is a char not full path, build the full path
+      tbxpath = fullfile(MATLAB_PROJECTS_PATH, PROJECT_NAME);
+
+      isValidParentPath = true;
+      isExistingProject = isfolder(tbxpath);
 
       % Copy the toolbox template, after one more check
-      if ~isfolder(tbxpath)
+      if ~isExistingProject
          copyfile(tbxtemplate, tbxpath)
          WAS_COPIED = true;
       end
@@ -47,15 +52,21 @@ function msg = copytoolboxtemplate(projectname, opts)
       %PROJECT_NAME could be a full path
 
       % Check if PROJECT_NAME is a valid project folder
-      isValidPath = strcmp(fileparts(PROJECT_NAME), MATLAB_PROJECT_PATH);
+      isValidParentPath = strcmp(fileparts(PROJECT_NAME), MATLAB_PROJECTS_PATH);
 
       % Check if tbxname is an existing project folder
-      isExistingProject = isValidPath && isfolder(PROJECT_NAME);
+      isExistingProject = isValidParentPath && isfolder(PROJECT_NAME);
 
-      if isValidPath || isExistingProject
-         tbxpath = PROJECT_NAME;
-         [~, tbxname] = fileparts(tbxpath);
-      end
+      % Removed the if around this. There's no harm in setting these, the
+      % side effects only occur if the path is valid, and this way tbxpath can
+      % be used in the final ~WAS_COPIED warning message. Note that the
+      % PROJECT_NAME can be a full path to an existing project, but it could be
+      % an "invalid" parent path if its not inside MATLAB_PROJECTS_PATH.
+
+      % if isValidParentPath || isExistingProject
+      tbxpath = PROJECT_NAME;
+      [~, tbxname] = fileparts(tbxpath);
+      % end
 
       % If its an existing project, this is likely a mistake
       if isExistingProject
@@ -78,8 +89,8 @@ function msg = copytoolboxtemplate(projectname, opts)
             error('project %s exists and is not empty, aborting', PROJECT_NAME)
          end
 
-      elseif isValidPath
-         % This means the path is valid but does not exist
+      elseif isValidParentPath
+         % This means the path is valid but the project folder does not exist
 
          % create the project by copying the toolbox template to the folder
          copyfile(tbxtemplate, tbxpath)
@@ -87,15 +98,22 @@ function msg = copytoolboxtemplate(projectname, opts)
       end
    end
 
-   msg.isValidProjectPath = isValidPath;
+   msg.WAS_COPIED = WAS_COPIED;
+   msg.isValidProjectPath = isValidParentPath;
    msg.isExistingProject = isExistingProject;
 
    % If here, the copy was successful. Delete the sandbox/ folder.
    % NOTE: in one case above, tbxpath is reset to a temp path. Any similar
    % resets must be made so tbxpath here is the actual final one.
-   if WAS_COPIED && isfolder(fullfile(tbxpath, 'sandbox'))
-      % TODO: Ask the user to confirm by pressing 'y'. For now, just delete the
-      % files in this folder manually.
+   if WAS_COPIED
+
+      if isfolder(fullfile(tbxpath, 'sandbox'))
+         % TODO: Ask the user to confirm by pressing 'y'. For now, just delete the
+         % files in this folder manually.
+      end
+   else
+      warning(['Toolbox template was not copied. Confirm the following:\n' ...
+         ' source: %s \n destination: %s'], tbxtemplate, tbxpath)
    end
 
    % % Not implemented, but an idea - either copy the template, or do nothing

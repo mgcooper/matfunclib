@@ -86,12 +86,12 @@ function printUserMessage(oldtbname, libraryname, newtbname, ...
       oldtbpath, newtbpath)
 
    % Print message about renaming the toolbox
-   fprintf('\nrenaming "%s" toolbox "%s/%s" \n', ...
+   fprintf(1, '\nrenaming "%s" toolbox "%s/%s" \n', ...
       oldtbname, libraryname, newtbname);
 
    % Print message about moving the toolbox source code
    if string(fileparts(oldtbpath)) ~= string(fileparts(newtbpath))
-      fprintf('\nmoving "%s" toolbox from "%s" to:\n "%s" \n', ...
+      fprintf(1, '\nmoving "%s" toolbox from "%s" to:\n "%s" \n', ...
          oldtbname, oldtbpath, newtbpath);
    end
 end
@@ -100,20 +100,19 @@ end
 function [oldtbname, newtbname, libraryname, renamesource, force, dryrun] = ...
       parseinputs(oldtbname, newtbname, mfilename, varargin)
 
-   validlibs = @(x)any(validatestring(x,cellstr(gettbdirectorylist)));
    persistent parser
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = mfilename;
       parser.CaseSensitive = false;
       parser.KeepUnmatched = true;
-      parser.addRequired('oldtbname', @ischarlike);
-      parser.addRequired('newtbname', @ischarlike);
-      parser.addParameter('library', '', validlibs); % default value must be ''
-      parser.addParameter('renamesource', false, @islogical);
-      parser.addParameter('movesource', false, @islogical);
-      parser.addParameter('force', false, @islogical);
-      parser.addParameter('dryrun', false, @islogical);
+      parser.addRequired('oldtbname', @isscalartext);
+      parser.addRequired('newtbname', @isscalartext);
+      parser.addParameter('library', char.empty(), @validateLibraryName);
+      parser.addParameter('renamesource', false, @islogicalscalar);
+      parser.addParameter('movesource', false, @islogicalscalar);
+      parser.addParameter('force', false, @islogicalscalar);
+      parser.addParameter('dryrun', false, @islogicalscalar);
    end
    parser.parse(oldtbname, newtbname, varargin{:});
    force = parser.Results.force;
@@ -136,6 +135,7 @@ function [oldtbname, newtbname, libraryname, renamesource, force, dryrun] = ...
    [oldtbname, newtbname, libraryname] = convertStringsToChars( ...
       oldtbname, newtbname, libraryname);
    oldtbname = validatetoolbox(oldtbname,mfilename,'OLDTBNAME',1);
+
    if iscell(oldtbname) || iscell(newtbname) || iscell(libraryname)
       error('MATFUNCLIB:renametoolbox:nonScalarToolboxName', ...
          'toolbox names must be scalar text')

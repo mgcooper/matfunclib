@@ -323,7 +323,7 @@ function rewritefile(filenamepath, wholefile)
    if fid == -1
       error('Failed to open file %s for writing', filenamepath);
    end
-   fprintf(fid,'%c',wholefile);
+   fprintf(fid, '%c', wholefile);
    status = fclose(fid);
    if status == -1
       warning('Failed to close file %s after writing', filenamepath);
@@ -337,18 +337,18 @@ function [name, library, project, whichparser, force] = parseinputs( ...
    persistent parser
    if isempty(parser)
       parser = inputParser;
-      parser.addRequired( 'funcname', @ischar);
-      parser.addParameter('library', 'unsorted', @ischar);
-      parser.addParameter('project', 'unsorted', @ischar);
-      parser.addParameter('parser', 'NP', @ischar);
-      parser.addParameter('force', false, @islogical);
+      parser.addRequired( 'funcname', @isscalartext);
+      parser.addParameter('library', 'unsorted', @validateLibraryName);
+      parser.addParameter('project', 'unsorted', @validateProjectName);
+      parser.addParameter('parser', 'NP', @isscalartext);
+      parser.addParameter('force', false, @islogicalscalar);
    end
    parser.FunctionName = funcname;
    parser.parse(name, varargin{:});
    force = parser.Results.force;
-   library = parser.Results.library;
-   project = parser.Results.project;
-   whichparser = parser.Results.parser;
+   library = char(parser.Results.library);
+   project = char(parser.Results.project);
+   whichparser = char(parser.Results.parser);
    %inputs = p.Results.inputs;
    %outputs = p.Results.outputs;
 end

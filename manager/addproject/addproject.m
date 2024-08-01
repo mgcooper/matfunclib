@@ -1,6 +1,13 @@
 function varargout = addproject(projectname,varargin)
    %ADDPROJECT Add project to project directory.
    %
+   %  addproject(projectname)
+   %  projectlist = addproject(projectname)
+   %  projectlist = addproject(projectname, 'setfiles', true)
+   %  projectlist = addproject(projectname, 'setactive', true)
+   %
+   % Description
+   %
    %  ADDPROJECT(PROJECTNAME) Adds a new project with name PROJECTNAME to the
    %  project directory.
    %
@@ -45,10 +52,10 @@ function varargout = addproject(projectname,varargin)
 
    % Check if the project exists already.
    if any(ismember(projectlist.name, projectname))
-      msg = ['project already in directory, press ''y'' to add to rebuild project ' ...
-         'directory or any other key to return\n'];
-      str = input(msg,'s');
-      if string(str) ~= "y"
+      msg = ['project already in directory, press ''y'' to rebuild the ' ...
+         'project directory or any other key to return\n'];
+      str = input(msg, 's');
+      if ~strcmp(str, 'y')
          return
       end
    end
@@ -78,11 +85,13 @@ end
 function [projectname, opts] = parseinputs(projectname, funcname, varargin)
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.addRequired('projectname', @ischar);
+   parser.addRequired('projectname', @isscalartext);
    parser.addParameter('setfiles', false, @islogicalscalar);
    parser.addParameter('setactive', false, @islogicalscalar);
    parser.parse(projectname, varargin{:});
+
    opts = parser.Results;
+   projectname = char(projectname);
 end
 
 % % No longer used, but keep for reference.

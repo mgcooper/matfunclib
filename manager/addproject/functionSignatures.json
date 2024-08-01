@@ -4,9 +4,9 @@
    {
       "inputs":
       [
-         {"name":"projectname", "kind":"required", "type":["char"]},
-         {"name":"setfiles", "kind":"namevalue", "type":["logical","scalar"],"purpose":"Option"},
-         {"name":"setactive", "kind":"namevalue", "type":["logical","scalar"],"purpose":"Option"}
+         {"name":"projectname", "kind":"required", "type":[["char"], ["row"]]},
+         {"name":"setfiles", "kind":"namevalue", "type":["logical","scalar"],"purpose":"Option", "default":"false"},
+         {"name":"setactive", "kind":"namevalue", "type":["logical","scalar"],"purpose":"Option", "default":"false"}
       ]
    }
 }
