@@ -62,7 +62,9 @@ function varargout = createMatlabProject(projectFolder, projectName, ...
    %
    % See also: projectfile
 
-   % TODO: these need to be name-value.
+   % TODO: 
+   % - args need to be name-value.
+   % - option to add folders to project path, see "addPath" function
 
    arguments
       projectFolder (1,1) string {mustBeFolder} = pwd()

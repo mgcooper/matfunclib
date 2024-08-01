@@ -5,7 +5,7 @@ function V = cellflatten(C, dim, shape)
    %  V = CELLFLATTEN(C)
    %  V = CELLFLATTEN(C, dim)
    %  V = CELLFLATTEN(C, dim, shape)
-   % 
+   %
    %  V = CELLFLATTEN(C) concatenates the contents of cell array C along the
    %  first dimension that allows for concatenation. This is either horizontal
    %  or vertical concatenation depending on the dimensions of the cell
@@ -15,7 +15,7 @@ function V = cellflatten(C, dim, shape)
    %
    %  V = CELLFLATTEN(C, DIM, SHAPE) returns the concatenated output reshaped
    %  according to the value of SHAPE. Valid options for SHAPE are 'row',
-   %  'column', and 'array'.
+   %  'column', 'array', and 'transpose'.
    %
    % Input:
    %   - C: cell array containing arrays that can be concatenated.
@@ -28,7 +28,7 @@ function V = cellflatten(C, dim, shape)
    %   - V: concatenated array.
    %
    % See also: CAT, CELL2MAT, HORZCAT, VERTCAT
-   
+
    % NOTE: this will fail if the elements of C are oriented inconsistently i.e.
    % if some are rows and others are columns.
 
@@ -36,7 +36,8 @@ function V = cellflatten(C, dim, shape)
    if nargin < 3
       shape = 'array';
    end
-   validatestring(shape, {'row', 'column', 'array'}, mfilename, 'SHAPE', 3);
+   validatestring(shape, {'row', 'column', 'array', 'transpose'}, ...
+      mfilename, 'SHAPE', 3);
 
    % Concatenate cell array along specified dimension or choose adaptively
    if nargin < 2 || isempty(dim)
@@ -49,14 +50,14 @@ function V = cellflatten(C, dim, shape)
       validateattributes(dim, {'numeric'}, {'scalar', 'positive', 'integer'}, ...
          mfilename, 'DIM', 2);
       V = cat(dim, C{:});
-      
+
       % Note: Above will fail if the elements of C are oriented differently.
       % Below might be enough to fix it, but maybe a recursive call to this
-      % function would work too? 
+      % function would work too?
       % if dim == 1
-      %    V = cellfun(@(x) x(:), xdata, 'UniformOutput', false);
+      %    V = cellfun(@(c) c(:), C, 'UniformOutput', false);
       % elseif dim == 2
-      %    V = cellfun(@(x) x(:)', xdata, 'UniformOutput', false);
+      %    V = cellfun(@(c) c(:)', C, 'UniformOutput', false);
       % end
       % V = cat(dim, V{:});
    end
@@ -67,6 +68,8 @@ function V = cellflatten(C, dim, shape)
          V = V(:).';
       case 'column'
          V = V(:);
+      case 'transpose'
+         V = V.';
       otherwise
          % do nothing, inclusive of 'array'
    end

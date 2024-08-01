@@ -1,4 +1,4 @@
-function h = trendplot(t, y, varargin)
+function varargout = trendplot(t, y, varargin)
    %TRENDPLOT Plot a timeseries and linear trendline fit.
    %
    % h = trendplot(t, y) plots time T and data Y and fits a trendline
@@ -36,11 +36,14 @@ function h = trendplot(t, y, varargin)
    title(opts.titletext);
 
    % PACKAGE OUTPUT
-   h.ax = gca;
-   h.ab = ab;
-   h.err = err;
-   h.yfit = yfit;
-   h.yci = yci;
+   if nargout
+      h.ax = gca;
+      h.ab = ab;
+      h.err = err;
+      h.yfit = yfit;
+      h.yci = yci;
+      varargout{1} = h;
+   end
 end
 
 %% LOCAL FUNCTIONS
@@ -301,7 +304,7 @@ function h = plotTrend(h,t,y,yfit,yerr,yci,errorbars,errorbounds,varargs)
 
    h.trend = plot(h.ax, t, yfit, '-', 'Color', get(h.plot, 'Color'), ...
       'LineWidth', 1, 'HandleVisibility', 'off');
-   formatPlotMarkers();
+   formatPlotMarkers('markersize', 6);
 end
 
 %  DRAW LEGEND

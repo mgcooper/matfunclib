@@ -24,9 +24,14 @@ function [data_out,dates_out] = padtimeseries(data,dates,padstart,padend,dt)
    [~,n] = size(data);
 
    wasdatetime = isdatetime(dates);
-   if wasdatetime == true
+   if wasdatetime
       dates = datenum(dates); %#ok<*DATNM>
    end
+   % This is a severe limitation of this function and retime or datetime methods
+   % generally should be used.
+   % if isduration(dt) || iscalendarduration(dt)
+   %    dt = days(dt);
+   % end
 
    % make sure the padstart/padend are dates
    padstart = datenum(padstart);

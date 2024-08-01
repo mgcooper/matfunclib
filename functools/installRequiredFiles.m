@@ -2,17 +2,19 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %INSTALLREQUIREDFILES Install required files from Github.
    %
    %  INSTALLREQUIREDFILES(REQUIREDFILES)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, REQUIREMENTSFILE=FILENAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, PROJECTPATH=PATHNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, INSTALLPATH=PATHNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, LOCALSOURCEPATH=PATHNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, IGNOREFOLDER=FOLDERNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, REMOTEREPONAME=REPONAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, REMOTEBRANCH=BRANCHNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, GITHUBUSERNAME=USERNAME)
-   %  INSTALLREQUIREDFILES(REQUIREDFILES, INSTALLMISSING=TRUE)
+   %  INSTALLREQUIREDFILES(PROJECTPATH=PATHNAME)
+   %  INSTALLREQUIREDFILES(REQUIREMENTSFILE=FILENAME)
+   %
+   %  INSTALLREQUIREDFILES(_, INSTALLPATH=PATHNAME)
+   %  INSTALLREQUIREDFILES(_, LOCALSOURCEPATH=PATHNAME)
+   %  INSTALLREQUIREDFILES(_, IGNOREFOLDER=FOLDERNAME)
+   %  INSTALLREQUIREDFILES(_, REMOTEREPONAME=REPONAME)
+   %  INSTALLREQUIREDFILES(_, REMOTEBRANCH=BRANCHNAME)
+   %  INSTALLREQUIREDFILES(_, GITHUBUSERNAME=USERNAME)
+   %  INSTALLREQUIREDFILES(_, INSTALLMISSING=TRUE)
    %
    % Description
+   %
    %  The use case for this function is to install a list of required files
    %  from GitHub. The list could be shipped with a toolbox, and third party
    %  users run an install script which reads the requirements list and installs
@@ -20,37 +22,71 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %  function to package the requirements with the toolbox.
    %
    % Input Arguments
-   %  REQUIREDFILES - (optional) a list of required functions. If not provided
-   %  or if empty, the requirements for the PROJECTPATH parameter or the
-   %  supplied REQUIREMENTSFILE are installed.
    %
-   % Optional name-value parameters
-   %  projectPath - folder that needs the required files.
-   %  localSourcePath - folder with local versions of the dependencies.
-   %  remoteRepoName - Github repo for the localSourcePath.
-   %  remoteBranch - Branch to use when downloading from the remote Github repo.
+   %  The following arguments control what files get installed: Either a
+   %  pre-existing list of requirements (REQUIREDFILES or REQUIREMENTSFILE), or
+   %  a list of requirements generated internally by this function for a
+   %  specific project folder (PROJECTPATH), optionally ignoring any
+   %  requirements for files contained in IGNOREFOLDER.
+   %
+   %  REQUIREDFILES - (optional, positional) a list of required functions. If
+   %  not provided or if empty, PROJECTPATH becomes required, and the
+   %  requirements for all files in the PROJECTPATH folder are installed.
+   %
+   %  PROJECTPATH - (optional, name-value) a full path (scalar text) to a
+   %  folder. Requirements for all files within this folder are generated and
+   %  installed into the folder. The default install location is a subfolder
+   %  named "dependencies" at the top level of PROJECTPATH. Specify the optional
+   %  INSTALLPATH argument to control where dependencies are installed.
+   %
+   %  REQUIREMENTSFILE - (optional, name-value) a full path to a file containing
+   %  a list of required files. NOT CURRENTLY IMPLEMENTED.
+   %
+   %  NOTE: If none of the three arguments above are supplied, the default
+   %  behavior uses the current working directory as the PROJECTPATH parameter,
+   %  and the function proceeds as though PROJECTPATH were supplied.
+   %
+   %  IGNOREFOLDER - A folder or array of folder names to be ignored when
+   %  generating the list of requirements for the PROJECTPATH folder.
+   %  IGNOREFOLDER should contain a single folder name or array of folder names
+   %  which are subfolders of PROJECTPATH. Use this option to ignore a scratch/
+   %  or testbed/ or sandbox/ or examples/ folder which is not under source
+   %  control and is not distributed with the toolbox or project.
+   %
+   %  These arguments control how the requirements are found and/or resolved:
+   %
+   %  LOCALSOURCEPATH - folder with local versions of the required files.
+   %  REMOTEREPONAME - remote (Github) repo for the localSourcePath.
+   %  REMOTEBRANCH - branch to use when downloading from the remote Github repo.
+   %  GITHUBUSERNAME - GitHub username for the REMOTEREPONAME.
+   %
+   %  These arguments control if and where files are installed:
+   %
+   %  INSTALLPATH - full path to location where files are installed. The default
+   %  value is a folder named "dependencies" in the PROJECTPATH.
+   %  DRYRUN - logical flag indicating if the files are installed. If false, the
+   %  list of files are returned and printed to the screen. The default value is
+   %  true.
    %
    % See also: getRequiredFiles
 
    arguments
+      %%% The following arguments control what gets installed:
       requiredFiles (:, :) string {mustBeText} ...
          = []
 
-      % Note: requirementsFile is currently not implemented.
       kwargs.requirementsFile (1, :) string {mustBeTextScalar} ...
-         = ""
+         = "" % Note: requirementsFile is currently not implemented.
 
       kwargs.projectPath (1, :) string {mustBeFolder} ...
          = pwd()
 
-      kwargs.installPath (1, :) string {mustBeTextScalar} ...
-         = fullfile(pwd(), "dependencies");
-
-      kwargs.localSourcePath (1, :) {mustBeFolder} ...
-         = getenv('MATLABFUNCTIONPATH')
-
       kwargs.ignoreFolder (1, :) string ...
          = "testbed"
+
+      %%% The following arguments control how requirements are found:
+      kwargs.localSourcePath (1, :) {mustBeFolder} ...
+         = getenv('MATLABFUNCTIONPATH')
 
       kwargs.remoteRepoName (1, :) string {mustBeTextScalar} ...
          = "matfunclib"
@@ -60,6 +96,11 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
 
       kwargs.GitHubUserName (1, :) string {mustBeTextScalar} ...
          = getenv('GITHUB_USER_NAME')
+
+      %%% The following arguments control where and if files get installed:
+
+      kwargs.installPath (1, :) string {mustBeTextScalar} ...
+         = fullfile(pwd(), "dependencies");
 
       kwargs.testRun (1, 1) logical {mustBeNumericOrLogical} ...
          = false
@@ -102,6 +143,23 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
       fprintf("\n The following files will be installed: \n")
       disp(urlList)
    end
+
+   % % This was in a script in icom-msd project which I deleted but wanted to
+   % % preserve this snippet. Seems most useful / applicable to this function.
+   %
+   % % Say fileName is a known dependency, and searchFolders are possible
+   % % locations. This shows how to
+   % searchFolders = {
+   %    '/Users/coop558/MATLAB/projects/icom-msd/project/figures', ...
+   %    '/Users/coop558/MATLAB/projects/icom-msd/project/scripts'};
+   % fileName = 'riskscore.m';
+   %
+   % % Obtain the directory struct (will be empty if not found):
+   % foundFiles = cellfun(@(folder) ...
+   %    dir(fullfile(folder, fileName)), searchFolders, 'UniformOutput', false)
+   %
+   % % Convert to a logical:
+   % foundFiles = ~cellfun('isempty', foundFiles);
 end
 
 %% Local Functions

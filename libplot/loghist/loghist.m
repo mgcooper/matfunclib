@@ -5,7 +5,7 @@ function [h, edges, centers, hfit] = loghist(data, varargin)
    %
    % See also: setlogticks
 
-   arguments (Output)
+   arguments(Output)
       h
       edges
       centers
@@ -66,7 +66,7 @@ function [h, edges, centers, hfit] = loghist(data, varargin)
       %    centers = edges(1:end-1)+diff(edges)./2;
       % end
 
-      hold on;
+      hold on
       switch normalization
          case 'pdf'
             pfit = dfit.pdf(centers);

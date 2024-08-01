@@ -44,13 +44,17 @@ function workoff(varargin)
    % deactivate the project
    disp(['deactivating ' projname]);
 
-   try
-      close(currentProject);
-   catch
-   end
+   % If successful, close the current project. NOTE: This removes paths so
+   % subsequent manager functions won't run, so maybe Manager needs to be the
+   % default project (not matfunclib, needs to be lightweight to quickly add
+   % paths/run startup etc, besides Manager needs to be agnostic to matfunclib)
+   %
+   % Deactivated this for now, later add method to workon that ensures Manager
+   % is on path.
+   % job = onCleanup(@() close(currentProject));
 
    % update the active file list
-   if updatefiles == true
+   if updatefiles
       setprojectfiles(projname);
    end
 

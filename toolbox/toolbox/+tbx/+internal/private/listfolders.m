@@ -47,7 +47,7 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
 
    % Recursion
    if numlevels == -1 || currentlevel < numlevels
-      
+
       for thisfolder = toplist(:)'
          nextpath = fullfile(toppath, thisfolder{:});
          nextlist = listfolders(nextpath, numlevels, option, currentlevel+1);
@@ -56,7 +56,7 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
             nextlist = strcat(thisfolder{:}, '/', nextlist);
          end
 
-         folderlist = [folderlist; nextlist]; %#ok<AGROW> 
+         folderlist = [folderlist; nextlist]; %#ok<AGROW>
       end
    end
 end

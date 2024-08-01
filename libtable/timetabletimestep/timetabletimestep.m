@@ -56,13 +56,15 @@ function timestep = timetabletimestep(T)
 
             % maybe issue a warning or maybe the easiest thing is to just
             % return the varaible with units /year
-            warning('timestep is monthly, using standard year divided by 12, duration unit is years if called from trend functions');
+            warning( ...
+               ['timestep is monthly, using standard year divided by 12, ' ...
+               'duration unit is years if called from trend functions']);
 
-            %          % this was suggested online, it would work for days or any
-            %          % function that has a duration function i.e. not 'cal' so
-            %          % 'days' not 'caldays' would work, but months only has calmonths
-            %          [y,m,d,t] = split(timestep, {'years','months','days','time'});
-            %          duration = calmonths(m) + t;
+            % % this was suggested online, it would work for days or any
+            % % function that has a duration function i.e. not 'cal' so
+            % % 'days' not 'caldays' would work, but months only has calmonths
+            % [y,m,d,t] = split(timestep, {'years','months','days','time'});
+            % duration = calmonths(m) + t;
 
          elseif d == 1
             timestep = days(1);

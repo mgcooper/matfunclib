@@ -14,9 +14,13 @@ function [mininds, minvals] = findglobalmin(Data, k, position, iref, varargin)
    % Find the indices of the min
    mininds = find(Data == min(Data, varargin{:}), k, position);
 
-   if isempty(mininds); mininds = nan; minvals = nan; return; end
+   if isempty(mininds)
+      mininds = nan;
+      minvals = nan;
+      return
+   end
 
-   minvals = min(Data(mininds),varargin{:});
+   minvals = min(Data(mininds), varargin{:});
    mininds = find(Data == minvals, k, position);
    minvals = Data(mininds(:));
 

@@ -70,7 +70,7 @@ function result = runOneSuite(testname, varargin)
    % using mpackagename, which is included below.
 
    % % This flag specifies whether the test suite is within a +pkg folder
-   % % NOTE: This may be incorrect - may need to use <pkgname>.<test
+   % % NOTE: This may be incorrect - may need to use <pkgname>.<test>
    % pkgflag = contains(testname, '+');
    % pkgname = mpackagename();
    % % In R2022a and later, fromFolder and its name-value options such as
@@ -93,6 +93,8 @@ function result = runOneSuite(testname, varargin)
    %    suite = TestSuite.fromFolder(testname, 'IncludingSubfolders', true);
    % end
 
+   % Note: in the current setup, "testname" is always a test/ or tests/ folder.
+   % See notes above for more details.
    suite = TestSuite.fromFolder(testname, 'IncludingSubfolders', true);
 
    if nargin < 2

@@ -14,7 +14,7 @@ function proplist = completions(funcname)
 
          % To generate them dynamically from this switch-case block:
          proplist = strrep(getCases(), '''', '');
-         
+
          % To hard-code them using all members of the case set below:
          %proplist = {'open', 'privatefunction', 'folders', 'subfolders', 'help'};
 
@@ -28,7 +28,7 @@ function proplist = completions(funcname)
          allprivate = allfolders(contains(allfolders, 'private'));
          tmp = listfiles(allprivate, 'aslist', true, 'mfiles', true);
          proplist = erase(tmp, '.m');
-         
+
          % tmp = dir(fullfile(toolboxpath(), pkgname, 'private', '*.m'));
          % proplist = strrep({tmp.name}, '.m', '')';
 
