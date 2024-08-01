@@ -93,12 +93,12 @@ function [projectname, opts] = parseinputs(projectname, funcname, varargin)
 
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.addRequired('projectname', @ischar);
+   parser.addRequired('projectname', @isscalartext);
    parser.addParameter('setfiles', false, @islogicalscalar);
    parser.addParameter('setactive', false, @islogicalscalar);
    parser.addParameter('maketoolbox', false, @islogicalscalar);
    parser.parse(projectname,varargin{:});
 
    opts = parser.Results;
-   projectname = parser.Results.projectname;
+   projectname = char(parser.Results.projectname);
 end

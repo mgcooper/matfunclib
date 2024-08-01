@@ -1,15 +1,20 @@
 function workon(varargin)
    %WORKON Add project to path and makes it the working directory.
    %
-   %  workon('myproject') adds paths to myproject, updates the project
-   %  directory, sets env vars, and cd's to the active project directory. The
-   %  current active project is deactivated by calling WORKOFF prior to
-   %  activating MYPROJECT.
+   %    workon(projectname)
+   %    workon('myproject', 'updatefiles', false)
    %
-   %  workon('myproject', 'updatefiles', false) does not update the activefiles
-   %  list associated with MYPROJECT to the current open files. Default is true,
-   %  the current open files are saved to the activefiles property for
-   %  MYPROJECT.
+   %  Description
+   %
+   %    WORKON('MYPROJECT') adds paths to myproject, updates the project
+   %    directory, sets env vars, and cd's to the active project directory. The
+   %    current active project is deactivated by calling WORKOFF prior to
+   %    activating MYPROJECT.
+   %
+   %    WORKON('MYPROJECT', 'UPDATEFILES', FALSE) does not update the
+   %    activefiles list associated with MYPROJECT to the current open files.
+   %    Default is true, the current open files are saved to the activefiles
+   %    property for MYPROJECT.
    %
    % See also: workoff, manager, addproject
    %
@@ -47,7 +52,7 @@ function workon(varargin)
    % If projname is already active, do nothing, else call workoff.
    if strcmpi(projname, getactiveproject('name'))
       % the requested project is the active project (do nothing)
-      if force == true
+      if force
          % unless force is true (not implemented)
       end
    else
@@ -81,7 +86,7 @@ function workon(varargin)
    % Open project files
    openprojectfiles(projname);
 
-   % Run config, setup, install, or startup scripts if they exist in the project
+   % Run config, setup, install, or startup scripts if they exist in userhooks/
    configureproject(projpath);
 
    % realized this isn't needed b/c nothing is updated between setprojectactive
@@ -89,11 +94,14 @@ function workon(varargin)
    % configureproject then we would need it again writeprjdirectory();
 
    % FOR NOW, writeprjdirectory creates a temporary backup instead of running
-   % writeprjdirectory, use onCleanup to only trigger on success cleanup =
-   % onCleanup(@()onCleanupFun(projectlist)); NOTE: implementing this will
-   % require never running writeprjdirectory in other functions or somehow
-   % controlling onCleanup within writeprjdirectory itself and therefore passing
-   % projectlist back and forth in functions like workon
+   % writeprjdirectory, use onCleanup to only trigger on success
+   %
+   % cleanup = onCleanup(@() onCleanupFun(projectlist));
+   %
+   % NOTE: implementing this will require never running writeprjdirectory in
+   % other functions or somehow controlling onCleanup within writeprjdirectory
+   % itself and therefore passing projectlist back and forth in functions like
+   % workon.
 end
 
 %% subfunctions
@@ -118,17 +126,14 @@ end
 %% INPUT PARSER
 function [projname, updatefiles, force] = parseinputs(funcname, varargin)
 
-   projectnames = cat(1,cellstr(projectdirectorylist),'default');
-   validproject = @(x)any(validatestring(x,projectnames));
-
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.addOptional('projectname', getactiveproject(), validproject);
-   parser.addParameter('updatefiles', true, @islogical);
-   parser.addParameter('force', false, @islogical);
+   parser.addOptional('projectname', getactiveproject(), @validateProjectName);
+   parser.addParameter('updatefiles', true, @islogicalscalar);
+   parser.addParameter('force', false, @islogicalscalar);
    parser.parse(varargin{:});
 
-   projname = parser.Results.projectname;
+   projname = char(parser.Results.projectname);
    updatefiles = parser.Results.updatefiles;
    force = parser.Results.force;
 end

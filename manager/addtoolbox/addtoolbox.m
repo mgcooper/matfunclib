@@ -1,26 +1,34 @@
 function varargout = addtoolbox(tbname,varargin)
    % ADDTOOLBOX Add toolbox to toolbox directory.
    %
-   %     ADDTOOLBOX(TBNAME) Adds TBNAME to the toolbox directory, checkS if the
-   %     toolbox source code exists in the user toolbox source code directory,
-   %     and whether the toolbox already exists in the directory.
+   %    addtoolbox(tbname)
+   %    toolboxes = addtoolbox(tbname)
+   %    toolboxes = addtoolbox(tbname, 'dryrun', true)
+   %    toolboxes = addtoolbox(tbname, 'library', name)
+   %    toolboxes = addtoolbox(tbname, 'posthook', 'activate')
    %
-   %     ADDTOOLBOX(TBNAME, LIBRARY=LIBNAME) Adds TBNAME located in sub-folder
-   %     (library) LIBNAME to the toolbox directory, as above. Use this option
-   %     to group toolboxes within libraries such as 'stats', 'hydro', etc.
+   %  Description
    %
-   %     ADDTOOLBOX(_, DRYRUN=TRUE) Prints a message about what will happen
-   %     if DRYRUN=FALSE but does not perform the operation.
+   %    ADDTOOLBOX(TBNAME) Adds TBNAME to the toolbox directory, checkS if the
+   %    toolbox source code exists in the user toolbox source code directory,
+   %    and whether the toolbox already exists in the directory.
    %
-   %     ADDTOOLBOX(_, POSTHOOK="activate") Adds the toolbox to the current path
-   %     and cd's into the source code folder.
+   %    ADDTOOLBOX(TBNAME, LIBRARY=LIBNAME) Adds TBNAME located in sub-folder
+   %    (library) LIBNAME to the toolbox directory, as above. Use this option
+   %    to group toolboxes within libraries such as 'stats', 'hydro', etc.
    %
-   %     Examples
+   %    ADDTOOLBOX(_, DRYRUN=TRUE) Prints a message about what will happen
+   %    if DRYRUN=FALSE but does not perform the operation.
    %
-   %     addtoolbox('test', libary='stats', posthook='activate') will add an
-   %     entry to the toolbox directory for toolbox 'test' located in libary
-   %     'stats' and will attempt to cd into the folder located at:
-   %     [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
+   %    ADDTOOLBOX(_, POSTHOOK="activate") Adds the toolbox to the current path
+   %    and cd's into the source code folder.
+   %
+   %  Examples
+   %
+   %    addtoolbox('test', libary='stats', posthook='activate') will add an
+   %    entry to the toolbox directory for toolbox 'test' located in libary
+   %    'stats' and will attempt to cd into the folder located at:
+   %    [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
    %
    %     See also: activate deactivate renametoolbox isactive
    %
@@ -42,7 +50,7 @@ function varargout = addtoolbox(tbname,varargin)
    toolboxes = readtbdirectory(gettbdirectorypath());
 
    % Set the path to the toolbox source code (works if args.library is empty)
-   tbpath = char(fullfile(gettbsourcepath(), kwargs.library, kwargs.tbname));
+   tbpath = fullfile(gettbsourcepath(), kwargs.library, kwargs.tbname);
 
    % Add the toolbox to the end of directory
    tbidx = height(toolboxes) + 1;
@@ -58,7 +66,7 @@ function varargout = addtoolbox(tbname,varargin)
    success = false;
    if not(kwargs.dryrun)
       try
-         toolboxes(tbidx,:) = {kwargs.tbname, tbpath, false, kwargs.library};
+         toolboxes(tbidx, :) = {kwargs.tbname, tbpath, false, kwargs.library};
          writetbdirectory(toolboxes);
          success = true;
       catch e
@@ -76,74 +84,48 @@ function varargout = addtoolbox(tbname,varargin)
          varargout{1} = toolboxes;
    end
 end
+
 function posthook(kwargs)
    % Activate the toolbox if requested
-   if string(kwargs.posthook) == "activate"
+   if strcmp(kwargs.posthook, 'activate')
       activate(kwargs.tbname, 'goto');
    end
 end
-function printUserMessage(tbname, libraryname, tbpath)
 
+function printUserMessage(tbname, libraryname, tbpath)
    % Print message about adding the toolbox
-   fprintf('\nadding "%s" to toolbox directory in library "%s"\n', ...
+   fprintf(1, '\nadding "%s" to toolbox directory in library "%s"...\n', ...
       tbname, libraryname);
-   fprintf('\ntoolbox source code saved in: "%s" \n', tbpath);
+   fprintf(1, 'toolbox source code saved in: "%s" \n', tbpath);
 end
-%% INPUT PARSER
+
+%%
 function kwargs = parseinputs(tbname, funcname, varargin)
 
-   tbname = convertStringsToChars(tbname);
-   [varargin{:}] = convertStringsToChars(varargin{:});
-
-   validlibs = @(x) any(validatestring(x, cellstr(gettbdirectorylist)));
-   validopts = @(x) any(validatestring(x, {'activate'}));
+   % Note: char.empty() defaults are for str concatenation in main.
    persistent parser
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = funcname;
       parser.CaseSensitive = false;
       parser.KeepUnmatched = true;
-      parser.addRequired('tbname', @ischar);
-      parser.addParameter('library', '', validlibs); % default value must be ''
+      parser.addRequired('tbname', @isscalartext);
+      parser.addParameter('library', char.empty(), @validateLibraryName);
+      parser.addParameter('posthook', char.empty(), @validOption);
       parser.addParameter('dryrun', false, @islogicalscalar)
-      parser.addParameter('posthook', '', validopts);
    end
    parser.parse(tbname, varargin{:});
    kwargs = parser.Results;
-   kwargs.library = convertStringsToChars(kwargs.library);
-   if isempty(kwargs.library)
 
+   tbname = char(tbname);
+   kwargs.library = char(kwargs.library);
+   kwargs.posthook = char(kwargs.posthook);
+
+   if isempty(kwargs.library)
+      % not implemented
    end
 end
 
-% % NOTE on tbpath method - gettbsourcepath with no input returns the matlab
-% source directory so if args.library is empty then the new method in the main
-% code works for both cases, sub-library or no sublibrary. This is the old
-% method that is slightly safer b/c gettbsourcepath loads the file and finds the
-% path in the table.
-
-% if ~isempty(args.library)
-%    tbpath = fullfile(gettbsourcepath,args.library,args.tbname);
-% else
-%    tbpath = gettbsourcepath(args.tbname);
-% end
-
-%% removed json signature file option
-
-% % instead of this, use choices=gettbnamelist
-%
-% % add it to the json directory choices for function 'activate'
-% addtojsondirectory(toolboxes,tbidx,'activate');
-%
-% % repeat for 'deactivate'
-% addtojsondirectory(toolboxes,tbidx,'deactivate');
-
-% function addtojsondirectory(toolboxes,tbidx,directoryname)
-% jspath      = gettbjsonpath(directoryname);
-% wholefile   = readtbjsonfile(jspath);
-% % replace the most recent entry with itself + the new one
-% tbfind      = sprintf('''%s''',toolboxes.name{tbidx-1});
-% tbreplace   = sprintf('%s,''%s''',tbfind,toolboxes.name{tbidx});
-% wholefile   = strrep(wholefile,tbfind,tbreplace);
-% % write it over again
-% writetbjsonfile(jspath,wholefile)
+function tf = validOption(opt)
+   tf = any(validatestring(opt, {'activate'})) && isscalartext(opt);
+end
