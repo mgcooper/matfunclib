@@ -54,121 +54,77 @@ function success = mkproject(projectname, varargin)
    % Full path to project
    projectpath = fullfile(getenv('MATLAB_PROJECTS_PATH'), projectname);
 
-   % Flag to proceed with making the new project or not
-   createproject = false;
-   forcecopyflag = false;
-   safercopyflag = false;
+   % Flags to proceed with making the new project or not.
+   %
+   %  make_project_flag: make a new project (add it to the directory)
+   %  make_folder_flag: make the new project folder
+   %  add_existing_flag: add an existing project folder to the directory
 
-   % Flags indicating successful operations
-   success.createproject = true;
+   make_folder_flag = false;
+   make_project_flag = false;
+   add_existing_flag = false;
+
+   % Flags indicating successful operations. Set true by default b/c they're
+   % only checked in specific cases below.
+   success.makefolder = true;
    success.copytoolbox = true;
    success.replaceprefix = true; % replacing +tbx within files
    success.movenamespace = true; % moving +tbx to +<toolboxname>
 
+   % Keep them for assertions at later steps, in case fieldnames change.
+   successflags = fieldnames(success);
+
    % >>>> NOTE: NO SIDE EFFECTS BETWEEN HERE AND NEXT >>>>
 
    % Determine if the requested project should be made
-   if isfolder(projectpath)
-      % project folder exists
-      createfolder = false;
+   PROJECT_FOLDER_EXISTS = isfolder(projectpath);
+   PROJECT_PARENT_EXISTS = isfolder(fileparts(projectpath));
 
-      msg = sprintf(['\nproject folder exists in %s,\n' ...
-         'press ''y'' to add the project to the project directory or ' ...
-         'any other key to exit\n'], ...
-         projectpath);
-      str = input(msg,'s');
+   if PROJECT_FOLDER_EXISTS
 
-      if string(str) == "y"
-         % add the existing project to the project directory
-         createproject = true;
-      end
+      % Ask to add it to the directory and determine if it's empty.
+      [PROJECT_FOLDER_NOTEMPTY, ...
+         add_existing_flag] = checkProjectPath(projectpath);
 
-      if numel(rmdotfolders(dir(projectpath))) > 0
-         % existing folder is not empty
-         safercopyflag = true;
-      else
-         forcecopyflag = true;
-      end
    else
-      if isfolder(fileparts(projectpath))
-         createproject = true;
-         createfolder = true;
+      % The project folder does not exist. If the parent folder exists
+      % (which should be MATLAB_PROJECTS_PATH), set make_project_flag
+      % and make_folder_flag true, since the project folder does not exist.
+
+      if PROJECT_PARENT_EXISTS
+
+         make_project_flag = true;
+         make_folder_flag = true;
       else
-         error('project path parent folder does not exist: %s', ...
+         error('project parent folder does not exist: %s', ...
             fileparts(projectpath));
       end
    end
 
    % >>>> NOTE: SIDE EFFECTS BEGIN HERE
 
-   % Add the new project to the project directory.
-   if createproject
+   if make_project_flag || add_existing_flag
 
-      % If the project folder does not exist, create it.
-      if createfolder
+      % Make a new project or add an existing one to the directory. In either
+      % case, the toolbox template can be safely copied to the project folder.
+
+      if make_folder_flag
+
          status = mkdir(projectpath);
 
-         % If the mv was successful, status == 1 (opposite of system)
-         success.createproject = status == 1;
+         % If mkdir successful, status == 1 (opposite of system)
+         success.makefolder = status == 1;
       end
 
-      % if this is a toolbox, copy the template first
+      % Copy the toolbox template. Do it safely if PROJECT_FOLDER_NOTEMPTY.
       if opts.maketoolbox
 
-         copyinfo = copytoolboxtemplate(projectpath, ...
-            'forcecopy', forcecopyflag, ...
-            'safecopy', safercopyflag);
-
-         success.copytoolbox = copyinfo.WAS_COPIED;
-
-         % Try to replace the +tbx prefix with +<toolbox_name>.
-         try
-            tbx.internal.replacePackagePrefix(projectpath, ...
-               'tbx', projectname, false);
-         catch e
-            % rethrow(e)
-            success.replaceprefix = false;
-         end
-
-         % Rename +tbx to +<toolboxname>
-         old_tbxpath = fullfile(projectpath, 'toolbox', '+tbx');
-         new_tbxpath = fullfile(projectpath, 'toolbox', ['+' projectname]);
-
-         if isfolder(old_tbxpath)
-            status = system(['mv ' old_tbxpath ' ' new_tbxpath], "-echo");
-
-            success.movenamespace = status == 0;
-         else
-            success.movenamespace = false;
-         end
+         success = copyTemplateToProject(projectpath, projectname, ...
+            PROJECT_FOLDER_NOTEMPTY);
       end
 
-      if all(structfun(@(flag) flag, success))
-         addproject(projectname, ...
-            'setfiles', opts.setfiles, 'setactive', opts.setactive);
-      else
-         % Something failed.
-         % TODO: Undo what was done. For now, issue a warning and don't add the
-         % project otherwise it needs to be undone.
-         warning( ...
-            ['Project creation failed on one or more steps. Not updating the ' ...
-            'project directory. Suggest examining the SUCCESS flags and/or ' ...
-            'manually deleting new project folders if they were created.'])
-      end
-
-      if success.replaceprefix
-         warning( ...
-            ['Template prefix +tbx was replaced with +%s in toolbox files. ' ...
-            'This feature is experimental. Suggest checking the codebase ' ...
-            'and/or running tests before developing the toolbox further.'], ...
-            projectname)
-      else
-         warning( ...
-            ['Attempt to replace template prefix +tbx with +%s in toolbox ' ...
-            'files failed. This feature is experimental. Suggest replacing ' ...
-            'the prefix manually and/or issuing a bug report.'], ...
-            projectname)
-      end
+      % If there were no failues, add the new project to the directory.
+      addProjectToDirectory(projectname, success, opts);
    end
 
    if ~nargout
@@ -176,6 +132,87 @@ function success = mkproject(projectname, varargin)
    end
 end
 
+%% Local Functions
+
+function [FOLDER_NOTEMPTY, add_existing_flag] = checkProjectPath(projectpath)
+
+   % This means projectpath exists. Check if its empty, and prompt if it should
+   % be added to the project directory.
+
+   FOLDER_NOTEMPTY = numel(rmdotfolders(dir(projectpath))) > 0;
+
+   msg = sprintf(['\nproject folder exists in %s,\n' ...
+      'press ''y'' to add the project to the project directory or ' ...
+      'any other key to exit\n'], ...
+      projectpath);
+
+   str = input(msg, 's');
+
+   % add the existing project to the project directory
+   add_existing_flag = strcmp(str, 'y');
+end
+
+function success = copyTemplateToProject( ...
+      projectpath, projectname, PROJECT_FOLDER_NOTEMPTY)
+
+   copyinfo = copytoolboxtemplate(projectpath, ...
+      'safecopy', PROJECT_FOLDER_NOTEMPTY);
+
+   success.copytoolbox = copyinfo.WAS_COPIED;
+
+   % Try to replace the +tbx prefix with +<toolbox_name>.
+   try
+      tbx.internal.replacePackagePrefix(projectpath, ...
+         'tbx', projectname, false);
+   catch e
+      % rethrow(e)
+      success.replaceprefix = false;
+   end
+
+   % Rename +tbx to +<toolboxname>
+   old_tbxpath = fullfile(projectpath, 'toolbox', '+tbx');
+   new_tbxpath = fullfile(projectpath, 'toolbox', ['+' projectname]);
+
+   if isfolder(old_tbxpath)
+      status = system(['mv ' old_tbxpath ' ' new_tbxpath], "-echo");
+
+      success.movenamespace = status == 0;
+   else
+      success.movenamespace = false;
+   end
+end
+
+function addProjectToDirectory(projectname, success, opts)
+
+   if all(structfun(@(flag) flag, success))
+
+      addproject(projectname, ...
+         'setfiles', opts.setfiles, 'setactive', opts.setactive);
+   else
+      % Something failed.
+
+      % TODO: Undo what was done. For now, issue a warning and don't add the
+      % project otherwise it needs to be undone.
+      warning( ...
+         ['Project creation failed on one or more steps. Not updating the ' ...
+         'project directory. Suggest examining the SUCCESS flags and/or ' ...
+         'manually deleting new project folders if they were created.'])
+   end
+
+   if success.replaceprefix
+      warning( ...
+         ['Template prefix +tbx was replaced with +%s in toolbox files. ' ...
+         'This feature is experimental. Suggest checking the codebase ' ...
+         'and/or running tests before developing the toolbox further.'], ...
+         projectname)
+   else
+      warning( ...
+         ['Attempt to replace template prefix +tbx with +%s in toolbox ' ...
+         'files failed. This feature is experimental. Suggest replacing ' ...
+         'the prefix manually and/or issuing a bug report.'], ...
+         projectname)
+   end
+end
 %% input parsing
 function [projectname, opts] = parseinputs(projectname, funcname, varargin)
 

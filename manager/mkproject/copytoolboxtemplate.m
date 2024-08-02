@@ -1,24 +1,31 @@
 function msg = copytoolboxtemplate(projectname, opts)
-   %COPYTOOLBOXTEMPLATE Copy toolbox template to MATLABPROJECTPATH/projectname.
+   %COPYTOOLBOXTEMPLATE Copy toolbox template to project folder.
    %
+   %  MATLAB_PROJECTS_PATH/projectname.
    %
    % See also
 
    arguments
       projectname (1, :) char
-      opts.forcecopy (1, 1) logical = false
       opts.safecopy (1, 1) logical = false
+      opts.forcecopy (1, 1) logical = false
+   end
+
+   % NOTE: safecopy means copy into a tempdir inside the destination path.
+   % forcecopy means copy into the project folder even if it exists (should only
+   % be done if its empty, and may be blocked by copyfile anyway). If neither
+   % are set it means just copy the template to the destination. But if safecopy
+   % is true, then set forcecopy false.
+   if opts.safecopy
+      opts.forcecopy = false;
    end
 
    % Set required paths
    PROJECT_NAME = projectname;
    MATLAB_PROJECTS_PATH = getenv('MATLAB_PROJECTS_PATH');
-   MATLAB_TOOLBOX_TEMPLATE_PATH = getenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
+   TOOLBOX_TEMPLATE_PATH = getenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
 
-   % Build the full path to the toolbox template
-   tbxtemplate = MATLAB_TOOLBOX_TEMPLATE_PATH;
-
-   if isempty(tbxtemplate)
+   if isempty(TOOLBOX_TEMPLATE_PATH)
       eid = ['custom:' mfilename ':toolboxTemplatePathUndefined'];
       msg = 'set MATLAB_TOOLBOX_TEMPLATE_PATH environment variable';
       error(eid, msg);
@@ -30,94 +37,148 @@ function msg = copytoolboxtemplate(projectname, opts)
 
    % These are designed for the case where projectname is a full path. They
    % confirm if 1) the path is to a folder within MATLAB_PROJECTS_PATH
-   % (isValidParentPath), and 2) if the projectname folder already exists.
-   isValidParentPath = false;
-   isExistingProject = false;
+   % (PROJECT_PARENT_ISVALID), and 2) if the projectname folder already exists.
+
+   PROJECT_PARENT_EXISTS = false;
+   PROJECT_FOLDER_EXISTS = false;
 
    WAS_COPIED = false;
 
    if isempty(fileparts(PROJECT_NAME))
-      % PROJECT_NAME is a char not full path, build the full path
-      tbxpath = fullfile(MATLAB_PROJECTS_PATH, PROJECT_NAME);
+      % PROJECT_NAME is a char not full path, build the full path. This is the
+      % simplest case b/c it enforces MATLAB_PROJECTS_PATH as the parent.
 
-      isValidParentPath = true;
-      isExistingProject = isfolder(tbxpath);
+      PROJECT_FOLDER_PATH = fullfile(MATLAB_PROJECTS_PATH, PROJECT_NAME);
+      PROJECT_FOLDER_EXISTS = isfolder(PROJECT_FOLDER_PATH);
+      PROJECT_PARENT_EXISTS = true; % it was just set to MATLAB_PROJECTS_PATH
 
-      % Copy the toolbox template, after one more check
-      if ~isExistingProject
-         copyfile(tbxtemplate, tbxpath)
+      if not(PROJECT_FOLDER_EXISTS)
+         % It's safe to copy the toolbox/ template to the projectname/ folder.
+         copyfile(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
          WAS_COPIED = true;
       end
    else
-      %PROJECT_NAME could be a full path
+      % This case is more complicated than it may seem. It's necessary to first
+      % check if the project folder exists. If so, check if its empty. If not,
+      % check if the parent folder exists and if so, make the project there.
 
-      % Check if PROJECT_NAME is a valid project folder
-      isValidParentPath = strcmp(fileparts(PROJECT_NAME), MATLAB_PROJECTS_PATH);
+      % Check if PROJECT_NAME is a full path.
+      PROJECT_FOLDER_EXISTS = isfolder(PROJECT_NAME);
+      PROJECT_PARENT_EXISTS = isfolder(fileparts(PROJECT_NAME));
 
-      % Check if tbxname is an existing project folder
-      isExistingProject = isValidParentPath && isfolder(PROJECT_NAME);
+      % Assign PROJECT_NAME to the PROJECT_FOLDER_PATH and vise versa.
+      PROJECT_FOLDER_PATH = PROJECT_NAME;
+      [~, PROJECT_NAME] = fileparts(PROJECT_FOLDER_PATH);
 
-      % Removed the if around this. There's no harm in setting these, the
-      % side effects only occur if the path is valid, and this way tbxpath can
-      % be used in the final ~WAS_COPIED warning message. Note that the
-      % PROJECT_NAME can be a full path to an existing project, but it could be
-      % an "invalid" parent path if its not inside MATLAB_PROJECTS_PATH.
-
-      % if isValidParentPath || isExistingProject
-      tbxpath = PROJECT_NAME;
-      [~, tbxname] = fileparts(tbxpath);
-      % end
-
-      % If its an existing project, this is likely a mistake
-      if isExistingProject
+      % If it exists, this is likely a mistake, unless the folder is empty.
+      if PROJECT_FOLDER_EXISTS
 
          % Use this to investigate further.
-         % [isInDirectory, hasProjectFolder] = isproject(tbxname);
+         % [isInDirectory, hasProjectFolder] = isproject(PROJECT_NAME);
 
-         if numel(rmdotfolders(dir(tbxpath))) == 0 || opts.forcecopy == true
+         EXISTING_FOLDER_ISEMPTY = ...
+            numel(rmdotfolders(dir(PROJECT_FOLDER_PATH))) == 0;
+
+         if opts.forcecopy || EXISTING_FOLDER_ISEMPTY
             % Copy the toolbox template into the (empty) project folder
-            copyfile(tbxtemplate, tbxpath)
+            copyfile(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
             WAS_COPIED = true;
 
-         elseif opts.safecopy == true
+         elseif opts.safecopy
             % Copy the toolbox template into a temp folder
-            tbxpath = tempfile(tbxpath);
-            copyfile(tbxtemplate, tbxpath);
+            PROJECT_FOLDER_PATH = tempfile(PROJECT_FOLDER_PATH);
+            copyfile(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH);
             WAS_COPIED = true;
+
+            warning( ...
+               'Performing safe copy of toolbox template to temp path:\n %s', ...
+               PROJECT_FOLDER_PATH)
          else
             % Return an error
             error('project %s exists and is not empty, aborting', PROJECT_NAME)
          end
 
-      elseif isValidParentPath
-         % This means the path is valid but the project folder does not exist
+      elseif PROJECT_PARENT_EXISTS
+         % This means the path is valid and the project folder does not exist.
+         % This is the most straightforward case when PROJECT_NAME was passed in
+         % as a full path. If here, PROJECT_FOLDER_EXISTS is false, so copy the
+         % template directly to the new project path.
 
          % create the project by copying the toolbox template to the folder
-         copyfile(tbxtemplate, tbxpath)
+         copyfile(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
          WAS_COPIED = true;
       end
    end
 
    msg.WAS_COPIED = WAS_COPIED;
-   msg.isValidProjectPath = isValidParentPath;
-   msg.isExistingProject = isExistingProject;
+   msg.PROJECT_FOLDER_EXISTS = PROJECT_FOLDER_EXISTS;
 
-   % If here, the copy was successful. Delete the sandbox/ folder.
-   % NOTE: in one case above, tbxpath is reset to a temp path. Any similar
-   % resets must be made so tbxpath here is the actual final one.
+   % If here, the copy was successful. Delete the .prj file and sandbox/ folder.
+   %
+   % NOTE: If safecopy==true, PROJECT_FOLDER_PATH is explicitly reassigned to a
+   % temppath. This is necessary. Once here, PROJECT_FOLDER_PATH must be the
+   % actual destination where the template was copied.
+
    if WAS_COPIED
-
-      if isfolder(fullfile(tbxpath, 'sandbox'))
-         % TODO: Ask the user to confirm by pressing 'y'. For now, just delete the
-         % files in this folder manually.
-      end
+      % Remove the ToolboxTemplate.prj file and sandbox/ folder
+      deleteUnwantedFiles(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    else
       warning(['Toolbox template was not copied. Confirm the following:\n' ...
-         ' source: %s \n destination: %s'], tbxtemplate, tbxpath)
+         ' source: %s \n destination: %s'], ...
+         TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    end
 
    % % Not implemented, but an idea - either copy the template, or do nothing
-   % function copyOnCleanup(docopy, tbxtemplate, tbxpath)
+   % function copyOnCleanup(docopy, TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    %
-   % ifelse(docopy, copyfile(tbxtemplate, tbxpath), [])
+   % ifelse(docopy, copyfile(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH), [])
+end
+
+function deleteUnwantedFiles(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
+
+   % When the toolbox is copied, several files are copied which should be
+   % deleted from the new project:
+   %
+   % ToolboxTemplate.prj
+   % sandbox/
+
+   previousState = recycle("on");
+   cleanupJob = onCleanup(@() recycle(previousState));
+
+   % Confirm the actual template path has not been set to the destination path,
+   % e.g., due to rewritten code in the main function overlooking the potential
+   % for this critical error.
+   assert(~strcmp(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH))
+
+   % Double check against the env var.
+   assert(~strcmp(getenv('MATLAB_TOOLBOX_TEMPLATE_PATH'), PROJECT_FOLDER_PATH))
+
+   % This is the file we will delete.
+   copiedProjectFile = fullfile(PROJECT_FOLDER_PATH, 'ToolboxTemplate.prj');
+
+   % Confirm the copied file exists, then delete it (send to recycle bin).
+   assert(isfile(copiedProjectFile))
+   delete(copiedProjectFile)
+
+   %%%% Part 2: the sandbox/ folder
+
+   sandboxFolder = fullfile(PROJECT_FOLDER_PATH, 'sandbox');
+   if isfolder(sandboxFolder)
+
+      % TODO: Ask the user to confirm by pressing 'y'? Shouldn't be necessary.
+      % Only concern is the edge case where the project already exists. BUT
+      % THATS WHAT SAFECOPY IS FOR. This function is called by mkproject which
+      % checks if the destination exists and if so, safecopy copies the template
+      % to a tempdir (PROJECT_FOLDER_PATH will be a tempdir inside the destination).
+
+      [status, message, ~] = rmdir(sandboxFolder, 's');
+
+      if status
+         % Success. Make a new, empty sandbox folder.
+         mkdir(sandboxFolder)
+      else
+         % Failure. Print the message.
+         disp(message)
+      end
+   end
 end
