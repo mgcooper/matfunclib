@@ -4,7 +4,7 @@ function mapraster(Z, kwargs)
 
    arguments
       Z
-      kwargs.SpatialReference = []
+      kwargs.RasterReference = []
       kwargs.Lat = []
       kwargs.Lon = []
       kwargs.X = []
@@ -52,14 +52,14 @@ function [X, Y, Z] = parseinputs(Z, kwargs)
    % Determine what was provided
    XYwasprovided = all(~isempty(kwargs.X)) && all(~isempty(kwargs.Y));
    LLwasprovided = all(~isempty(kwargs.Lat)) && all(~isempty(kwargs.Lon));
-   SRwasprovided = ~isempty(kwargs.SpatialReference);
+   RRwasprovided = ~isempty(kwargs.RasterReference);
 
    if XYwasprovided && LLwasprovided
       error('Provide either X and Y or Lat and Lon but not both')
    end
 
-   if ~XYwasprovided && ~LLwasprovided && ~SRwasprovided
-      error('Provide either X and Y, Lat and Lon, or Spatial Reference object R')
+   if ~XYwasprovided && ~LLwasprovided && ~RRwasprovided
+      error('Provide either X and Y, Lat and Lon, or Raster Reference object R')
    end
 
    % If X and Y were provided use them
@@ -72,7 +72,7 @@ function [X, Y, Z] = parseinputs(Z, kwargs)
    else
 
       % If no X,Y or Lat,Lon, use R to create a grid
-      [Z, R] = validateRasterReference(Z, kwargs.SpatialReference);
+      [Z, R] = validateRasterReference(Z, kwargs.RasterReference);
 
       if R.CoordinateSystemType == "geographic"
          [Y, X] = R.geographicGrid;

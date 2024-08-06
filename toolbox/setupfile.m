@@ -92,7 +92,6 @@ function setupfile(varargin)
    for n = 1:numel(userhooks)
       try
          run(userhooks{n});
-         %run(fullfile(projectpath, 'userhooks', 'config'));
       catch
       end
    end

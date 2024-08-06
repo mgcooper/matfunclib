@@ -1,13 +1,22 @@
-function tf = isspreadsheet(filename)
+function [tf, name, ext] = isspreadsheet(filename, allowemptyname)
    %ISSPREADSHEET Return true if file has a spreadsheet extension.
    %
+   %    tf = isspreadsheet(filename)
+   %    tf = isspreadsheet(filename, allowemptyname)
    %
    % See also:
 
-   spreadsheetextensions = {'.xlsx','.xls','.xlsm','.xltx','.xltm'};
+   if nargin < 2
+      allowemptyname = false;
+   end
 
-   tf = false;
-   if contains(filename,spreadsheetextensions)
-      tf = true;
+   [~, name, ext] = fileparts(filename);
+
+   validextensions = {'.xlsx','.xls','.xlsm','.xltx','.xltm','.xls'};
+
+   tf = any(strcmp(ext, validextensions));
+
+   if ~allowemptyname
+      tf = tf && ~isempty(name);
    end
 end

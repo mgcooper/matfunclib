@@ -88,7 +88,7 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %
    % Matt Cooper, 20-Feb-2022, mgcooper@github.com
    %
-   % See also annualdMdt graceSnowCorrect merraWaterBalance
+   % See also annualdMdt grace.snowCorrection merra.monthlyWaterBalance
    %
    % Note: the PER.annual.PER values can be confusing because they're computed
    % by defining "month years" - years which begin on each month. Think of these

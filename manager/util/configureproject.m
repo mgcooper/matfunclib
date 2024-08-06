@@ -34,7 +34,7 @@ function configureproject(projectpath, varargin)
    ok = false;
    for n = 1:numel(tryscripts)
 
-      fullfilename = fullfile(projectpath,tryscripts{n});
+      fullfilename = fullfile(projectpath, tryscripts{n});
 
       if numel(fullfilename) > 63
          filename = tryscripts{n};

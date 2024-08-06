@@ -171,6 +171,7 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
          = "unknown"
       kwargs.astimetable (1, 1) logical = true
       kwargs.ascolumn (1, 1) logical = false
+      kwargs.withextra (1, 1) logical = false
       kwargs.plotflag (1, 1) logical = false
    end
 
@@ -198,7 +199,13 @@ function [dMdt, Mbar, M, Time] = annualdMdt(M, Time, kwargs)
    end
 
    % Remove the extra values on either side used for bi-monthly averaging.
-   keep = 2:N-1;
+   if kwargs.withextra
+      assert(kwargs.ascolumn)
+      keep = 1:N;
+   else
+      keep = 2:N-1;
+   end
+
    [Mbar, dMdt, M, Time] = deal(Mbar(keep), dMdt(keep), M(keep), Time(keep));
 
    % Plot the result if requested.
