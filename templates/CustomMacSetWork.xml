@@ -11,7 +11,13 @@
       <Action id="exit-matlab">
          <Stroke alt="on" code="VK_Q" meta="on" sysctrl="on"/>
       </Action>
+      <Action id="uncomment">
+         <Stroke code="VK_T" meta="on" sysctrl="on"/>
+      </Action>
       <Action id="drop-line"/>
+      <Action id="new-tab">
+         <Stroke alt="on" code="VK_T"/>
+      </Action>
       <Action id="go-until-cursor">
          <Stroke code="VK_R" meta="on" shift="on" sysctrl="on"/>
       </Action>

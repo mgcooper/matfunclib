@@ -10,7 +10,7 @@ function config(varargin)
    withwarnoff('MATLAB:rmpath:DirNotFound')
 
    % Detect if this file is being called by menv/mproject
-   if ismember(mcallername(), {'workon', 'configurepackage', 'setupfile'})
+   if ismember(mcallername(), {'workon', 'configureproject', 'setupfile'})
 
    end
 
