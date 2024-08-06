@@ -46,9 +46,17 @@ function varargout = loadprojcrs(NAME)
       case 'psn'
          proj = projcrs(102018, 'Authority', 'ESRI');
 
-         % note:
+         % ESRI:102018
+         % Name: North_Pole_Stereographic
+         % ProjectionMethod: Polar Stereographic (variant A)
+         %
+         % EPSG:3995
+         % Name: WGS 84 / Arctic Polar Stereographic
+         % ProjectionMethod: Polar Stereographic (variant B)
+         %
          % EPSG:32661 is incorrect
          % EPSG:3411 is also incorrect (sometimes confused with NSIDC 3413)
+
 
       case 'utm22n'
          proj = projcrs(32622, 'Authority', 'EPSG');
@@ -59,8 +67,10 @@ function varargout = loadprojcrs(NAME)
    end
 
    % PARSE OUTPUTS
-   nargoutchk(0, Inf)
-   [varargout{1:nargout}] = dealout(proj);
+   [varargout{1:max(1, nargout)}] = dealout(proj);
+
+   % nargoutchk(0, Inf)
+   % [varargout{1:nargout}] = dealout(proj);
 end
 
 %% TESTS

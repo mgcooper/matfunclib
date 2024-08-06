@@ -1,9 +1,11 @@
-function [bbox, xbox, ybox] = coordsToBbox(xcoords, ycoords, option)
+function [bbox, xbox, ybox] = coordsToBbox(xcoords, ycoords, varargin)
    %COORDSTOBBOX Convert coordinate lists back to a bounding box.
    %
    %  bbox = coordsToBbox(xcoords, ycoords)
-   %  bbox = coordsToBbox(xcoords, ycoords, 'aspolyshape')
+   %  bbox = coordsToBbox(xcoords, ycoords, aspolyshape=true)
    %  [_, xbox, ybox] = coordsToBbox(_)
+   %  [_, xbox, ybox] = coordsToBbox(_, closebox=false)
+   %  [_, xlims, ylims] = coordsToBbox(_, aslimits=true)
    %
    % Description:
    %   This function converts lists of x and y coordinates that describe a
@@ -35,16 +37,9 @@ function [bbox, xbox, ybox] = coordsToBbox(xcoords, ycoords, option)
    %
    % See also: bboxToCoords
 
-   if nargin < 3
-      option = 'asbbox';
-   end
-
-   validateattributes(xcoords, ...
-      {'numeric'}, {'vector'}, mfilename, 'xcoords', 1);
-   validateattributes(ycoords, ...
-      {'numeric'}, {'vector', 'size', size(xcoords)}, mfilename, 'ycoords', 2);
-   assert(numel(xcoords) > 1)
-   validatestring(option, {'asbbox', 'aspolyshape'}, mfilename, 'option', 3);
+   % Parse inputs
+   [xcoords, ycoords, opts] = parseinputs(xcoords, ycoords, ...
+      mfilename, varargin{:});
 
    % Construct the bounding box.
    xmin = min(xcoords);
@@ -55,13 +50,45 @@ function [bbox, xbox, ybox] = coordsToBbox(xcoords, ycoords, option)
    bbox = [xmin ymin; xmax ymax];
 
    % Construct vertices beginning from lower left, tracing counter-clockwise.
-   xbox = [bbox(1,1), bbox(2,1), bbox(2,1), bbox(1,1), bbox(1,1)];
-   ybox = [bbox(1,2), bbox(1,2), bbox(2,2), bbox(2,2), bbox(1,2)];
+   xbox = [bbox(1,1), bbox(2,1), bbox(2,1), bbox(1,1)];
+   ybox = [bbox(1,2), bbox(1,2), bbox(2,2), bbox(2,2)];
 
-   if strcmp(option, 'aspolyshape')
+   % Close the box unless requested otherwise
+   if opts.closebox
+      xbox = [xbox, bbox(1,1)];
+      ybox = [ybox, bbox(1,2)];
+   end
+
+   if opts.aspolyshape
       bbox = polyshape(xbox, ybox);
    end
+
+   if opts.aslimits
+      xbox = [min(xbox), max(xbox)];
+      ybox = [min(ybox), max(ybox)];
+   end
 end
+
+function [xcoords, ycoords, opts] = parseinputs(xcoords, ycoords, ...
+      mfilename, varargin)
+
+   parser = inputParser();
+   parser.FunctionName = mfilename;
+   parser.addRequired('xcoords', @isnumericvector)
+   parser.addRequired('ycoords', @isnumericvector)
+   parser.addParameter('aspolyshape', false, @islogicalscalar)
+   parser.addParameter('closebox', true, @islogicalscalar)
+   parser.addParameter('aslimits', false, @islogicalscalar)
+
+   parser.parse(xcoords, ycoords, varargin{:})
+   opts = parser.Results;
+
+   assert(~isscalar(xcoords), ...
+      'Expected input number 1, xcoords, to be nonscalar')
+   validateattributes(ycoords, ...
+      {'numeric'}, {'vector', 'size', size(xcoords)}, mfilename, 'ycoords', 2);
+end
+
 
 % function xycoordsToBbox(coords)
 %
