@@ -3,14 +3,14 @@ function tf = isgeostruct(S)
    %
    %  TF = ISGEOSTRUCT(S)
    %
-   % See also
+   % See also ismapstruct
 
    % parse inputs
    persistent parser
    if isempty(parser)
       parser = inputParser;
       parser.FunctionName = mfilename;
-      parser.addRequired('S',@isstruct);
+      parser.addRequired('S', @isstruct);
    end
    parse(parser, S);
 
