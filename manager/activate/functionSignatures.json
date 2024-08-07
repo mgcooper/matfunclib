@@ -6,7 +6,7 @@
       [
          {"name":"tbname", "kind":"ordered", "type":["char", "choices=gettbnamelist"]},
          {"name":"posthook", "kind":"ordered", "type":["char","choices={'goto'}"],"purpose":"Option"},
-         {"name":"except", "kind":"ordered", "type":["char","choices=gettbnamelist"],"purpose":"Option"},
+         {"name":"except", "kind":"namevalue", "type":["char", "cellstr","choices=gettbnamelist"],"purpose":"Option"},
          {"name":"pathloc", "kind":"namevalue", "type":["char","choices={'-end','-begin'}"],"purpose":"Option"},
          {"name":"silent", "kind":"namevalue", "type":["logical", "scalar"] ,"purpose":"Option"},
          {"name":"asproject", "kind":"namevalue", "type":["logical", "scalar"] ,"purpose":"Option"}

@@ -111,8 +111,8 @@ function [tbname, except, pathloc, posthook, silent, asproject] = ...
       parser = inputParser;
       parser.FunctionName = funcname;
       parser.addRequired('tbname', @isscalartext);
-      parser.addOptional('posthook', 'none', @(x) any(validatestring(x, {'goto'})));
-      parser.addParameter('except', {}, @ischarlike);
+      parser.addOptional('posthook', 'none', @validPostHook);
+      parser.addParameter('except', {}, @ischarlike); % can be nonscalar text
       parser.addParameter('pathloc', '-end', @isscalartext);
       parser.addParameter('silent', false, @islogicalscalar);
       parser.addParameter('asproject', false, @islogicalscalar);
@@ -125,4 +125,8 @@ function [tbname, except, pathloc, posthook, silent, asproject] = ...
    posthook = char(parser.Results.posthook);
    silent = parser.Results.silent;
    asproject = parser.Results.asproject;
+end
+
+function tf = validPostHook(x)
+   tf = isoneof(x, {'goto'});
 end
