@@ -20,7 +20,7 @@ function varargout = fstrrep(filename, oldstr, newstr, opts)
 
    % PARSE ARGUMENTS
    arguments
-      filename (1,:) char {mustBeFile(filename)}
+      filename (1,:) char {mustBeFile}
       oldstr (1, :) char
       newstr (1, :) char
       opts.dryrun (1,1) logical = false
@@ -33,7 +33,7 @@ function varargout = fstrrep(filename, oldstr, newstr, opts)
    wholefile = readinfile(filename);
 
    % Back up the file if requested
-   if opts.backup == true
+   if opts.backup
       rewritefile(backupfile(filename), wholefile, opts)
    end
 
@@ -56,7 +56,7 @@ function wholefile = readinfile(filename)
    if fid == -1
       error('Failed to open file %s for reading', filename);
    end
-   wholefile = fscanf(fid,'%c');
+   wholefile = fscanf(fid, '%c');
    status = fclose(fid);
    if status == -1
       warning('Failed to close file %s after reading', filename);
@@ -66,7 +66,7 @@ end
 function rewritefile(filename, wholefile, opts)
    %rewrite the file
 
-   if opts.dryrun == true
+   if opts.dryrun
       return
    end
 
@@ -74,7 +74,7 @@ function rewritefile(filename, wholefile, opts)
    if fid == -1
       error('Failed to open file %s for writing', filename);
    end
-   fprintf(fid,'%c',wholefile);
+   fprintf(fid, '%c', wholefile);
    status = fclose(fid);
    if status == -1
       warning('Failed to close file %s after writing', filename);

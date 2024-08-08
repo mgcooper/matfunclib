@@ -1,5 +1,9 @@
 function tout = decimalday2datetime(decimaldays,yy)
-   %DECIMALDAY2DATETIME Converts an array of decimal days to a maltab datetime object
+   %DECIMALDAY2DATETIME Convert array of decimal days to datetime.
+   %
+   %    tout = decimalday2datetime(decimaldays, yy)
+   %
+   % See also:
 
    ti = decimaldays(1);
    di = floor(ti);
@@ -27,6 +31,6 @@ function tout = decimalday2datetime(decimaldays,yy)
    mmi = tt.Month(di);
    ddi = tt.Day(di);
 
-   t1 = datetime(yy,mmi,ddi,hi,mi,si);
-   tout = t1+(decimaldays - ti);
+   t1 = datetime(yy, mmi, ddi, hi, mi, si);
+   tout = t1 + (decimaldays - ti);
 end
