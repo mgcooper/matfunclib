@@ -169,7 +169,21 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
       dSdtS(:, imonth) = F_seasonavg(P, E, R, dSWEdt, idx);
    end
 
-   % 4. compute linear trends, if there are more than two points
+   % NEW - use TWS directly. Note - may need to use bimonthly averaging if SWE
+   % was averaged, then dSliq/dt = dS/dt - dSWE/dt + T is apples to apples
+   if isvariable('TWS', MonthlyData)
+      TWS = transpose(reshape(MonthlyData.TWS, 12, []));
+   else
+      TWS = 0 * P;
+   end
+   if isvariable('SWE', MonthlyData)
+      SWE = transpose(reshape(MonthlyData.SWE, 12, []));
+   else
+      SWE = 0 * P;
+   end
+
+   % 4. Compute linear trends in S computed on an annual basis for each month,
+   % each season, and each 12-month annual period beginning each month.
    if size(dSdtM, 1) > 2
       for imonth = 12:-1:1
 
@@ -179,8 +193,15 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
 
          % Use this to omit the last year.
          % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
+
+         % TWS
+         abTWS(:,imonth) = olsfit(year(AnnualTime), TWS(:,imonth));
+         abSWE(:,imonth) = olsfit(year(AnnualTime), SWE(:,imonth));
       end
    end
+
+   % this should bring the trend closer to abSA if RemoveSnow == true.
+   abtest = abTWS - abSWE;
 
    % save the period-average PER, and the calendar-year trend
    PER.avg           = mean(MonthlyData.PER, 'omitnan');
