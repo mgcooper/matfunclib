@@ -27,30 +27,30 @@ function [mu, CI] = gevbootmean(x, alpha, bootreps)
    [bootM, bootV] = gevstat(params(:, 1), params(:, 2), params(:, 3));
    mu = median(bootM(~isinf(bootM)));
    CI = prctile(bootM(~isinf(bootM)), [alpha/2 100-alpha/2], 'Method', 'approximate');
-   
+
    truncate = CI(2) > prctile(x, 90);
-   
+
    if truncate == true
       % Trim or winsorize a percentage of the largest values
-      
+
       trimmedPercentage = 5;
       sortedBootM = sort(bootM);
-   
+
       % Determine the number of elements to trim from each end
       trimNum = round(bootreps * trimmedPercentage / 100 / 2);
-   
+
       % Trim the sorted array at both ends
       % trimmedBootM = sortedBootM((trimNum + 1):(end - trimNum));
-      
+
       % Trim the sorted array at one end
       trimmedBootM = sortedBootM(1:(end - trimNum));
-   
+
       % Compute the confidence intervals on the trimmed/winsorized distribution
       CI = prctile(trimmedBootM, [alpha/2, 100 - alpha/2], 'Method', 'approximate');
       mu = mean(trimmedBootM);
       % mu = trimmean(bootM, trimmedPercentage, 'round', 1);
    end
-   
+
    if logtransform == true
 
       % Apply log transformation to reduce skewness
@@ -71,26 +71,28 @@ function [mu, CI] = gevbootmean(x, alpha, bootreps)
 
       % If the CI is extremely large, this will show that the bootM values are
       % heavily skewed
-      figure; 
-      histogram(trimmedBootM, 'NumBins', 30); hold on;
+      figure
+      hold on
+      histogram(trimmedBootM, 'NumBins', 30);
       histogram(bootM, 'NumBins', 30);
-      
+
       figure;
-      histogram(log(trimmedBootM), 'NumBins', 30); hold on;
+      hold on
+      histogram(log(trimmedBootM), 'NumBins', 30);
       histogram(log(bootM), 'NumBins', 30)
-      
+
       % Check if GEV is the best fit
       [D, PD] = allfitdist(x);
       GP = fitdist(x, 'GeneralizedPareto');
       EV = fitdist(x, 'GeneralizedExtremeValue');
       [GP.mean EV.mean]
-      
-      
+
+
       % Could use this to get the CIs of the distribution itself and use them
       % instead of CIs on the mean
       % low = prctile(pfit, 5);
       % upp = prctile(pfit, 95);
-      
+
       % The problem with using mean(bootM(~isinf(bootM))) is the bootM sample might
       % be non-symmetrics.
 
@@ -98,7 +100,7 @@ function [mu, CI] = gevbootmean(x, alpha, bootreps)
       pd = fitdist(x, 'GeneralizedExtremeValue');
       xfit = linspace(min(x), max(x), 1000);
       pfit = gevpdf(xfit, mean(params(:, 1)), mean(params(:, 2)), mean(params(:, 3)));
-      
+
       figure
       histogram(x, 'Normalization', 'pdf', 'NumBins', 30); hold on;
       line(xfit, pfit, 'Color', 'red')
@@ -114,12 +116,12 @@ function [mu, CI] = gevbootmean(x, alpha, bootreps)
       [pd.sigma mean(params(:, 2))]
       [pd.mu mean(params(:, 3))]
       [pd.mean mu mean(x)]
-      
+
    end
 
 end
 
-function [mu, CI] = demoFunction(x, bootreps)
+function [mu, CI] = demoFunction(x, bootreps, Fmean)
 
    % Explicit method:
    bootM = zeros(bootreps, 1);

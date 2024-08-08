@@ -28,7 +28,7 @@ function [tbls, wastabular, wasstruct, names] = parseinputs(tbls)
    wastabular = istabular(tbls);
 
    if iscell(tbls)
-      assert(all(cellfun(@istabular, Merra)))
+      assert(all(cellfun(@istabular, tbls)))
 
    elseif wasstruct
       [tbls, names] = deal(struct2cell(tbls), string(fieldnames(tbls)));
@@ -44,6 +44,6 @@ function tbls = parseoutputs(tbls, wastabular, wasstruct, names)
       tbls = cell2struct(tbls, names, 1);
 
    elseif wastabular
-      tbls = tbls{:};
+      tbls = tbls{1};
    end
 end
