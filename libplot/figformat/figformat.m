@@ -17,31 +17,31 @@ function h = figformat(varargin)
    p.CaseSensitive = false;
    p.KeepUnmatched = true;
 
-   p.addParameter(    'reformat',           false,      @(x)islogical(x)  );
-   p.addParameter(    'textfontsize',       14,         @(x)isscalar(x)   );
-   p.addParameter(    'axesfontsize',       16,         @(x)isscalar(x)   );
-   p.addParameter(    'labelfontsize',      16,         @(x)isscalar(x)   );
-   p.addParameter(    'legendfontsize',     14,         @(x)isscalar(x)   );
-   p.addParameter(    'textfontname',       'verdana',  @(x)ischar(x)     );
-   p.addParameter(    'axesfontname',       'verdana',  @(x)ischar(x)     );
-   p.addParameter(    'labelfontname',      'verdana',  @(x)ischar(x)     );
-   p.addParameter(    'legendfontname',     'verdana',  @(x)ischar(x)     );
-   p.addParameter(    'legendlocation',     'best',     @(x)ischar(x)     );
-   p.addParameter(    'textinterpreter',    'latex',    @(x)ischar(x)     );
-   p.addParameter(    'axesinterpreter',    'latex',    @(x)ischar(x)     );
-   p.addParameter(    'labelinterpreter',   'latex',    @(x)ischar(x)     );
-   p.addParameter(    'legendinterpreter',  'latex',    @(x)ischar(x)     );
-   p.addParameter(    'linelinewidth',      1,          @(x)isscalar(x)   );
-   p.addParameter(    'axeslinewidth',      1,          @(x)isscalar(x)   );
-   p.addParameter(    'patchlinewidth',     1,          @(x)isscalar(x)   );
-   p.addParameter(    'ticklength',         [.015 .02], @(x)isnumeric(x)  );
-   p.addParameter(    'suppliedfigure',     gcf,        @(x)isobject(x)   );
-   p.addParameter(    'suppliedaxis',       nan,        @(x)isaxis(x)     );
-   p.addParameter(    'suppliedline',       [],         @(x)ishandle(x)   );
-   p.addParameter(    'xgrid',              'on',       @(x)ischar(x)     );
-   p.addParameter(    'ygrid',              'on',       @(x)ischar(x)     );
-   p.addParameter(    'xgridminor',         'off',      @(x)ischar(x)     );
-   p.addParameter(    'ygridminor',         'off',      @(x)ischar(x)     );
+   p.addParameter(    'reformat',           false,      @islogicalscalar   );
+   p.addParameter(    'textfontsize',       14,         @isnumericscalar   );
+   p.addParameter(    'axesfontsize',       16,         @isnumericscalar   );
+   p.addParameter(    'labelfontsize',      16,         @isnumericscalar   );
+   p.addParameter(    'legendfontsize',     14,         @isnumericscalar   );
+   p.addParameter(    'textfontname',       'verdana',  @isscalartext      );
+   p.addParameter(    'axesfontname',       'verdana',  @isscalartext      );
+   p.addParameter(    'labelfontname',      'verdana',  @isscalartext      );
+   p.addParameter(    'legendfontname',     'verdana',  @isscalartext      );
+   p.addParameter(    'legendlocation',     'best',     @isscalartext      );
+   p.addParameter(    'textinterpreter',    'latex',    @isscalartext      );
+   p.addParameter(    'axesinterpreter',    'latex',    @isscalartext      );
+   p.addParameter(    'labelinterpreter',   'latex',    @isscalartext      );
+   p.addParameter(    'legendinterpreter',  'latex',    @isscalartext      );
+   p.addParameter(    'linelinewidth',      1,          @isnumericscalar   );
+   p.addParameter(    'axeslinewidth',      1,          @isnumericscalar   );
+   p.addParameter(    'patchlinewidth',     1,          @isnumericscalar   );
+   p.addParameter(    'ticklength',         [.015 .02], @isnumericvector   );
+   p.addParameter(    'suppliedfigure',     gcf,        @isobject          );
+   p.addParameter(    'suppliedaxis',       nan,        @isaxis            );
+   p.addParameter(    'suppliedline',       [],         @ishandle          );
+   p.addParameter(    'xgrid',              'on',       @isscalartext      );
+   p.addParameter(    'ygrid',              'on',       @isscalartext      );
+   p.addParameter(    'xgridminor',         'off',      @isscalartext      );
+   p.addParameter(    'ygridminor',         'off',      @isscalartext      );
 
    parse(p,varargin{:});
 
@@ -122,8 +122,10 @@ function h = figformat(varargin)
    % set(findall(gcf,'-property','YMinorTick'),'YMinorTick','on')
 
    % except these
-   %    set(findall(gcf,'-property','TickLabelInterpreter'),'TickLabelInterpreter',labelinterpreter);
-   %    set(findall(gcf,'-property','Interpreter'),'Interpreter',axesinterpreter);
+   % set(findall(gcf,'-property','TickLabelInterpreter'), ...
+   %    'TickLabelInterpreter',labelinterpreter);
+   % set(findall(gcf,'-property','Interpreter'), ...
+   %    'Interpreter',axesinterpreter);
 
    %% AXES PROPERTIES
 
@@ -153,14 +155,14 @@ function h = figformat(varargin)
    set(suppliedaxis,'XMinorGrid',xgridminor);
    set(suppliedaxis,'YMinorGrid',ygridminor);
 
-   %    % it might be necessary to do this if we have multiple axes, b/c the
-   %    default suppliedaxis is gca
-   %    hAxes    = findobj(gcf,'Type','Axes');
-   %    set(hAxes,'FontName',axesfontname);
-   %    set(hAxes,'FontSize',axesfontsize);
-   %    set(hAxes,'LineWidth',axeslinewidth);
-   %    set(hAxes,'TickLabelInterpreter',axesinterpreter)
-   %    set(hAxes,'TickLength',ticklength);
+   % % it might be necessary to do this if we have multiple axes, b/c the
+   % default suppliedaxis is gca
+   % hAxes    = findobj(gcf,'Type','Axes');
+   % set(hAxes,'FontName',axesfontname);
+   % set(hAxes,'FontSize',axesfontsize);
+   % set(hAxes,'LineWidth',axeslinewidth);
+   % set(hAxes,'TickLabelInterpreter',axesinterpreter)
+   % set(hAxes,'TickLength',ticklength);
 
    if strcmp(suppliedaxis.XScale,'log')
       if strcmp(suppliedaxis.YScale,'log')
@@ -179,9 +181,9 @@ function h = figformat(varargin)
 
    hLegend = [];
    if isfield(suppliedaxis,'Legend')
-      suppliedaxis.Legend.FontSize     = legendfontsize;
-      suppliedaxis.Legend.Location     = legendlocation;
-      suppliedaxis.Legend.Interpreter  = legendinterpreter;
+      suppliedaxis.Legend.FontSize = legendfontsize;
+      suppliedaxis.Legend.Location = legendlocation;
+      suppliedaxis.Legend.Interpreter = legendinterpreter;
 
       hLegend = suppliedaxis.Legend;
 
@@ -276,10 +278,10 @@ function h = figformat(varargin)
 
    % % alternative to just put a box around it, but then changing axis
    % lims/dir etc. won't work, I think
-   % xlims    = xlim;
-   % ylims    = ylim;
-   % xbox     = [xlims(1) xlims(2) xlims(2) xlims(1) xlims(1)];
-   % ybox     = [ylims(1) ylims(1) ylims(2) ylims(2) ylims(1)];
+   % xlims = xlim;
+   % ylims = ylim;
+   % xbox = [xlims(1) xlims(2) xlims(2) xlims(1) xlims(1)];
+   % ybox = [ylims(1) ylims(1) ylims(2) ylims(2) ylims(1)];
    %
    % plot(xbox,ybox,'k','LineWidth',1);
 
@@ -301,9 +303,9 @@ function h = figformat(varargin)
    % ax2 = copyobj([ax1;hLegend],suppliedfigure);
 
    % % this is how I did it in inset
-   % mainFigAxes    =  findobj(mainHandle,'Type','axes');
-   % mainLegend     =  findobj(mainHandle,'Type','Legend');
-   % newMainAxes    =  copyobj([mainFigAxes; mainLegend],newFig);
+   % mainFigAxes = findobj(mainHandle,'Type','axes');
+   % mainLegend = findobj(mainHandle,'Type','Legend');
+   % newMainAxes = copyobj([mainFigAxes; mainLegend],newFig);
 
    % i tried this to get the legend copied over. it might be useful, but it
    % doesn't solve that problem
@@ -322,7 +324,8 @@ function h = figformat(varargin)
          linkaxes([ax1 ax2],'xy');      % link axes in case of zooming
       else
          pause(0.001)
-         ax1pos  = plotboxpos(ax1);                               pause(0.001)
+         ax1pos = plotboxpos(ax1);
+         pause(0.001)
          ax1xlim = get(ax1,'XLim');
          ax1ylim = get(ax1,'YLim');
 
@@ -352,20 +355,27 @@ function h = figformat(varargin)
       end
 
       %set(gca,'XGrid','on','YGrid','on')
-      pause(0.001); ax2.Position = plotboxpos(ax1); pause(0.001)
+      pause(0.001)
+      ax2.Position = plotboxpos(ax1);
+      pause(0.001)
 
-      % this is the magic that allows zooming/panning,
-      % see:https://www.mathworks.com/matlabcentral/answers/710113-how-do-i-plot-2-images-each-with-a-different-colormap-and-clim-in-a-single-subplot#answer_592283
-      %    try
-      %       ax2.UserData = linkprop([ax1,ax2],...
-      %       {'Position','InnerPosition','ydir','xdir','xlim','ylim'}); % add more props as needed
-      % %       ax1.UserData = linkprop([ax1,ax2],...
-      % %       {'Position','InnerPosition','ydir','xdir','xlim','ylim'}); % add more props as needed
-      %    catch ME
+      % this is the magic that allows zooming/panning, see:
       %
-      %       if strcmp(ME.msg,'')
-      %       end
+      % ['https://www.mathworks.com/matlabcentral/answers/' ...
+      %    '710113-how-do-i-plot-2-images-each-with-a-different-colormap' ...
+      %    '-and-clim-in-a-single-subplot#answer_592283']
+      %
+      % try
+      %    ax2.UserData = linkprop([ax1,ax2], ... % add more props as needed
+      %       {'Position','InnerPosition','ydir','xdir','xlim','ylim'});
+      %
+      %    % ax1.UserData = linkprop([ax1,ax2],... % add more props as needed
+      %    %    {'Position','InnerPosition','ydir','xdir','xlim','ylim'});
+      % catch ME
+      %    if strcmp(ME.msg,'')
+      %
       %    end
+      % end
 
       if istiled == false
          ax2.UserData = linkprop([ax1,ax2],...  % add more props as needed
@@ -378,7 +388,7 @@ function h = figformat(varargin)
          ax1.UserData = linkprop([ax1,ax2],...
             {'ydir','xdir','xlim','ylim'});
       end
-      %    linkdata on
+      % linkdata on
       % i commented this after improving formatPlotMarkers with inputparser,
       % which makes it easy enough to call outside this script
       % formatPlotMarkers
@@ -398,11 +408,11 @@ function h = figformat(varargin)
    % set(ff.figure,'CurrentAxes',ff.backgroundAxis); % this would be added
    % to outsdide funcs
 
-   %    % could be useful, from comments on datetickzoom function, should allow
-   %    % panning/zooming of datetick axis
-   %    linkaxes(ax,'x') %link axis extents
-   %    addlistener(ax,'XLim','PostSet', ...
-   %       @(~,e)datetick(e.AffectedObject,'x','keeplimits')); %self updating time axis
+   % % could be useful, from comments on datetickzoom function, should allow
+   % % panning/zooming of datetick axis
+   % linkaxes(ax,'x') %link axis extents
+   % addlistener(ax,'XLim','PostSet', ...
+   %    @(~,e)datetick(e.AffectedObject,'x','keeplimits')); % self updating time axis
 end
 
 %%

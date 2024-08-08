@@ -109,14 +109,14 @@ function varargout = addOnetoOne(varargin)
 
    axis square
 
-   %    % Not sure if this will fix the issue below or if its ... started this then
-   %    stopped, but was gonna use the min / max and then whichever has more values
-   %    and/or the unique ones, but need to ensure even spacing etc ... but thats
-   %    already whats done below so more likely it needs to retrieve more
-   %    properties e.g. format and reset them.
-   %    xmajorticks = get(gca, 'XTick');
-   %    ymajorticks = get(gca, 'YTick');
-   %    % Want to ensure the min / max value
+   % % Not sure if this will fix the issue below or if its ... started this then
+   % stopped, but was gonna use the min / max and then whichever has more values
+   % and/or the unique ones, but need to ensure even spacing etc ... but thats
+   % already whats done below so more likely it needs to retrieve more
+   % properties e.g. format and reset them.
+   % xmajorticks = get(gca, 'XTick');
+   % ymajorticks = get(gca, 'YTick');
+   % % Want to ensure the min / max value
 
 
    % i diabled this b/c it's the reason the exponent isn't showing up on the
@@ -125,15 +125,15 @@ function varargout = addOnetoOne(varargin)
    xticks = get(gca,'Xtick');
    yticks = get(gca,'Ytick');
    if length(xticks) >= length(yticks)
-       ticks = xticks;
-       ticklabels = get(gca,'XTickLabel');
+      ticks = xticks;
+      ticklabels = get(gca,'XTickLabel');
    else
-       ticks = yticks;
-       ticklabels = get(gca,'YTickLabel');
+      ticks = yticks;
+      ticklabels = get(gca,'YTickLabel');
    end
-   
+
    set(gca,'XTick',ticks,'XTickLabel',ticklabels,'YTick',ticks, ...
-           'YTickLabel',ticks);
+      'YTickLabel',ticks);
 
    % Restore hold state
    set(ax, 'NextPlot', washeld);
