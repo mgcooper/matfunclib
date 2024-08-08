@@ -64,8 +64,8 @@ function varargout = scatterfit(x, y, varargin)
    H.figure = f;
    H.ax = ax;
    H.plot = plot(H.ax, x, y, 'Marker', 'o', 'LineStyle', 'none', args{:});
-   hold on;
-   formatPlotMarkers;
+   hold on
+   formatPlotMarkers
 
    % Compute and create the best-fit line. Plot in sorted order so linestyle's
    % such as '--' or ':' render as expected.

@@ -2,32 +2,26 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %waterBalanceAnalysis Compute water balance dS/dt=P-E-R and trends in each.
    %
    %    PER = waterBalanceAnalysis(MonthlyData)
-   %    PER = waterBalanceAnalysis(MonthlyData, 'aswateryears', true)
    %    PER = waterBalanceAnalysis(MonthlyData, 'RemoveSnowMass', true)
-   %
-   %  NOTE: Basically don't use aswateryears=true. Instead just use the October
-   %  column. But keep it around until fully worked out.
-   %
-   %  Also, if used in conjunction with annualdMdt, the values returned by that
-   %  function are fully compatible with this one, e.g., if instantaneous snow
-   %  mass is converted to an annual flux by passing SWE into annualdMdt, the
-   %  returned value dSWEdt (and the calendar its registered to) represent the
-   %  "same thing" (water balance quantities) expected by this function. To do
-   %  that, first add dSWEdt to the monthlyData column passed into this
-   %  function.
+   %    PER = waterBalanceAnalysis(MonthlyData, 'PlotSnowCorrection', true)
    %
    % Description
    %
-   %    PER = waterBalanceAnalysis(MonthlyData) returns struct PER containing
+   %    PER = WATERBALANCEANALYSIS(MONTHLYDATA) returns struct PER containing
    %    timetables of annual, monthly, and seasonal water balance components
-   %    from the monthly components in MonthlyData. MonthlyData must be a
-   %    timetable which contain variables P, E, and R with units [length]/yr.
-   %    Note "year" is in the denominator - the data are posted monthly but
-   %    should be in units of [length]/yr so that averaging over a 12-month
-   %    period returns the annual average value in units length/year, whereas
-   %    summing over a 12 month period would be incorrect (it would require
-   %    dividing by 12 or better yet accounting for the number of days per month
-   %    and then dividing by days per year).
+   %    from the data in MONTHLYDATA, a timetable which contains variables P, E,
+   %    and R, representing monthly averages of precipitation, evaporation, and
+   %    runoff fluxes, respectively, all with units [length]/yr. Note that the
+   %    units have "year" in the denominator - the data are monthly fluxes
+   %    posted monthly, but should be in units of [length]/yr so that averaging
+   %    over a 12-month period returns the total annual flux in units
+   %    [length]/year, whereas summing over a 12 month period would be incorrect
+   %    (it would require dividing by 12 or accounting for the number of days
+   %    per month and then dividing by days per year).
+   %
+   %    TODO: Make the data monthly fluxes in units [length]/month. I think the
+   %    [length]/year units were used b/c months have different numbers of days.
+   %    But it may be more confusing this way.
    %
    %    PER = waterBalanceAnalysis(MonthlyData,'RemoveSnowMass',true) optionally
    %    applies a snow bias correction to remove the influence of above-ground
@@ -36,17 +30,12 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %    aboveground snow water equivalent (SWE), in the same units as the other
    %    water balance components (nominally cm/yr, or any consistent units).
    %
-   %    PER = waterBalanceAnalysis(MonthlyData,'aswateryears',true) optionally
-   %    specifies that the data in MonthlyData are on a water year calendar.
-   %    Assumes the first month is 10/1 of the first year in the data record,
-   %    and 9/1 is the last month.
+   %    PER = waterBalanceAnalysis(MonthlyData,'PlotSnowCorrection',true)
    %
    %  Inputs
    %
    %    MONTHLYDATA timetable of water balance components [cm/yr] posted
    %    monthly. MONTHLYDATA must contain the variables P, E, and R.
-   %
-   %    ASWATERYEARS (optional) logical name-value pair indicating if the
    %
    %    REMOVESNOWMASS (optional) logical name-value pair indicating if snow
    %    water storage is removed from the water balance. If REMOVESNOWMASS is
@@ -60,9 +49,10 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %    are used to compute dSWE/dt on a MONTHLY basis, to adjust monthly
    %    dS/dt=P-E-R calculations.
    %
-   %    dSWEdt (optional) numeric array or timetable of annual dSWE/dt values,
-   %    posted monthly. These are used to in the annual dS/dt=P-E-R
-   %    calculations.
+   %    dSWEdt (optional) numeric array or timetable of monthly dSWE/dt values,
+   %    in units [length]/yr just like P, E, and R. These are used to remove
+   %    changes in snow storage from the dS/dt=P-E-R calculations, to isolate
+   %    below-ground or otherwise non-snow-related storage changes.
    %
    %  Outputs
    %
@@ -89,32 +79,19 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    % Matt Cooper, 20-Feb-2022, mgcooper@github.com
    %
    % See also annualdMdt grace.snowCorrection merra.monthlyWaterBalance
-   %
-   % Note: the PER.annual.PER values can be confusing because they're computed
-   % by defining "month years" - years which begin on each month. Think of these
-   % like the start months of water years: WY 2000 goes from oct1 1999 to sep30
-   % 2000, and is posted to Oct 1999 in the PER.annual.PER table.
-   %
-   % Although it might seem logical to post WY 2000 to Sep or Oct 2000, the same
-   % protocol would post a 'water year' beginning feb1 1999 ending jan31 2000 to
-   % Jan or Feb 2000, even though most of the "water year" was in 1999.
-   %
-   % UPDATE: May revisit the logic above and instead post annual sums to the end
-   % month. Thinking in terms of "annual sums", and the end month, may be
-   % clearer than "calendar year" and "water year".
 
    % Parse inputs.
-   [MonthlyData, P, E, R, dSWEdt, dSWEdtM, AnnualTime, aswateryears, ...
-      RemoveSnowMass] = parseinputs(MonthlyData, mfilename, varargin{:});
+   [MonthlyData, P, E, R, dSWEdt, AnnualTime, ...
+      plotSnowCorrection] = parseinputs(MonthlyData, mfilename, varargin{:});
 
    % Define functions to compute annual and seasonal water balance.
-   % Note that sw=0 if RemoveSnowMass==false.
+   % Note that dswedt=0 if RemoveSnowMass==false.
    F_annualsum = @(x) sum(x, 'includenan');
    F_annualavg = @(x) mean(x, 'includenan');
-   F_seasonavg = @(p,e,r,sw,t) mean( p(:,t) - e(:,t) - r(:,t) - sw(:,t), 2);
+   F_seasonavg = @(p,e,r,dswedt,t) mean( p(:,t)-e(:,t)-r(:,t)-dswedt(:,t), 2);
 
    % Make cell arrays of month names and season names.
-   [months, seasons] = makeSeasonNames(MonthlyData, AnnualTime, aswateryears);
+   [months, seasons] = makeSeasonNames(MonthlyData, AnnualTime, false);
 
    % Compute the total number of months and years to initialize output.
    nmonths = numel(P);
@@ -123,10 +100,6 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    % Init the monthly, seasonal, and annual dS/dt arrays.
    [dSdtS, dSdtA] = deal(nan(nyears, 12));
 
-   % Init arrays to store trends in S computed on an annual basis for each
-   % month, each season, and each 12-month annual period beginning each month.
-   [abSM, abSS, abSA] = deal(nan(2, 12));
-
    %%% 1. Compute dSdtM: annual timeseries of MONTHLY dSdt.
    %
    % dSdtM has twelve columns, each an annual timeseries of monthly (not annual)
@@ -134,10 +107,7 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    % balance each year? What is the average August water balance? Is there a
    % trend in the August water balance?
 
-   % note: this is the wrong dSWE/dt, it needs to be the month-wise dSWE/dt, but
-   % without an extra month on either side we'll have nan's, and annualdMdt does
-   % not return this dSWE/dt.
-   dSdtM = P-E-R-dSWEdtM; % Note: dSWEdt=0 if RemoveSnowMass=false.
+   dSdtM = P-E-R-dSWEdt; % Note: dSWEdt=0 if RemoveSnowMass==false.
 
    %%% 2. Compute dSdtA: annual timeseries of ANNUAL dSdt.
    %
@@ -149,26 +119,20 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
 
    % Create 12-month forward annual-average water balance tables beginning each
    % month. Each timetable has nmonths=nyears*12 rows.
-   for imonth = 1:12
+   for imonth = 12:-1:1
 
       % Create an annual timeseries of 12-month averages beginning this month
       AnnualData = retime(MonthlyData(imonth:nmonths, :), ...
          'regular', F_annualavg, 'TimeStep', calyears(1));
 
       % Compute annual timeseries of annual (12-month avg) dSdt for this month
-      dSdtA(:, imonth) = AnnualData.P - AnnualData.E - AnnualData.R;
-
-      if RemoveSnowMass
-         dSdtA(:, imonth) = dSdtA(:, imonth) - dSWEdt(:, imonth);
-         % note: don't use this: AnnualData.dSWEdt;
-         % it's the monthly dSWE/dt where dt=calmonth, averaged over the year.
-         % Unlike P,E,R, i'm not sure if the average
-      end
+      dSdtA(:, imonth) = ...
+         AnnualData.P - AnnualData.E - AnnualData.R - AnnualData.dSWEdt;
+      % Note: AnnualData.dSWEdt=0 if RemoveSnowMass==false.
 
       % Check the effect of snow correction on trends
-      plot_snow_correction = false;
-      if plot_snow_correction == true
-         plotSnowCorrection(AnnualTime, dSdtA(:, imonth), AnnualData.dSWEdt)
+      if plotSnowCorrection
+         makeSnowCorrectionPlot(AnnualTime, dSdtA(:, imonth), AnnualData.dSWEdt)
       end
    end
 
@@ -190,12 +154,12 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    % balance closure, either add a new method to this function or simply average
    % the dSdtA values over those months.
 
-   for imonth = 1:12
+   for imonth = 12:-1:1
 
       % Get the indices to average over.
       if imonth == 1
          idx = imonth:imonth+1;
-      elseif imonth==12
+      elseif imonth == 12
          idx = imonth-1:imonth;
       else
          idx = imonth-1:imonth+1;
@@ -205,9 +169,23 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
       dSdtS(:, imonth) = F_seasonavg(P, E, R, dSWEdt, idx);
    end
 
-   % 4. compute linear trends, if there are more than two points
+   % NEW - use TWS directly. Note - may need to use bimonthly averaging if SWE
+   % was averaged, then dSliq/dt = dS/dt - dSWE/dt + T is apples to apples
+   if isvariable('TWS', MonthlyData)
+      TWS = transpose(reshape(MonthlyData.TWS, 12, []));
+   else
+      TWS = 0 * P;
+   end
+   if isvariable('SWE', MonthlyData)
+      SWE = transpose(reshape(MonthlyData.SWE, 12, []));
+   else
+      SWE = 0 * P;
+   end
+
+   % 4. Compute linear trends in S computed on an annual basis for each month,
+   % each season, and each 12-month annual period beginning each month.
    if size(dSdtM, 1) > 2
-      for imonth = 1:12
+      for imonth = 12:-1:1
 
          abSM(:,imonth) = olsfit(year(AnnualTime), dSdtM(:,imonth));
          abSS(:,imonth) = olsfit(year(AnnualTime), dSdtS(:,imonth));
@@ -215,8 +193,15 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
 
          % Use this to omit the last year.
          % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
+
+         % TWS
+         abTWS(:,imonth) = olsfit(year(AnnualTime), TWS(:,imonth));
+         abSWE(:,imonth) = olsfit(year(AnnualTime), SWE(:,imonth));
       end
    end
+
+   % this should bring the trend closer to abSA if RemoveSnow == true.
+   abtest = abTWS - abSWE;
 
    % save the period-average PER, and the calendar-year trend
    PER.avg           = mean(MonthlyData.PER, 'omitnan');
@@ -247,26 +232,25 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
 end
 
 %% Input parser
-function [MonthlyData, P, E, R, dSWEdt, dSWEdtM, timeAnnual, ...
-      aswyrs, RemoveSnow] = parseinputs(MonthlyData, mfilename, varargin)
+function [MonthlyData, P, E, R, dSWEdt, timeAnnual, ...
+      PlotSnowCorrection] = parseinputs(MonthlyData, mfilename, varargin)
 
    parser = inputParser;
    parser.FunctionName = mfilename;
    parser.addRequired('MonthlyData', @istimetable);
    parser.addParameter('RemoveSnowMass', false, @islogicalscalar);
-   parser.addParameter('SWE', [], @(x) isnumeric(x) || istabular(x))
+   parser.addParameter('PlotSnowCorrection', false, @islogicalscalar);
    parser.addParameter('dSWEdt', [], @(x) isnumeric(x) || istabular(x))
-   parser.addParameter('aswateryears', false, @islogicalscalar);
    parser.parse(MonthlyData, varargin{:});
 
    RemoveSnow = parser.Results.RemoveSnowMass;
-   aswyrs = parser.Results.aswateryears;
-   dSWEdt = parser.Results.dSWEdt; % annual dSWE/dt posted monthly (dt=calyear)
+   PlotSnowCorrection = parser.Results.PlotSnowCorrection;
+
+   % dSWE/dt in units cm/yr posted monthly, same as P,E,R.
+   dSWEdt = parser.Results.dSWEdt;
 
    % Ensure there are an even number of years.
    assert(mod(height(MonthlyData), 12) == 0)
-
-   % TODO: if aswateryears=true, confirm the calendar begins October
 
    % Ensure the variable names include P, E, R (and possibly dSWdt or dSWEdt).
    [~, found] = parseFieldNames(MonthlyData, {'P', 'E', 'R', 'dSWdt', 'dSWEdt'});
@@ -284,26 +268,26 @@ function [MonthlyData, P, E, R, dSWEdt, dSWEdtM, timeAnnual, ...
    E = transpose(reshape(MonthlyData.E, 12, []));
    R = transpose(reshape(MonthlyData.R, 12, []));
 
-   % Ensure the variable names include dSWdt if snow mass correction requested.
+   % Ensure the variable names include dSWEdt if snow mass correction requested.
    if RemoveSnow
       % Parse the provided dSWEdt variable
-      [dSWEdt, dSWEdtM] = parse_dSWEdt(MonthlyData, dSWEdt, found, foundSWE, ...
+      dSWEdt = parse_dSWEdt(MonthlyData, dSWEdt, found, foundSWE, ...
          numel(P), mfilename);
    else
       % Set it to an array of zeros.
       dSWEdt = zeros(size(P));
-      dSWEdtM = zeros(size(P));
 
       % Also set it to zero if it exists in the table.
       if foundSWE
          MonthlyData{:, found(ismember(found, 'dSWdt'))} = 0;
          MonthlyData{:, found(ismember(found, 'dSWEdt'))} = 0;
+      else
+         MonthlyData.dSWEdt = dSWEdt(:);
       end
    end
 
    % Set any nan values to zero.
    dSWEdt(isnan(dSWEdt)) = 0.;
-   dSWEdtM(isnan(dSWEdtM)) = 0.;
 
    % Ensure the timetable time variable is named Time.
    MonthlyData.Properties.DimensionNames{1} = 'Time';
@@ -311,23 +295,30 @@ function [MonthlyData, P, E, R, dSWEdt, dSWEdtM, timeAnnual, ...
    % Make an annual calendar.
    timeAnnual = transpose(MonthlyData.Time(1):calyears(1):MonthlyData.Time(end));
 end
-%%
-function [dSWEdt, dSWEdtM] = parse_dSWEdt( ...
-      Data, dSWEdt, found, foundSWE, N, mfilename)
 
-   % If dSWEdt is empty, then it was not provided as a name-value argument, and
-   % must be provided as a variable in the MonthlyData table.
+function dSWEdt = parse_dSWEdt(Data, dSWEdt, found, foundSWE, N, mfilename)
+   %PARSE_DSWEDT Parse the dSWEdt input to waterBalanceAnalysis
    %
-   % NOTE: Need to update this - the table variable is monthly dSWE/dt where
-   % dt=calmonth(1), whereas the name-value pair is dSWE/dt with dt=calyear(1)
-   % but this is ad-hoc, see processMerra2 where I added the dt=calmonth one.
-
-   % TEMP HACK
-   if foundSWE && ~isempty(dSWEdt)
-      dSWEdtM = transpose(reshape(Data.dSWEdt, 12, []));
-   else
-      dSWEdtM = 0 * transpose(reshape(Data.P, 12, []));
-   end
+   % Inputs
+   %    Data - the monthly water balance components timetable.
+   %    dSWEdt - the name-value argument in waterBalanceAnalysis.
+   %
+   % Notes
+   %    - all data represent monthly fluxes in units cm/yr, posted monthly
+   %
+   %    - This function is only called if RemoveSnow is true.
+   %
+   %    - If dSWEdt is empty on input, then it was not provided as a name-value
+   %      argument, and must be provided as a column in the monthly Data table.
+   %
+   %    - If dSWEdt was provided as a table or timetable, it must have only one
+   %      variable and match P, E, R in size.
+   %
+   %    - In any case, dSWEdt needs to be a timeseries of monthly dSWE/dt in
+   %      units cm/yr i.e., the change in SWE during the month expressed in
+   %      units cm/yr, just like the other water balance components.
+   %
+   % See also:
 
    if isempty(dSWEdt)
 
@@ -346,7 +337,7 @@ function [dSWEdt, dSWEdtM] = parse_dSWEdt( ...
    end
 
    % Below here, dSWEdt was either provided as a name-value argument or is a
-   % list obtained from the MonthlyData timetable.
+   % vector obtained from the MonthlyData timetable.
 
    % If dSWEdt was provided as a table or timetable, it must have only one
    % variable and match P, E, R in size.
@@ -373,7 +364,6 @@ function [dSWEdt, dSWEdtM] = parse_dSWEdt( ...
    % This should work if dSWEdt is [months x 1] or [months x years]
    dSWEdt = transpose(reshape(dSWEdt, 12, []));
 end
-
 %%
 function [months, seasons] = makeSeasonNames(MonthlyData, AnnualTime, aswateryears)
 
@@ -394,11 +384,12 @@ function [months, seasons] = makeSeasonNames(MonthlyData, AnnualTime, aswateryea
 end
 
 %%
-function plotSnowCorrection(T, dSdt, dSWEdt)
+function makeSnowCorrectionPlot(T, dSdt, dSWEdt)
    trendplot(year(T), dSdt, 'leg', 'dSdt', 'use', gca);
    trendplot(year(T), dSWEdt, 'leg', 'dSWEdt', 'use', gca)
    trendplot(year(T), dSdt-dSWEdt, 'leg', 'dSdt-dSWEdt', 'use', gca)
 end
+
 %% Notes on start/end definition of "month years"
 
 % TLDR: Below lead me to decide I should use the year in which a "month year"
