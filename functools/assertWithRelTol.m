@@ -13,6 +13,6 @@ function assertWithRelTol(returned, expected, relTol, varargin)
 
    if nargin < 3 || isempty(relTol), relTol = 0.001; end
 
-   tf = abs(expected - returned) <= relTol.*abs(expected);
+   tf = abs(expected - returned) <= relTol * abs(expected);
    assert(all(tf), varargin{:});
 end

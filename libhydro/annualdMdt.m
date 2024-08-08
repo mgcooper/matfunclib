@@ -243,7 +243,9 @@ function [M, T] = prepareBimonthly(M, T, extraside, bimonthly)
 
       elseif mod(nmonths - 1, 12) == 0
 
-         assert(strcmp(extraside, {'left', 'right'}))
+         assert(ismember(extraside, {'left', 'right'}), ...
+            ['If one extra month is supplied, "extraside" must be "left" ' ...
+            'or "right" to resolve the ambiguity.'])
 
          % Repeat the missing side so averaging yields the original value.
          switch extraside
