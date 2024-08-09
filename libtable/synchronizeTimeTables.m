@@ -22,16 +22,13 @@ function tbl = synchronizeTimeTables(tbl, kwargs)
       kwargs.method (1, :) string = "fillwithmissing"
    end
 
-   % Construct a common calendar
+   % Construct a common calendar (note: defaults to dt=caldays(1))
    newTimes = kwargs.newTimes;
    if isnat(newTimes)
 
       % Get the timebounds across all tables
-      for n = numel(tbl):-1:1
-         thistbl = renametimetabletimevar(tbl{n});
-         timebounds{n} = timespan(thistbl);
-      end
-      timebounds = vertcat(timebounds{:});
+      timebounds = cellmap(@timespan, tbl);
+      timebounds = cellflatten(timebounds, 1);
       timebounds = [min(timebounds(:, 1)), max(timebounds(:, 2))];
 
       % Create a calendar of new times spanning the full range

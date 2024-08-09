@@ -84,8 +84,7 @@ end
 function [tspan, tzone] = gettimespan(T)
 
    if istimetable(T)
-      T = settimetabletimevar(T);
-      Time = T.Time;
+      Time = T.(T.Properties.DimensionNames{1});
 
    elseif isdatetime(T)
       Time = T;
