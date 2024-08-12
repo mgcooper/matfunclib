@@ -31,21 +31,19 @@ function projlist = setprojectfiles(projectname, filelist)
       projectname = getactiveproject();
    end
 
-   % if a file list is provided, use it, otherwise get all open files
+   % If a file list was not provided, get all open files.
    if nargin < 2
       if isoctave
          error('Default open editor files does not work in Octave')
       end
       filelist = getopenfiles();
-   elseif nargin == 2
-      % filelist was provided
    end
 
-   % read the project list
+   % Read the project directory list.
    projlist = readprjdirectory(); % struct if in octave, table if in matlab
    projindx = find(getprjidx(projectname, projlist));
 
-   % Set the list
+   % Set the list.
    if isoctave
       projlist(projindx).activefiles = filelist;
       warning(['writeprjdirectory not supported in Octave, ' ...
