@@ -106,9 +106,9 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
    %    Mike Sheppard
    %    Last Modified: 17-Feb-2012
 
-   
+
    % mgc: I started converting to parser but did not finish. It may not be
-   % needed, instead just add them to the signature file. 
+   % needed, instead just add them to the signature file.
    % p = inputParser;
    % p.FunctionName = mfilename;
    % p.addRequired('X', @isnumeric);
@@ -118,7 +118,7 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
    % p.addParameter('frequencies', nan, @isnumeric);
    % p.addParameter('isdescrete', false, @islogical);
    % p.parse(X, varargin{:});
-   
+
    % function distname = defaultdists
    %    distname={'beta', 'birnbaumsaunders', 'exponential', ...
    %       'extreme value', 'gamma', 'generalized extreme value', ...
@@ -126,7 +126,7 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
    %       'lognormal', 'nakagami', 'normal', ...
    %       'rayleigh', 'rician', 'tlocationscale', 'weibull'};
    % end
-   
+
    % Check Inputs
    if nargin == 0
       X = 10 .^ ((normrnd(2, 10, 1e4, 1)) / 10);
@@ -136,7 +136,7 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
    if nargin == 1
       sortby = 'BIC';
    end
-   
+
    sortbyname = {'NLogL','BIC','AIC','AICc'};
    if ~any(ismember(lower(sortby), lower(sortbyname)))
       oldvar = sortby; %May be 'PDF' or 'CDF' or other commands
@@ -268,9 +268,9 @@ function [D, PD, h] = allfitdist(X, sortby, varargin)
       error('ALLFITDIST:NoDist','No distributions were found');
    end
 
-   % Sort distributions   
+   % Sort distributions
    [~,indx1] = sort([D.(sortby)]);
-   D = D(indx1); 
+   D = D(indx1);
    PD = PDs(indx1);
 
    % Plot if requested
@@ -282,20 +282,20 @@ end
 %%
 function PD = fitbinocase(data, args, strs)
    % Special Case for Binomial
-   
+
    % 'n' is estimated if not given
    binoargs = args;
-   
+
    % Check to see if 'n' is given
    indxn = any(ismember(args(strs), 'n'));
-   
+
    % Check to see if 'frequency' is given
    indxfreq = ismember(args(strs), 'frequency');
-   
+
    if ~indxn
       % Use Method of Moment estimator
       % E[x] = np, V[x] = np(1-p) -> nhat=E/(1-(V/E));
-      
+
       if isempty(indxfreq)||~any(indxfreq)
          %Raw data
          mnx=mean(data);
@@ -320,10 +320,10 @@ function PD = fitgpcase(data, args, strs)
    % Special Case for Generalized Pareto
    % 'theta' is estimated if not given
    gpargs = args;
-   
+
    % Check to see if 'theta' is given
    indxtheta = any(ismember(args(strs), 'theta'));
-   
+
    if ~indxtheta
       % Use minimum value for theta, minus small part
       thetahat = min(data(:)) - 1e-12;
@@ -334,7 +334,7 @@ function PD = fitgpcase(data, args, strs)
       % data = data(data > thetahat);
       % Instead, apply this outside the function and send in data(data > thetahat)
 
-      gpargs{end+1} = 'theta'; 
+      gpargs{end+1} = 'theta';
       gpargs{end+1} = thetahat;
    end
    PD = fitdist(data, 'GeneralizedPareto', gpargs{:});
@@ -361,17 +361,17 @@ function H = plotfigs(X, D, PD, args, strs, plotpdf, discind)
    if plotpdf
       if ~discind
          % Continuous Data
-         
+
          % Create a grid to evaluate the histogram
          nbins = max(min(ceil(sqrt(length(X))), 100), 30);
          edges = linspace(min(X), max(X), nbins);
          Fhist = histc(X, edges - mean(diff(edges)));
          Fhist = Fhist./sum(Fhist)./mean(diff(edges));
          inds = 1:min([max_num_dist, numel(PD)]);
-         
+
          % Create a finer grid for the pdf fit
          xpdf = linspace(min(X), max(X), nbins*10)';
-         
+
          % % mgc: a refactored version but I kept og for now
          % % Create bin edges with an extra edge to cover the range of data
          % nbins = max(min(ceil(sqrt(length(X))), 100), 30);
@@ -422,24 +422,24 @@ function H = plotfigs(X, D, PD, args, strs, plotpdf, discind)
       else
          %Discrete Data
          xpdf = min(X):max(X);
-         
+
          % To only show observed x-values:
-         %xpdf = unique(x)'; 
-         
+         %xpdf = unique(x)';
+
          indxf = ismember(args(strs), 'frequency');
          if any(indxf)
             Fhist = zeros(size(xpdf));
-            Fhist((ismember(xpdf, X))) = freq; 
+            Fhist((ismember(xpdf, X))) = freq;
             Fhist = Fhist' ./ sum(Fhist);
          else
-            Fhist = histc(X,xpdf); 
+            Fhist = histc(X,xpdf);
             Fhist = Fhist ./ sum(Fhist);
          end
-         
+
          inds = 1:min([max_num_dist, numel(PD)]);
          Fpdf = cellfun(@(PD) pdf(PD, xpdf), PD(inds), 'Uniform', false);
          Fpdf = cat(1, Fpdf{:})';
-         
+
          H.b = bar(xpdf, [Fhist Fpdf]);
          legend(['empirical',{D(inds).DistName}],'Location','NE')
          xlabel('Value');
@@ -452,32 +452,32 @@ function H = plotfigs(X, D, PD, args, strs, plotpdf, discind)
 
       % Cumulative Distribution
       if ~discind
-         
+
          % Continuous Data
          [Fhist,edges] = ecdf(X);
          inds = 1:min([max_num_dist, numel(PD)]);
          Fpdf = cellfun(@(PD) cdf(PD, edges), PD(inds), 'Uniform', false);
          Fpdf = cat(2, Fpdf{:});
-         
+
          if max(edges)/min(edges) > 1e4
-            lgx = true; 
+            lgx = true;
          else
-            lgx = false; 
+            lgx = false;
          end
-         
+
          H.s1 = subplot(2,1,1);
          if lgx
             H.p2 = semilogx(edges, Fhist, 'k', edges, Fpdf);
          else
             H.p2 = plot(edges, Fhist, 'k', edges, Fpdf);
          end
-         
+
          legend(['empirical',{D(inds).DistName}],'Location','NE')
          xlabel('Value');
          ylabel('Cumulative Probability');
          title('Cumulative Distribution Function');
          grid on
-         
+
          H.s2 = subplot(2,1,2);
          y = 1.1 * bsxfun(@minus, Fpdf, Fhist);
          if lgx
@@ -493,39 +493,39 @@ function H = plotfigs(X, D, PD, args, strs, plotpdf, discind)
          ylabel('Error');
          title('CDF Error');
          grid on
-         
+
       else
          % Discrete Data
          indxf = ismember(args(strs), 'frequency');
-         
+
          if any(indxf)
             [Fhist, edges] = ecdf(X, 'frequency', freq);
          else
             [Fhist, edges] = ecdf(X);
          end
-         
+
          % Check unique xi, combine fi
          [edges, ign, indx] = unique(edges); %#ok<ASGLU>
-         
+
          Fhist = accumarray(indx, Fhist);
          inds = 1:min([max_num_dist, numel(PD)]);
-         
+
          Fpdf = cellfun(@(PD) cdf(PD, edges), PD(inds), 'Uniform', false);
          Fpdf = cat(2, Fpdf{:});
-         
+
          H.s1 = subplot(2,1,1);
          H.p2 = stairs(edges, [Fhist Fpdf]);
-         
+
          legend(['empirical', {D(inds).DistName}], 'Location', 'NE')
          xlabel('Value');
          ylabel('Cumulative Probability');
          title('Cumulative Distribution Function');
          grid on
-         
+
          H.s2 = subplot(2,1,2);
          y = 1.1 * bsxfun(@minus, Fpdf, Fhist);
          H.p2 = stairs(edges, bsxfun(@minus, Fpdf, Fhist));
-         
+
          ybnds = max(abs(y(:)));
          ax = axis;
          axis([ax(1:2) -ybnds ybnds]);
