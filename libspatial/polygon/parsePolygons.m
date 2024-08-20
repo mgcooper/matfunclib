@@ -1,10 +1,11 @@
-function [P, PX, PY, inputP, wasfile, attrs] = parsePolygons(P, kwargs)
+function [P, PX, PY, polygonNames, inputP, wasfile] = parsePolygons(P, kwargs)
    %PARSEPOLYGONS Convert polygon representation to a cell array of polyshapes.
    %
    %  [P, PX, PY] = parsePolygons(P)
-   %  [_, inputP, wasfile, attrs] = parsePolygons(P)
+   %  [_, polygonNames, inputP, wasfile] = parsePolygons(P)
    %  [_] = parsePolygons(P, repairGeometry=false)
    %  [_] = parsePolygons(P, aspolyshape=true)
+   %  [_] = parsePolygons(P, polygonNames=polygonNames)
    %
    % Description
    %  [P, PX, PY] = parsePolygons(P, kwargs) Converts input P to a cell array of
@@ -21,7 +22,10 @@ function [P, PX, PY, inputP, wasfile, attrs] = parsePolygons(P, kwargs)
    %  PY - Cell array of polyshape Y-coordinates
    %  inputP - the input P, or if input P is a file, the data read into memory.
    %  wasfile - logical flag indicating if P was a file.
-   %  attrs - attribute table if P was a file with an attribute table.
+   %  polygonNames - values in the 'name' field of the attribute table if P was
+   %  a shapefile. If the input polygonNames argument was provided, it is
+   %  returned as the output argument. Leave the input argument empty to return
+   %  polygonNames parsed from an input shapefile.
    %
    % See also: parsePolygonFormat
 
@@ -37,16 +41,22 @@ function [P, PX, PY, inputP, wasfile, attrs] = parsePolygons(P, kwargs)
       kwargs.ascell (1,1) logical = true
       kwargs.aspolyshape (1,1) logical = false
       kwargs.repairGeometry (1,1) logical = true
+      kwargs.polygonNames (1, :) string = string.empty(1, 0)
       kwargs.UseGeoCoords (1,1) logical = false
    end
 
    withwarnoff('MATLAB:polyshape:repairedBySimplify');
 
+   polygonNames = kwargs.polygonNames;
+
    % If P is a file, assign the full shapefile to inputP, otherwise assign P.
    wasfile = ~ispolygon(P) && isfile(P);
    if wasfile
       [P, inputP] = polygonsFromFile(P, 'UseGeoCoords', kwargs.UseGeoCoords);
-      % TODO: parse attributes.
+
+      if isempty(polygonNames)
+         polygonNames = parsePolygonNames(inputP, P);
+      end
    else
       inputP = P;
    end
