@@ -73,3 +73,18 @@ function tbls = parseoutputs(tbls, wastabular, wasstruct, names)
       tbls = tbls{1};
    end
 end
+
+% NOTE: Design functions to call this rather than borrow this construct from
+% libtable_functemplate. See merra.waterBalanceTrends. Rather than embed
+% parseinputs, cellmap, and parseoutputs in every function, simply write the
+% "processOneTable" subfunction and pass it to this function, which performs
+% the standard input and output parsing. Exceptions could be handled by
+% function-specific input/output parsers, but this way any updates to the
+% standard parseinputs/outputs will flow through to all other functions e.g.
+% if arrays are supported. This will also encourage embedding as much
+% flexibility as possible into the "processOneTable" subfunction, because the
+% input parsing often involves assumptions that each element shares something
+% in common like the "Time" dimension or variable names. Instead of parsing
+% those out once, just do it on every iteration. This is not always the most
+% efficient approach, but unless those steps are expensive, this will greatly
+% simplify the way code is written.a

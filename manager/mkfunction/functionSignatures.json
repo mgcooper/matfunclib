@@ -7,20 +7,52 @@
    {
       "inputs":
       [
-         {"name":"funcname",  "kind":"required",   "type":["char"]},
-         {"name":"library",   "kind":"namevalue",  "type":["char","choices=functiondirectorylist"],"purpose":"Option"},
-         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"},
-         {"name":"force",     "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+         {"name":"funcname",
+          "kind":"required",
+          "type":[["char", "row"],["string", "scalar"]],
+          "purpose":"The new function name"
+         },
+         {"name":"library",
+          "kind":"namevalue",
+          "type":["char","choices=functiondirectorylist"],
+          "purpose":"The library name within which the new function will exist"
+         },
+         {"name":"parser",
+          "kind":"namevalue",
+          "type":["char","choices={'MP','IP','OP','AP','NP'}"],
+          "purpose":"The input parser type"
+         },
+         {"name":"force",
+          "kind":"namevalue",
+          "type":["logical","scalar"],
+          "purpose":"Option to force creation of the new function if one exists with the same name"
+         }
       ]
    },
    "mkfunction":
    {
       "inputs":
       [
-         {"name":"funcname",  "kind":"required",   "type":["char"]},
-         {"name":"project",   "kind":"namevalue",  "type":["char","choices=projectdirectorylist"],"purpose":"Option"},
-         {"name":"parser",    "kind":"namevalue",  "type":["char","choices={'MP','IP','OP','AP','NP'}"],"purpose":"Option"},
-         {"name":"force",     "kind":"namevalue",  "type":["logical","scalar"],"purpose":"Option"}
+         {"name":"funcname",
+          "kind":"required",
+          "type":[["char", "row"],["string", "scalar"]],
+          "purpose":"The new function name"
+         },
+         {"name":"project",
+          "kind":"namevalue",
+          "type":["char","choices=projectdirectorylist"],
+          "purpose":"The project name within which the new function will exist"
+         },
+         {"name":"parser",
+          "kind":"namevalue",
+          "type":["char","choices={'MP','IP','OP','AP','NP'}"],
+          "purpose":"The input parser type"
+         },
+         {"name":"force",
+          "kind":"namevalue",
+          "type":["logical","scalar"],
+          "purpose":"Option to force creation of the new function if one exists with the same name"
+         }
       ]
    }
 }

@@ -26,7 +26,9 @@ function varargout = loadprojcrs(NAME)
 
    % PARSE ARGUMENTS
    arguments
-      NAME (:, 1) string
+      NAME (:, 1) string {mustBeMember(NAME, ...
+         ["ease-north", "ease-south", "ease-global", ...
+         "sipsn", "spsn", "psn", "utm22n", "aka"])}
    end
 
    % MAIN CODE

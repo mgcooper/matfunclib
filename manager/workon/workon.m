@@ -1,80 +1,88 @@
 function workon(varargin)
-   %WORKON Add project to path and makes it the working directory.
+   %WORKON Add project to path and make it the working directory.
    %
    %    workon(projectname)
-   %    workon('myproject', 'updatefiles', false)
+   %    workon(projectname, 'updatefiles', false)
    %
    %  Description
    %
-   %    WORKON('MYPROJECT') adds paths to myproject, updates the project
-   %    directory, sets env vars, and cd's to the active project directory. The
-   %    current active project is deactivated by calling WORKOFF prior to
-   %    activating MYPROJECT.
+   %    WORKON(PROJECTNAME) first calls WORKOFF to update the active files and
+   %    deactivate the current active project, then activates PROJECTNAME. When
+   %    PROJECTNAME is activated, WORKON changes the current working directory
+   %    to the project root directory, adds project paths to the matlab path,
+   %    opens the project files, calls CONFIGUREPROJECT to source config and/or
+   %    setup hooks, and rewrites the project directory after creating a backup.
    %
-   %    WORKON('MYPROJECT', 'UPDATEFILES', FALSE) does not update the
-   %    activefiles list associated with MYPROJECT to the current open files.
-   %    Default is true, the current open files are saved to the activefiles
-   %    property for MYPROJECT.
+   %    WORKON(PROJECTNAME, 'UPDATEFILES', FALSE) does not update the active
+   %    files list when calling WORKOFF to deactivate the current active project
+   %    prior to activating PROJECTNAME. Use UPDATEFILES=FALSE to retain the
+   %    active files list when switching projects, ignoring any new files opened
+   %    during the current session. If UPDATEFILES=TRUE (the default behavior),
+   %    a list of all files currently open in the the matlab editor is saved to
+   %    the 'activefiles' field in the project directory prior to deactivating
+   %    the current active project. If PROJECTNAME is the current active project
+   %    and UPDATEFILES=TRUE, the active files for PROJECTNAME are updated. The
+   %    default option is TRUE.
    %
-   % See also: workoff, manager, addproject
+   %  See also: workoff, manager, addproject
    %
    %  Updates
-   %  25 Jul 2024, replaced USERPROJECTPATH with MATLAB_PROJECTS_PATH. Note this
-   %  is not used in this function.
-   %  30 Jan 2023, only call workoff when switching to a new project.
-   %  16 Jan 2023, save current project activefiles and close before opening new
-   %  one.
-   %  11 Jan 2023, support for activefiles; added Setup, Install, and Startup to
-   %  Config source on startup behavior.
-   %  30 Dec 2022, if Config.m exists in project directory, source it on goto.
-   %  23 Nov 2022, added support for projects in USERPROJECTPATH in addition to
-   %  MATLABPROJECPATH by adding it to buildprojectdirectory and adding method
-   %  from activate.m that reads the folder from projectdirectory to build the
-   %  projectpath instead of appending projectname to the MATLABPROJECTPATH
-   %  environment variable.
+   %
+   %  - 25 Jul 2024, replaced USERPROJECTPATH with MATLAB_PROJECTS_PATH. Note
+   %    this is not used in this function.
+   %  - 30 Jan 2023, only call workoff when switching to a new project.
+   %  - 16 Jan 2023, save current project activefiles and close before opening
+   %    new one.
+   %  - 11 Jan 2023, support for activefiles; added Setup, Install, and Startup
+   %    to Config source on startup behavior.
+   %  - 30 Dec 2022, if Config.m exists in project directory, source it on goto.
+   %  - 23 Nov 2022, added support for projects in USERPROJECTPATH in addition
+   %    to MATLABPROJECPATH by adding it to buildprojectdirectory and adding
+   %    method from activate.m that reads the folder from projectdirectory to
+   %    build the projectpath instead of appending projectname to the
+   %    MATLABPROJECTPATH environment variable.
+   %
+   % TODO
+   % - add if usejava('desktop') methods to not open or save editor files
+   % - add a "writedirectory" flag to all functions, pass the updated
+   %   projectlist back and forth, only writing it when necessary. Currently,
+   %   all setproject** fucntions write the directory, so each time one of those
+   %   is called, writeprjdirectory creates a backup.
 
-   % TODO add if usejava('desktop') methods to not open or save editor files
+   % Parse inputs.
+   [projname, updatefiles] = parseinputs(mfilename, varargin{:});
 
-   % note: all setproject** fucntions write the directory, so each time one of
-   % those is called, writeprjdirectory creates a temporary file. need to stop
-   % this
-
-   % Parse Inputs
-   [projname, updatefiles, force] = parseinputs(mfilename, varargin{:});
-
-   % Check if this is a new project (if it exists in the project directory)
-   ok = verifyprojectexists(projname);
-
-   if not(ok)
+   % Check if the project exists, or add a new project to the directory.
+   if ~verifyproject(projname)
       return
    end
 
-   % If projname is already active, do nothing, else call workoff.
+   % Check if the requested project is currently active.
    if strcmpi(projname, getactiveproject('name'))
-      % the requested project is the active project (do nothing)
-      if force
-         % unless force is true (not implemented)
+      if updatefiles
+         % Update the active files for the current project.
+         setprojectfiles(projname);
       end
    else
-      % close and save the current open project before opening the new one
+      % Close and save the current open project before opening the new one.
       workoff(getactiveproject(), 'updatefiles', updatefiles);
-      % NOTE: if for some reason the active files are closed and workon is
-      % called the active file list will be updated and they will be lost, so a
-      % backup can be opened and openprojectfiles called first then workon or
-      % workoff but better to create option here or some other method thats why
-      % i added 'force'
+
+      % Note: If for some reason the active files are closed and workon is
+      % called the active files list will be updated and they will be lost. To
+      % recover them, open a backup and pass the files to reopenfiles, then
+      % either call setprojectfiles or workon('updatefiles', true).
    end
 
-   % Full path to the project activefolder
+   % Full path to the project activefolder.
    projpath = getprojectfolder(projname);
 
-   % Activate
+   % Activate.
    disp(['activating ' projname]);
 
-   % Set the active project - NOTE: directory is updated
+   % Set the active project - NOTE: directory is updated.
    setprojectactive(projname);
 
-   % Manage project paths
+   % Manage project paths.
    addprojectpaths(projname);
 
    % cd to the activated tb if requested
@@ -89,10 +97,6 @@ function workon(varargin)
    % Run config, setup, install, or startup scripts if they exist in userhooks/
    configureproject(projpath);
 
-   % realized this isn't needed b/c nothing is updated between setprojectactive
-   % and here, but if we want to save any prefs or env vars set in
-   % configureproject then we would need it again writeprjdirectory();
-
    % FOR NOW, writeprjdirectory creates a temporary backup instead of running
    % writeprjdirectory, use onCleanup to only trigger on success
    %
@@ -102,25 +106,6 @@ function workon(varargin)
    % other functions or somehow controlling onCleanup within writeprjdirectory
    % itself and therefore passing projectlist back and forth in functions like
    % workon.
-end
-
-%% subfunctions
-function ok = verifyprojectexists(projname)
-   ok = true;
-   if isproject(projname)
-      % ok = true
-   else
-      % option to add the project to the directory
-      msg = 'project not found in directory, press ''y'' to add it ';
-      msg = [msg 'or any other key to return\n'];
-      str = input(msg,'s');
-      if string(str) == "y"
-         addproject(projname);
-         % ok = true
-      else
-         ok = false;
-      end
-   end
 end
 
 %% INPUT PARSER

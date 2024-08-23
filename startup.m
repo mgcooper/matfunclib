@@ -225,7 +225,7 @@ format compact % use pi to see different formats: pi
 
 % active toolboxes
 toolboxes = {'BrewerMap', 'CubeHelix', 'mpm', 'CDT', 'arctic-mapping-tools', ...
-   'antarctic-mapping-tools', 'gridbin', 'm_map', ...
+   'antarctic-mapping-tools', ...
    };
 
 for n = 1:numel(toolboxes)
@@ -233,6 +233,11 @@ for n = 1:numel(toolboxes)
       activate(toolboxes{n})
    catch ME
    end
+end
+try
+   activate('spatial', 'except', {'exactremap'})
+catch ME
+
 end
 
 % for mpm, put it at the top of the path so built-in mpm becomes shadowed

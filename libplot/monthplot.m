@@ -1,17 +1,24 @@
 function monthplot(data, varargin)
    %MONTHPLOT Plot data against an axis from 1:12 labeled with months MMM
    %
-   %  monthplot(data, varargin)
+   %  monthplot(data)
+   %  monthplot(data, valid_plot_parampairs)
+   %  monthplot(data, 'useax', ax, valid_plot_parampairs)
+   %  monthplot(data, 'wateryear', true, valid_plot_parampairs)
+   %  monthplot(data, 'plottype', 'hist', valid_hist_parampairs)
+   %
+   %  MONTHPLOT(DATA) plots values 1:12 on the x-axis against DATA on the
+   %  y-axis, then labels the x-axis ticks by calendar-year month names.
+   %
+   %  MONTHPLOT(DATA, VALID_PLOT_PARAMPAIRS) also passes VALID_PLOT_PARAMPAIRS
+   %  to the plot function.
    %
    % See also
-
-   % I decided it makes more sense for this to just plot 1:12 months, and
-   % another, general function could accept arbitrary time inputs and date
-   % formats
 
    % parse inputs
    parser = inputParser;
    parser.FunctionName = mfilename;
+   parser.KeepUnmatched = true;
    parser.addRequired('data', @isnumeric);
    parser.addParameter('useax', nan, @isaxis);
    parser.addParameter('wateryear', false, @islogical);
@@ -21,6 +28,9 @@ function monthplot(data, varargin)
    useax = parser.Results.useax;
    plottype = parser.Results.plottype;
    wateryear = parser.Results.wateryear;
+
+   % These must be valid name-value parameters accepted by 'plot' function.
+   namedargs = namedargs2cell(parser.Unmatched);
 
    months = load('months.mat').('months');
 
@@ -38,34 +48,12 @@ function monthplot(data, varargin)
 
    switch plottype
       case 'line'
-         plot(useax,1:12,data);
+         plot(useax, 1:12, data, namedargs{:});
+         formatPlotMarkers
       case 'hist'
-         histogram(useax,data);
+         histogram(useax, data, namedargs{:});
    end
    axis tight
    set(useax, 'xlim', [1 12], 'xtick', 1:12, 'xticklabel', months,...
       'xticklabelrotation', 45);
-
-   % % old method
-
-   % function [ h ] = monthplot( data,yri,moi,dayi,yrf,mof,dayf,dt,dateformat )
-   % dt is the timestep of the actual data, in hours
-   % dx is the timestep you want labeled on the figure
-
-   % legacy = false;
-   % if legacy == true
-   %    t = timebuilder(yri,moi,dayi,yrf,mof,dayf,dt);
-   %    t2 = timebuilder(yri,moi,yrf,mof);
-   %    [si,ei] = dateInds(yri,moi,dayi,yrf,mof,dayf,t);
-   %    xdates = t(:,7);
-   %    xticks = t2(:,7);
-   %    xlabels = datestr(xticks,dateformat);
-   %
-   %    h = plot(xdates,data);
-   %
-   %    set(gca, 'box', 'off' , ...
-   %       'xtick'         ,   xticks                      , ...
-   %       'xticklabel'    ,   xlabels                      , ...
-   %       'xlim'          ,   [xticks(1) xticks(end)]     );
-   % end
 end

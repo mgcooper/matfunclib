@@ -23,6 +23,12 @@ function [tblTransposed] = transposeTable(tbl, opts)
       % Special case, transpose data but keep variable names
       tblTransposed = array2table(tbl{:, :}', 'VariableNames', varNames);
    else
-      error('Table has no rownames')
+      if isempty(varNames)
+         eid = ['custom:' mfilename ':missingVarNames'];
+         msg = ['If VariableNames for the transposed table are not specified, ' ...
+            'the input table RowNames are used by default. If the input table has ' ...
+            'no RowNames, new VariableNames must be specified.'];
+         error(eid, msg)
+      end
    end
 end

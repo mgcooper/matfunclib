@@ -1,19 +1,40 @@
 {
-  "_schemaVersion": "1.0.0",
-  "formatPlotMarkers":
-  {
-   "inputs":
+   "_schemaVersion": "1.0.0",
+   "formatPlotMarkers":
+   {
+      "inputs":
       [
-      {"name":"fillspacing",  "kind":"namevalue",
-                              "type":["numeric","scalar","double"]},
-      {"name":"sparsefill",   "kind":"namevalue",
-                              "type":["logical"]},
-      {"name":"markersize",   "kind":"namevalue",
-                              "type":["numeric","scalar","double"]},
-      {"name":"suppliedaxes", "kind":"namevalue",
-                              "type":["matlab.graphics.axis.Axes"]},
-      {"name":"suppliedline", "kind":"namevalue", 
-                              "type":["matlab.graphics.chart.primitive.Line"]}
+         {"name":"fillspacing",
+          "kind":"namevalue",
+          "type":["numeric","scalar","double"]
+         },
+         {"name":"sparsefill",
+          "kind":"namevalue",
+          "type":["logical", "scalar"],
+          "purpose":"Option"
+         },
+         {"name":"keepEdgeColor",
+          "kind":"namevalue",
+          "type":["logical", "scalar"],
+          "purpose":"Option"
+         },
+         {"name":"keepFaceColor",
+          "kind":"namevalue",
+          "type":["logical", "scalar"],
+          "purpose":"Option"
+         },
+         {"name":"markersize",
+          "kind":"namevalue",
+          "type":["numeric","scalar","double"]
+         },
+         {"name":"suppliedaxes",
+          "kind":"namevalue",
+          "type":["matlab.graphics.axis.Axes"]
+         },
+         {"name":"suppliedline",
+          "kind":"namevalue",
+          "type":["matlab.graphics.chart.primitive.Line"]
+         }
       ]
    }
 }

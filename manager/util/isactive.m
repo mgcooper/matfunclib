@@ -3,7 +3,7 @@ function tf = isactive(tbname, varargin)
    %
    %  TF = ISACTIVE(TBNAME) returns TRUE if toolbox TBNAME is active
    %
-   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, www.github.com/mgcooper
+   % Copyright (c) 2023, Matt Cooper, BSD 3-Clause License, github.com/mgcooper
    %
    % See also: istoolbox
 

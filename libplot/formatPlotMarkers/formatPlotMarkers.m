@@ -1,36 +1,36 @@
 function h = formatPlotMarkers(varargin)
-   %FORMATPLOTMARKERS Apply custom formatting to plot markers. 
+   %FORMATPLOTMARKERS Apply custom formatting to plot markers.
    %
    %  h = formatPlotMarkers(varargin)
-   % 
+   %
    % Description:
-   %  
+   %
    %  formatPlotMarkers provides a convenient method to set aesthetically
    %  pleasing plot formatting without cluttering code.
-   % 
-   % Syntax: 
+   %
+   % Syntax:
    %  h = formatPlotMarkers() applies default formatting
    %  h = formatPlotMarkers('sparsefill', true) reduces the density of plotted
    %  markers.
    %  h = formatPlotMarkers('sparsefill', true, numPoints) controls the number
    %  of points.
    %  h = scatterfill('suppliedaxis',axobj) control the axis to which the
-   %  formatting is applied. Axobj is a matlab.graphics.axis.Axes object. 
+   %  formatting is applied. Axobj is a matlab.graphics.axis.Axes object.
    %  h = scatterfill('suppliedaxis',lineobj) control the specific line to which
-   %  the formatting is applied. Lineobj is a handle to a plotted line. 
-   % 
+   %  the formatting is applied. Lineobj is a handle to a plotted line.
+   %
    % Note, the function checks in lineobj is in fact an axis and if so, treats
    % it as one instead.
    %
-   % See also: 
+   % See also:
 
    % parse inputs
-   [fillspacing, sparsefill, markersize, suppliedaxes, suppliedline, varargs] = ...
-      parseinputs(mfilename, varargin{:});
+   [fillspacing, sparsefill, markersize, suppliedaxes, suppliedline, ...
+      keepEdgeColor, keepFaceColor, args] = parseinputs(mfilename, varargin{:});
 
-   % %  rather than isobject, I could use this to check the line input handle:
-   %    if isa(suppliedline,'matlab.graphics.chart.primitive.Line')
-   %    end
+   % % rather than isobject, I could use this to check the line input handle:
+   % if isa(suppliedline,'matlab.graphics.chart.primitive.Line')
+   % end
 
    % set sparsefill true if fillspacing has a value to simplify the code.
    % this way either can be passed in, fillspacing, or sparsefill, where
@@ -116,13 +116,18 @@ function h = formatPlotMarkers(varargin)
 
          thisLine = linesWithMarkers(n);
 
-         if isa(thisLine,'matlab.graphics.chart.primitive.Scatter')
-            continue
+         wasscatter = isa(thisLine,'matlab.graphics.chart.primitive.Scatter');
+         if wasscatter
+            % More complicated b/c of potential for 'CData' property. Does not
+            % have 'Color' property, does have MarkerFaceColor/EdgeColor. With
+            % new refactoring below, no longer necessary to continue, but have
+            % not tested with CData mapped to data yet.
+            % continue
          end
 
          numPoints = numel(thisLine.XData);
 
-         if sparsefill == true
+         if sparsefill
             % only fill some points, use larger symbol size
 
             % if not provided, set fillspacing such that 10 points are filled
@@ -136,8 +141,35 @@ function h = formatPlotMarkers(varargin)
             markerIdx = 1:numPoints;
             markerSz = 6;
          end
-         markerColor = thisLine.Color;
-         % markerColor = thisLine.MarkerEdgeColor;
+
+         % Note: The most basic purpose of this function is to avoid setting
+         % 'MarkerEdgeColor' to 'none' and 'MarkerFaceColor' to 'Color', since
+         % that is almost always the desired behavior. These options allow for
+         % keeping the edge color, while retaining the default behavior of no
+         % edge color and a face color which matches the default 'Color'.
+         if wasscatter
+            markerColor = thisLine.CData;
+         else
+            markerColor = thisLine.Color;
+         end
+         if keepEdgeColor
+            markerEdgeColor = thisLine.MarkerEdgeColor;
+            if ~isnumeric(markerEdgeColor) ...
+                  && ismember(markerEdgeColor, {'none', 'auto'})
+               % Undocumented method to set preferred default markerEdgeColor
+               % by setting 'keepEdgeColor' true. This works b/c the default is
+               % 'none' i.e., if MarkerEdgeColor has not been set, it will be
+               % 'none', and this will set it.
+               markerEdgeColor = [.3 .3 .3];
+            end
+         else
+            markerEdgeColor = 'none';
+         end
+         if keepFaceColor
+            markerFaceColor = thisLine.MarkerFaceColor;
+         else
+            markerFaceColor = markerColor;
+         end
 
          % errorbar doesn't have 'MarkerIndices'
          if iserrorbar(thisLine)
@@ -145,17 +177,27 @@ function h = formatPlotMarkers(varargin)
                'Marker' ,              'o' ,             ...
                'MarkerSize',           markersize,       ...
                'Color',                markerColor,      ...
-               'MarkerEdgeColor',      [.3 .3 .3],       ...
-               'MarkerFaceColor',      markerColor,      ...
+               'MarkerEdgeColor',      [.2 .2 .2],       ...
+               ... 'MarkerFaceColor',      markerFaceColor,  ...
+               'MarkerFaceColor',      [.7 .7 .7],       ... [.75 .75 1]
                'CapSize',              6,                ...
-               varargs{:}                              );
+               args{:}                              );
+
+         elseif wasscatter
+            set(thisLine,                                ...
+               'SizeData',             markersize^2,     ...
+               'LineWidth',            1,                ...
+               'MarkerEdgeColor',      markerEdgeColor,  ...
+               'MarkerFaceColor',      markerFaceColor,  ...
+               args{:}                              );
          else
             set(thisLine,                                ...
                'MarkerIndices',        markerIdx,        ...
                'MarkerSize',           markersize,       ...
-               'MarkerEdgeColor',      'none',           ...
-               'MarkerFaceColor',      markerColor,      ...
-               varargs{:}                              );
+               'LineWidth',            1,                ...
+               'MarkerEdgeColor',      markerEdgeColor,  ...
+               'MarkerFaceColor',      markerFaceColor,  ...
+               args{:}                              );
          end
       end
 
@@ -168,37 +210,38 @@ function h = formatPlotMarkers(varargin)
    end
 end
 
-function [fillspacing, sparsefill, markersize, suppliedaxes, ...
-      suppliedline, varargs] = parseinputs(funcname, varargin);
+function [fillspacing, sparsefill, markersize, suppliedaxes, suppliedline, ...
+      keepEdgeColor, keepFaceColor, varargs] = parseinputs(funcname, varargin)
 
 
-   p = inputParser;
-   p.FunctionName = funcname;
-   p.CaseSensitive = false;
-   p.KeepUnmatched = true;
+   parser = inputParser;
+   parser.FunctionName = funcname;
+   parser.CaseSensitive = false;
+   parser.KeepUnmatched = true;
 
-   validaxis = @() any(isa(x,'matlab.graphics.axis.Axes'));
+   %addParameter(parser, 'markerfacecolor', 'none', @ischar);
+   addParameter(parser, 'fillspacing', nan, @isnumericscalar);
+   addParameter(parser, 'sparsefill', false, @islogicalscalar);
+   addParameter(parser, 'markersize', 10, @isnumericscalar);
+   addParameter(parser, 'suppliedaxes', gca, @isaxis);
+   addParameter(parser, 'suppliedline', nan, @isobject);
+   addParameter(parser, 'keepEdgeColor', false, @islogicalscalar);
+   addParameter(parser, 'keepFaceColor', false, @islogicalscalar);
 
-   %addParameter(  p,'markerfacecolor', 'none',        @(x) ischar(x) );
-   addParameter(  p,'fillspacing',     nan,           @(x) isscalar(x) );
-   addParameter(  p,'sparsefill',      false,         @(x) islogical(x) );
-   addParameter(  p,'markersize',      10,            @(x) isnumeric(x) );
-   addParameter(  p,'suppliedaxes',    gca,           @(x) validaxis(x) );
-   addParameter(  p,'suppliedline',    nan,           @(x) isobject(x) );
-
-   parse(p,varargin{:});
+   parse(parser, varargin{:});
 
    %markerfacecolor   = rbg(p.Results.markerfacecolor);
-   fillspacing    = p.Results.fillspacing;
-   sparsefill     = p.Results.sparsefill;
-   markersize     = p.Results.markersize;
-   suppliedaxes   = p.Results.suppliedaxes;
-   suppliedline   = p.Results.suppliedline;
-   unmatched      = p.Unmatched;
+   fillspacing    = parser.Results.fillspacing;
+   sparsefill     = parser.Results.sparsefill;
+   markersize     = parser.Results.markersize;
+   suppliedaxes   = parser.Results.suppliedaxes;
+   suppliedline   = parser.Results.suppliedline;
+   keepEdgeColor  = parser.Results.keepEdgeColor;
+   keepFaceColor  = parser.Results.keepFaceColor;
+   unmatched      = parser.Unmatched;
 
    % convert unmatched to varargin
    varargs = namedargs2cell(unmatched);
-
 
    % for reference, could use these to validate suppliedline
    % if isa(linesWithMarkers,'matlab.graphics.primitive.Line.Type')
