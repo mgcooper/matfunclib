@@ -2,14 +2,15 @@ function tbl = reordervars(tbl, orderednames, kwargs)
    %REORDERVARS Reorder variables in tabular object.
    %
    % Syntax
-   %  TBL = REORDERVARS(TBL, ORDEREDNAMES)
-   %  TBL = REORDERVARS(TBL, ORDEREDNAMES, keepMissingVars=false)
+   %    tbl = reordervars(tbl, orderednames)
+   %    tbl = reordervars(tbl, orderednames, keepMissingVars=false)
    %
    % Description
-   %  TBL = REORDERVARS(TBL, ORDEREDNAMES) Reorders the variables (columns) of
-   %  input table TBL by the order of ORDEREDNAMES.
-   %  TBL = REORDERVARS(TBL, ORDEREDNAMES, keepMissingVars=false) Removes
-   %  variables in input table TBL which are not present in ORDEREDNAMES.
+   %    TBL = REORDERVARS(TBL, ORDEREDNAMES) Reorders the variables (columns) of
+   %    input table TBL by the order of ORDEREDNAMES.
+   %
+   %    TBL = REORDERVARS(TBL, ORDEREDNAMES, KEEPMISSINGVARS=FALSE) Removes
+   %    variables in input table TBL which are not present in ORDEREDNAMES.
    %
    % Example
    %

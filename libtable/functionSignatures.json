@@ -1,0 +1,36 @@
+{
+   "_schemaVersion": "1.0.0",
+   "stackvars":
+   {
+      "inputs": [
+         {"name":"U",
+          "kind":"required",
+          "type":"tabular"
+         },
+         {"name":"vars",
+          "kind":"required",
+          "type":[["choices=matlab.internal.tabular.functionSignatures.varChoices(U)"], ["integer", ">=1"], ["@islogical"], ["pattern", "scalar"]]
+         },
+         {"name":"ConstantVariables",
+          "kind":"namevalue",
+          "type":[["choices=matlab.internal.tabular.functionSignatures.keyChoicesDiff(U,vars)"], ["integer", ">=1"], ["@islogical"], ["pattern", "scalar"]]
+         },
+         {"name":"NewDataVariableName",
+          "kind":"namevalue",
+          "type":[["choices=matlab.internal.tabular.functionSignatures.varChoices(U)"], ["char", "row"], ["cellstr"], ["string","~char"]]
+         },
+         {"name":"IndexVariableName",
+          "kind":"namevalue",
+          "type":[["choices=matlab.internal.tabular.functionSignatures.varChoices(U)"], ["char", "row"], ["cellstr"], ["string","~char"]]
+         }
+      ],
+      "outputs": [
+         {"name":"S",
+          "type":"tabular"
+         },
+         {"name":"iu",
+          "type":["integer", ">=1"]
+         }
+      ]
+   }
+}

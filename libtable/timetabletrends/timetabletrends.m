@@ -111,7 +111,6 @@ function [trends_tbl, ab_tbl] = timetabletrends(ttbl, varargin)
    % Create a parameter results table
    ab_tbl = array2table(ab, 'VariableNames', names, 'RowNames', {'a','b'});
 
-
    % Part 2 - evaluate the trend timeseries
    tstr = nan(ntime,nvars);
    tvars = cell(1,nvars);
@@ -164,7 +163,7 @@ end
 
 function [timestep, TimeX] = settimestep(ttbl, time, timestep)
 
-   % NOTE: need to reconcile this with timetabletimestep.m 
+   % NOTE: need to reconcile this with timetabletimestep.m
    % NOTE: right now elapsedTime and dTime are not returned. elapsedTime might
    % be useful for computing the total change
 
