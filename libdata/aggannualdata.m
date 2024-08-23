@@ -1,36 +1,42 @@
-function varargout = aggannualdata(Data,aggfunc,aggvars)
-   %AGGANNUALDATA aggregate annual data
+function varargout = aggannualdata(Data, aggfunc, aggvars)
+   %AGGANNUALDATA aggregate sub-annual timeseries to annual values
    %
-   %  [val, ival, tval] = aggannualdata(Data,aggfunc,aggvars) aggregates columns
-   %  of timetable DATA to annual values using aggregation function AGGFUNC and
-   %  returns the aggregated value VAL, index of the value IVAL, and time TVAL.
+   %    [values, indices, times] = aggannualdata(Data, aggfunc, aggvars)
+   %
+   % Description
+   %
+   %    [VALS, IDXS, TIMES] = AGGANNUALDATA(DATA, AGGFUNC, AGGVARS) aggregates
+   %    columns of timetable DATA to annual values using aggregation function
+   %    AGGFUNC and returns the aggregated values VALS, indices of the values
+   %    IDXS, and datetimes TIMES.
    %
    %  Example
    %
-   %  [val, ival, tval] = aggannualdata(Data,'min','Discharge') finds the
-   %  minimum value of Data.Discharge each year and returns the minimum value,
-   %  annual index, and annual date.
+   %    [vals, idxs, times] = aggannualdata(Data, 'min', 'Discharge') finds the
+   %    minimum value of Data.Discharge each year and returns the minimum
+   %    value, its index on the annual series, and the datetime of the annual
+   %    min.
    %
    % See also:
 
    % NOTE: isbetween and year(datetime) are very slow, so I need a
    % faster way to index into the calendars for arbitrary timesteps
 
-   allvars = Data.Properties.VariableNames;
-   allyears = year(Data.Time);
-   uniqueyears = unique(allyears);
-
-   if nargin < 3
-      aggvars = allvars;
+   arguments
+      Data timetable
+      aggfunc (1, :) char {mustBeMember(aggfunc, {'min','max'})}
+      aggvars = Data.Properties.VariableNames
    end
 
-   ival = NaN(numel(uniqueyears),numel(aggvars));
-   tval = NaT(numel(uniqueyears),numel(aggvars));
-   val = NaN(numel(uniqueyears),numel(aggvars));
+   allyears = year(Data.(Data.Properties.DimensionNames{1}));
+   uniqueyears = unique(allyears);
+
+   vals = NaN(numel(uniqueyears), numel(aggvars));
+   idxs = NaN(numel(uniqueyears), numel(aggvars));
+   time = NaT(numel(uniqueyears), numel(aggvars));
 
    % test for speeding up the indexing
    % Dates = datenum(Data.Time);
-
 
    for n = 1:numel(uniqueyears)
 
@@ -43,53 +49,18 @@ function varargout = aggannualdata(Data,aggfunc,aggvars)
       for m = 1:numel(aggvars)
          switch aggfunc
             case 'min'
-               [ival(n,m),val(n,m)] = findglobalmin(Data.(aggvars{m})(idx));
+               [idxs(n,m), vals(n,m)] = findglobalmin(Data.(aggvars{m})(idx));
             case 'max'
-               [ival(n,m),val(n,m)] = findglobalmax(Data.(aggvars{m})(idx));
+               [idxs(n,m), vals(n,m)] = findglobalmax(Data.(aggvars{m})(idx));
          end
          T = Data.Time(idx);
-         tval(n,m) = T(ival(n,m));
+         time(n,m) = T(idxs(n,m));
       end
    end
 
-   switch nargout
-      case 1
-         varargout{1} = val;
-      case 2
-         varargout{1} = val;
-         varargout{2} = ival;
-      case 3
-         varargout{1} = val;
-         varargout{2} = ival;
-         varargout{3} = tval;
-   end
+   [varargout{1:nargout}] = dealout(vals, idxs, time);
 end
 %%
-
-% original plan:
-% mkfunction('findannualmaxmin','library','libtable','parser','MIP')
-
-% switch nargout
-%    case 2
-%       switch aggfunc
-%          case 'max'
-%             valfunc = @(x)max(x);
-%             idxfunc = @(x)find(x==max(x),1);
-%          case 'min'
-%             valfunc = @(x)min(x);
-%             idxfunc = @(x)find(x==min(x),1);
-%       end
-%
-%       val = table2array(retime(Data,'regular',valfunc,'TimeStep',calyears(1)));
-%       ival = table2array(retime(Data,'regular',idxfunc,'TimeStep',calyears(1)));
-%       JAN1 = find(ismember(Data.Time,datetime(unique(year(Data.Time)),1,1,0,0,0)));
-%       tval = Data.Time(ival+JAN1);
-%
-%    case 3
-%
-% end
-%%
-% aggData = ival;
 
 % for reference, here are two ways to get the annual max value and index,
 % but I was not able to get the date wihtout resorting to the loops here. note
@@ -103,7 +74,7 @@ end
 
 % % method 2)
 %
-% imax=@(x) find(x==max(x),1);  % anonymous function for index to maximum in group
+% imax=@(x) find(x==max(x),1); % anonymous function to find maximum in group
 %
 % Q.Date = Q.Time;
 % Q.Year = year(Q.Time);
