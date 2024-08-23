@@ -16,4 +16,12 @@ function [symbols, sizes] = defaultmarkers(markertype)
 
    % I don't include the marker '_' b/c it's indistinguishable from a line when
    % used as a line-marker
+
+   % Complete list of valid Line Style and Marker values. Note that partial
+   % matches are supported. Idea here is to add an option to return these as
+   % individual or one complete list for cases where the calling function needs
+   % them all e.g. rmMarkerArgs in scatterfit.
+   % linestyles = ["-", "--", ":", "-."];
+   % markers = ["o", "+", "*", ".", "x", "_", "|", "square", "diamond", ...
+   %    "^", "v", ">", "<", "pentagram", "hexagram"];
 end

@@ -41,40 +41,40 @@ function varargout = scatterfit(x, y, varargin)
    narginchk(2, Inf)
 
    % look for provided axes or figure
-   [h, args, ~, isfigure] = parsegraphics(varargin{:});
-   if isempty(h)
+   [ax, args, ~, isfigure] = parsegraphics(varargin{:});
+   if isempty(ax)
       ax = gca;
    elseif isfigure
-      ax = gca(h);
-   else
-      ax = h;
+      ax = gca(ax);
    end
    f = get(ax, 'Parent');
    washeld = get(ax, 'NextPlot');
 
-   % % pull out x and y and remove them
-   % x = args{1};
-   % y = args{2};
-   % args = args(3:end);
-
-   % Call to rmMarkerArgs would have gone here, but calling syntax below works.
+   % Remove lone marker arguments e.g. 'o'.
    args = rmMarkerArgs(args);
+
+   % Cast datetime input to datenum.
+   wasdatetime = isdatetime(x);
+   if wasdatetime
+      x = datenum(x);
+   end
 
    % Create the chart axes and scatter plot.
    H.figure = f;
    H.ax = ax;
    H.plot = plot(H.ax, x, y, 'Marker', 'o', 'LineStyle', 'none', args{:});
    hold on
-   formatPlotMarkers
+   formatPlotMarkers('keepEdgeColor', true, 'MarkerSize', 8, ...
+      'MarkerFaceColor', [.5 .5 1])
+
+   if wasdatetime
+      datetick('x')
+   end
 
    % Compute and create the best-fit line. Plot in sorted order so linestyle's
-   % such as '--' or ':' render as expected.
+   % such as '--' or ':' render as continuous lines.
    m = fitlm(x, y);
    H.linearfit = plot(H.ax, sort(x), predict(m, sort(x)), 'LineWidth', 2);
-
-   % I commented this out b/c 1:1 isn't relevant in general
-   % H.onetoone = addOnetoOne;
-   % legend('data','linear fit','1:1 line')
 
    % later add options to pass x/ylabel
    xylabel('x data', 'y data')
@@ -86,21 +86,19 @@ function varargout = scatterfit(x, y, varargin)
    if nargout == 1
       varargout{1} = H;
    end
+
+   % This would go after plotting the linear fit, but I commented it out b/c
+   % the 1:1 line isn't relevant in general.
+   % H.onetoone = addOnetoOne;
+   % legend('data','linear fit','1:1 line')
 end
 
 function args = rmMarkerArgs(args)
 
+   % Remove 'Marker' and the marker value from args if they were provided.
+   % Note: the original idea was to use the marker if provided. This removes it.
+   args = parseparampairs(args, 'Marker');
+
+   % Remove lone marker values e.g. 'o' from args if provided.
    args = args(~cellfun(@(arg) strcmp(arg, 'o'), args));
-
-   % % Update: If 'Marker' is provided, then use it. But need to check for an
-   % additional argument specifying the type
-
-   % % Remove marker types from args in case they are provided
-   % rmargs = cellfun(@(arg) strcmp(arg, 'Marker'), args);
-   % if any(rmargs) % works if rmargs is empty or logical
-   %    % need to complete this, the idea is if "marker" is found, remove the enxt
-   %    % entry too
-   % end
-   % args = args(~rmargs);
-   % args = args(~cellfun(@(arg) strcmp(arg, 'o'), args));
 end

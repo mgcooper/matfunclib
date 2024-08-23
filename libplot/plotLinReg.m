@@ -36,8 +36,8 @@ function varargout = plotLinReg(x, y, DisplayOpts, LineOpts)
    % See also: addOneToOne
 
    arguments
-      x {mustBeNumeric(x)}
-      y {mustBeNumeric(y)}
+      x {mustBeNumericOrDatetime}
+      y {mustBeNumeric}
       DisplayOpts.LineOnly (1,1) logical = false
       DisplayOpts.BoundedLine (1,1) logical = true
       DisplayOpts.ConfidenceIntervals (1,1) logical = false
@@ -55,12 +55,17 @@ function varargout = plotLinReg(x, y, DisplayOpts, LineOpts)
          LineOpts.(ResetFields{n}) = ResetValues{n};
       end
    end
-
    LineOpts = namedargs2cell(LineOpts);
 
    % Keep held state
    washeld = ishold();
    hold on
+
+   % Cast datetime input to datenum.
+   wasdatetime = isdatetime(x);
+   if wasdatetime
+      x = datenum(x);
+   end
 
    % Remove missing data
    xnaninds = find(isnan(x));
@@ -115,7 +120,13 @@ function varargout = plotLinReg(x, y, DisplayOpts, LineOpts)
    else
 
       % Plot the data and the linear fit
-      H(1) = scatter(x, y, 45, ...
+      % H(1) = scatter(x, y, 45, ...
+      %    'MarkerEdgeColor', [0 .5 .5],...
+      %    'MarkerFaceColor', [0 .7 .7],...
+      %    'LineWidth', 1);
+      H(1) = plot(x, y, ...
+         'Marker', 'o', ...
+         'MarkerSize', 8, ...
          'MarkerEdgeColor', [0 .5 .5],...
          'MarkerFaceColor', [0 .7 .7],...
          'LineWidth', 1);
@@ -169,6 +180,10 @@ function varargout = plotLinReg(x, y, DisplayOpts, LineOpts)
    box off
    set(gca,'TickDir','out');
 
+   if wasdatetime
+      datetick('x')
+   end
+
    if ~washeld
       hold off
    end
@@ -192,5 +207,4 @@ function varargout = plotLinReg(x, y, DisplayOpts, LineOpts)
    % Fit.pval = LM.Coefficients.pValue(2);
    % [yfit, yci] = predict(LM, xfit(:));
    % DELTA = yci(:, 2) - yfit;
-
 end

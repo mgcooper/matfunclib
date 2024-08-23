@@ -9,7 +9,7 @@ function varargout = setPieChartText(H, TextOpts)
       TextOpts.?matlab.graphics.primitive.Text
    end
    % opts = namedargs2cell(TextOpts);
-   
+
    % h = pie(1);
    % htext = h(2);
    % mc = metaclass(htext);
@@ -23,7 +23,5 @@ function varargout = setPieChartText(H, TextOpts)
       fieldnames(TextOpts), struct2cell(TextOpts))
 
    % Return the handle if requested
-   if nargout > 0
-      varargout{1} = H; 
-   end
+   [varargout{1:nargout}] = dealout(H);
 end

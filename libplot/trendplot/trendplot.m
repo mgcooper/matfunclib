@@ -3,7 +3,7 @@ function varargout = trendplot(t, y, varargin)
    %
    % h = trendplot(t, y) plots time T and data Y and fits a trendline
    %
-   % Copyright Matt Cooper, 04-Nov-2022, https://github.com/mgcooper
+   % Copyright Matt Cooper, 2022-2024, github.com/mgcooper
    %
    % See also: printtrend
 
@@ -62,7 +62,7 @@ function [tt,y,yerr] = prepInput(tt,y,yerr,anomalies,reference)
    % see old method that checked for months at end
 
    % convert to anomalies if requested
-   if anomalies == true
+   if anomalies
       if ~isnan(reference)
          y = y - mean(reference, 1, 'omitnan');
       else
@@ -77,7 +77,7 @@ function [tt,y,yerr] = prepInput(tt,y,yerr,anomalies,reference)
 end
 
 % COMPUTE TRENDS
-function [abfit,error,yfit,yconf] = computeTrends(t,y,method,alpha,qtl)
+function [abfit, error, yfit, yconf] = computeTrends(t, y, method, alpha, qtl)
 
    inans = isnan(y);
    ncols = size(y, 2);
@@ -103,9 +103,15 @@ function [abfit,error,yfit,yconf] = computeTrends(t,y,method,alpha,qtl)
                   abfit(n, :) = tsregr(t, y(:, n));
                else
                   abfit(n, :) = tsregr(t, y(:, n));
-                  outab = ktaub([t, y(:, n)], alpha, false);
-                  confi = [outab.CIlower, outab.CIupper];
-                  error(n) = mean([abfit(n, 2)-confi(1), confi(2)-abfit(n, 2)]);
+                  try
+                     outab = ktaub([t, y(:, n)], alpha, false);
+                     confi = [outab.CIlower, outab.CIupper];
+                     error(n) = mean([abfit(n, 2)-confi(1), confi(2)-abfit(n, 2)]);
+                  catch e
+                     if strcmp(e.message, '')
+                        % statistics toolbox licensing error
+                     end
+                  end
                end
 
                % not sure we want the setnan
@@ -177,20 +183,20 @@ function [abfit,error,yfit,yconf] = computeTrends(t,y,method,alpha,qtl)
 
    % % this is an old note not sure
    % % prior method, delete if above is considered best
-   %    if isregular(t,'months')
-   %       nmonths = numel(t);
-   %       t = years(t-t(1));
-   %    elseif isdatetime(t)
-   %       t = year(t);
-   %    end
+   % if isregular(t,'months')
+   %    nmonths = numel(t);
+   %    t = years(t-t(1));
+   % elseif isdatetime(t)
+   %    t = year(t);
+   % end
 end
 
 % MAKE THE FIGURE
 function [h,makeleg,legidx] = updateFigure(useax,showfig,figpos,errorbounds)
 
    % if an axis was provided, use it, otherwise make a new figure
-   if not(isaxis(useax))
-      if showfig == true
+   if ~isaxis(useax)
+      if showfig
          h.figure = figure('Position', figpos);
       else
          h.figure = figure('Position', figpos, 'Visible', 'off');
@@ -200,20 +206,21 @@ function [h,makeleg,legidx] = updateFigure(useax,showfig,figpos,errorbounds)
       h.ax = useax;
    end
 
-   % the legend is parented by the figure, so if the figure contains
-   % subplots, i can't just use findobj(gcf,'Type','Legend') to determine
+   % The legend is parented by the figure, so if the figure contains
+   % subplots, i can't just use findobj(gcf, 'Type', 'Legend') to determine
    % if the current plot has a legend already, which i want because I want
    % to add the next trendplot trendline to the existing legend
-   % legobj      = findobj(gcf,'Type','Legend');
+   % legobj = findobj(gcf, 'Type', 'Legend');
 
    figchi = get(gcf, 'Children');
    axobjs = findobj(gcf, 'Type', 'Axes');
    legobj = findobj(gcf, 'Type', 'Legend');
+
    numleg = numel(legobj); % 1 = one legend, 2 indicates a subplot
-   numaxs = numel(axobjs);
+   numaxes = numel(axobjs);
 
    % assume we want to append onto an existing legend
-   makeleg = false; if numaxs>numleg || numleg==0; makeleg = true; end
+   makeleg = numaxes>numleg || numleg==0;
 
    % assume only trendplots exist, each one has data + trend line, so the
    % number of trendlines is numlines/2, unless errorbounds is true
@@ -246,30 +253,30 @@ function [h,makeleg,legidx] = updateFigure(useax,showfig,figpos,errorbounds)
    if numebars > 0 && numebars == numlines
       thislineidx = numlines+1;
    elseif numebars == 0 && mod(numlines, 2) == 0
-      thislineidx = numlines/2+1; % should alwasy be two lines per plot
+      thislineidx = numlines/2 + 1; % should always be two lines per plot
    else
       thislineidx = numlines+1;
    end
 
-   %    % this is the original
-   %    if errorbounds == true && mod(numchilds,2) == 1
-   %       numlines = (numchilds-1)/2;
-   %       thislineidx = numlines+1;
-   %    else
-   %       numlines = numel(axchildren)/2;
-   %       thislineidx = numlines+1;
-   %    end
+   % % this is the original
+   % if errorbounds && mod(numchilds,2) == 1
+   %    numlines = (numchilds-1)/2;
+   %    thislineidx = numlines+1;
+   % else
+   %    numlines = numel(axchildren)/2;
+   %    thislineidx = numlines+1;
+   % end
 
    set(h.ax, 'ColorOrderIndex', thislineidx);
 
-   hold on;
+   hold on
 
    legidx = thislineidx;
 
    % % this version hides the -o lines so the legend shows - lines
-   % h.plot = plot(useax,t,y,'-o','HandleVisibility','off',plotvarargs{:});
-   % h.trend = plot(useax,t,ytrend,'-','Color',h.plot.Color,'LineWidth',1);
-   % formatPlotMarkers;
+   % h.plot = plot(useax, t, y, '-o', 'HandleVisibility', 'off', plotargs{:});
+   % h.trend = plot(useax, t, ytrend, '-', 'Color', h.plot.Color, 'LineWidth', 1);
+   % formatPlotMarkers
 end
 
 % PLOT TRENDS
@@ -279,7 +286,7 @@ function h = plotTrend(h,t,y,yfit,yerr,yci,errorbars,errorbounds,varargs)
    % add the errorbar functionality to that one
 
    % plot errorbounds first
-   if errorbounds == true
+   if errorbounds
 
       % c = h.ax.ColorOrder(h.ax.ColorOrderIndex, :);
       c = get(h.ax, 'ColorOrder');
@@ -292,7 +299,7 @@ function h = plotTrend(h,t,y,yfit,yerr,yci,errorbars,errorbounds,varargs)
          0.15, 'EdgeColor', 'none', 'Parent', h.ax, 'HandleVisibility', 'off');
    end
 
-   if errorbars == true
+   if errorbars
 
       % formatPlotMarkers handles edgecolor, facecolor, and marker size
       h.plot = errorbar(h.ax, t, y, yerr,'-o');
@@ -304,7 +311,7 @@ function h = plotTrend(h,t,y,yfit,yerr,yci,errorbars,errorbounds,varargs)
 
    h.trend = plot(h.ax, t, yfit, '-', 'Color', get(h.plot, 'Color'), ...
       'LineWidth', 1, 'HandleVisibility', 'off');
-   formatPlotMarkers('markersize', 6);
+   formatPlotMarkers('markersize', 6, 'keepEdgeColor', true);
 end
 
 %  DRAW LEGEND
@@ -316,8 +323,8 @@ function h = drawLegend(h,ab,err,makeleg,legidx,precision,legtext,units,alpha)
    % only draw a legend if trend units were provided
    % if not(isempty(trendunits))
 
-   %trendtext = sprintf(['%.2f ' trendunits ],ab(2));
-   %mytextbox(trendtext,50,90,'interpreter','tex','fontsize',10);
+   % trendtext = sprintf(['%.2f ' trendunits ], ab(2));
+   % textbox(trendtext, 50, 90, 'interpreter', 'tex', 'fontsize', 10);
 
    if isnan(precision)
       prec = ceil(abs(log10(ab(2))))+1;
@@ -331,7 +338,7 @@ function h = drawLegend(h,ab,err,makeleg,legidx,precision,legtext,units,alpha)
    % ceil(abs(log10(300))) = 3
    % +1 gets you an extra digit of precision
 
-   if prec>5
+   if prec > 5
       bexp = floor(log10(abs(ab(2))));
       bbase = ab(2)*10^-bexp;
       if isnan(alpha)
@@ -348,9 +355,7 @@ function h = drawLegend(h,ab,err,makeleg,legidx,precision,legtext,units,alpha)
          % to turn off the 95% Ci part:
          trendtxt = sprintf([legtext ' (trend: %.2fe$^{%.2f}' ...
             '\\pm$ %.2f ' units ')'],bbase,bexp,err);
-
       end
-
    else
       if isnan(alpha)
          trendtxt = sprintf( ...
@@ -366,14 +371,12 @@ function h = drawLegend(h,ab,err,makeleg,legidx,precision,legtext,units,alpha)
          % to turn off the 95% Ci part:
          trendtxt = sprintf([legtext ' (trend: %.' num2str(prec)  ...
             'f $\\pm$ %.' num2str(prec) 'f ' units ')'],ab(2),err);
-
       end
-
    end
 
-   if makeleg == true % isempty(legobj)
-      %h.legend = legend(h.trend,trendtxt,'interpreter','latex');
-      h.legend = legend(h.plot,trendtxt,'Interpreter','latex');
+   if makeleg % isempty(legobj)
+      % h.legend = legend(h.trend, trendtxt, 'interpreter', 'latex');
+      h.legend = legend(h.plot, trendtxt, 'Interpreter', 'latex');
    else
       % the current legend will be the first one, not numleg as I expected
       legobj(1).String{legidx} = trendtxt;
