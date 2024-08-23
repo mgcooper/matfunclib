@@ -14,10 +14,12 @@ function varargout = createMarkdownPanel(kwargs)
 
    arguments
       kwargs.Parent = []
-      kwargs.Content = help(mfilename('fullpath'))
+      kwargs.Content {mustBeFile} = help(mfilename('fullpath'))
       kwargs.StyleSheet = 'twitter'
       kwargs.ContainerType = 'none'
    end
+
+   assert(activate('MarkdownPanel', 'silent', true))
 
    %% Parse the kwargs
 
