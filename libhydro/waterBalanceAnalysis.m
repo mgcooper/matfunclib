@@ -8,7 +8,7 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    % Description
    %
    %    PER = WATERBALANCEANALYSIS(MONTHLYDATA) returns struct PER containing
-   %    timetables of annual, monthly, and seasonal water balance components
+   %    timetables of annual, monthly, and seasonal water balance estimates
    %    from the data in MONTHLYDATA, a timetable which contains variables P, E,
    %    and R, representing monthly averages of precipitation, evaporation, and
    %    runoff fluxes, respectively, all with units [length]/yr. Note that the
@@ -56,22 +56,40 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
    %
    %  Outputs
    %
-   %     PER.AVG - The average PER over all timesteps (all months). Obtain the
-   %     annual average PER from the PER.annual.avg.<MMM> table, using a month
-   %     of your choice to define a water-year. For instance, use
-   %     PER.annual.avg.Jan to obtain the
+   %     PER.AVG - [1 1] The average PER over all timesteps (all months), i.e.,
+   %     not the annual average PER (Obtain the annual average PER from the
+   %     PER.annual.avg.<MMM> table, using a month of your choice to define a
+   %     water-year. For instance, use PER.annual.avg.Jan to obtain the
+   %     traditional calendar year annual average PER).
    %
-   %     PER.ANNUAL.PER - Annual P-E-R i.e. for each year, sum P,E, and R over
-   %     12 months, with 12-month periods beginning on each of the 12 calendar
-   %     months, then compute P-E-R for each year
+   %     PER.ANNUAL.AVG - [1 12] Annual average P-E-R averaged over annual
+   %     periods (years) defined as beginning on each month. The traditional
+   %     "annual average" would therefore be the Jan value: PER.annual.avg.Jan.
    %
-   %     PER.ANNUAL.AB - the linear regression intercept (a) and slope (b) of
-   %     the annual P-E-R values from the step above against time in years
+   %     PER.ANNUAL.PER - [years 12] Annual P-E-R i.e. for each year, sum P,E,
+   %     and R over 12 months, with 12-month periods beginning on each of the 12
+   %     calendar months, then compute P-E-R for each year [cm a-1].
    %
-   %     PER.MONTHLY.PER - as above, P-E-R for each month (not annual sums
-   %     centered on each month, the actual monthly P-E-R)
+   %     Note that these are equivalent:
+   %       [PER.annual.avg.Jan mean(PER.annual.PER.Jan) mean(PER.monthly.avg{1, :})]
    %
-   %     PER.MONTHLY.AB - the linear regression as above on the monthly P-E-R
+   %     The first is a scalar value representing the annual average P-E-R for
+   %     annual periods beginning January, the second is an annual timeseries
+   %     representing annual values of P-E-R for annual periods beginning
+   %     January (the average is over all rows in the Jan column of the
+   %     PER.annual.PER table), the third is a monthly timeseries representing
+   %     the monthly average P-E-R over annual timeseries of monthly P-E-R.
+   %
+   %     PER.ANNUAL.AB - [2 12] the linear regression intercept (a) and slope
+   %     (b) of the annual P-E-R values from the step above against time in
+   %     years, i.e., d(P-E-R)/dt [cm a-2].
+   %
+   %     PER.MONTHLY.PER - [years 12] as above, P-E-R for each month (not annual
+   %     sums centered on each month, the actual monthly P-E-R)
+   %
+   %     PER.MONTHLY.AB - [2 12] the linear regression as above on the monthly
+   %     P-E-R values. Row 1 is the intercept (a), row 2 is the slope (b). Units
+   %     are [cm a-2]. NOTE: This would be similar to how
    %
    %     PER.seasonal ... analogous with monthly but for three-month averages
    %
@@ -182,17 +200,17 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
       SWE = 0 * P;
    end
 
-   % 4. Compute linear trends in S computed on an annual basis for each month,
-   % each season, and each 12-month annual period beginning each month.
+   % 4. Compute linear trends in dS/dt computed on an annual basis for each
+   % month, each season, and each 12-month annual period beginning each month.
    if size(dSdtM, 1) > 2
       for imonth = 12:-1:1
 
-         abSM(:,imonth) = olsfit(year(AnnualTime), dSdtM(:,imonth));
-         abSS(:,imonth) = olsfit(year(AnnualTime), dSdtS(:,imonth));
-         abSA(:,imonth) = olsfit(year(AnnualTime), dSdtA(:,imonth));
+         abdSdtM(:,imonth) = olsfit(year(AnnualTime), dSdtM(:,imonth));
+         abdSdtS(:,imonth) = olsfit(year(AnnualTime), dSdtS(:,imonth));
+         abdSdtA(:,imonth) = olsfit(year(AnnualTime), dSdtA(:,imonth));
 
          % Use this to omit the last year.
-         % abSA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
+         % abdSdtA(:,n) = olsfit(year(T(1:end-1)),dSdtA(:,n));
 
          % TWS
          abTWS(:,imonth) = olsfit(year(AnnualTime), TWS(:,imonth));
@@ -200,17 +218,37 @@ function PER = waterBalanceAnalysis(MonthlyData, varargin)
       end
    end
 
-   % this should bring the trend closer to abSA if RemoveSnow == true.
-   abtest = abTWS - abSWE;
+   % this should bring the trend closer to mean(dSdtA) if RemoveSnow == true.
+   % Temp hack since RemoveSnowMass flag is not in this workspace, but if all
+   % dSWE/dt values are zero it means its false
+   MonthlyTime = years(MonthlyData.Time - MonthlyData.Time(1));
+   if all(dSWEdt(:) == 0)
+
+      % These trends are monthly i.e. 12 trends, each one fit to all values of
+      % TWS for the i'th month.
+      PER.monthly.dTWSdt = abTWS; % cm / year
+      PER.monthly.dSWEdt = abSWE;
+
+      % These are fit to a single timeseries of all months, similar to grace.
+      PER.dTWSdt = olsfit(MonthlyTime, reshape(transpose(TWS), [], 1));
+      PER.dSWEdt = olsfit(MonthlyTime, reshape(transpose(SWE), [], 1));
+   else
+      PER.monthly.dTWSdt = abTWS - abSWE;
+      PER.monthly.dSWEdt = abSWE;
+
+      PER.dTWSdt = olsfit(MonthlyTime, reshape(transpose(TWS), [], 1)) ...
+         - olsfit(MonthlyTime, reshape(transpose(SWE), [], 1));
+      PER.dSWEdt = olsfit(MonthlyTime, reshape(transpose(SWE), [], 1));
+   end
 
    % save the period-average PER, and the calendar-year trend
    PER.avg           = mean(MonthlyData.PER, 'omitnan');
    PER.annual.PER    = array2timetable(dSdtA,'VariableNames',months,'RowTimes',AnnualTime);
    PER.monthly.PER   = array2timetable(dSdtM,'VariableNames',months,'RowTimes',AnnualTime);
    PER.seasonal.PER  = array2timetable(dSdtS,'VariableNames',seasons,'RowTimes',AnnualTime);
-   PER.annual.ab     = array2table(abSA,'VariableNames',months);
-   PER.monthly.ab    = array2table(abSM,'VariableNames',months);
-   PER.seasonal.ab   = array2table(abSS,'VariableNames',seasons);
+   PER.annual.ab     = array2table(abdSdtA,'VariableNames',months);
+   PER.monthly.ab    = array2table(abdSdtM,'VariableNames',months);
+   PER.seasonal.ab   = array2table(abdSdtS,'VariableNames',seasons);
 
    PER.annual.avg    = array2table(mean(dSdtA, 1, 'omitnan'),'VariableNames',months);
    PER.monthly.avg   = array2table(mean(dSdtM, 1, 'omitnan'),'VariableNames',months);
