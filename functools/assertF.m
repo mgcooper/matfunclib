@@ -1,11 +1,14 @@
-function assertF(cond, varargin)
+function varargout = assertF(cond, varargin)
    %ASSERTF Assert with on/off toggle using control flag and function handle.
    %
+   % mode = assertF
    % assertF on
    % assertF off
    % assertF(@() CONDITION)
    % assertF(CONDITION)
    %
+   %
+   % mode = assertF returns the current assertF mode ('on' or 'off').
    % assertF('on') or assertF('off') toggles assertion checking.
    % assertF(@() CONDITION) checks CONDITION only if assertion checking is on.
    % assertF(CONDITION) always checks CONDITION, ignoring assertion flag.
@@ -23,11 +26,21 @@ function assertF(cond, varargin)
    if isempty(assertFlag)
       assertFlag = true;
    end
+   mode = ifelse(assertFlag, 'on', 'off');
+   nargoutchk(0, 1)
+   if nargin == 0
+      if ~nargout
+         disp(mode)
+      end
+      [varargout{1:nargout}] = deal(mode);
+      return
+   end
 
    % Update flag if 'on' or 'off' is passed as argument
    if nargin == 1 && ischar(cond) || isStringScalar(cond)
-      cond = validatestring(cond, {'on', 'off'}, mfilename, 'ASSERTFLAG', 1);
-      assertFlag = strcmp(cond, 'on');
+      mode = validatestring(cond, {'on', 'off'}, mfilename, 'ASSERTFLAG', 1);
+      assertFlag = strcmp(mode, 'on');
+      [varargout{1:nargout}] = deal(mode);
       return
    end
 

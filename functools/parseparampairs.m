@@ -1,6 +1,10 @@
 function [args, pairs, nargs, rmpairs] = parseparampairs(args, varargin)
    %PARSEPARAMPAIRS Return and remove name-value pairs from cell argument list.
    %
+   % [args, pairs, nargs, rmpairs] = parseparampairs(args)
+   % [args, pairs, nargs, rmpairs] = parseparampairs(args, rmnames)
+   % [args, pairs, nargs, rmpairs] = parseparampairs(args, rmnames, 'asstruct')
+   %
    % [ARGS, PAIRS, NARGS] = PARSEPARAMPAIRS(ARGS) returns ARGS, a cell array
    % containing all arguments up to but excluding the first char-like argument
    % in input cell array ARGS, PAIRS, a cell array containing all arguments
