@@ -1,4 +1,4 @@
 function tf = validateLibraryName(name)
-   tf = any(validatestring(name, cellstr(gettbdirectorylist))) ...
-      && isscalartext(name);
+   tf = isscalartext(name) ...
+      && ~isempty(validatestring(name, cellstr(gettbdirectorylist)));
 end

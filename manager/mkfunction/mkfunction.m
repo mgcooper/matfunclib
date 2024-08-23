@@ -37,7 +37,7 @@ function mkfunction(funcname,varargin)
    % attention to how _tmp is appended ot the function name given that the prior
    % behavior that ringfenced the new function in a funcname/ folder was removed
    if ~isempty(which(funcname))
-      if force == true && ~strcmp(which(funcname), filenamepath)
+      if force && ~strcmp(which(funcname), filenamepath)
          warning(['function exists in: ' which(funcname) newline ...
             'Creating shadowed function in: ' filenamepath])
       else
@@ -58,26 +58,24 @@ function mkfunction(funcname,varargin)
    if isfile(filenamepath) % isfolder(functionpath) || isfile(filenamepath)
 
       % function already exists, append _tmp to copy files
-      mkappendfunc(functionpath,funcname,parent,parser);
-      %mkappendfunc(functionpath,funcname,parser,inputs,outputs);
+      mkappendfunc(functionpath, funcname, parent, parser);
+      %mkappendfunc(functionpath, funcname, parser, inputs, outputs);
 
    else
 
       % function doesn't exist, make a new folder if parent folder doesn't exist
       if ~isfolder(functionpath)
-         system(sprintf('mkdir %s',functionpath));
+         system(sprintf('mkdir %s', functionpath));
       end
 
-      pathadd(functionpath);
-
-      mknewfunc(functionpath,filenamepath,funcname,parent,parser);
-      %mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs);
+      mknewfunc(functionpath, filenamepath, funcname, parent, parser);
+      %mknewfunc(functionpath, filenamepath, funcname, parser, inputs, outputs);
    end
 
 end
 
 % Make New Function
-function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
+function mknewfunc(functionpath, filenamepath, funcname, parent, parser)
    %function mknewfunc(functionpath,filenamepath,funcname,parser,inputs,outputs)
 
    %---------------------------------------
@@ -85,7 +83,7 @@ function mknewfunc(functionpath,filenamepath,funcname,parent,parser)
    %---------------------------------------
 
    % copy the function template and the test script template
-   testfuncpath = copyfunctemplate(filenamepath,parser); % full path w/file name
+   testfuncpath = copyfunctemplate(filenamepath, parser); % full path w/file name
 
    % read the testscript template, replace the function name, and write it back
    wholefile = readinfile(testfuncpath);
@@ -238,7 +236,8 @@ function mkappendfunc(functionpath,funcname,parent,parser)
 end
 
 % Function Path Parser
-function [functionpath,filenamepath] = parseFunctionPath(funcname,library,project)
+function [functionpath, filenamepath] = parseFunctionPath( ...
+      funcname, library, project)
    %PARSEFUNCTIONPATH parse the new function full path
 
    % If the mvenv environment vars are not set, use userpath
@@ -256,7 +255,7 @@ function [functionpath,filenamepath] = parseFunctionPath(funcname,library,projec
 
       if project == "unsorted"
          % library is either a valid sublibrary or is "unsorted"
-         functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library);
+         functionpath = fullfile(getenv('MATLABFUNCTIONPATH'), library);
 
          % this creates the function in a folder of the same name
          % functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library,funcname);
@@ -275,42 +274,42 @@ function [functionpath,filenamepath] = parseFunctionPath(funcname,library,projec
          end
 
          % Check for a <project>/+<project> package folder
-         if isfolder(fullfile(projectpath,['+' project]))
-            functionpath = fullfile(projectpath,['+' project]);
+         if isfolder(fullfile(projectpath, ['+' project]))
+            functionpath = fullfile(projectpath, ['+' project]);
 
             % Check for a <project>/toolbox/<+project> package folder
          elseif isfolder(fullfile(projectpath,['toolbox/+' project]))
-            functionpath = fullfile(projectpath,['+' project]);
+            functionpath = fullfile(projectpath, ['+' project]);
 
             % Check for a '<project>/toolbox/functions folder
-         elseif isfolder(fullfile(projectpath,'toolbox/functions'))
-            functionpath = fullfile(projectpath,'toolbox/functions');
+         elseif isfolder(fullfile(projectpath, 'toolbox', 'functions'))
+            functionpath = fullfile(projectpath,'toolbox', 'functions');
 
             % Check for a '<project>/toolbox/internal folder
-         elseif isfolder(fullfile(projectpath,'toolbox/internal'))
-            functionpath = fullfile(projectpath,'toolbox/internal');
+         elseif isfolder(fullfile(projectpath,'toolbox', 'internal'))
+            functionpath = fullfile(projectpath,'toolbox', 'internal');
 
             % Check for a '<project>/sandbox folder
-         elseif isfolder(fullfile(projectpath,'sandbox'))
-            functionpath = fullfile(projectpath,'sandbox');
+         elseif isfolder(fullfile(projectpath, 'sandbox'))
+            functionpath = fullfile(projectpath, 'sandbox');
 
          else % otherwise, create a <project>/<funcname> folder
-            functionpath = fullfile(projectpath,funcname);
+            functionpath = fullfile(projectpath, funcname);
 
          end
       end
    end
-   filenamepath = fullfile(functionpath,[funcname '.m']);
+   filenamepath = fullfile(functionpath, [funcname '.m']);
 end
 
 
-function wholefile = readinfile(filenamepath);
+function wholefile = readinfile(filenamepath)
    %read in the file
    fid = fopen(filenamepath);
    if fid == -1
       error('Failed to open file %s for reading', filenamepath);
    end
-   wholefile = fscanf(fid,'%c');
+   wholefile = fscanf(fid, '%c');
    status = fclose(fid);
    if status == -1
       warning('Failed to close file %s after reading', filenamepath);
@@ -338,7 +337,7 @@ function [name, library, project, whichparser, force] = parseinputs( ...
    if isempty(parser)
       parser = inputParser;
       parser.addRequired( 'funcname', @isscalartext);
-      parser.addParameter('library', 'unsorted', @validateLibraryName);
+      parser.addParameter('library', 'unsorted', @validFunctionLibrary);
       parser.addParameter('project', 'unsorted', @validateProjectName);
       parser.addParameter('parser', 'NP', @isscalartext);
       parser.addParameter('force', false, @islogicalscalar);
@@ -353,17 +352,7 @@ function [name, library, project, whichparser, force] = parseinputs( ...
    %outputs = p.Results.outputs;
 end
 
-% % now that i understand addOptional, this may work:
-% validlib    = @(x)any(validatestring(x,functiondirectorylist));
-% validproj   = @(x)any(validatestring(x,projectdirectorylist));
-% validparser = @(x)any(validatestring(x,{'MP','IP','AP','OP','NP'}));
-%
-% addRequired(   p,'funcname',              @(x)ischar(x)  );
-% addOptional(   p,'library',   'unsorted', validlib       );
-% addOptional(   p,'project',   'unsorted', validproj      );
-% addOptional(   p,'parser',    'MP',       validparser    );
-%
-% i think inputs and outputs will need to be structures to distinguish
-% required, parameter, optional, etc. but don't have time to sort it out rn
-% addParameter(  p,'inputs',    {'x'},      @(x)iscell(x)  );
-% addParameter(  p,'outputs',   {'x'},      @(x)iscell(x)  );
+function tf = validFunctionLibrary(name)
+   tf = isoneof(name, [functiondirectorylist; "unsorted"]);
+end
+
