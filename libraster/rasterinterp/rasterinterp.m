@@ -179,7 +179,7 @@ function [Vq,Rq] = rasterinterp(V, varargin)
    %    Rq = rasterref(Xq, Yq, 'cellInterpretation', 'cells');
    % end
 
-   if useR == true && useRq == true
+   if useR && useRq
 
       % confirm R and Rq are either MapCells or GeographicCellsReference objects
       [V, R] = validateRasterReference(V, R, mfilename);
@@ -228,7 +228,7 @@ function [Vq,Rq] = rasterinterp(V, varargin)
    if strcmp(R.CoordinateSystemType, 'planar')
 
       % build query grid of Vq grid centroids from Rq
-      if useRq == true
+      if useRq
          [Xq, Yq] = Rq.worldGrid;
       end
 
@@ -237,14 +237,14 @@ function [Vq,Rq] = rasterinterp(V, varargin)
    elseif strcmp(R.CoordinateSystemType, 'geographic')
 
       % build query grid of Vq grid centroids from Rq
-      if useRq == true
+      if useRq
          [Yq, Xq] = Rq.geographicGrid;
       end
 
       Vq = georasterinterp(V, R, Yq, Xq, method, extrap);
    end
 
-   if useRq == false && nargout == 2
+   if ~useRq && nargout == 2
       % error?
    end
 end
