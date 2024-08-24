@@ -12,7 +12,8 @@ function h = formaterrorbar(h,varargin)
       color = rgb(opts.color);
    end
 
-   if sum(opts.facecolor) ~= sum(opts.color) && sum(opts.facecolor) ~= sum([.7 .7 .7])
+   if sum(opts.facecolor) ~= sum(opts.color) ...
+         && sum(opts.facecolor) ~= sum([.7 .7 .7])
       color = opts.facecolor;
    end
 
