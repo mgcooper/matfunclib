@@ -83,13 +83,13 @@ function configureproject(projectpath, varargin)
    % Run user hooks (e.g., config.m, read .env, etc). The dot folder removal
    % should not ever be necessary, but it doesn't hurt to check.
    hookslist = dir(fullfile(projectpath, 'userhooks/*.m'));
-   userhooks = fullfile(projectpath, {hookslist.name}.');
+   userhooks = fullfile({hookslist.folder}.', {hookslist.name}.');
    userhooks = userhooks(cellfun(@(p) ~endsWith(p, '.'), userhooks));
    for n = 1:numel(userhooks)
       try
          run(userhooks{n});
-         %run(fullfile(projectpath, 'userhooks', 'config'));
-      catch
+      catch e
+
       end
    end
 
