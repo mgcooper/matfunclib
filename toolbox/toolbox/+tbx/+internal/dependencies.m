@@ -1,10 +1,10 @@
 function report = dependencies(funcname,option)
    % DEPENDENCIES Generate function and product dependencies for function.
    %
-   %        NOTE: This is not to be used! This is near functional but makes some
-   %        assumptions such as installing into a util/ folder and overall needs
-   %        to be checked or removed in favor of installRequiredFiles.
-   %  
+   %    NOTE: This is not to be used! This is near functional but makes some
+   %    assumptions such as installing into a util/ folder and overall needs
+   %    to be checked or removed in favor of installRequiredFiles.
+   %
    %  Input
    %     funcname = char of any function name
    %
@@ -48,7 +48,7 @@ function report = dependencies(funcname,option)
    %
    % funcpath = fileparts(which('pkg.func'));
    % funclist = getlist(funcpath,'.m');
-   
+
 
    [pkgname, pkgfolder] = mpackagename();
 
@@ -82,7 +82,7 @@ function report = dependencies(funcname,option)
    elseif opts.missing == true
       report = getmissingdependencies(funclist,funcname,pkgname,pkgfolder);
    elseif opts.installed == true
-      % subfunction getinstalleddependencies is missing, check baseflow tbx.
+      % subfunction getinstalleddependencies is missing, check baseflow toolbox.
       % report = getinstalleddependencies(funclist);
    elseif opts.resolve == true
       report = resolvedependencies(funclist,funcname,pkgfolder,pkgname);

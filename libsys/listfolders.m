@@ -39,6 +39,8 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
    isub = [d(:).isdir];
    toplist = {d(isub).name}';
 
+   % parse the option
+   option = validatestring(option, {'fullpaths', 'relativepaths', 'foldernames'});
    if strcmp(option, 'fullpaths')
       folderlist = cellfun(@(x) fullfile(toppath, x), toplist, 'UniformOutput', false);
    elseif strcmp(option, 'relativepaths') || strcmp(option, 'foldernames')
@@ -54,7 +56,7 @@ function folderlist = listfolders(toppath, numlevels, option, currentlevel)
             nextlist = strcat(thisfolder{:}, '/', nextlist);
          end
 
-         folderlist = [folderlist; nextlist]; %#ok<AGROW> 
+         folderlist = [folderlist; nextlist]; %#ok<AGROW>
       end
    end
 end
