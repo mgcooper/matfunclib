@@ -1,4 +1,9 @@
 function [flow, period] = floodReturnPeriod(T, Q, kwargs)
+   %FLOODRETURNPERIOD Estimate return period (recurrence interval) of flows
+   %
+   %    [flow, period] = floodReturnPeriod(T, Q, kwargs)
+   %
+   % See also:
 
    % TODO: Currently, this is designed to return the flow rate for a specific
    % return period, but to do so it computes the full distribution and creates a
@@ -12,7 +17,7 @@ function [flow, period] = floodReturnPeriod(T, Q, kwargs)
       Q (:, 1) double
       kwargs.returnPeriod (:, 1) double {...
          mustBeInRange(kwargs.returnPeriod, 1.0001, 10000)} = []
-      kwargs.generalizedWeightedSkew (1, 1) double = 0.3
+      kwargs.generalizedWeightedSkew (1, 1) double = 0.0 % 0.3
       kwargs.gaugeName (1, :) char = ""
       kwargs.plotReferenceLines (1, 1) logical = true
       kwargs.makeplot (1, 1) logical = false
