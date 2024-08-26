@@ -1,10 +1,10 @@
 function varargout = arraymap(fn, varargin)
    %ARRAYMAP apply a function to an array, returning a cell array of results.
    %
-   %  A = ARRAYMAP(A)
+   %  [out1, out2, ..., outN] = arraymap(fn, varargin{:})
    %
    % This function is equivalent to:
-   % arraymap = @(fn, varargin) arrayfun(fn, varargin{:}, 'UniformOutput', false); 
+   %    arraymap = @(fn, varargin) arrayfun(fn, varargin{:}, 'UniformOutput', false);
    %
    % Example
    %
@@ -14,33 +14,28 @@ function varargout = arraymap(fn, varargin)
 
    [varargout{1:nargout}] = arrayfun(fn, varargin{:}, 'UniformOutput', false);
 
-   %    % In a prior commit I commented out the standard behavior above and changed
-   %    % to this:
-   %    out = arrayfun(fn, varargin{:}, 'UniformOutput', false);
-   %    % If out is changed to [varargout{1:nargout}], then the stuff below does
-   %    % catenate the individual outputs of arrayfun into one uniform array, when I
-   %    % got here from bfra.eventfinder, I wanted T, Q, R, Info returned, but it
-   %    % failed so when I did the thing above I must have been working with a
-   %    % function that returned one argument, and I wanted a vector or matrix
-   %    % instead of a cell array, but if I change to [varargout{1:nargout}] then it
-   %    % will put T, Q< R, Info into one Nx4 cell array, which could be useful, so
-   %    % maybe add an option to do that
+   % This will concatenate uniform sized outputs into one array, but it assumes
+   % rows and columns should be concatenated into 2d arrays, and 2d or higher
+   % dimensional arrays should be concatenated along the next higher dim, which
+   % may not be desired in general, so I've commented it out. Instead, use
+   % cellflatten with the appropriate dim argument.
+   % sizes = cellfun(@size, varargout, 'UniformOutput', false);
    %
-   %    % try to put in a uniform array
-   %    try
-   %       if isrow(out{1})
-   %          [varargout{1:nargout}] = vertcat(out{:});
-   %       elseif iscolumn(out{1})
-   %          [varargout{1:nargout}] = horzcat(out{:});
-   %       elseif ~isvector(out{1}) && ismatrix(out{1})
-   %          % ambiguous, return to this later
-   %       elseif numel(size(out{1})) == 3
-   %          [varargout{1:nargout}] = cat(3, out{:});
-   %       end
-   %    catch
-   %       [varargout{1:nargout}] = out;
+   % if all(cellfun(@(sz) isequal(sz, sizes{1}), sizes)) && nargout == 1
+   %
+   %    if isscalar(varargout{1})
+   %       varargout = vertcat(varargout{:});
+   %
+   %    elseif isrow(varargout{1})
+   %       varargout = vertcat(varargout{:});
+   %
+   %    elseif iscolumn(varargout{1})
+   %       varargout = horzcat(varargout{:});
+   %
+   %    elseif ~isvector(varargout{1})
+   %       varargout = cat(ndims(varargout{1})+1, varargout{:});
    %    end
-
+   % end
 end
 
 %% LICENSE
