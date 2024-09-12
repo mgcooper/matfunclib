@@ -123,8 +123,13 @@ function success = mkproject(projectname, varargin)
             PROJECT_FOLDER_NOTEMPTY);
       end
 
-      % If there were no failues, add the new project to the directory.
+      % If there were no failures, add the new project to the directory.
       addProjectToDirectory(projectname, success, opts);
+   end
+
+   if opts.createMatlabProject
+      createMatlabProject(projectpath, projectname, true, true, true, ...
+         string(NaN), "sandbox")
    end
 
    if ~nargout
@@ -220,6 +225,7 @@ function [projectname, opts] = parseinputs(projectname, funcname, varargin)
    parser.addParameter('setfiles', false, @islogicalscalar);
    parser.addParameter('setactive', false, @islogicalscalar);
    parser.addParameter('maketoolbox', false, @islogicalscalar);
+   parser.addParameter('createMatlabProject', true, @islogicalscalar);
    parser.parse(projectname,varargin{:});
 
    opts = parser.Results;
