@@ -68,8 +68,8 @@ function success = mkproject(projectname, varargin)
    % only checked in specific cases below.
    success.makefolder = true;
    success.copytoolbox = true;
-   success.replaceprefix = true; % replacing +tbx within files
-   success.movenamespace = true; % moving +tbx to +<toolboxname>
+   success.replaceprefix = false; % if +tbx within files was replaced
+   success.movenamespace = false; % if +tbx was moved to +<toolboxname>
 
    % Keep them for assertions at later steps, in case fieldnames change.
    successflags = fieldnames(success);
@@ -164,9 +164,9 @@ function success = copyTemplateToProject( ...
    try
       tbx.internal.replacePackagePrefix(projectpath, ...
          'tbx', projectname, false);
+      success.replaceprefix = true;
    catch e
       % rethrow(e)
-      success.replaceprefix = false;
    end
 
    % Rename +tbx to +<toolboxname>
@@ -177,8 +177,6 @@ function success = copyTemplateToProject( ...
       status = system(['mv ' old_tbxpath ' ' new_tbxpath], "-echo");
 
       success.movenamespace = status == 0;
-   else
-      success.movenamespace = false;
    end
 end
 
