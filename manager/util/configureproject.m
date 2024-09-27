@@ -19,6 +19,14 @@ function configureproject(projectpath, varargin)
    %
    % See also
 
+   % TODO: This is running configfile three times, at least in the case of
+   % calling "workon('icom-msd')", it prints "activating groupstats asproject"
+   % three times to the screen. I thought it must be due to running config in
+   % the top level and then again in userhooks/, but there is no userhooks/
+   % folder in the icom-msd project. Twice also does not make sense (one for
+   % uppercase and one for lower) b/c the upper was removed from tryscripts.
+   % Debug this later.
+
    % NOTE: for Setup/Install, we don't want to try re-installing stuff if we
    % don't have to, but if there isn't much overhead, we can just let it check
    % if requirements exist

@@ -198,27 +198,55 @@ function newlist = rebuildprojectlist(newlist)
          if ismember(newlist.name(m), oldlist.name)
 
             % Find the index on the old list, to retrieve the attrs.
-            idx = find(ismember(oldlist.name, newlist.name(m)));
+            idx_old = find(ismember(oldlist.name, newlist.name(m)));
+            idx_new = find(ismember(newlist.name, oldlist.name(m)));
 
-            % This requires both the name and the folder to match. This was
-            % added to check duplicate project names, but it interferes with
-            % the case where the projects folder was moved or redefined.
-            %
+            % This checks if both the name and the folder match. If duplicate
+            % project names are allowed, this can be used to determine if the
+            % duplicate projects exist in different folders, and let it pass ...
+            % or actually I think this was used to prevent copying over
+            % attributes from one to the other, and I had the note:
+            % "but it interferes with the case where the projects folder was
+            % moved or redefined"
+            % I am not sure why this was commented out for that case need to
+            % review the logic
             % idx = find(ismember(oldlist.name, newlist.name(m)) & ...
             %   ismember(oldlist.folder, newlist.folder(m)));
 
-            if numel(idx) > 1
+            if numel(idx_old) > 1
+               % This occurred most recently when there was a "snowmodel" folder
+               % in both myprojects/matlab and MATLAB/projects. I resolved it by
+               % manually combining the two folders into the MATLAB/projects
+               % folder and manually removing the myprojects/matlab/snowmodel
+               % entry from the projectdirectory.mat file. This shows that there
+               % needs to be a "pruneprojects" or similar option to rebuild the
+               % projectdirectory file which specifically checks for entries
+               % with folders which no longer exist (since I deleted the
+               % myprojects/matlab/snowmodel folder but still got the error here
+               % b/c the entry still existed in projectdirectory.mat). But this
+               % could still have the same problem that this section originally
+               % addressed which is the case where the MATLAB_PROJECTS_PATH
+               % changes, there's a chicken and egg issue, since the
+               % "pruneprojects" described above would find the folders dont
+               % exist b/c they're in the new folder.
 
-               % Instead of the commented-out check above, issue an error, then
-               % duplicates can be handled on a case by case basis as needed.
-               error('duplicate projects found')
+               % I started to add this but I think what is actually needed is to
+               % determine if the duplicate projects have "keepatts" b/c what we
+               % are trying to avoid is copying over the wrong attributes ...
+               if numel(idx_new) > 1
 
-            elseif numel(idx) == 0
+               else
+                  % Issue an error to handle duplicates on a case by case basis
+                  % until a robust method is worked out.
+                  error('duplicate projects found')
+               end
+
+            elseif numel(idx_old) == 0
                continue
 
-            elseif numel(idx) == 1
+            elseif numel(idx_old) == 1
 
-               newlist.(thisatt)(m) = oldlist.(thisatt)(idx);
+               newlist.(thisatt)(m) = oldlist.(thisatt)(idx_old);
             end
          end
       end
