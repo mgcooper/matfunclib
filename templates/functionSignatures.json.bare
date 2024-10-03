@@ -31,6 +31,12 @@
    }
 }
 
+these were in a random text file. Need to compare the various file methods
+{"name":"filename", "kind":"required", "type":[["file=*.tif,*.tiff,*.jpeg,*.jpg,*.png,*.flt,*.grd,*.txt,*.ddf"],["matlabpathfile=*.tif,*.tiff,*.jpeg,*.jpg,*.png,*.flt,*.grd,*.txt,*.ddf"]]},
+{"name":"filename", "kind":"required", "type":[["file=*.tif,*.tiff,*.jpeg,*.jpg,*.png,*.flt,*.grd,*.txt,*.ddf"],["matlabpathfile=*.tif,*.tiff,*.jpeg,*.jpg,*.png,*.flt,*.grd,*.txt,*.ddf"]]},
+{"name":"filename", "kind":"required", "type":[["file=*.shp"],["matlabpathfile=*.shp"]]},
+
+
 ...
 "h5read":
 {
