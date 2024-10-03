@@ -1,4 +1,4 @@
-function fdc = fdcurve(flow,varargin)
+function varargout = fdcurve(varargin)
    %FDCURVE Flow duration curve
    %
    %    fdc = fdcurve(flow)
@@ -9,6 +9,21 @@ function fdc = fdcurve(flow,varargin)
    %
    % See also
 
+   % Parse possible axes input.
+   [ax, args, nargs, isfigure] = parsegraphics(varargin{:}); %#ok<ASGLU>
+
+   % Get handle to either the requested or a new axis.
+   if isempty(ax)
+      ax = gca;
+   elseif isfigure
+      ax = gca(ax);
+   end
+   washeld = get(ax, 'NextPlot');
+
+   % Retrieve the flow data from varargin
+   flow = args{1};
+   args = args(2:end);
+
    % Parse inputs
    parser = inputParser;
    parser.FunctionName = mfilename;
@@ -17,16 +32,19 @@ function fdc = fdcurve(flow,varargin)
    parser.addParameter('units', '', @isscalartext);
    parser.addParameter('refpoints', nan, @isnumeric);
    parser.addParameter('plotcurve', true, @islogicalscalar);
-   parser.parse(flow, varargin{:});
+   parser.parse(flow, args{:});
    kwargs = parser.Results;
    [axscale, units, refpoints, plotcurve] = deal(kwargs.axscale, ...
       kwargs.units, kwargs.refpoints, kwargs.plotcurve);
+
+   % Remove nan
+   flow = flow(~isnan(flow));
 
    % Main algorithm
    N = length(flow);
    M = 1:N;
    x = sort(flow,'descend');
-   f = 1-M./(N+1);
+   f = M./(N+1);
 
    % If requested, compute reference point values
    xref = nan(numel(refpoints,1));
@@ -41,16 +59,16 @@ function fdc = fdcurve(flow,varargin)
 
    % Plot the curve if requested
    if plotcurve
-      figure
+
       switch axscale
          case 'loglog'
-            h.fdc = loglog(100.*f,x); ax = gca;
+            h.fdc = loglog(ax, 100*f, x);
          case 'semilogy'
-            h.fdc = semilogy(100.*f,x); ax = gca;
+            h.fdc = semilogy(ax, 100*f, x);
          case 'semilogx'
-            h.fdc = semilogx(100.*f,x); ax = gca;
+            h.fdc = semilogx(ax, 100*f, x);
          case 'linear'
-            h.fdc = plot(100.*f,x); ax = gca;
+            h.fdc = plot(ax, 100*f, x);
       end
 
       % if requested, add a refpoint line
@@ -59,30 +77,41 @@ function fdc = fdcurve(flow,varargin)
          for n = 1:numel(refpoints)
             xplot = [min(xlim) 100*fref(n) 100*fref(n) 100*fref(n)];
             yplot = [xref(n) xref(n) min(ylim) xref(n)];
-            h.ref(n) = plot(xplot,yplot,'Color',[0.85 0.325 0.098],'LineWidth',1);
+            h.ref(n) = plot(ax, xplot,yplot,'Color',[0.85 0.325 0.098],'LineWidth',1);
          end
       end
 
       ylabel(['$x$ [' units ']']);
       xlabel 'flow exceedence probability, $P(Q\ge x)$'
 
-      ax.YAxis.TickLabels = compose('%g',ax.YAxis.TickValues);
-      ax.XAxis.TickLabels = compose('$%g\\%%$',ax.XAxis.TickValues);
+      ax.YAxis.TickLabels = compose('%g', ax.YAxis.TickValues);
+      ax.XAxis.TickLabels = compose('$%g\\%%$', ax.XAxis.TickValues);
 
       % since i manually set the ticklabels, i think this is necessary
       % otherwise if the figure is resized, matlab will make new ticks
-      set(gca,'XTickMode','manual','YTickMode','manual');
+      set(ax, 'XTickMode', 'manual', 'YTickMode', 'manual');
 
-      figformat('suppliedline',h.fdc,'linelinewidth',3);
+      % figformat('suppliedline', h.fdc, 'linelinewidth', 3);
+      ax.YLabel.Interpreter = 'latex';
+      ax.XLabel.Interpreter = 'latex';
+      ax.TickLabelInterpreter = 'latex';
 
       fdc.h = h;
    end
 
+   set(ax, 'NextPlot', washeld)
+
+   axis padded
+
    % package output
-   fdc.f = f;
-   fdc.x = x;
-   fdc.xref = xref;
-   fdc.fref = fref;
+   if nargout
+      fdc.f = f;
+      fdc.x = x;
+      fdc.xref = xref;
+      fdc.fref = fref;
+
+      varargout{1} = fdc;
+   end
 
    % % this would also work, adapted from num2ltext
    % ax.XAxis.TickLabels = cellstr(num2str(ax.XAxis.TickValues','$%g\\%%$'))
