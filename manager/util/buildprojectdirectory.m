@@ -1,10 +1,10 @@
 function varargout = buildprojectdirectory(varargin)
    %BUILDPROJECTDIRECTORY Build project directory file.
    %
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY(')
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('DRYRUN')
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('REBUILD')
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('REBUILD', 'DRYRUN')
+   %  projectlist = buildprojectdirectory()
+   %  projectlist = buildprojectdirectory('dryrun')
+   %  projectlist = buildprojectdirectory('rebuild')
+   %  projectlist = buildprojectdirectory('rebuild', 'dryrun')
    %
    % Description
    %
@@ -33,7 +33,7 @@ function varargout = buildprojectdirectory(varargin)
    %  directory that would be saved in the `PROJECTDIRECTORYPATH` folder but
    %  does not save it. Use this to build the project directory from scratch
    %  using the folders in the directory set by the MATLABPROJECTPATH
-   %  environment variable. If a USERPROJECTPATH environemnt variable exists,
+   %  environment variable. If a USERPROJECTPATH environment variable exists,
    %  folders in that directory will also be added to the project list. Internal
    %  note: the .csv file is not used, modified, saved, deleted, in any way.
    %
@@ -130,7 +130,7 @@ function projectlist = buildprojectlist(opts)
    projectlist = getlist(projectpath,'*');
    projectlist = struct2table(projectlist);
    projectlist = appendprojects(projectlist); % 23 Nov 2022
-   projectlist = projectlist(projectlist.isdir, :); % 23 Nov 2022
+   projectlist = projectlist(logical(projectlist.isdir), :); % 23 Nov 2022
 
    % Decided to hold off on this b/c the catting of folder and name may be
    % scattered throughout other functions. Could add a 'projectfolder' attribute.
@@ -259,9 +259,21 @@ function newlist = rebuildprojectlist(newlist)
    % project was left behind in USERPROJECTPATH.
    in_old_not_new = ~ismember(oldlist.name, newlist.name);
 
+   % NOTE: Need to NOT rebuild on new computer until all projects exist, at
+   % minimum the folders e.g. 'baseflow' exists on work but not personal
+   % computer, so it
+
    activestate = oldlist.activeproject;
    activefiles = oldlist.activefiles;
    linkedprojs = oldlist.linkedproject;
+
+   % NOTE: 'activefolder' is not updated above. This is the only "keepatts" not
+   % updated. Cannot remember why. Maybe when redefining USERPOJECTSPATH (or
+   % whichever env var it was) that was needed. But when I moved
+   % myprojects/matlab to work/projects/matlab, and tried rebuilding, this was
+   % problematic b/c the activefolder needs to be updated for stuff like
+   % cdproject to work.
+
 
    if any(in_old_not_new & activestate)
       error('currently active project missing from new directory')
