@@ -25,6 +25,10 @@ function success = mkproject(projectname, varargin)
    %  MKPROJECT(PROJECT_NAME, 'SETACTIVE', TRUE) also sets the activeproject
    %  property TRUE in the project directory.
    %
+   %  MKPROJECT(PROJECT_NAME, 'CREATEMATLABPROJECT', FALSE) does not create a
+   %  MATLAB project (.prj file and resources/ directory). The default behavior
+   %  is TRUE (creates a MATLAB project).
+   %
    % Inputs
    %
    %  PROJECT_NAME - (required) scalar text indicating the name of the new
@@ -69,6 +73,11 @@ function success = mkproject(projectname, varargin)
    % only checked in specific cases below.
    success.makefolder = true;
    success.copytoolbox = true;
+
+   % 9/20/2025 - note above says to set these true by default, but they're
+   % false. This did create a problem when 'maketoolbox'==false, so I added an
+   % else further down to set them true, but maybe they should be set true here,
+   % or maybe there's a good reason i set them false.
    success.replaceprefix = false; % if +tbx within files was replaced
    success.movenamespace = false; % if +tbx was moved to +<toolboxname>
 
@@ -124,6 +133,12 @@ function success = mkproject(projectname, varargin)
 
          success = copyTemplateToProject(projectpath, projectname, ...
             PROJECT_FOLDER_NOTEMPTY);
+
+      else
+         % Set the toolbox-related success flags true, otherwise the success
+         % checks later will fail and issue a warning/exit
+         success.replaceprefix = true;
+         success.movenamespace = true;
       end
 
       % If there were no failures, add the new project to the directory.
@@ -131,6 +146,8 @@ function success = mkproject(projectname, varargin)
    end
 
    if opts.createMatlabProject
+      % WARNING: If the createMatlabProject function signature changes, this
+      % needs to be updated!
       createMatlabProject(projectpath, projectname, true, true, true, ...
          string(NaN), "sandbox")
    end
@@ -205,18 +222,21 @@ function addProjectToDirectory(projectname, success, opts)
          'manually deleting new project folders if they were created.'])
    end
 
-   if success.replaceprefix
-      warning( ...
-         ['Template prefix +tbx was replaced with +%s in toolbox files. ' ...
-         'This feature is experimental. Suggest checking the codebase ' ...
-         'and/or running tests before developing the toolbox further.'], ...
-         projectname)
-   else
-      warning( ...
-         ['Attempt to replace template prefix +tbx with +%s in toolbox ' ...
-         'files failed. This feature is experimental. Suggest replacing ' ...
-         'the prefix manually and/or issuing a bug report.'], ...
-         projectname)
+   % Toolbox-related warnings
+   if opts.maketoolbox
+      if success.replaceprefix
+         warning( ...
+            ['Template prefix +tbx was replaced with +%s in toolbox files. ' ...
+            'This feature is experimental. Suggest checking the codebase ' ...
+            'and/or running tests before developing the toolbox further.'], ...
+            projectname)
+      else
+         warning( ...
+            ['Attempt to replace template prefix +tbx with +%s in toolbox ' ...
+            'files failed. This feature is experimental. Suggest replacing ' ...
+            'the prefix manually and/or issuing a bug report.'], ...
+            projectname)
+      end
    end
 end
 %% input parsing
