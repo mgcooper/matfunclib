@@ -14,6 +14,6 @@ function copygeoprjtemplate(geoshpfname)
       disp('appending .prj to filename');
    end
 
-   src = fullfile(getenv('MATLABTEMPLATEPATH'), 'geoprojtemplate.prj');
+   src = fullfile(getenv('MATLAB_TEMPLATE_PATH'), 'geoprojtemplate.prj');
    copyfile(src, geoshpfname);
 end

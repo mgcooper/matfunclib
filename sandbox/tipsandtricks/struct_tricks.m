@@ -9,7 +9,7 @@ function varargout = struct_tricks(varargin)
 
    % these were in tabletricks, I didn't think of adding these types of calls when
    % I renamed to _tricks
-   % cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libstruct'));
+   % cd(fullfile(getenv('MATLAB_FUNCTION_PATH'),'libstruct'));
    % doc struct
 
    %%

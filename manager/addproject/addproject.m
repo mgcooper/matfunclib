@@ -30,10 +30,10 @@ function varargout = addproject(projectname,varargin)
    %  11 Jan 2023: added support for activefile list, see buildprojectdirectory.
    %  11 Jan 2023: removed addtojsondirectory in favor of new
    %  choices=projectdirectorylist option in json files
-   %  23 Nov 2022 added support for USERPROJECTPATH by adding it to
+   %  23 Nov 2022 added support for USER_PROJECT_PATH by adding it to
    %  buildprojectdirectory and adding method from activate.m to workon.m that
    %  reads the folder from projectdirectory instead of appending projectname to
-   %  the MATLABPROJECTPATH environment variable
+   %  the MATLAB_PROJECT_PATH environment variable
    %
    % See also: rmproject, mkproject, workon, workoff
 

@@ -26,7 +26,7 @@ end
 %% Local Functions
 function reopen_matlab_tabs(pickfile)
 
-   directory = fullfile(getenv('MATLABUSERPATH'),'opentabs/matlab_editor');
+   directory = fullfile(getenv('MATLAB_HOME_PATH'),'opentabs/matlab_editor');
    oldcwd = pwd;
 
    if strcmp(pickfile,'pickfile')

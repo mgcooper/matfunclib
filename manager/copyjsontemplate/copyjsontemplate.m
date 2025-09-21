@@ -21,7 +21,7 @@ function copyjsontemplate(destpath,destname)
    end
 
    % copy the bare template
-   src = fullfile(getenv('MATLABTEMPLATEPATH'),'functionSignatures.json.bare');
+   src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functionSignatures.json.bare');
    dst = fullfile(destpath,destname);
 
    if isfile(dst) % the file exists, append a 'tmp' version

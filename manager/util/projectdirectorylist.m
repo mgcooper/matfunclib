@@ -1,13 +1,13 @@
 function list = projectdirectorylist
    %PROJECTDIRECTORYLIST Return a list of project folders.
    %
-   % Return a list of projects (folder names in MATLABPROJECTPATH and
-   % USERPROJECTPATH). currently used for json file autocomplete, see
+   % Return a list of projects (folder names in MATLAB_PROJECT_PATH and
+   % USER_PROJECT_PATH). currently used for json file autocomplete, see
    % buildprojectdirectory for building the directory.
    %
    % See also: buildprojectdirectory
 
-   projectpath = getenv('MATLABPROJECTPATH');
+   projectpath = getenv('MATLAB_PROJECT_PATH');
    list = mkprojectlist(projectpath);
 
    % Nov 30, 2022, migrated this from buildprojectdirectory so mkfunction and
@@ -24,9 +24,9 @@ end
 
 function newlist = appendprojectlist(oldlist)
 
-   % Jul 2024 - replace USERPROJECTPATH with MATLAB_PROJECTS_PATH and stop using
-   % USERPROJECTPATH for any matlab projects.
-   projectpath = getenv('MATLAB_PROJECTS_PATH');
+   % Jul 2024 - replace USER_PROJECT_PATH with MATLAB_PROJECT_PATH and stop using
+   % USER_PROJECT_PATH for any matlab projects.
+   projectpath = getenv('MATLAB_PROJECT_PATH');
    projectlist = mkprojectlist(projectpath);
    newlist     = [oldlist; projectlist];
 end

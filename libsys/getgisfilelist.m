@@ -36,9 +36,9 @@ function filelist = getgisfilelist()
    filelist_n = transpose(unique({filelist_n.name}));
    filelist = sort([filelist; filelist_n]);
 
-   % list1 = getlist(getenv('MATLABFUNCTIONPATH'),'*m','subdirs',true);
+   % list1 = getlist(getenv('MATLAB_FUNCTION_PATH'),'*m','subdirs',true);
    % list2 = getlist(getenv('FEXFUNCTIONPATH'),'*m','subdirs',true);
-   % list3 = getlist(getenv('MATLABPROJECTPATH'),'*m','subdirs',true);
+   % list3 = getlist(getenv('MATLAB_PROJECT_PATH'),'*m','subdirs',true);
    % list1 = list1(~contains({list1.name},'readme'));
    % list2 = list2(~contains({list2.name},'readme'));
    % list3 = list3(~contains({list3.name},'readme'));

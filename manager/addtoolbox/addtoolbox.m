@@ -28,7 +28,7 @@ function varargout = addtoolbox(tbname,varargin)
    %    addtoolbox('test', libary='stats', posthook='activate') will add an
    %    entry to the toolbox directory for toolbox 'test' located in libary
    %    'stats' and will attempt to cd into the folder located at:
-   %    [getenv('MATLABSOURCEPATH') filesep libname filesep tbname]
+   %    [getenv('MATLAB_TOOLBOX_PATH') filesep libname filesep tbname]
    %
    %     See also: activate deactivate renametoolbox isactive
    %

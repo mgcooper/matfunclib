@@ -9,7 +9,7 @@ narginchk(0,0)
 
 % these were in tabletricks, I didn't think of adding these types of calls when
 % I renamed to _tricks
-% cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libspatial'));
+% cd(fullfile(getenv('MATLAB_FUNCTION_PATH'),'libspatial'));
 % doc mapping
 
 %% help pages

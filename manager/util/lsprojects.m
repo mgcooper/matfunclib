@@ -1,7 +1,7 @@
 function varargout = lsprojects()
-   %LSPROJECTS List projects in MATLABPROJECTPATH.
+   %LSPROJECTS List projects in MATLAB_PROJECT_PATH.
    %
-   % LSPROJECTS() with no inputs lists all projects in MATLABPROJECTPATH. The
+   % LSPROJECTS() with no inputs lists all projects in MATLAB_PROJECT_PATH. The
    % active project is printed in color.
    %
    % PROJECTLIST = LSPROJECTS() also returns the list of projects.

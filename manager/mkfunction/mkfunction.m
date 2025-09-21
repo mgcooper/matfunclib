@@ -5,13 +5,13 @@ function mkfunction(funcname,varargin)
    %  default function template.
    %
    %  MKFUNCTION(FUNCNAME,'LIBRARY',LIBNAME,'PARSER',PARSER) Creates a new
-   %  function file MATLABFUNCTIONPATH/libdata/<funcname>.m using the default
+   %  function file MATLAB_FUNCTION_PATH/libdata/<funcname>.m using the default
    %  function template. Default parser style is "IP" which means inputParser.
    %  Other IP options are 'MP' for magicParser, 'OP' for optionParser, 'NP' for
-   %  no parser, and 'AP' for arguments-block parser. MATLABFUNCTIONPATH is
-   %  defined by the environment variable MATLABFUNCTIONPATH. If the environment
-   %  variable MATLABFUNCTIONPATH does not exist, then MATLABPROJECTPATH and
-   %  USERPROJECTPATH are checked and used if found. If none are found, USERPATH
+   %  no parser, and 'AP' for arguments-block parser. MATLAB_FUNCTION_PATH is
+   %  defined by the environment variable MATLAB_FUNCTION_PATH. If the environment
+   %  variable MATLAB_FUNCTION_PATH does not exist, then MATLAB_PROJECT_PATH and
+   %  USER_PROJECT_PATH are checked and used if found. If none are found, USERPATH
    %  is used.
    %
    %  See also: mkproject
@@ -242,9 +242,9 @@ function [functionpath, filenamepath] = parseFunctionPath( ...
 
    % If the mvenv environment vars are not set, use userpath
    if all(cellfun('isempty', { ...
-         getenv('MATLABFUNCTIONPATH'), ...
-         getenv('MATLABPROJECTPATH'), ...
-         getenv('MATLAB_PROJECTS_PATH') } ...
+         getenv('MATLAB_FUNCTION_PATH'), ...
+         getenv('MATLAB_PROJECT_PATH'), ...
+         getenv('MATLAB_PROJECT_PATH') } ...
          ))
       functionpath = fullfile(userpath, funcname);
    else
@@ -255,18 +255,18 @@ function [functionpath, filenamepath] = parseFunctionPath( ...
 
       if project == "unsorted"
          % library is either a valid sublibrary or is "unsorted"
-         functionpath = fullfile(getenv('MATLABFUNCTIONPATH'), library);
+         functionpath = fullfile(getenv('MATLAB_FUNCTION_PATH'), library);
 
          % this creates the function in a folder of the same name
-         % functionpath = fullfile(getenv('MATLABFUNCTIONPATH'),library,funcname);
+         % functionpath = fullfile(getenv('MATLAB_FUNCTION_PATH'),library,funcname);
 
       elseif project ~= "unsorted" && library == "unsorted"
 
          % assume the project is a matlab project
-         projectpath = fullfile(getenv('MATLABPROJECTPATH'), project);
+         projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), project);
 
          if ~isfolder(projectpath)
-            projectpath = fullfile(getenv('MATLAB_PROJECTS_PATH'), project);
+            projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), project);
 
             if ~isfolder(projectpath)
                error('project path not found')

@@ -1,20 +1,20 @@
 function list = listallmfunctions
-   %LISTALLMFUNCTIONS list all .m files in MATLABFUNCTIONPATH
+   %LISTALLMFUNCTIONS list all .m files in MATLAB_FUNCTION_PATH
    %
-   %  LIST = listallmfunctions() returns all .m files in MATLABFUNCTIONPATH in a
+   %  LIST = listallmfunctions() returns all .m files in MATLAB_FUNCTION_PATH in a
    %  cell array LIST
    %
    %
    % See also mfunctionlist, makemfunctionlist
 
-   if ~isenv('MATLABFUNCTIONPATH')
-      error('set environment variable MATLABFUNCTIONPATH to use this function')
+   if ~isenv('MATLAB_FUNCTION_PATH')
+      error('set environment variable MATLAB_FUNCTION_PATH to use this function')
 
    elseif isenv('FEXFUNCTIONPATH')
-      if isenv('MATLABPROJECTPATH')
-         plist = {'MATLABFUNCTIONPATH','FEXFUNCTIONPATH','MATLABPROJECTPATH'};
+      if isenv('MATLAB_PROJECT_PATH')
+         plist = {'MATLAB_FUNCTION_PATH','FEXFUNCTIONPATH','MATLAB_PROJECT_PATH'};
       else
-         plist = {'MATLABFUNCTIONPATH','FEXFUNCTIONPATH'};
+         plist = {'MATLAB_FUNCTION_PATH','FEXFUNCTIONPATH'};
       end
    end
 

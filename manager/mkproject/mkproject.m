@@ -1,15 +1,16 @@
 function success = mkproject(projectname, varargin)
-   %MKPROJECT Make a new project in MATLAB_PROJECTS_PATH.
+   %MKPROJECT Make a new project in MATLAB_PROJECT_PATH.
    %
    %  mkproject(projectname)
    %  success = mkproject(projectname)
    %  success = mkproject(projectname, 'maketoolbox', true)
    %  success = addproject(projectname, 'setfiles', true)
    %  success = addproject(projectname, 'setactive', true)
+   %  success = addproject(projectname, 'createMatlabProject', false)
    %
    % Description
    %
-   %  MKPROJECT(PROJECT_NAME) creates the MATLAB_PROJECTS_PATH/PROJECT_NAME
+   %  MKPROJECT(PROJECT_NAME) creates the MATLAB_PROJECT_PATH/PROJECT_NAME
    %  folder if it does not exist, and adds PROJECT_NAME to the project
    %  directory. If the folder already exists, an option to add the folder to
    %  the project directory is presented.
@@ -52,7 +53,7 @@ function success = mkproject(projectname, varargin)
    [projectname, opts] = parseinputs(projectname, mfilename, varargin{:});
 
    % Full path to project
-   projectpath = fullfile(getenv('MATLAB_PROJECTS_PATH'), projectname);
+   projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), projectname);
 
    % Flags to proceed with making the new project or not.
    %
@@ -88,8 +89,10 @@ function success = mkproject(projectname, varargin)
 
    else
       % The project folder does not exist. If the parent folder exists
-      % (which should be MATLAB_PROJECTS_PATH), set make_project_flag
+      % (which should be MATLAB_PROJECT_PATH), set make_project_flag
       % and make_folder_flag true, since the project folder does not exist.
+      % Also set PROJECT_FOLDER_NOTEMPTY false since it doesn't exist.
+      PROJECT_FOLDER_NOTEMPTY = false;
 
       if PROJECT_PARENT_EXISTS
 

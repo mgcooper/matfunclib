@@ -25,7 +25,7 @@ if prebuild == true
    defaultproj = projectlist(end,:);
    defaultproj.name = {'default'};
    try
-      defaultproj.folder = getenv('MATLABUSERPATH');
+      defaultproj.folder = getenv('MATLAB_HOME_PATH');
    catch
       defaultproj.folder = userpath;
    end

@@ -19,21 +19,21 @@ function testfuncpath = copyfunctemplate(newfuncpath, parser)
    % set the function template filename
    switch parser
       case 'MP' % magicParser
-         src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateMP.m');
+         src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functemplateMP.m');
       case 'IP' % inputParser
-         src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateIP.m');
+         src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functemplateIP.m');
       case 'OP' % optionParser
-         src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateOP.m');
+         src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functemplateOP.m');
       case 'NP' % no parser
-         src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateNP.m');
+         src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functemplateNP.m');
       case 'AP' % arguments block
-         src = fullfile(getenv('MATLABTEMPLATEPATH'),'functemplateAP.m');
+         src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'functemplateAP.m');
    end
 
    copyfile(src, newfuncpath);
 
    % copy the testscript_template
-   src = fullfile(getenv('MATLABTEMPLATEPATH'),'testscript_template.m');
+   src = fullfile(getenv('MATLAB_TEMPLATE_PATH'),'testscript_template.m');
    dst = fullfile(funcparts{1}, ['test_' funcparts{2} '.m']);
 
    % make sure not to write over an existing test file

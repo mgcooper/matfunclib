@@ -36,11 +36,11 @@ function workon(varargin)
    %  - 11 Jan 2023, support for activefiles; added Setup, Install, and Startup
    %    to Config source on startup behavior.
    %  - 30 Dec 2022, if Config.m exists in project directory, source it on goto.
-   %  - 23 Nov 2022, added support for projects in USERPROJECTPATH in addition
-   %    to MATLABPROJECPATH by adding it to buildprojectdirectory and adding
+   %  - 23 Nov 2022, added support for projects in USER_PROJECT_PATH in addition
+   %    to MATLAB_PROJECT_PATH by adding it to buildprojectdirectory and adding
    %    method from activate.m that reads the folder from projectdirectory to
    %    build the projectpath instead of appending projectname to the
-   %    MATLABPROJECTPATH environment variable.
+   %    MATLAB_PROJECT_PATH environment variable.
    %
    % TODO
    % - add if usejava('desktop') methods to not open or save editor files

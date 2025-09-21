@@ -18,7 +18,7 @@ function varargout = createMatlabProject(projectFolder, projectName, ...
    %
    %  PROJECTFOLDER - The parent (top level) project folder (scalar text). Can
    %  be a full path or name from which the full path is constructed using the
-   %  MATLABPROJECTPATH environment variable. The default is pwd().
+   %  MATLAB_PROJECT_PATH environment variable. The default is pwd().
    %
    %  PROJECTNAME - Scalar text used for the .prj filename. If not provided, the
    %  PROJECTFOLDER folder name is used for PROJECTNAME. The .prj filename is
@@ -62,7 +62,7 @@ function varargout = createMatlabProject(projectFolder, projectName, ...
    %
    % See also: projectfile
 
-   % TODO: 
+   % TODO:
    % - args need to be name-value.
    % - option to add folders to project path, see "addPath" function
 
@@ -106,15 +106,15 @@ function varargout = createMatlabProject(projectFolder, projectName, ...
    % use proj.addFolderIncludingChildFiles which achieves the same thing but
    % adds all files e.g. .DS_Store. Overall I think its better this way though
    % b/c Projects want to manage all subfolders and files, and I don't think
-   % there's any harm in adding all files. 
-   % 
+   % there's any harm in adding all files.
+   %
    % However, this was also done to make it easier to only add the toolbox/
    % folder e.g., the following would only add the toolbox/ folder:
    %     addProjectFiles=false
    %     addProjectFolders=false,
    %     addChildFiles=true
    %     projectSubfolders="toolbox"
-   % 
+   %
    % This is how makeproject/projectfile is configured.
 
    % Create a new project

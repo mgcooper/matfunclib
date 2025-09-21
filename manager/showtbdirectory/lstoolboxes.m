@@ -1,7 +1,7 @@
 function varargout = lstoolboxes(varargin)
-   %LSTOOLBOXES List available toolboxes in MATLABSOURCEPATH.
+   %LSTOOLBOXES List available toolboxes in MATLAB_TOOLBOX_PATH.
    %
-   % LSTOOLBOXES() with no inputs lists all toolboxes in MATLABSOURCEPATH and
+   % LSTOOLBOXES() with no inputs lists all toolboxes in MATLAB_TOOLBOX_PATH and
    % active toolboxes in color
    %
    % LSTOOLBOXES(LIBRARY) lists all sub-toolboxes in toolbox library LIBRARY

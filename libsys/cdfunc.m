@@ -24,14 +24,14 @@ function cdfunc(funcname)
       if ~ismfile(funcname)
          % add all subfolders to the path in case the function was just made
          try
-            pathadd(getenv('MATLABFUNCTIONPATH'));
+            pathadd(getenv('MATLAB_FUNCTION_PATH'));
          catch
          end
       end
       funcpath = fileparts(which(funcname)); % use the first one on the path
-   elseif isenv('MATLABFUNCTIONPATH')
+   elseif isenv('MATLAB_FUNCTION_PATH')
       % Go to the function directory
-      funcpath = getenv('MATLABFUNCTIONPATH');
+      funcpath = getenv('MATLAB_FUNCTION_PATH');
    else
       error('function not found');
    end

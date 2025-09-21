@@ -4,7 +4,7 @@ function pathstr = setpath(pathstr,varargin)
    %  Syntax
    %
    %     pathstr = setpath(pathstr,'project') returns the full path to input
-   %     pathstr located in MATLABPROJECTPATH
+   %     pathstr located in MATLAB_PROJECT_PATH
    %
    % See also: pathadd
 
@@ -16,9 +16,9 @@ function pathstr = setpath(pathstr,varargin)
    % but it doesn't work b/c default option is 'matlab' for convenience
    switch pathtype
       case 'matlab'
-         pathroot = getenv('MATLABUSERPATH');
+         pathroot = getenv('MATLAB_HOME_PATH');
       case 'project'
-         pathroot = getenv('MATLABPROJECTPATH');
+         pathroot = getenv('MATLAB_PROJECT_PATH');
       case 'data'
          pathroot = getenv('USERDATAPATH');
       case 'user'

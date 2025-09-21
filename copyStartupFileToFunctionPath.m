@@ -1,15 +1,15 @@
 function copyStartupFileToFunctionPath
    %COPYSTARTUPFILETOFUNCTIONPATH Copy startup.m from userpath() to user-defined
-   %env returned by getenv('MATLABFUNCTIONPATH')
+   %env returned by getenv('MATLAB_FUNCTION_PATH')
    if ~isempty(userpath)
-      src = fullfile(userpath,'startup.m');
+      src = fullfile(userpath, 'startup.m');
    else
       error('userpath is empty');
    end
-   if ~isempty(getenv('MATLABFUNCTIONPATH'))
-      dst = fullfile(getenv('MATLABFUNCTIONPATH'),'startup.m');
+   if ~isempty(getenv('MATLAB_FUNCTION_PATH'))
+      dst = fullfile(getenv('MATLAB_FUNCTION_PATH'), 'startup.m');
    else
-      error('MATLABFUNCTIONPATH is empty');
+      error('MATLAB_FUNCTION_PATH is empty');
    end
-   copyfile(src,dst)
+   copyfile(src, dst)
 end

@@ -17,7 +17,7 @@ if usejava('desktop')
       if strcmp(e.identifier, 'MATLAB:UndefinedFunction')
          try
             % If the path was removed during the session, add it back.
-            addpath(genpath(getenv('MATLABFUNCTIONPATH')), '-end');
+            addpath(genpath(getenv('MATLAB_FUNCTION_PATH')), '-end');
             setprojectfiles(getactiveproject('name'));
          catch e
             % If that does not work, throw the error.
