@@ -7,7 +7,8 @@ inmatlab = ~inoctave;
 
 % remap the red close button associated with figure windows, potentially
 % preventing MATLAB from becoming unresponsive when closing figures.
-set(groot, 'defaultFigureCloseRequestFcn', @(o, ~) delete(o));
+% Not needed on newer versions, remove eventually or use verlessthan check.
+% set(groot, 'defaultFigureCloseRequestFcn', @(o, ~) delete(o));
 
 % Save the current state of the warnings
 originalWarningState = warning;
@@ -108,8 +109,11 @@ setenv('MATLAB_TOOLBOX_TEMPLATE_PATH',  fullfile(MATLAB_FUNCTION_PATH, 'toolbox'
 setenv('TBDIRECTORYPATH',     fullfile(MATLAB_HOME_PATH, 'directory'));
 setenv('PROJECTDIRECTORYPATH',fullfile(MATLAB_HOME_PATH, 'directory'));
 
-% File Exchange paths.
-setenv('FEXFUNCTIONPATH',     fullfile(MATLAB_HOME_PATH, 'fexlib'));
+% File Exchange paths. May 2025 - fexlib was moved inside projects/, probably to
+% address dependencies between toolboxes, not sure, but for now, use project
+% path instead of home
+% setenv('FEXFUNCTIONPATH',     fullfile(MATLAB_HOME_PATH, 'fexlib'));
+setenv('FEXFUNCTIONPATH',     fullfile(MATLAB_PROJECT_PATH, 'fexlib'));
 setenv('FEXPACKAGEPATH',      fullfile(MATLAB_HOME_PATH, 'fexpackages'));
 
 %% Below here depends on variables set in bash startup
@@ -137,14 +141,28 @@ setenv('USER_MERRA_PATH', fullfile(getenv('USERDATAPATH'), 'merra2'));
 % Ignored folders - append these to ignorePaths to use
 % ignore = {'old_projects'; 'myProjects'};
 
-% Generate a list of all sub-folders
-subpaths = strsplit(genpath(MATLAB_HOME_PATH), pathsep);
+% Generate a list of all sub-folders under MATLAB_HOME_PATH
+subpaths = strsplit( genpath(MATLAB_HOME_PATH), pathsep );
 
-% Remove ignored folders
-ignorePaths = {'.git'; '.svn'; '.'; '..'; };
+% Build logical masks to remove all projects and toolboxes from PATH, while
+% retaining MATLAB_FUNCTION_PATH to manage projects/toolboxes post-startup
+is_project_path = strncmp( ...
+   subpaths, MATLAB_PROJECT_PATH, numel(MATLAB_PROJECT_PATH));
+
+is_toolbox_path = strncmp( ...
+   subpaths, MATLAB_TOOLBOX_PATH, numel(MATLAB_TOOLBOX_PATH));
+
+is_function_path = strncmp( ...
+   subpaths, MATLAB_FUNCTION_PATH, numel(MATLAB_FUNCTION_PATH));
+
+% Remove all projects/toolboxes from PATH, except MATLAB_FUNCTION_PATH
+subpaths = subpaths(~is_project_path | ~is_toolbox_path | is_function_path);
+
+% Remove ignored folders.
+ignorePaths = {'.git'; '.svn'; '.'; '..'};
 keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
-% custom remove for octave compatibility
+% Custom ignores for octave compatibility
 if inoctave
    ignorePaths = [ignorePaths; {
       fullfile(MATLAB_FUNCTION_PATH, 'libtext', 'printf'); ...
@@ -257,7 +275,15 @@ end
 
 % open the active project if we're in the desktop
 if usejava('desktop') && inmatlab
-   workon(getactiveproject());
+   % set updatefiles=false because on startup, no files are open.
+   % this ensures workon opens the activefiles associated w/the active project.
+   workon(getactiveproject(), 'updatefiles', false);
+end
+
+% cd to ~/MATLAB if we're in octave
+if inoctave
+   disp('going home')
+   cd(getenv('MATLAB_HOME_PATH'))
 end
 
 %% Python configuration
