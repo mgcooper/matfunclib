@@ -14,9 +14,9 @@ function mustBeTextScalarOrEmpty(arg)
    %   empty single quotes, ''. An empty char can be created with char.empty or
    %   char([]).
    %
-   %  This function is based on the Mathworks functions mustBeTextScalar and
-   %  mustBeScalarOrEmpty. It is intended for use within arguments block to
-   %  validate an input.
+   %  This validator is intentionally broader than MUSTBETEXTSCALAR because it
+   %  also accepts empty arrays such as []. It is intended for use within
+   %  arguments blocks where omitted or blank-like inputs are allowed.
    %
    %  Example use in argument block validation:
    %  arguments
