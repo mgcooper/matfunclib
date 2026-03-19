@@ -17,8 +17,6 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
    % 2. backupfile('/Users/user/test_folder', true)
    %
    % See also: tempdir, tempfile
-   %
-   %#codegen
 
    if nargin < 2
       makecopy = false;

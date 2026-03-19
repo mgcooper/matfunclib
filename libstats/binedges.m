@@ -435,7 +435,7 @@ function edges = bayesian_blocks_edges(X)
    [t, ~, groupIndex] = unique(sort(X));
    counts = accumarray(groupIndex, 1);
 
-   if numel(t) == 1
+   if isscalar(t)
       delta = max(0.5, abs(t) * 0.5 + eps(t));
       edges = [t - delta, t + delta];
       return
