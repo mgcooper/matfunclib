@@ -1,4 +1,38 @@
-function [results, xfit, yfit, residuals] = modelSelection(x, y, f1, f2, b1, b2)
+function [results, xfit, yfit, residuals] = compareNonlinearModels(x, y, f1, f2, b1, b2)
+   %COMPARENONLINEARMODELS Fit and compare two nonlinear models.
+   %
+   %  RESULTS = COMPARENONLINEARMODELS(X, Y, F1, F2) fits the two model
+   %  functions F1 and F2 to the paired data X and Y using FITNLM and returns
+   %  a summary table of coefficients and model selection metrics.
+   %
+   %  [RESULTS, XFIT, YFIT, RESIDUALS] = COMPARENONLINEARMODELS(X, Y, F1, F2,
+   %  B1, B2) also returns predicted values evaluated on a uniform grid XFIT
+   %  and the raw residuals from each fitted model. B1 and B2 are the initial
+   %  coefficient guesses passed to FITNLM for F1 and F2, respectively.
+   %
+   %  Inputs
+   %
+   %  X, Y - Paired predictor and response data vectors.
+   %
+   %  F1, F2 - Function handles defining the nonlinear model forms accepted by
+   %  FITNLM.
+   %
+   %  B1, B2 - Initial coefficient guesses for F1 and F2. If omitted, both
+   %  default to [1 1].
+   %
+   %  Outputs
+   %
+   %  RESULTS - Table containing the model names, fitted coefficients, R^2,
+   %  AIC, and BIC for each model.
+   %
+   %  XFIT - Column vector of evenly spaced x values spanning the data range.
+   %
+   %  YFIT - Matrix of fitted response values evaluated at XFIT. Column 1
+   %  corresponds to F1 and column 2 corresponds to F2.
+   %
+   %  RESIDUALS - Matrix of raw residuals for each fitted model.
+   %
+   %  See also fitnlm
 
    if nargin < 5
       b1 = [1 1];

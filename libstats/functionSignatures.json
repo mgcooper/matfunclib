@@ -1,0 +1,21 @@
+{
+   "_comment": "Copyright 2019-2024 Matt Cooper.",
+
+   "binedges":
+   {
+      "inputs":
+      [
+         {"name":"X", "kind":"required", "type":["numeric","vector"]},
+         {"name":"BinMethod", "kind":"namevalue", "type":["char", "choices={'auto','sqrt','sturges','rice','doane','scott','fd','integers','equiprobable','shimazaki-shinimoto'}"], "default":"'auto'"},
+         {"name":"Scale", "kind":"namevalue", "type":["char", "choices={'linear','log10','ln'}"], "default":"'linear'"},
+         {"name":"NumBins", "kind":"namevalue", "type":["numeric","scalar","integer"]}
+      ],
+      "outputs":
+      [
+         {"name":"edges"},
+         {"name":"widths"},
+         {"name":"centers"},
+         {"name":"numbins"}
+      ]
+   }
+}
