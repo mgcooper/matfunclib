@@ -1,4 +1,4 @@
-function varargout = plotraster(Z, varargin)
+function varargout = plotraster(varargin)
    %PLOTRASTER Plot a raster (image).
    %
    % H = plotraster(Z)
@@ -24,6 +24,10 @@ function varargout = plotraster(Z, varargin)
    % TLDR: the pixel centers are from 1:numpixels, the cell edges are
    % from 0.5:numpixels-0.5.
    %
+   % If the only input is Z, then the y tick marks will be reversed relative to
+   % the grid indices, since the default behavior is to assume the grid is
+   % oriented N-S from top-down, but indices increase downward.
+   %
    % See also: rastershow, mapshow, geoshow, imagesc, imagscn
 
    % Verify the input count
@@ -36,6 +40,11 @@ function varargout = plotraster(Z, varargin)
    if isempty(ax)
       ax = gca;
    end
+
+   % Z must be the first argument, if possible ax was removed. This "resets"
+   % things to the case where the function call is plotraster(Z, varargin)
+   Z = args{1};
+   args = args(2:end);
 
    % Parse optional axis ratio
    [style, args, nargs] = parseoptarg(args, ...
