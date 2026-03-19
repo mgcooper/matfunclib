@@ -15,16 +15,19 @@ function [edges, widths, centers, numbins] = binedges(X, varargin)
    %
    %  Supported methods:
    %    'auto', 'sqrt', 'sturges', 'rice', 'doane', 'scott', 'fd',
-   %    'integers', 'equiprobable', and 'shimazaki-shinimoto'
+   %    'integers', 'equiprobable', 'shimazaki-shinimoto', 'knuth',
+   %    'stone', and 'bayesian-blocks'
    %
    %  Notes
    %
    %  - 'integers' is only supported on the linear scale.
+   %  - 'bayesian-blocks' returns adaptive, nonuniform bin widths.
    %  - For log-spaced bins, centers are geometric means and widths are not
    %    constant in the original data space.
    %
    %  See also histcounts, histogram, centers2edges, loghist
 
+   % Validate and sanitize the data before applying the requested rule.
    validateattributes(X, {'numeric', 'logical'}, ...
       {'vector', 'real', 'nonempty'}, mfilename, 'X', 1)
    X = X(:);
@@ -33,9 +36,12 @@ function [edges, widths, centers, numbins] = binedges(X, varargin)
       error('BINEDGES:NoFiniteData', 'X must contain at least one finite value.');
    end
 
+   % Parse legacy positional inputs and the newer name-value form.
    [method, scale, numbins] = parseinputs(varargin{:});
    Xrule = transform_for_scale(X, scale);
 
+   % Generate explicit edges when the rule defines them directly, otherwise
+   % compute a bin count and build edges over the requested scale.
    if isempty(numbins)
       [edges, hasExplicitEdges] = compute_edges_from_method(X, Xrule, method, scale);
    else
@@ -51,11 +57,7 @@ function [edges, widths, centers, numbins] = binedges(X, varargin)
       edges = build_uniform_edges(X, scale, numbins);
    end
 
-   edges = reshape(edges, 1, []);
-   if numel(edges) < 2
-      error('BINEDGES:InvalidEdges', 'At least two unique edges are required.');
-   end
-
+   edges = ensure_valid_edges(edges, X, scale);
    widths = diff(edges);
    numbins = numel(edges) - 1;
    centers = compute_centers(edges, scale);
@@ -104,6 +106,7 @@ function tf = isoptionname(value)
       tf = false;
       return
    end
+
    value = lower(string(value));
    tf = ismember(value, ["binmethod", "method", "scale", "numbins", "nbins", "n"]);
 end
@@ -114,6 +117,7 @@ end
 
 function method = normalize_method(value)
    method = lower(string(value));
+
    switch method
       case {"square-root", "square_root", "squareroot"}
          method = "sqrt";
@@ -121,18 +125,25 @@ function method = normalize_method(value)
          method = "fd";
       case {"ss", "sshist", "shimazaki", "shimazaki-shinimoto"}
          method = "shimazaki-shinimoto";
+      case {"bb", "blocks", "bayesianblocks", "bayesblocks"}
+         method = "bayesian-blocks";
+      case {"cross-validation", "crossvalidation", "cv"}
+         method = "stone";
       otherwise
          valid = ["auto", "sqrt", "sturges", "rice", "doane", "scott", ...
-            "fd", "integers", "equiprobable", "shimazaki-shinimoto"];
+            "fd", "integers", "equiprobable", "shimazaki-shinimoto", ...
+            "knuth", "stone", "bayesian-blocks"];
          if ~ismember(method, valid)
             error('BINEDGES:UnknownMethod', 'Unknown binning method "%s".', value);
          end
    end
+
    method = char(method);
 end
 
 function scale = normalize_scale(value)
    scale = lower(string(value));
+
    switch scale
       case {"linear"}
          scale = "linear";
@@ -144,6 +155,7 @@ function scale = normalize_scale(value)
          error('BINEDGES:UnknownScale', ...
             'Unknown scale "%s". Use ''linear'', ''log10'', or ''ln''.', value);
    end
+
    scale = char(scale);
 end
 
@@ -163,6 +175,17 @@ function Xrule = transform_for_scale(X, scale)
                'Log-scaled binning requires strictly positive data.');
          end
          Xrule = log(X);
+   end
+end
+
+function X = inverse_scale_transform(X, scale)
+   switch scale
+      case 'linear'
+         % pass
+      case 'log10'
+         X = 10 .^ X;
+      case 'ln'
+         X = exp(X);
    end
 end
 
@@ -189,7 +212,11 @@ function [edges, hasExplicitEdges] = compute_edges_from_method(X, Xrule, method,
          numbins = calc_numbins(Xrule, method);
          q = linspace(0, 100, numbins + 1);
          edges = prctile(X, q);
-         edges = unique(edges, 'stable');
+         hasExplicitEdges = true;
+
+      case 'bayesian-blocks'
+         edges = bayesian_blocks_edges(Xrule);
+         edges = inverse_scale_transform(edges, scale);
          hasExplicitEdges = true;
    end
 end
@@ -238,11 +265,30 @@ function numbins = calc_numbins(X, method)
       case 'shimazaki-shinimoto'
          numbins = sshist_numbins(X);
 
+      case 'knuth'
+         numbins = knuth_numbins(X);
+
+      case 'stone'
+         numbins = stone_numbins(X);
+
       otherwise
          error('BINEDGES:UnknownMethod', 'Unknown binning method "%s".', method);
    end
 
    numbins = max(1, round(numbins));
+end
+
+function edges = ensure_valid_edges(edges, X, scale)
+   edges = reshape(edges, 1, []);
+   edges = unique(edges, 'stable');
+
+   if numel(edges) < 2
+      edges = build_uniform_edges(X, scale, 1);
+   end
+
+   if numel(edges) < 2
+      error('BINEDGES:InvalidEdges', 'At least two unique edges are required.');
+   end
 end
 
 function numbins = width_to_numbins(X, width)
@@ -296,14 +342,18 @@ function centers = compute_centers(edges, scale)
    end
 end
 
+function candidates = candidate_numbins(X)
+   candidates = 1:min(200, max(10, ceil(sqrt(numel(X))) * 4));
+end
+
 function numbins = sshist_numbins(X)
    if numel(X) <= 1 || max(X) == min(X)
       numbins = 1;
       return
    end
 
-   maxBins = min(200, max(10, ceil(sqrt(numel(X))) * 4));
-   candidates = 2:maxBins;
+   candidates = candidate_numbins(X);
+   candidates = candidates(candidates >= 2);
    costs = nan(size(candidates));
    xmin = min(X);
    xmax = max(X);
@@ -320,4 +370,109 @@ function numbins = sshist_numbins(X)
 
    [~, idx] = min(costs);
    numbins = candidates(idx);
+end
+
+function numbins = knuth_numbins(X)
+   if numel(X) <= 1 || max(X) == min(X)
+      numbins = 1;
+      return
+   end
+
+   candidates = candidate_numbins(X);
+   xmin = min(X);
+   xmax = max(X);
+   scores = -inf(size(candidates));
+   N = numel(X);
+
+   for n = 1:numel(candidates)
+      nb = candidates(n);
+      edges = linspace(xmin, xmax, nb + 1);
+      counts = histcounts(X, edges);
+      scores(n) = N * log(nb) + gammaln(nb / 2) ...
+         - nb * gammaln(0.5) - gammaln(N + nb / 2) ...
+         + sum(gammaln(counts + 0.5));
+   end
+
+   [~, idx] = max(scores);
+   numbins = candidates(idx);
+end
+
+function numbins = stone_numbins(X)
+   if numel(X) <= 1 || max(X) == min(X)
+      numbins = 1;
+      return
+   end
+
+   candidates = candidate_numbins(X);
+   xmin = min(X);
+   xmax = max(X);
+   scores = inf(size(candidates));
+   N = numel(X);
+
+   for n = 1:numel(candidates)
+      nb = candidates(n);
+      edges = linspace(xmin, xmax, nb + 1);
+      counts = histcounts(X, edges);
+      probs = counts / N;
+      width = (xmax - xmin) / nb;
+      if width > 0
+         scores(n) = (2 - (N + 1) * sum(probs .^ 2)) / width;
+      end
+   end
+
+   [~, idx] = min(scores);
+   numbins = candidates(idx);
+end
+
+function edges = bayesian_blocks_edges(X)
+   if numel(X) <= 1 || max(X) == min(X)
+      xmin = min(X);
+      delta = max(0.5, abs(xmin) * 0.5 + eps(xmin));
+      edges = [xmin - delta, xmin + delta];
+      return
+   end
+
+   [t, ~, groupIndex] = unique(sort(X));
+   counts = accumarray(groupIndex, 1);
+
+   if numel(t) == 1
+      delta = max(0.5, abs(t) * 0.5 + eps(t));
+      edges = [t - delta, t + delta];
+      return
+   end
+
+   edges = [t(1); 0.5 * (t(1:end-1) + t(2:end)); t(end)];
+   best = zeros(numel(t), 1);
+   last = zeros(numel(t), 1);
+   ncpPrior = bayesian_blocks_ncp_prior(numel(X));
+
+   for right = 1:numel(t)
+      widths = edges(right + 1) - edges(1:right);
+      countVec = cumsum(counts(right:-1:1));
+      countVec = countVec(end:-1:1);
+      fitVec = countVec .* (log(countVec) - log(widths)) - ncpPrior;
+
+      if right > 1
+         fitVec(2:end) = fitVec(2:end) + best(1:right-1);
+      end
+
+      [best(right), last(right)] = max(fitVec);
+   end
+
+   blockStarts = zeros(numel(t), 1);
+   nBlocks = 0;
+   right = numel(t);
+   while right > 0
+      nBlocks = nBlocks + 1;
+      blockStarts(nBlocks) = last(right);
+      right = last(right) - 1;
+   end
+
+   blockStarts = flipud(blockStarts(1:nBlocks));
+   edges = edges([blockStarts; numel(t) + 1]).';
+end
+
+function ncpPrior = bayesian_blocks_ncp_prior(N)
+   p0 = 0.05;
+   ncpPrior = 4 - log(73.53 * p0 * N^(-0.478));
 end

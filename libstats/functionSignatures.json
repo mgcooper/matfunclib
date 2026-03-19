@@ -6,7 +6,7 @@
       "inputs":
       [
          {"name":"X", "kind":"required", "type":["numeric","vector"]},
-         {"name":"BinMethod", "kind":"namevalue", "type":["char", "choices={'auto','sqrt','sturges','rice','doane','scott','fd','integers','equiprobable','shimazaki-shinimoto'}"], "default":"'auto'"},
+         {"name":"BinMethod", "kind":"namevalue", "type":["char", "choices={'auto','sqrt','sturges','rice','doane','scott','fd','integers','equiprobable','shimazaki-shinimoto','knuth','stone','bayesian-blocks'}"], "default":"'auto'"},
          {"name":"Scale", "kind":"namevalue", "type":["char", "choices={'linear','log10','ln'}"], "default":"'linear'"},
          {"name":"NumBins", "kind":"namevalue", "type":["numeric","scalar","integer"]}
       ],
