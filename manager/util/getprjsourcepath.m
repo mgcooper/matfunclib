@@ -6,7 +6,7 @@ function projpath = getprjsourcepath(projectname)
    % path, it doesn't check if it already exists, like I do with any(ismember)
    % in addproject and other functions. For example, the comment below is from
    % addproject, the point is that this function assumes all projects are in the
-   % MATLABPROJECTPATH whereas my new method reads the directory, but that might
+   % MATLAB_PROJECT_PATH whereas my new method reads the directory, but that might
    % actually be worse b/c it requires always reading and writing so ultimatley
    % i shoudl go back to this method and enforce one project diretry top level.
    % 21 Mar 2023, commented this out b/c it uses the project directory whcih
@@ -15,7 +15,7 @@ function projpath = getprjsourcepath(projectname)
    % projpath = getprjsourcepath(projname); % get the full path to the project
 
    if nargin == 0
-      projpath = getenv('MATLABPROJECTPATH');
+      projpath = getenv('MATLAB_PROJECT_PATH');
    else
       projlist = readprjdirectory;
       projindx = ismember(projlist.name,projectname);
@@ -24,8 +24,8 @@ function projpath = getprjsourcepath(projectname)
 
    % % deprecated by new method that reads the folder in the project directory
    %    if nargin == 0
-   %       prjpath = getenv('MATLABPROJECTPATH');
+   %       prjpath = getenv('MATLAB_PROJECT_PATH');
    %    else
-   %       prjpath = [getenv('MATLABPROJECTPATH') prjname '/'];
+   %       prjpath = [getenv('MATLAB_PROJECT_PATH') prjname '/'];
    %    end
 end

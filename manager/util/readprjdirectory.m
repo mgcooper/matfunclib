@@ -10,7 +10,11 @@ function projectlist = readprjdirectory(projectdirectorypath)
       projectdirectorypath = getprjdirectorypath();
    end
    if isoctave
-      load(projectdirectorypath, 'projectstruct'); projectlist = projectstruct;
+
+      % May 2025 - projectstruct must not exist anymore, so another function
+      % that writes the file is probably not saving it
+      load(projectdirectorypath, 'projectstruct');
+      projectlist = projectstruct;
    else
       load(projectdirectorypath, 'projectlist');
    end

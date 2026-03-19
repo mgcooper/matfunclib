@@ -43,28 +43,32 @@ function [V, X, Y] = validateGridData(V, X, Y, funcname, argname1, ...
       outputFormat = inputFormat;
    end
 
+   % Validate inputs
+   validateattributes(V, {'cell', 'numeric', 'logical'}, {'3d'}, ...
+      funcname, argname1);
+   validateGridCoordinates(X, Y, ...
+      funcname, argname2, argname3, inputFormat);
    validateGridFormat(outputFormat);
-   validateGridCoordinates(X, Y, funcname, 'X', 'Y', inputFormat);
-   validateattributes(V, {'cell', 'numeric', 'logical'}, {'3d'}, funcname, argname1);
 
+   % Validate V
    wascell = iscell(V);
    if ~wascell
       V = {V};
    end
    for n = 1:numel(V)
-      [V{n}, X, Y] = validateOneGrid(V{n}, X, Y, funcname, argname3, ...
+      [V{n}, X, Y] = validateOneGrid(V{n}, X, Y, funcname, argname1, ...
          inputFormat, outputFormat);
    end
    if ~wascell
-      assert(numel(V) == 1)
+      assert(isscalar(V))
       V = V{1};
    end
 end
 
-function [V, X, Y] = validateOneGrid(V, X, Y, funcname, argname3, ...
+function [V, X, Y] = validateOneGrid(V, X, Y, funcname, argname1, ...
       inputFormat, outputFormat)
 
-   validateattributes(V, {'numeric', 'logical'}, {'3d'}, funcname, argname3);
+   validateattributes(V, {'numeric', 'logical'}, {'3d'}, funcname, argname1);
 
    % If using R
    % validateattributes(V, {'numeric', 'logical'}, {'size', R.RasterSize}, ...

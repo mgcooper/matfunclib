@@ -1,7 +1,7 @@
 function msg = copytoolboxtemplate(projectname, opts)
    %COPYTOOLBOXTEMPLATE Copy toolbox template to project folder.
    %
-   %  MATLAB_PROJECTS_PATH/projectname.
+   %  MATLAB_PROJECT_PATH/projectname.
    %
    % See also
 
@@ -22,7 +22,7 @@ function msg = copytoolboxtemplate(projectname, opts)
 
    % Set required paths
    PROJECT_NAME = projectname;
-   MATLAB_PROJECTS_PATH = getenv('MATLAB_PROJECTS_PATH');
+   MATLAB_PROJECT_PATH = getenv('MATLAB_PROJECT_PATH');
    TOOLBOX_TEMPLATE_PATH = getenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
 
    if isempty(TOOLBOX_TEMPLATE_PATH)
@@ -36,7 +36,7 @@ function msg = copytoolboxtemplate(projectname, opts)
    % toolbox template there.
 
    % These are designed for the case where projectname is a full path. They
-   % confirm if 1) the path is to a folder within MATLAB_PROJECTS_PATH
+   % confirm if 1) the path is to a folder within MATLAB_PROJECT_PATH
    % (PROJECT_PARENT_ISVALID), and 2) if the projectname folder already exists.
 
    PROJECT_PARENT_EXISTS = false;
@@ -46,11 +46,11 @@ function msg = copytoolboxtemplate(projectname, opts)
 
    if isempty(fileparts(PROJECT_NAME))
       % PROJECT_NAME is a char not full path, build the full path. This is the
-      % simplest case b/c it enforces MATLAB_PROJECTS_PATH as the parent.
+      % simplest case b/c it enforces MATLAB_PROJECT_PATH as the parent.
 
-      PROJECT_FOLDER_PATH = fullfile(MATLAB_PROJECTS_PATH, PROJECT_NAME);
+      PROJECT_FOLDER_PATH = fullfile(MATLAB_PROJECT_PATH, PROJECT_NAME);
       PROJECT_FOLDER_EXISTS = isfolder(PROJECT_FOLDER_PATH);
-      PROJECT_PARENT_EXISTS = true; % it was just set to MATLAB_PROJECTS_PATH
+      PROJECT_PARENT_EXISTS = true; % it was just set to MATLAB_PROJECT_PATH
 
       if not(PROJECT_FOLDER_EXISTS)
          % It's safe to copy the toolbox/ template to the projectname/ folder.

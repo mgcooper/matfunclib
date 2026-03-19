@@ -5,8 +5,8 @@ function buildfunclibjsonfile()
    % folder names and function names for use with mkfunction etc.
 
    % this requires a template is ready with a particular format:
-   funcdir = getenv('MATLABFUNCTIONPATH');
-   templatedir = getenv('MATLABTEMPLATEPATH');
+   funcdir = getenv('MATLAB_FUNCTION_PATH');
+   templatedir = getenv('MATLAB_TEMPLATE_PATH');
    jsfile = [templatedir 'functionSignatures.funclibtemplate.json'];
 
    % get a list of all .m files in the function path and all sub dirs

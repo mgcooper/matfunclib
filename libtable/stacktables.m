@@ -64,14 +64,14 @@ function tblstack = stacktables(tbls, opts)
 
    % Convert columns of chars to string if the char widths are not identical,
    % otherwise the join will fail.
-   tbls = cellfun(@tblchars2string, tbls, 'un', 0);
+   tbls = cellfun(@tblchars2string, tbls, 'Uniform', false);
 
    % % More explicit
    % for n = 1:N
    %    thistbl = tbls{n};
    %    idxchar = cellfun(@ischar,table2cell(thistbl(1,:)));
-   %    varchar = thistbl.Properties.VariableNames{idxchar};
-   %    thistbl.(varchar) = string(thistbl{:,idxchar});
+   %    varname = thistbl.Properties.VariableNames{idxchar};
+   %    thistbl.(varname) = string(thistbl{:, idxchar});
    %    tbls{n} = thistbl;
    % end
 

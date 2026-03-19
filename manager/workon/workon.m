@@ -24,11 +24,20 @@ function workon(varargin)
    %    and UPDATEFILES=TRUE, the active files for PROJECTNAME are updated. The
    %    default option is TRUE.
    %
+   %    Note: The default behavior UPDATEFILES=TRUE enables efficient switching
+   %    between projects during an active matlab session. However, if workon is
+   %    called during startup, there will be no files open and the activefiles
+   %    list for the active project will be set empty. To prevent this, use
+   %    UPDATEFILES=FALSE in the call to workon from startup.m or any other case
+   %    where workon is called and no files are currently open.
+   %
    %  See also: workoff, manager, addproject
    %
    %  Updates
    %
-   %  - 25 Jul 2024, replaced USERPROJECTPATH with MATLAB_PROJECTS_PATH. Note
+   %  - 11 Aug 2024, use updatefiles when activating the current active project
+   %    to avoid overwriting the activefiles list on startup.
+   %  - 25 Jul 2024, replaced USER_PROJECT_PATH with MATLAB_PROJECT_PATH. Note
    %    this is not used in this function.
    %  - 30 Jan 2023, only call workoff when switching to a new project.
    %  - 16 Jan 2023, save current project activefiles and close before opening
@@ -36,11 +45,11 @@ function workon(varargin)
    %  - 11 Jan 2023, support for activefiles; added Setup, Install, and Startup
    %    to Config source on startup behavior.
    %  - 30 Dec 2022, if Config.m exists in project directory, source it on goto.
-   %  - 23 Nov 2022, added support for projects in USERPROJECTPATH in addition
-   %    to MATLABPROJECPATH by adding it to buildprojectdirectory and adding
+   %  - 23 Nov 2022, added support for projects in USER_PROJECT_PATH in addition
+   %    to MATLAB_PROJECT_PATH by adding it to buildprojectdirectory and adding
    %    method from activate.m that reads the folder from projectdirectory to
    %    build the projectpath instead of appending projectname to the
-   %    MATLABPROJECTPATH environment variable.
+   %    MATLAB_PROJECT_PATH environment variable.
    %
    % TODO
    % - add if usejava('desktop') methods to not open or save editor files

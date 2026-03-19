@@ -1,9 +1,9 @@
 function varargout = funclibpath(option)
    %FUNCLIBPATH Manage matlab function path.
    %
-   %  OLDPATH = FUNCLIBPATH() Returns the value of MATLABFUNCTIONPATH env. var.
-   %  OLDPATH = FUNCLIBPATH('rmpath') Removes MATLABFUNCTIONPATH from path.
-   %  OLDPATH = FUNCLIBPATH('addpath') Adds MATLABFUNCTIONPATH to path.
+   %  OLDPATH = FUNCLIBPATH() Returns the value of MATLAB_FUNCTION_PATH env. var.
+   %  OLDPATH = FUNCLIBPATH('rmpath') Removes MATLAB_FUNCTION_PATH from path.
+   %  OLDPATH = FUNCLIBPATH('addpath') Adds MATLAB_FUNCTION_PATH to path.
    %
    % See also:
 
@@ -16,7 +16,7 @@ function varargout = funclibpath(option)
 
    if strcmp(option, 'which')
       % Return the function library path.
-      varargout{1} = getenv('MATLABFUNCTIONPATH');
+      varargout{1} = getenv('MATLAB_FUNCTION_PATH');
    else
       % Add or remove the function library path from userpath.
       oldpath = setfunclibpath(option);
@@ -28,14 +28,14 @@ function varargout = funclibpath(option)
 end
 
 function oldpath = setfunclibpath(option)
-   %SETFUNCLIBPATH Add or remove MATLABFUNCTIONPATH to/from path.
+   %SETFUNCLIBPATH Add or remove MATLAB_FUNCTION_PATH to/from path.
    %
    %
    % See also: startup
 
    % Commented out, isenv not octave compatible
-   % if ~isenv('MATLABFUNCTIONPATH')
-   %    error('MATLABFUNCTIONPATH is not defined')
+   % if ~isenv('MATLAB_FUNCTION_PATH')
+   %    error('MATLAB_FUNCTION_PATH is not defined')
    % end
 
    % Check if this is octave
@@ -63,12 +63,12 @@ function oldpath = setfunclibpath(option)
 
    if strcmp(option, 'rmpath')
       % Note: this removes $HOME/MATLAB not matfunclib
-      rmpath(genpath(getenv('MATLABUSERPATH')))
+      rmpath(genpath(getenv('MATLAB_HOME_PATH')))
       return
    end
 
    % Generate a list of all sub-folders
-   subpaths = strsplit(genpath(getenv('MATLABUSERPATH')), pathsep);
+   subpaths = strsplit(genpath(getenv('MATLAB_HOME_PATH')), pathsep);
 
    % Remove ignored folders
    ignorePaths = {'.git'; '.svn'; '.'; '..'; };
@@ -77,10 +77,10 @@ function oldpath = setfunclibpath(option)
    % custom remove for octave compatibility
    if inoctave
       ignorePaths = [ignorePaths; {
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'libtext', 'printf'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'iscomplex'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'liblogic', 'ifelse'); ...
-         fullfile(getenv('MATLABFUNCTIONPATH'), 'libstruct', 'numfields'); ...
+         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'libtext', 'printf'); ...
+         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'liblogic', 'iscomplex'); ...
+         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'liblogic', 'ifelse'); ...
+         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'libstruct', 'numfields'); ...
          fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
          }];
    end

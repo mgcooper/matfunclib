@@ -64,6 +64,35 @@ function varargout = activate(tbname, varargin)
    % Get the toolbox source path
    tbpath = toolboxes.source{tbidx};
 
+   % Update May 2025 - repair tb parent path
+   if toolboxes.library{tbidx} == ""
+      [parent, folder] = fileparts(fileparts(tbpath));
+   else
+      % account for the library folder
+      [parent, folder] = fileparts(fileparts(fileparts(tbpath)));
+   end
+
+   % Confirm the folder name matches the toolbox name? Not sure I've enforced
+   % that, I think custom names are allowed if the full path is specified when
+   % addtoolbox is initially called, so don't do this for now.
+   if ~strcmp(folder, tbname)
+      % pass
+   end
+
+   if ~strcmp(fullfile(parent, folder), getenv('MATLAB_TOOLBOX_PATH'))
+      tbpath = strrep(tbpath, parent, getenv('MATLAB_TOOLBOX_PATH'));
+      toolboxes.source{tbidx} = tbpath;
+   end
+
+   % If the toolbox folder doesn't exist, issue an error
+   % Mar 2026 - replaced isfolder with istoolbox, which checks if folder exists
+   % under MATLAB_TOOLBOX_PATH
+   if ~istoolbox(tbname)
+      eid = 'MATFUNCLIB:manager:toolboxNotFound';
+      msg = 'toolbox not found';
+      throw(MException(eid, msg));
+   end
+
    % Add toolbox paths
    pathadd(tbpath, true, pathloc, except, 'addpath', true);
 

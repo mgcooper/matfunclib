@@ -9,7 +9,7 @@ function varargout = table_tricks(varargin)
 
    % these were in tabletricks, I didn't think of adding these types of calls when
    % I renamed to _tricks
-   % cd(fullfile(getenv('MATLABFUNCTIONPATH'),'libtable'));
+   % cd(fullfile(getenv('MATLAB_FUNCTION_PATH'),'libtable'));
    % doc table
 
    %%

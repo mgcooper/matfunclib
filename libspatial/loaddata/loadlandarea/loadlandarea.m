@@ -11,7 +11,7 @@ function S = loadlandarea(landarea,varargin)
    %
    % Matt Cooper, 05-Dec-2022, https://github.com/mgcooper
    %
-   % See also loadstateshapefile
+   % See also loadstateshapefile loadworldborders
 
    parser = inputParser();
    parser.FunctionName = mfilename;

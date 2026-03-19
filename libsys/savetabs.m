@@ -7,7 +7,7 @@ function filelist = savetabs()
    filelist = string({opentabs.Filename});
    filelist = filelist(:);
 
-   tabspath = [getenv('MATLABUSERPATH') 'opentabs/matlab_editor/'];
+   tabspath = [getenv('MATLAB_HOME_PATH') 'opentabs/matlab_editor/'];
    fsave    = [tabspath 'open_' date '.mat'];
 
    if exist(fsave,'file')

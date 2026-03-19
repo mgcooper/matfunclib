@@ -4,7 +4,7 @@ function buildprojectjsonfile()
 
    % this requires a template is ready with a particular format:
    directorypath = getenv('PROJECTDIRECTORYPATH');
-   templatepath = getenv('MATLABTEMPLATEPATH');
+   templatepath = getenv('MATLAB_TEMPLATE_PATH');
    jsfile = [templatepath 'functionSignatures.projecttemplate.json'];
 
    % getprjdirectorypath returns the path to the directory file:

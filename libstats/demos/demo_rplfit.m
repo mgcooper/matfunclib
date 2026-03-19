@@ -10,7 +10,7 @@ x = plrand(10000, alpha, xmin);
 
 % compute frequencies
 % [M, edges] = histcounts(x);
-[edges, centers] = logbinedges(x, 500);
+[edges, ~, centers] = binedges(x, 'Scale', 'log10', 'NumBins', 500);
 M = histcounts(x, edges);
 f = M./numel(M);
 
@@ -87,6 +87,5 @@ semilogy(sort(x), 1-Fx)
 
 figure
 semilogy(sort(x), Fx)
-
 
 

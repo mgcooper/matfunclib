@@ -10,7 +10,7 @@ function list = funcliblist()
    %
    % Therefore this is unused for now.
 
-   functionpath = getenv('MATLABFUNCTIONPATH');
+   functionpath = getenv('MATLAB_FUNCTION_PATH');
    list = dir(fullfile(functionpath));
    list(strncmp({list.name}, '.', 1)) = [];
    list = strrep(string({list([list.isdir]).name}'),'lib','');

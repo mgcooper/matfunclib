@@ -9,7 +9,7 @@ function save_world_borders(varargin)
    end
 
    if nargin < 2
-      pathsave = fullfile(getenv('MATLABFUNCTIONPATH'),'libraster','data');
+      pathsave = fullfile(getenv('MATLAB_FUNCTION_PATH'),'libraster','data');
    else
       pathsave = varargin{2};
    end

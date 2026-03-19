@@ -33,7 +33,7 @@ function filelist = getFunctionConflicts(varargin)
       isfuncname = true;
    elseif islibrary
       % if a library is requested, build a full path
-      funcpath = fullfile(getenv('MATLABFUNCTIONPATH'),flibrary);
+      funcpath = fullfile(getenv('MATLAB_FUNCTION_PATH'),flibrary);
    elseif isfuncname
       % if a function name is requested, build a full path
       funcpath = which(funcname); % doesn't matter which one is found

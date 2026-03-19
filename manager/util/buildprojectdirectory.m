@@ -15,7 +15,7 @@ function varargout = buildprojectdirectory(varargin)
    %
    %  Notes on moving projects or changing the project parent path:
    %
-   %  If a project is moved, or the MATLABPROJECTPATH environment variable is
+   %  If a project is moved, or the MATLAB_PROJECT_PATH environment variable is
    %  changed, use the 'rebuild', 'dryrun' option to dryrun the new directory.
    %  When 'rebuild' is used, only the name, folder, and other atts created by
    %  the dir function are updated. The other atts (activefiles, activeproject,
@@ -32,8 +32,8 @@ function varargout = buildprojectdirectory(varargin)
    %  PROJECTLIST = BUILDPROJECTDIRECTORY('DRYRUN') builds a projectlist
    %  directory that would be saved in the `PROJECTDIRECTORYPATH` folder but
    %  does not save it. Use this to build the project directory from scratch
-   %  using the folders in the directory set by the MATLABPROJECTPATH
-   %  environment variable. If a USERPROJECTPATH environment variable exists,
+   %  using the folders in the directory set by the MATLAB_PROJECT_PATH
+   %  environment variable. If a USER_PROJECT_PATH environment variable exists,
    %  folders in that directory will also be added to the project list. Internal
    %  note: the .csv file is not used, modified, saved, deleted, in any way.
    %
@@ -59,7 +59,7 @@ function varargout = buildprojectdirectory(varargin)
    % projectlist.folder to projectlist.parentfolder
    % 19 Jan 2023 - added 'activefolder' attribute to allow projects associated
    % with folders other than their namesake
-   % 23 Nov 2022 - add projects in USERPROJECTPATH using appendprojects
+   % 23 Nov 2022 - add projects in USER_PROJECT_PATH using appendprojects
    % 23 Nov 2022 - remove entries that are not directories
 
    % NOTE: I started to add a method to "repairpaths" if I move a project and
@@ -126,7 +126,7 @@ end
 %%
 function projectlist = buildprojectlist(opts)
 
-   projectpath = getenv('MATLABPROJECTPATH');
+   projectpath = getenv('MATLAB_PROJECT_PATH');
    projectlist = getlist(projectpath,'*');
    projectlist = struct2table(projectlist);
    projectlist = appendprojects(projectlist); % 23 Nov 2022
@@ -142,7 +142,7 @@ function projectlist = buildprojectlist(opts)
    defaultproj.name = {'default'};
    try
       % Note: $HOME/MATLAB not matfunclib. This is the 'default' project.
-      defaultproj.folder = getenv('MATLABUSERPATH');
+      defaultproj.folder = getenv('MATLAB_HOME_PATH');
    catch
       defaultproj.folder = userpath;
    end
@@ -255,8 +255,8 @@ function newlist = rebuildprojectlist(newlist)
    % Now that the attrs have been transferred from the old list to the new list,
    % check if any projects exist in the old list which have non-empty attrs but
    % are not in the new list. This occurred when the project folders were
-   % redefined (USERPROJECTPATH was replaced with MATLAB_PROJECTS_PATH), and one
-   % project was left behind in USERPROJECTPATH.
+   % redefined (USER_PROJECT_PATH was replaced with MATLAB_PROJECT_PATH), and one
+   % project was left behind in USER_PROJECT_PATH.
    in_old_not_new = ~ismember(oldlist.name, newlist.name);
 
    % NOTE: Need to NOT rebuild on new computer until all projects exist, at

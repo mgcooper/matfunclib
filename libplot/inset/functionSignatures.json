@@ -1,0 +1,16 @@
+{
+   "_schemaVersion": "1.0.0",
+   "inset":
+   {
+      "inputs":
+      [
+         {"name":"mainfighandle",   "kind":"required",   "type":["matlab.ui.Figure"]},
+         {"name":"insetfighandle",  "kind":"required",   "type":["matlab.ui.Figure"]},
+         {"name":"sizefactor",      "kind":"namevalue",  "type":["numeric","scalar"]},
+         {"name":"location",        "kind":"namevalue",  "type":["char","choices={'north','south','east', 'west','ne','se','nw','sw'}"]},
+         {"name":"multiplier",      "kind":"namevalue",  "type":["numeric","scalar"]},
+         {"name":"WENSmultiplier",  "kind":"namevalue",  "type":["numeric","vector"]},
+         {"name":"copylegend",      "kind":"namevalue",  "type":["logical","scalar"]}
+      ]
+   }
+}

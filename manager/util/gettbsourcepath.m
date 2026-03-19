@@ -6,7 +6,7 @@ function tbpath = gettbsourcepath(tbname)
    % See also: gettbdirectorylist gettbdirectorypath
    
    if nargin == 0
-      tbpath = getenv('MATLABSOURCEPATH');
+      tbpath = getenv('MATLAB_TOOLBOX_PATH');
    elseif nargin == 1
       tbdirectory = readtbdirectory();
       tbpath = char(tbdirectory.source(findtbentry(tbdirectory, tbname)));

@@ -6,5 +6,5 @@ function openfunctemplate(template)
          {'IP','MP','OP','NP','AP'})} = 'AP'
    end
 
-   open(fullfile(getenv('MATLABTEMPLATEPATH'),['functemplate' template '.m']));
+   open(fullfile(getenv('MATLAB_TEMPLATE_PATH'),['functemplate' template '.m']));
 end
