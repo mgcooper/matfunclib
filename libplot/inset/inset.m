@@ -1,7 +1,10 @@
-function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
+function varargout = inset(mainFigure, insetFigure, varargin)
    %INSET combines two open figures and makes one an inset of the other
    %
    %    h = inset(mainFigure, insetFigure)
+   %    [mainAxes, insetAxes] = inset(mainFigure, insetFigure)
+   %    [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure)
+   %    h = inset(mainFigure, insetFigure, sizefactor, location)
    %    h = inset(mainFigure, insetFigure, location=location)
    %    h = inset(mainFigure, insetFigure, multiplier=multiplier)
    %    h = inset(mainFigure, insetFigure, WENSmultiplier=WENSmultiplier)
@@ -19,11 +22,15 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
    %
    %  Outputs
    %
-   %  H - The axes-handles of both the inset and the main figure.
+   %  With one output, H is a struct containing the new figure and copied axes.
+   %  With two outputs, the first copied main axes and inset axes are returned.
+   %  With three outputs, H is returned along with the original figure handles.
    %
    %  based on: inset.m, by Moshe Lindner, August 2010 (C).
    %
    % See also:
+
+   [legacyArgs, varargin] = parselegacyinputs(varargin);
 
    parser = inputParser;
    parser.FunctionName = mfilename;
@@ -31,19 +38,22 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
    validlocs = {'north','south','east','west','ne','se','nw','sw'};
    validoption = @(x)any(validatestring(x,validlocs));
 
-   parser.addRequired('mainFigure', @isgraphics);
-   parser.addRequired('insetFigure', @isgraphics);
+   parser.addRequired('mainFigure', @(x) isgraphics(x) && isscalar(x));
+   parser.addRequired('insetFigure', @(x) isgraphics(x) && isscalar(x));
    parser.addParameter('sizefactor', 0.35, @isnumeric);
    parser.addParameter('location', 'nw', validoption);
    parser.addParameter('multiplier', 1, @isnumeric);
-   parser.addParameter('WENSmultiplier', [1,1,1,1], @isnumeric);
+   parser.addParameter('WENSmultiplier', [1,1,1,1], @(x) isnumeric(x) && numel(x) == 4);
    parser.addParameter('copylegend', false, @islogical)
-   parser.parse(mainFigure, insetFigure, varargin{:});
+   parser.parse(mainFigure, insetFigure, legacyArgs{:}, varargin{:});
+
+   mainFigure = ancestor(handle(mainFigure), 'figure');
+   insetFigure = ancestor(handle(insetFigure), 'figure');
 
    size        = parser.Results.sizefactor;
    location    = parser.Results.location;
    multiplier  = parser.Results.multiplier;
-   WENS        = parser.Results.WENSmultiplier;
+   WENS        = parser.Results.WENSmultiplier(:).';
    copylegend  = parser.Results.copylegend;
 
    % NOTE see export_fig function copyfig, should fix the issues where not all
@@ -52,12 +62,19 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
    size = size * multiplier;
 
    % create a newFig based on the mainFigure and copy over children
-   newFig = figure('Position', mainFigure.Position);
+   newFig = figure( ...
+      'Position', mainFigure.Position, ...
+      'Color', mainFigure.Color, ...
+      'Colormap', mainFigure.Colormap);
 
-   mainFigAxes = findobj(mainFigure,'Type','axes');
+   mainFigAxes = flip(findobj(mainFigure,'Type','axes'));
    mainLegend = findobj(mainFigure,'Type','Legend');
    mainText = findall(mainFigure,'Type','Annotation');
    mainCbar = findall(mainFigure,'Type','ColorBar');
+
+   if isempty(mainFigAxes)
+      error('inset:NoMainAxes', 'Main figure must contain at least one axes.');
+   end
 
    % Copy all objects (copyobj requires all objects are copied at once)
    objectsToCopy = [mainFigAxes; mainLegend; mainText; mainCbar];
@@ -98,16 +115,17 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
    % "opposite" order they were plotted in, i.e., from the top down. Not sure
    % this will work in general.
    insetFigAxes = flip(findobj(insetFigure, 'Type', 'axes'));
+   if isempty(insetFigAxes)
+      error('inset:NoInsetAxes', 'Inset figure must contain at least one axes.');
+   end
 
    if copylegend
       % The legend must be copied with its axes, but I need a way to resize it,
       % and I am not sure how the "flip" operation on insetFigAxes affects it
       insetLegend = findobj(insetFigure, 'Type', 'Legend');
       oldInsetObj = [insetLegend; insetFigAxes];
-      axesidx = 1:numel(insetFigAxes);
    else
       oldInsetObj = insetFigAxes;
-      axesidx = 1:numel(insetFigAxes);
    end
 
    newInsetAxes = copyobj(oldInsetObj, newFig);
@@ -231,10 +249,14 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
    end
 
    h.figure    = newFig;
-   h.mainAxes  = newMainAxes;
-   h.insetAxes = newInsetAxes;
+   h.mainFigure = mainFigure;
+   h.insetFigure = insetFigure;
+   h.mainAxes  = newMainAxes(1:numel(mainFigAxes));
+   h.insetAxes = newInsetAxes(arrayfun(@(obj) isa(obj, 'matlab.graphics.axis.Axes'), newInsetAxes));
+   h.mainObjects = newMainAxes;
+   h.insetObjects = newInsetAxes;
 
-   set(gcf, 'CurrentAxes', newMainAxes(1));
+   set(newFig, 'CurrentAxes', h.mainAxes(1));
 
    % original xWest:
    % .7*pos(1)+0.3*(pos(3)-insetSize)
@@ -250,5 +272,35 @@ function [h, mainFigure, insetFigure] = inset(mainFigure, insetFigure, varargin)
 
    % to move yNorth up a bit:
    % .65*pos(2)+pos(4)-insetSize
-   
+   switch nargout
+      case 0
+      case 1
+         varargout{1} = h;
+      case 2
+         varargout{1} = h.mainAxes(1);
+         varargout{2} = h.insetAxes(1);
+      otherwise
+         varargout{1} = h;
+         varargout{2} = mainFigure;
+         varargout{3} = insetFigure;
+   end
+end
+
+function [legacyArgs, args] = parselegacyinputs(args)
+   legacyArgs = {};
+
+   if ~isempty(args) && isnumeric(args{1}) && isscalar(args{1})
+      legacyArgs = [legacyArgs, {'sizefactor', args{1}}]; %#ok<AGROW>
+      args = args(2:end);
+   end
+
+   if ~isempty(args) && ((ischar(args{1}) && isrow(args{1})) || ...
+         (isstring(args{1}) && isscalar(args{1})))
+      loc = lower(string(args{1}));
+      validlocs = ["north","south","east","west","ne","se","nw","sw"];
+      if ismember(loc, validlocs)
+         legacyArgs = [legacyArgs, {'location', char(loc)}]; %#ok<AGROW>
+         args = args(2:end);
+      end
+   end
 end

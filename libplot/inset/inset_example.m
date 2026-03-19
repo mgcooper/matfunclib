@@ -28,6 +28,6 @@ hold on
 plot(x2,0*x2,':k')
 title ('close-up')
 
-[h_m h_i]   =   inset(fig1,fig2);
+[h_m, h_i] = inset(fig1, fig2);
 
-set(h_i,'xtick',2.35:.025:2.45,'xlim',[2.35,2.45])
+set(h_i, 'xtick', 2.35:.025:2.45, 'xlim', [2.35,2.45])
