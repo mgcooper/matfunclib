@@ -84,6 +84,7 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
          fprintf('Backup created: %s\n', fullpath_bk);
       end
    end
+
 end
 
 function filename = rmtrailingsep(filename)
