@@ -30,7 +30,9 @@ function tf = containsOnlyText(x)
    % if X is a cell array of mixed types and each type can be cast
    % to string, this will return true
    %
-   % See also mustContainOnlyText mustBeText ischarlike
+   % See also ischarlike mustContainOnlyText mustBeText mustBeTextScalar
+   % mustBeTextScalarOrEmpty mustBeNonzeroLengthText isscalartext isblanktext
+   % isblankpart
 
    % replace with call to ischarlike to avoid type-casting to string in og vers
    tf = ischarlike(x);

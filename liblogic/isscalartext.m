@@ -2,7 +2,10 @@ function tf = isscalartext(X)
    %ISSCALARTEXT Return true if input is scalar text
    %
    %  TF = ISSCALARTEXT(X) returns TF = true if X is a row vector of char's or
-   %  a scalar string.
+   %  a scalar string. Note that a blank char '' returns true which is
+   %  technically incorrect, isscalar('') = false. This incorrect behavior is
+   %  preserved for legacy reasons. Use isblanktext for strict blank-text
+   %  checking e.g., '', char.empty(), "", string.empty().
    %
    % Examples
    % tf = isscalartext('')

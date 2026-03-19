@@ -37,6 +37,8 @@ function tf = ischarlike(x, varargin)
    % Matt Cooper, 29-Nov-2022, https://github.com/mgcooper
    %
    % See also: matlab.internal.datatypes.isCharString, isStringScalar
+   %
+   %#codegen
 
    % allowEmpty not implemented
    % function tf = ischarlike(x, allowEmpty)

@@ -161,14 +161,14 @@ function [numx, numy, numt, numz] = getDimensions(fileinfo)
 
    % Determine the size of the x,y dimension
    if haslatlon & numel(numlat) > 1
-      if hasxy & numel(numx) == 1
+      if hasxy && isscalar(numx)
          % Use numx, numy to determine the size of the x,y dimension
       else
          % Both lat/lon and x/y are 2d grids.
          % It is more difficult to determine the size of the x,y dimension.
 
       end
-   elseif haslatlon & numel(numlat) == 1
+   elseif haslatlon && isscalar(numlat)
       % Use numlon, numlat to determine the size of the x,y dimension
       numx = numlon;
       numy = numlat;

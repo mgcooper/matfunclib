@@ -12,6 +12,9 @@
       <Action id="go-until-cursor">
          <Stroke code="VK_R" meta="on" shift="on" sysctrl="on"/>
       </Action>
+      <Action id="find-and-replace">
+         <Stroke alt="on" code="VK_F" meta="on" sysctrl="on"/>
+      </Action>
    </Context>
    <Context id="CommandWindow">
       <Action follows="None" id="evaluate-selection">
@@ -30,6 +33,12 @@
    <Context id="MATLABEditor">
       <Action follows="None" id="evaluate-selection">
          <Stroke code="VK_ENTER" meta="on" sysctrl="on"/>
+      </Action>
+      <Action follows="None" id="find-and-replace">
+         <Stroke alt="on" code="VK_F" meta="on" sysctrl="on"/>
+      </Action>
+      <Action follows="None" id="find-with-replace">
+         <Stroke code="VK_F" meta="on" sysctrl="on"/>
       </Action>
    </Context>
 </CustomKeySet>

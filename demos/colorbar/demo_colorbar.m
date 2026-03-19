@@ -1,32 +1,33 @@
 % TLDR:
+%
 % The climits need to be computed berfore calling scatter if you want the
 % colorbar linked across subplots. I was not able to find a way to update it
 % after the fact. The idea was that I won't remember to get climits before hand
 % and set clim(climits) in each subplot / after each call to scatter, but this
 % will serve as a reminder.
-% 
+%
 % Description:
-% 
+%
 % climits are the color limits for the colormap. It is a two-element vector in
 % which the first element specifies the data value to map to the first color in
 % the colormap, and the second element specifies the data value to map to the
-% last color in the colormap.    
-% 
+% last color in the colormap.
+%
 % subplot(1,2,1) and subplot(1,2,2) create two subplots in a 1x2 grid in the
-% current figure. 
-% 
+% current figure.
+%
 % scatter(x, y, 100, cData(i,:), 'filled') creates scatter plots with filled
 % markers. The color of each marker is determined by the corresponding element
-% in cData(i,:).  
-% 
+% in cData(i,:).
+%
 % clim(climits) sets the colormap limits for the current axes. This ensures
 % that the data values in cData are mapped to colors in the colormap using the
-% same scale in both subplots.  
-% 
+% same scale in both subplots.
+%
 % legend creates a legend for each subplot.
-% 
+%
 % colorbar adds a colorbar to each subplot. The limits of the colorbar match the
-% current colormap limits of the axes, which were set by clim(climits).  
+% current colormap limits of the axes, which were set by clim(climits).
 
 % check this
 % https://www.mathworks.com/matlabcentral/answers/245908-how-to-set-scatter-plot-colors-in-order-to-adjust-all-plots-to-a-same-reference
@@ -47,12 +48,12 @@ H(2).Parent.CLim = limits;
 
 tcl = tiledlayout(3,4);
 for i = 1:prod(tcl.GridSize)
-    nexttile()
-    [X,Y,Z] = peaks(2+i);
-    contourf(X,Y,Z)
-    clim([-7,6])  % Important!  Set the same color limits
+   nexttile()
+   [X,Y,Z] = peaks(2+i);
+   contourf(X,Y,Z)
+   clim([-7,6])  % Important!  Set the same color limits
 end
-cb = colorbar(); 
+cb = colorbar();
 cb.Layout.Tile = 'east'; % Assign colorbar location
 
 %% might also work to pass the axis to colrmap
@@ -144,7 +145,7 @@ end
 
 %% below here original inspiration
 % climits = [min(dR(:)), max(dR(:))];
-% 
+%
 % maxfig
 % subplot(1,2,1)
 % scatter(X(runpoints), Y(runpoints), 100, dR(1,:), 'filled')
@@ -152,42 +153,42 @@ end
 % cb1 = colorbar;
 % set(cb1, 'Limits', climits)
 % clim(climits);
-% 
+%
 % subplot(1,2,2)
 % scatter(X(runpoints), Y(runpoints), 100, dR(2,:), 'filled')
 % legend(testruns(3),'location','ne')
 % cb2 = colorbar;
 % set(cb2, 'Limits', climits)
 % clim(climits);
-% 
+%
 % %%
-% 
+%
 % maxfig
 % subplot(1,2,1)
 % scatter(X(runpoints), Y(runpoints), 100, dR(1,:), 'filled')
 % legend(testruns(2),'location','ne')
 % cb1 = colorbar;
 % [cmin(1), cmax(1)] = clim;
-% 
+%
 % subplot(1,2,2)
 % scatter(X(runpoints), Y(runpoints), 100, dR(2,:), 'filled')
 % legend(testruns(3),'location','ne')
 % cb2 = colorbar;
 % [cmin(2), cmax(2)] = clim;
-% 
+%
 % set(cb1, 'Limits', [min(cmin(:)) max(cmax(:))])
 % set(cb2, 'Limits', [min(cmin(:)) max(cmax(:))])
 % clim([min(cmin(:)) max(cmax(:))])
-% 
+%
 % %%
-% 
+%
 % maxfig
 % subplot(1,2,1)
 % scatter(X(runpoints), Y(runpoints), 100, dR(1,:), 'filled')
-% clim(climits); 
+% clim(climits);
 % legend(testruns(2),'location','ne')
 % colorbar
-% 
+%
 % subplot(1,2,2)
 % scatter(X(runpoints), Y(runpoints), 100, dR(2,:), 'filled')
 % clim(climits);

@@ -6,7 +6,7 @@ function varargout = validateRasterReference(V, R, funcname, varargin)
    % See also: validateGridCoordinates, validateGridData
 
    % Input parsing
-   narginchk(0,Inf)
+   narginchk(0, Inf)
    [varargin{:}] = convertStringsToChars(varargin{:});
    if nargin < 3 || isempty(funcname); funcname = mcallername(); end
 
