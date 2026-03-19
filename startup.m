@@ -156,15 +156,15 @@ is_function_path = strncmp( ...
    subpaths, MATLAB_FUNCTION_PATH, numel(MATLAB_FUNCTION_PATH));
 
 % Remove all projects/toolboxes from PATH, except MATLAB_FUNCTION_PATH
-subpaths = subpaths(~is_project_path | ~is_toolbox_path | is_function_path);
+subpaths = subpaths(~(is_project_path | is_toolbox_path) | is_function_path);
 
 % Remove ignored folders.
-ignorePaths = {'.git'; '.svn'; '.'; '..'};
+removePaths = {'.git'; '.svn'; '.'; '..'; };
 keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
 % Custom ignores for octave compatibility
 if inoctave
-   ignorePaths = [ignorePaths; {
+   removePaths = [removePaths; {
       fullfile(MATLAB_FUNCTION_PATH, 'libtext', 'printf'); ...
       fullfile(MATLAB_FUNCTION_PATH, 'liblogic', 'iscomplex'); ...
       fullfile(MATLAB_FUNCTION_PATH, 'liblogic', 'ifelse'); ...
@@ -173,8 +173,8 @@ if inoctave
       }];
 end
 
-for m = 1:numel(ignorePaths)
-   subpaths = subpaths(keep(subpaths, ignorePaths{m}));
+for m = 1:numel(removePaths)
+   subpaths = subpaths(keep(subpaths, removePaths{m}));
 end
 
 % Rebuild the path string
@@ -246,12 +246,12 @@ toolboxes = {'BrewerMap', 'CubeHelix', 'mpm', 'CDT', 'arctic-mapping-tools', ...
 
 for n = 1:numel(toolboxes)
    try
-      activate(toolboxes{n})
+      % activate(toolboxes{n})
    catch ME
    end
 end
 try
-   activate('spatial', 'except', {'exactremap'})
+   % activate('spatial', 'except', {'exactremap'})
 catch ME
 
 end
@@ -265,11 +265,11 @@ end
 
 % add projects to the path
 try
-   activate('bfra', silent=true, asproject=true);
-   activate('merra2', silent=true, asproject=true);
-   activate('graceGapFill', silent=true, asproject=true);
-   activate('exactremap', silent=true, asproject=true);
-   activate('groupstats', silent=true, asproject=true);
+   % activate('bfra', silent=true, asproject=true);
+   % activate('merra2', silent=true, asproject=true);
+   % activate('graceGapFill', silent=true, asproject=true);
+   % activate('exactremap', silent=true, asproject=true);
+   % activate('groupstats', silent=true, asproject=true);
 catch
 end
 
