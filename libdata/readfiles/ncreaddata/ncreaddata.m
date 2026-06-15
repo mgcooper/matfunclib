@@ -23,7 +23,10 @@ function data = ncreaddata(filename, kwargs)
    %
    % See also: ncparse
 
-   % TODO: add grid_mapping. See snowlines/1km-ISMIP6.nc for an example.
+   % The CF grid_mapping is attached as data.grid_mapping via parseGridMapping when
+   % present (see below). parseGridMapping currently recognizes rotated-pole
+   % (rotated_latitude_longitude) mappings; extend it for other mappings (e.g. the
+   % polar_stereographic grid in snowlines/1km-ISMIP6.nc) as needed.
    % f = '/Users/mattcooper/work/data/greenland/snowlines/1km-ISMIP6.nc';
    % data = ncreaddata(f);
    % R = rasterref(data.x, data.y);
@@ -68,6 +71,16 @@ function data = ncreaddata(filename, kwargs)
          % This variable > 1 dim, orient it north up, east right
          data.(varnames(n)) = orientGridData(data_n, [numx, numy, numt, numz]);
       end
+   end
+
+   % Attach the grid mapping (CF grid_mapping attributes) when the file carries one
+   % that parseGridMapping recognizes. parseGridMapping reads only metadata (via
+   % ncinfo) and errors when no supported mapping is present, so guard the call and
+   % leave data.grid_mapping unset otherwise.
+   try
+      data.grid_mapping = parseGridMapping(filename);
+   catch
+      % No supported grid_mapping in this file; leave it off the struct.
    end
 
    % assign output
