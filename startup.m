@@ -3,6 +3,8 @@
 inoctave = (exist ("OCTAVE_VERSION", "builtin") > 0);
 inmatlab = ~inoctave;
 
+USE_PYENV_PYTHON = false;
+
 %% manage warnings
 
 % remap the red close button associated with figure windows, potentially
@@ -44,6 +46,9 @@ MATLAB_TOOLBOX_PATH = fullfile(MATLAB_HOME_PATH, 'toolboxes');
 % $HOME/MATLAB/projects/matfunclib
 MATLAB_FUNCTION_PATH = fullfile(MATLAB_PROJECT_PATH, 'matfunclib');
 
+% pyenv root
+PYENV_ROOT = fullfile(HOMEPATH, '.pyenv', 'versions');
+
 %% Manage desktop versus command-line settigs
 
 if usejava('desktop') % we're in the desktop (also means we're not in octave)
@@ -53,26 +58,25 @@ if usejava('desktop') % we're in the desktop (also means we're not in octave)
    % [~, default_path] = system('echo -n $PATH');
    % isequal(default_path, getenv('PATH'))
 
-   % Add brew and pyenv paths to the default system path.
+   % Add brew paths to the default system path.
    if ismac()
-      setenv('PATH', ...
-         fullfile( ...           each line below should be a path followed by ':'
-         '/usr/local/bin:', ...
-         fullfile(HOMEPATH, '.pyenv:'), ...
-         getenv('PATH') ) ...    end fullfile
-         );
+      setenv('PATH', strjoin({ ...
+         '/usr/local/bin', ...
+         '/opt/homebrew/bin', ...
+         getenv('PATH')}, pathsep));
    end
 
-   % Prevent autoformatter from stripping blanks to prevent the cursor from being
-   % forced to the first position in indented code blocks (introduced in r2021b)
+   % Custom desktop settings
    if inmatlab
-      % custom desktop settings
       mSettings = settings;
 
-      if ~verLessThan('matlab', '9.11')
+      % Prevent autoformatter from stripping blanks to prevent the cursor from being
+      % forced to the first position in indented code blocks (introduced in r2021b)
+      if ~isMATLABReleaseOlderThan('R2021b')
          mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
-      elseif verLessThan('matlab', '9.14')
-         % Make the desktop display larger. A warning is issued on r2023a.
+      end
+      % Make the desktop display larger. A warning is issued on r2023a.
+      if isMATLABReleaseOlderThan('R2023a')
          mSettings.matlab.desktop.DisplayScaleFactor.TemporaryValue = 1.2;
       end
    end
@@ -240,37 +244,40 @@ format compact % use pi to see different formats: pi
 %% activate toolboxes and projects
 
 % active toolboxes
-toolboxes = {'BrewerMap', 'CubeHelix', 'mpm', 'CDT', 'arctic-mapping-tools', ...
-   'antarctic-mapping-tools', ...
-   };
+default_toolboxes = {};
 
-for n = 1:numel(toolboxes)
+% default_toolboxes = {
+%    'BrewerMap', 'CubeHelix', 'mpm', 'CDT', 'arctic-mapping-tools', ...
+%    'antarctic-mapping-tools', ...
+%    };
+
+for n = 1:numel(default_toolboxes)
+   toolbox_name = default_toolboxes{n};
    try
-      % activate(toolboxes{n})
+      if strcmp(toolbox_name, 'spatial')
+         activate(toolbox_name, 'except', {'exactremap'})
+      else
+         activate(toolbox_name)
+      end
    catch ME
    end
-end
-try
-   % activate('spatial', 'except', {'exactremap'})
-catch ME
-
 end
 
 % for mpm, put it at the top of the path so built-in mpm becomes shadowed
 try
    pathadd(gettbsourcepath('mpm'), true, '-begin')
 catch ME
-
 end
 
 % add projects to the path
-try
-   % activate('bfra', silent=true, asproject=true);
-   % activate('merra2', silent=true, asproject=true);
-   % activate('graceGapFill', silent=true, asproject=true);
-   % activate('exactremap', silent=true, asproject=true);
-   % activate('groupstats', silent=true, asproject=true);
-catch
+% default_projects = {'bfra', 'merra2', 'graceGapFill', 'exactremap', 'groupstats'};
+default_projects = {};
+for n = 1:numel(default_projects)
+   project_name = default_projects{n};
+   try
+      activate(project_name, silent=true, asproject=true);
+   catch ME
+   end
 end
 
 % open the active project if we're in the desktop
@@ -288,27 +295,14 @@ end
 
 %% Python configuration
 
-if inmatlab
-   if verLessThan('matlab','9.11') % <r2021b use 3.8
-      try
-         pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.8.5/bin/python'));
-      catch ME
-         try
-            pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.8'));
-         catch ME
-            % pyenv('Version', '/usr/bin/python3')
-         end
-      end
+if inmatlab == true && USE_PYENV_PYTHON == true && isfolder(PYENV_ROOT)
 
-   else
-      try
-         pyenv('Version', fullfile(HOMEPATH, '.pyenv/versions/3.9.0/bin/python'));
-      catch ME
-         try
-            pyenv('Version', fullfile(HOMEPATH, '.pyenv/shims/python3.9'));
-         catch ME
-            % pyenv('Version', '/usr/bin/python3')
-         end
+   pyExe = newestSupportedPyenvPython(PYENV_ROOT);
+
+   if strlength(pyExe) > 0
+      pe = pyenv;
+      if pe.Status == "NotLoaded"
+         pyenv("Version", pyExe);
       end
    end
 end
@@ -321,7 +315,7 @@ if inmatlab
    end
 
    try
-      opts = statset();
+      statset();
    catch
    end
 
@@ -347,8 +341,8 @@ end
 clearvars
 close all
 
-% don't forget
-disp('BE GRATEFUL')
+% don't forget - commented out to reduce context window bloat
+% disp('BE GRATEFUL')
 
 %% Notes
 
@@ -358,3 +352,33 @@ disp('BE GRATEFUL')
 % fontName = 'BitstreamSansVeraMono';
 % fontName = 'Helvetica';
 % fontName = 'Source Sans Pro' (nice and compact also if bold)
+
+function pyExe = newestSupportedPyenvPython(pyenvRoot)
+
+   if ~isMATLABReleaseOlderThan("R2024b")
+      supported = ["3.12", "3.11", "3.10", "3.9"];
+   elseif ~isMATLABReleaseOlderThan("R2023b")
+      supported = ["3.11", "3.10", "3.9"];
+   elseif ~isMATLABReleaseOlderThan("R2022b")
+      supported = ["3.10", "3.9", "3.8"];
+   elseif ~isMATLABReleaseOlderThan("R2022a")
+      supported = ["3.9", "3.8"];
+   elseif ~isMATLABReleaseOlderThan("R2021b")
+      supported = ["3.9", "3.8", "3.7"];
+   elseif ~isMATLABReleaseOlderThan("R2021a")
+      supported = ["3.8", "3.7"];
+   else
+      supported = "3.8";
+   end
+
+   pyExe = "";
+   for version = supported
+      matches = dir(fullfile(pyenvRoot, version + "*", "bin", "python"));
+      matches = matches(~[matches.isdir]);
+
+      if ~isempty(matches)
+         pyExe = fullfile(matches(1).folder, matches(1).name);
+         return
+      end
+   end
+end
