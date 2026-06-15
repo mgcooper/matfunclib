@@ -165,17 +165,21 @@ function projectlist = buildprojectlist(opts)
 end
 
 %%
-function projectlist = appendprojects(oldprojectlist)
+function projectlist = appendprojects(projectlist)
 
-   % Temporary update - use this path as an alternate instead
-   projectpath = getenv('MATLAB_PROJECTS_PATH');
-   if ~isempty(projectpath)
-      projectlist = getlist(projectpath, '*');
-      projectlist = struct2table(projectlist);
-      projectlist = [oldprojectlist; projectlist];
-   else
-      projectlist = oldprojectlist;
-   end
+   % Nov 2024 - this originally appended projects in USER_PROJECT_PATH to those
+   % in MATLAB_PROJECT_PATH. Now that I moved all matlab projects to
+   % MATLAB_PROJECT_PATH, I deactivated this. However, it could be convenient to
+   % be able to "workon" projects in that folder (or another) so I left it in
+   % place.
+
+   % % Temporary update - use this path as an alternate instead
+   % projectpath = getenv('USER_PROJECT_PATH');
+   % if ~isempty(projectpath)
+   %    otherlist = getlist(projectpath, '*');
+   %    otherlist = struct2table(otherlist);
+   %    projectlist = [projectlist; otherlist];
+   % end
 end
 
 %%
@@ -186,6 +190,35 @@ function newlist = rebuildprojectlist(newlist)
 
    % Read the current project directory
    oldlist = readprjdirectory(getprjdirectorypath);
+
+
+   % 🔒 Enforce cellstr (char) for name, folder, and activefolder. This guards
+   % against the case where some other function used string for one or more of
+   % the values in any of these columns and the rest of the values are char. The
+   % mixed data type will cause unique to fail. This is fixed in the call to
+   % uniqueTableRows below, but do it here first to fix it more explicitly.
+   oldlist.name = cellfun(@char, oldlist.name, 'UniformOutput', false);
+   oldlist.folder = cellfun(@char, oldlist.folder, 'UniformOutput', false);
+   oldlist.activefolder = cellfun(@char, oldlist.activefolder, 'UniformOutput', false);
+
+   % 9 Nov 2024: On personal computer, when rebuilding after adding / moving all
+   % projects to MATLAB/projects, the newlist is the current saved list with all
+   % projects in MATLAB/projects appended to it which creates duplicate entries,
+   % so idx_new > 1 is true. Not sure if this problem will arise in other cases,
+   % but in this case, the simplest solution is to keep unique projects, but we
+   % need to know that the entire row is unique so the attrs are retained.
+
+   % unique works on newlist because there are no columns with non-uniform data,
+   % which is known b/c newlist is created from scratch.
+   newlist = unique(newlist, 'rows');
+
+   % unique will fail on oldlist if "activefiles" is non-uniform (or if any
+   % column is non-uniform, e.g., if one entry in "activefolder" is a string and
+   % the rest are chars. But the base case error is when "activefiles" has some
+   % cell arrays of files and some empty entries which are chars). This method
+   % replaces the cell arrays with unique values (integers) and then substitutes
+   % the original active files lists.
+   oldlist = uniqueTableRows(oldlist);
 
    % find projects in both the old and new directories
    for n = 1:numel(keepatts)
@@ -199,7 +232,7 @@ function newlist = rebuildprojectlist(newlist)
 
             % Find the index on the old list, to retrieve the attrs.
             idx_old = find(ismember(oldlist.name, newlist.name(m)));
-            idx_new = find(ismember(newlist.name, oldlist.name(m)));
+            idx_new = find(ismember(newlist.name, oldlist.name(idx_old)));
 
             % This checks if both the name and the folder match. If duplicate
             % project names are allowed, this can be used to determine if the
@@ -225,7 +258,7 @@ function newlist = rebuildprojectlist(newlist)
                % myprojects/matlab/snowmodel folder but still got the error here
                % b/c the entry still existed in projectdirectory.mat). But this
                % could still have the same problem that this section originally
-               % addressed which is the case where the MATLAB_PROJECTS_PATH
+               % addressed which is the case where the MATLAB_PROJECT_PATH
                % changes, there's a chicken and egg issue, since the
                % "pruneprojects" described above would find the folders dont
                % exist b/c they're in the new folder.
@@ -234,6 +267,15 @@ function newlist = rebuildprojectlist(newlist)
                % determine if the duplicate projects have "keepatts" b/c what we
                % are trying to avoid is copying over the wrong attributes ...
                if numel(idx_new) > 1
+                  % 9 Nov 2024: On personal computer, when rebuilding after
+                  % adding / moving all projects to MATLAB/projects, the newlist
+                  % is the current saved list with all projects in
+                  % MATLAB/projects appended to it which creates duplicate
+                  % entries, so idx_new > 1 is true. Not sure if this problem
+                  % will arise in other cases, but in this case, the simplest
+                  % solution is to keep unique projects, but we need to know
+                  % that the entire row is unique so the attrs are retained.
+                  % keep = unique(newlist, 'rows');
 
                else
                   % Issue an error to handle duplicates on a case by case basis
@@ -244,7 +286,7 @@ function newlist = rebuildprojectlist(newlist)
             elseif numel(idx_old) == 0
                continue
 
-            elseif numel(idx_old) == 1
+            elseif numel(idx_old) == 1 %#ok<ISCL>
 
                newlist.(thisatt)(m) = oldlist.(thisatt)(idx_old);
             end
