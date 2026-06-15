@@ -92,8 +92,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
       while found == 0
          iter = iter + 1;
          buffer = kwargs.polybuffer + iter * eff_rad;
-         Points = pointsInPoly(ncX, ncY, coords, ...
-            buffer=buffer);
+         Points = pointsInPoly(ncX, ncY, coords, buffer=buffer);
          inpoly = Points.inpolyb;
          found = sum(inpoly(:));
       end
@@ -143,7 +142,7 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
       warning(wid, ['row/col indexing may be unreliable for 1-d vars ' ...
          'if variable name is provided instead of variable.']);
 
-      if numel(varsize) == 1
+      if isscalar(varsize)
          start = r(1);
          count = rowcount(r);
       elseif numel(varsize) == 2
