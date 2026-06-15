@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CustomKeySet derivedfrom="Mac" modifieddefault="false">
    <Context id="Global">
-      <Action id="evaluate-selection">
-         <Stroke code="VK_ENTER"/>
-      </Action>
+      <Action id="evaluate-selection"/>
       <Action id="eval-cell">
          <Stroke code="VK_F7" shift="on"/>
       </Action>

@@ -1,4 +1,4 @@
-function Requirements = getRequiredFiles(targetList, varargin)
+function Requirements = getRequiredFiles(targetList, kwargs)
    %GETREQUIREDFILES Retrieve requirements for MATLAB functions or toolboxes.
    %
    %  REQUIREMENTS = GETREQUIREDFILES(TARGETLIST)
@@ -73,15 +73,30 @@ function Requirements = getRequiredFiles(targetList, varargin)
    %
    % See also: installRequiredFiles, getFunctionConflicts
 
+   arguments
+      targetList (1, :) string
+      kwargs.ignoreList (1, :) string = []
+      kwargs.referenceList (1, :) string {mustBeFolder} = projectpath()
+      kwargs.requirementsFileName (1, 1) string {mustBeTextScalar} = ...
+         fullfile(toolboxpath(), "dependencies", "requirements.mat");
+      kwargs.saveRequirementsFile (1, 1) logical = false
+   end
+
    % Parse inputs
    [targetFiles, referenceFiles, requirementsFileName, saveRequirementsFile] = ...
-      parseinputs(targetList, mfilename, varargin{:});
+      parseinputs(targetList, kwargs);
 
    % Call codetools.requiredFilesAndProducts on the file list
    [requiredFiles, requiredProducts] = processFileList(targetFiles);
 
-   % Find missing files (required files not included in the reference list)
+   % Remove required files which are listed twice - once because they already
+   % exist in the reference list, and again because they are
+   [requiredFiles, installedFiles] = detectInstalledFiles( ...
+      requiredFiles, referenceFiles);
+
+   % Find missing files (required files not included in the project)
    missingFiles = setdiff(requiredFiles, referenceFiles);
+   missingFiles = setdiff(missingFiles, installedFiles);
    missingFiles = string(missingFiles);
    requiredFiles = string(requiredFiles);
 
@@ -94,6 +109,49 @@ function Requirements = getRequiredFiles(targetList, varargin)
    Requirements.requiredFiles = requiredFiles;
    Requirements.requiredProducts = requiredProducts;
 end
+
+function [requiredFiles, installedFiles] = detectInstalledFiles( ...
+      requiredFiles, referenceFiles)
+
+   % If the required files exist both within the project (e.g. b/c they were
+   % already installed with this function) and elsewhere on the path (e.g. in
+   % the localSourcePath used by installRequiredFiles), they may be listed twice
+   % in requiredFiles, but only once in referenceFiles (the installed ones).
+   % This may occur b/c matlab.codetools.requiredFilesAndProducts finds them in
+   % localSourcePath first (b/c it is higher on the path), and then finds them
+   % in their installed location within the project. Then the setdiff above only
+   % removes the ones which are installed locally. The next step prunes the ones
+   % which exist locally but are listed as missing. Note, the desired behavior
+   % is unclear here - they could be reinstalled by default.
+
+   % installedFiles are the ones in localSourcePath, not the ones already in the
+   % toolbox b/c those are in referenceList.
+
+   % Extract file names without paths
+   [~, requiredFilenames] = fileparts(requiredFiles);
+   [~, referenceFilenames] = fileparts(referenceFiles);
+
+   % Find duplicates in requiredFilenames
+   [uniqueFilenames, ia, ic] = unique(requiredFilenames, 'stable');
+   duplicateIndices = setdiff(1:numel(requiredFilenames), ia);
+
+   % Filter to get filenames that appear more than once in requiredFiles
+   isDuplicate = accumarray(ic, 1) > 1;
+   duplicateFilenames = uniqueFilenames(isDuplicate);
+
+   % Find which of these duplicate filenames are also in the referenceFiles
+   installedFileIndices = ismember(requiredFilenames, duplicateFilenames) & ...
+      ismember(requiredFilenames, referenceFilenames);
+
+   % Extract the actual paths of these installed files from requiredFiles
+   installedDuplicateFiles = requiredFiles(installedFileIndices);
+
+   % Get the list of installed files (files identified as required but which
+   % already exist in the toolbox).
+   installedFiles = installedDuplicateFiles(~ismember(installedDuplicateFiles, ...
+      referenceFiles));
+end
+
 
 %% Local Functions
 function [requiredFiles, requiredProducts] = processFileList(fileList)
@@ -114,27 +172,17 @@ end
 
 %% Input Parsing
 function [targetFiles, referenceFiles, requirementsFileName, ...
-      saveRequirementsFile] = parseinputs(targetList, mfuncname, varargin)
-
-   parser = inputParser;
-   parser.FunctionName = mfuncname;
-   parser.CaseSensitive = true;
-   parser.KeepUnmatched = true;
-
-   parser.addRequired('targetList', @ischarlike);
-   parser.addParameter('ignoreList', '', @ischarlike);
-   parser.addParameter('referenceList', '', @ischarlike);
-   parser.addParameter('requirementsFileName', 'requirements.mat', @ischarlike);
-   parser.addParameter('saveRequirementsFile', false, @islogical);
-   parser.parse(targetList, varargin{:});
+      saveRequirementsFile] = parseinputs(targetList, kwargs)
 
    % Retreive the arguments
-   ignoreList = parser.Results.ignoreList;
-   referenceList = parser.Results.referenceList;
-   requirementsFileName = parser.Results.requirementsFileName;
-   saveRequirementsFile = parser.Results.saveRequirementsFile;
+   ignoreList = kwargs.ignoreList;
+   referenceList = kwargs.referenceList;
+   requirementsFileName = kwargs.requirementsFileName;
+   saveRequirementsFile = kwargs.saveRequirementsFile;
 
    % This works for files/folders passed as char or cellstr lists
+   % 3/21/2026 - merged newer changes from icemodel, this was removed there
+   % likely b/c arguments parsing casts to string, retained here until confirmed
    targetList = string(targetList);
    ignoreList = string(ignoreList);
    referenceList = string(referenceList);
@@ -200,6 +248,14 @@ function fileList = fileListFromFolderList(folderList)
          "subfolders", true, "mfiles", true, "matfiles", true, ...
          "aslist", true, "fullpath", true, "asstring", true);
    end
+   % 3/21/2026 - Not sure if this is supposed to collapse to a nx1 cell array,
+   % where n = numel(folderList), or a 1x1 cell array with all files. It
+   % requires to repeated calls to vertcat(fileList{:}) to get a mx1 string
+   % array, where m = numel(files), which is needed in prepareFileLists to avoid
+   % setdiff errors b/c setdiff requires two cell arrays of chars, or two string
+   % arrays. So for now I use the method in prepareFileLists where I expand the
+   % fileLists using {:}, but it should happen here
+   fileList = vertcat(fileList{:});
    fileList = vertcat(fileList{:});
 end
 
@@ -243,3 +299,4 @@ function fileList = validateFileList(fileList)
       end
    end
 end
+

@@ -1,0 +1,51 @@
+{
+  "keyset": "CustomMacSetPersonal",
+  "platform": "mac",
+  "derivedFrom": "Mac",
+  "modifiedDefault": false,
+  "contexts": [
+    {
+      "id": "Global",
+      "actions": [
+        { "id": "evaluate-selection", "stroke": { "code": "VK_ENTER" } },
+        { "id": "eval-cell", "stroke": { "code": "VK_F7", "shift": true } },
+        { "id": "shift-insert-break" },
+        { "id": "drop-line" },
+        { "id": "go-until-cursor", "stroke": { "code": "VK_R", "meta": true, "shift": true, "sysctrl": true } },
+        { "id": "find-and-replace", "stroke": { "code": "VK_F", "alt": true, "meta": true, "sysctrl": true } }
+      ]
+    },
+    {
+      "id": "CommandWindow",
+      "actions": [
+        { "id": "evaluate-selection", "follows": "None", "stroke": { "code": "VK_ENTER", "meta": true, "sysctrl": true } }
+      ]
+    },
+    {
+      "id": "Explorer",
+      "actions": [
+        { "id": "evaluate-selection", "follows": "None" }
+      ]
+    },
+    {
+      "id": "CommandHistory",
+      "actions": [
+        { "id": "evaluate-selection" }
+      ]
+    },
+    {
+      "id": "HTMLRenderer",
+      "actions": [
+        { "id": "evaluate-selection", "follows": "None" }
+      ]
+    },
+    {
+      "id": "MATLABEditor",
+      "actions": [
+        { "id": "evaluate-selection", "follows": "None", "stroke": { "code": "VK_ENTER", "meta": true, "sysctrl": true } },
+        { "id": "find-and-replace", "follows": "None", "stroke": { "code": "VK_F", "alt": true, "meta": true, "sysctrl": true } },
+        { "id": "find-with-replace", "follows": "None", "stroke": { "code": "VK_F", "meta": true, "sysctrl": true } }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+# matfunclib
 # need to ignore the .json files that track projects and toolboxes
 manager/workon/functionSignatures.json
 manager/workoff/functionSignatures.json
@@ -30,13 +31,6 @@ Thumbs.db
 *.keep
 *.old
 
-# data
-data/
-
-# private folder
-todo.md
-readmemgc.txt
-
 # microsoft
 *.xlsx
 *.xlsb
@@ -67,3 +61,7 @@ readmemgc.txt
 *.egg
 *.deb
 *.rpm
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

@@ -49,6 +49,21 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
    else
       [xIsUniform, cellSizeX] = isuniform(unique(X(:)));
       [yIsUniform, cellSizeY] = isuniform(unique(Y(:)));
+
+      % The built-in ISUNIFORM has no tolerance, so coordinates that are uniform
+      % only up to floating-point round-off (e.g. a MERRA-2 grid whose diff spans
+      % ~1e-12 across not-quite-equal values) are misclassified as non-uniform,
+      % leaving cellSize as a per-node vector that downstream scalar checks
+      % reject. Retry with the tolerance-aware customIsUniform so such grids
+      % collapse to a scalar cell size. Genuinely irregular grids (spacing that
+      % varies by far more than the tolerance) still return false here and remain
+      % classified as irregular below.
+      if ~xIsUniform
+         [xIsUniform, cellSizeX] = customIsUniform(unique(X(:)));
+      end
+      if ~yIsUniform
+         [yIsUniform, cellSizeY] = customIsUniform(unique(Y(:)));
+      end
    end
 
    % Determine grid type and cell size

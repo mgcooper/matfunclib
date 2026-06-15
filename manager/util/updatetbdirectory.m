@@ -1,124 +1,145 @@
 function varargout = updatetbdirectory(option, varargin)
-   %UPDATETBDIRECTORY Updates the toolbox directory based on existing paths.
+   %UPDATETBDIRECTORY Update toolbox directory paths and library assignments.
    %
-   % NOTE: this needs to be updated
+   % TOOLBOXES = UPDATETBDIRECTORY('paths')
+   %   Traverses the toolbox directory and checks if each source path exists.
+   %   If the path is found at a different location (toolbox was moved), both
+   %   source and library are updated in the returned table. Entries whose
+   %   source cannot be found anywhere under MATLAB_TOOLBOX_PATH are marked
+   %   'missing' in the returned table but are not removed unless dryrun=false.
    %
-   % TOOLBOXES = UPDATETBDIRECTORY('paths') Traverses the toolbox directory and
-   % checks if the source path exists for each toolbox at the top-level or
-   % within sub-libraries. If the source path is found, it is updated in the
-   % directory. If not, the corresponding pathexists field is set to false.
+   % TOOLBOXES = UPDATETBDIRECTORY('paths', 'dryrun', true)  [default]
+   %   Returns the updated table without writing to disk.
    %
-   % TOOLBOXES = UPDATETBDIRECTORY('paths', 'dryrun', true) returns the toolbox
-   % table with missing toolbox paths set to 'missing' but does not remove them
-   % from the table and does not rewrite the table.
+   % TOOLBOXES = UPDATETBDIRECTORY('paths', 'dryrun', false)
+   %   Writes the updated table to the canonical CSV (removing missing entries).
    %
-   % Example
-   %  updatetbdirectory('paths');
+   % Filesystem layout assumed:
+   %   MATLAB_TOOLBOX_PATH/
+   %     <name>/            <- Zone 1: stand-alone toolbox   (library = name)
+   %     libraries/
+   %       <libname>/       <- Zone 2a: library folder entry  (library = libname)
+   %         <name>/        <- Zone 2b: library toolbox       (library = libname)
    %
-   % See also GETFOLDERLIST, GETTBSOURCEPATH, RMTOOLBOX, ADDTOOLBOX
+   % See also: buildtoolboxdirectory, addtoolbox, gettbsourcepath, rmtoolbox
 
    % PARSE INPUTS
-   narginchk(1,3)
+   narginchk(1, 3)
 
    opts.dryrun = true;
-   if nargin > 2
-      [args, pairs, nargs] = parseparampairs(varargin);
+   if nargin > 1
+      [~, pairs] = parseparampairs(varargin);
       opts = cell2struct(pairs(2:2:end), pairs(1:2:end-1), 2);
    end
 
-   % Only one option is available for now
    assert(strcmp(option, 'paths'), ...
       "Invalid option. The only available option is 'paths'.");
 
-   % get the toolbox directory
+   % Read current toolbox directory (falls back to backup if CSV is corrupted).
    toolboxes = readtbdirectory(gettbdirectorypath());
 
-   % add a column for the library
-   toolboxes.library = toolboxes.name;
+   tbroot  = gettbsourcepath();             % MATLAB_TOOLBOX_PATH
+   libroot = fullfile(tbroot, 'libraries'); % MATLAB_TOOLBOX_PATH/libraries
 
-   % convert toolbox names to string array for convenience
    allnames = string(toolboxes.name).';
 
    for tbname = allnames
 
-      % use gettbsourcepath because it handles the trailing slash
+      % Current recorded source path (may be stale).
       tbpath = gettbsourcepath(tbname);
 
-      % default values for the sublib and path
-      library = char(tbname);
-      newpath = tbpath;
+      % Derive the correct library and source path for this entry.
+      [newpath, newlib] = resolveToolboxPath(tbname, tbpath, tbroot, libroot);
 
-      if isfolder(tbpath)
-         % the toolbox path is OK, add the library
-         if ~strcmp(fileparts(tbpath), gettbsourcepath())
-            [~, library] = fileparts(fileparts(tbpath));
-         end
-      else
-         newpath = 'missing';
-
-         % check if the toolbox is in the top-level
-         if isfolder(fullfile(gettbsourcepath(), tbname))
-            newpath = fullfile(gettbsourcepath(), tbname);
-         else
-            % get the library list and find the match for tbname within it
-            sublibs = listfolders(gettbsourcepath(), 1, 'relativepaths');
-            matched = false(size(sublibs));
-            for ii = 1:length(sublibs)
-               sublibFolders = split(sublibs{ii}, '/');
-               matched(ii) = any(strcmp(tbname, sublibFolders));
-            end
-            % get the sublib (tb parent) folder name
-            if any(matched)
-               library = char(fileparts(sublibs{matched}));
-               newpath = fullfile(gettbsourcepath(), library, tbname);
-            end
-         end
-      end
-
-      toolboxes.library{allnames==tbname} = char(library);
-      toolboxes.source{allnames==tbname} = char(newpath);
+      toolboxes.library{allnames == tbname} = newlib;
+      toolboxes.source{allnames == tbname}  = newpath;
    end
 
-   % remove missing if not dryrun
-   if opts.dryrun == false
+   % Remove missing entries and write if not a dry run.
+   if ~opts.dryrun
       toolboxes(strcmp(toolboxes.source, 'missing'), :) = [];
       writetbdirectory(toolboxes);
    end
 
-   switch nargout
-      case 1
-         varargout{1} = toolboxes;
+   if nargout > 0
+      varargout{1} = toolboxes;
    end
-   %       % found or not, remove the toolbox from the directory
-   %       % if found, re-add it
-   %       if found
-   %          if opts.dryrun == true
-   %             toolboxes.source{allnames==tbname} = char(newpath);
-   %             toolboxes.pathexists(allnames==tbname) = true;
-   %          else
-   %             rmtoolbox(tbname);
-   %             toolboxes = addtoolbox(tbname, sublib);
-   %          end
-   %       else
-   %          if opts.dryrun == true
-   %             toolboxes(allnames==tbname, :) = [];
-   %          else
-   %             rmtoolbox(tbname);
-   %          end
-   %       end
+end
 
-   % original method fails when tbname is a substr of a subfolder
-   % find the match for tbname within sublibs
-   % matched = ~cellfun(@isempty, strfind(sublibs, tbname)); %#ok<STRCLFH>
-   % revisit to see if this works
-   % matched = ~cellfun(@(s) any(strcmp(tbname, split(s, '/'))), sublibs);
+% -------------------------------------------------------------------------
+function [newpath, library] = resolveToolboxPath(tbname, tbpath, tbroot, libroot)
+   %RESOLVETOOLBOXPATH Determine the correct source path and library for TBNAME.
+   %
+   % If the recorded path still exists, derive the library from its location:
+   %   - parent == tbroot           -> stand-alone toolbox, library = tbname
+   %   - parent == libroot          -> library folder entry, library = tbname
+   %   - grandparent == libroot     -> library toolbox, library = parent name
+   %
+   % If the recorded path no longer exists, search the filesystem in order:
+   %   1. Zone 1: tbroot/<tbname>
+   %   2. Zone 2a: libroot/<tbname>
+   %   3. Zone 2b: libroot/<any-lib>/<tbname>
 
-   % this would have been initialized at the bginning
-   % add a column indicating if the path is found
-   % toolboxes.pathexists = true(height(toolboxes), 1);
-   % flag to indicate if the toolbox folder exists
-   % found = false(numel(allnames), 1);
-   % and this would have been in the else bloc
-   % set the flag false
-   % toolboxes.pathexists(allnames==tbname) = false;
+   if isfolder(tbpath)
+      % Path is valid — classify by location.
+      parent      = fileparts(tbpath);
+      grandparent = fileparts(parent);
+
+      if strcmp(parent, tbroot)
+         % Zone 1: stand-alone toolbox directly under MATLAB_TOOLBOX_PATH.
+         library = char(tbname);
+         newpath = tbpath;
+
+      elseif strcmp(parent, libroot)
+         % Zone 2a: library folder entry (the library root as a toolbox).
+         library = char(tbname);
+         newpath = tbpath;
+
+      elseif strcmp(grandparent, libroot)
+         % Zone 2b: toolbox nested inside a library folder.
+         [~, library] = fileparts(parent);
+         newpath = tbpath;
+
+      else
+         % Path exists but is outside the expected layout — leave as-is.
+         library = char(tbname);
+         newpath = tbpath;
+      end
+
+   else
+      % Path no longer exists — search the filesystem.
+      newpath = 'missing';
+      library = char(tbname);
+
+      % Check Zone 1: directly under MATLAB_TOOLBOX_PATH.
+      candidate = fullfile(tbroot, tbname);
+      if isfolder(candidate)
+         newpath = candidate;
+         library = char(tbname);
+         return
+      end
+
+      % Check Zone 2a: library folder itself under libraries/.
+      candidate = fullfile(libroot, tbname);
+      if isfolder(candidate)
+         newpath = candidate;
+         library = char(tbname);
+         return
+      end
+
+      % Check Zone 2b: toolbox inside any library folder.
+      if isfolder(libroot)
+         libFolders = dir(libroot);
+         libFolders = libFolders([libFolders.isdir] & ...
+            ~strcmp({libFolders.name}, '.') & ~strcmp({libFolders.name}, '..'));
+         for k = 1:numel(libFolders)
+            candidate = fullfile(libroot, libFolders(k).name, tbname);
+            if isfolder(candidate)
+               newpath  = candidate;
+               library  = libFolders(k).name;
+               return
+            end
+         end
+      end
+   end
 end
