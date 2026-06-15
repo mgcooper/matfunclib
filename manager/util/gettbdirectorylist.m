@@ -1,41 +1,43 @@
 function list = gettbdirectorylist(varargin)
-   %GETTBDIRECTORYLIST get a list of toolbox directories
+   %GETTBDIRECTORYLIST Get a list of toolbox directories.
    %
-   %  list = gettbdirectorylist() returns the folder names in MATLAB_TOOLBOX_PATH
-   %  list = gettbdirectorylist(TBNAME) returns sub-toolbox folder names, e.g.,
-   %  folder names in MATLAB_TOOLBOX_PATH/TBNAME
+   %  list = gettbdirectorylist()
+   %    Returns the names of stand-alone toolbox folders directly under
+   %    MATLAB_TOOLBOX_PATH (excluding the 'libraries' subdirectory).
    %
-   % See also readtbdirectory gettbnamelist
+   %  list = gettbdirectorylist(LIBNAME)
+   %    Returns the names of toolbox folders inside
+   %    MATLAB_TOOLBOX_PATH/libraries/LIBNAME.
+   %
+   % Filesystem layout expected:
+   %   MATLAB_TOOLBOX_PATH/
+   %     <toolbox>/           <- stand-alone toolbox (no-arg return)
+   %     libraries/
+   %       <libname>/         <- library folder (is itself a toolbox entry)
+   %         <toolbox>/       <- library toolbox (returned by gettbdirectorylist(libname))
+   %
+   % Note: gettbnamelist returns the names of toolboxes in the toolbox
+   % directory, so it should be used in functionsignatures for functions
+   % that work with valid registered toolboxes. This function lists folders
+   % on the filesystem and is used by addtoolbox and similar utilities.
+   %
+   % See also: readtbdirectory, gettbnamelist, addtoolbox
 
-   % gettbnamelist returns the names of toolboxes in the toolbox directory, so
-   % it should be used in functionsignatures for functions that work with valid
-   % toolboxes, whereas this function should be used in functions that operate
-   % on any folder in MATLAB_TOOLBOX_PATH (e.g., addtoolbox)
+   tbroot = gettbsourcepath();  % getenv('MATLAB_TOOLBOX_PATH')
 
-   if nargin < 1 % return all top-level toolboxes
-
-      list = rmdotfolders(dir(gettbsourcepath)); % getenv('MATLAB_TOOLBOX_PATH')
-      list = string({list([list.isdir]).name}');
-
-      % % this could replace above, but getlist,getfilelist are fragile
-      % list = getfilelist(gettbsourcepath,'folders')
+   if nargin < 1
+      % Return stand-alone toolbox folder names (immediate children of
+      % MATLAB_TOOLBOX_PATH, excluding the 'libraries' folder itself).
+      entries = rmdotfolders(dir(tbroot));
+      entries = entries([entries.isdir]);
+      names = string({entries.name}');
+      list = names(names ~= "libraries");
 
    else
-      library = validatetoolbox(varargin{1},mfilename,'library',1);
-
-      % this creates a tbdirectory for the sublib:
-      tblist = rmdotfolders(dir(fullfile(gettbsourcepath,library)));
-
-      % and this would complete the conversion to tbname
+      % Return toolbox folder names inside MATLAB_TOOLBOX_PATH/libraries/<libname>.
+      library = validatetoolbox(varargin{1}, mfilename, 'library', 1);
+      libpath = fullfile(tbroot, 'libraries', library);
+      tblist = rmdotfolders(dir(libpath));
       list = string({tblist([tblist.isdir]).name}');
-
-      % % and like above, this could replace two above list =
-      % getfilelist(fullfile(gettbsourcepath,library),'filenames');
-
-      % % and this is another method that uses tbdirectory.source:
-      % sublibs = strrep(fileparts(tbdirectory.source), ...
-      %    strcat(getenv('MATLAB_TOOLBOX_PATH'),filesep),'');
-      % validatestring(varargin{1},sublibs,funcname,'sublib',1);
-      % requestedlib = ismember(varargin{1},sublibs);
    end
 end

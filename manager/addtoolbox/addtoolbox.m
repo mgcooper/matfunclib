@@ -49,8 +49,15 @@ function varargout = addtoolbox(tbname,varargin)
    % Read the toolbox directory into memory
    toolboxes = readtbdirectory(gettbdirectorypath());
 
-   % Set the path to the toolbox source code (works if args.library is empty)
-   tbpath = fullfile(gettbsourcepath(), kwargs.library, kwargs.tbname);
+   % Set the path to the toolbox source code.
+   % Stand-alone toolboxes live directly under MATLAB_TOOLBOX_PATH.
+   % Library toolboxes live under MATLAB_TOOLBOX_PATH/libraries/<libname>/.
+   tbroot = gettbsourcepath();
+   if isempty(kwargs.library)
+      tbpath = fullfile(tbroot, kwargs.tbname);
+   else
+      tbpath = fullfile(tbroot, 'libraries', kwargs.library, kwargs.tbname);
+   end
 
    % Add the toolbox to the end of directory
    tbidx = height(toolboxes) + 1;
