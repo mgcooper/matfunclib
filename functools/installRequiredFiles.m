@@ -223,6 +223,12 @@ function [requirementsList, urlList] = remoteDependencyList( ...
 
       % If the required file exists in the local source repo, add it to the
       % requirementsList and build a full path to the remote file.
+
+      % This was in the icemodel version:
+      % Note - this is problematic if the requiredFiles contain files which are
+      % not in localSourcePath e.g. if one project depends on another. So this
+      % needs to be refactored to work with localSourcePaths (plural).
+
       if contains(requiredFilePath, localsource)
 
          % Add file names to list of external depencies
