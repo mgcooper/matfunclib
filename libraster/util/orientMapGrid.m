@@ -1,4 +1,4 @@
-function [X, Y] = orientMapGrid(X, Y, varargin)
+function [X, Y, didFlipLR, didFlipUD] = orientMapGrid(X, Y, varargin)
    %ORIENTMAPGRID Orient grid coordinates N-S, W-E or as specified.
    %
    % [X, Y] = orientMapGrid(X, Y) orients the input grid X and Y to be W-E
@@ -6,6 +6,11 @@ function [X, Y] = orientMapGrid(X, Y, varargin)
    %
    % [X, Y] = orientMapGrid(X, Y, orientation) allows specifying the desired
    % orientation as a string: 'WE_NS', 'EW_SN', 'WE_SN', or 'EW_NS'.
+   %
+   % [X, Y, didFlipLR, didFlipUD] = orientMapGrid(...) also returns whether the
+   % grid was flipped left-right (columns) and/or up-down (rows) to achieve the
+   % requested orientation, so a data array V of the same size can be kept
+   % aligned: if didFlipLR, V = fliplr(V); if didFlipUD, V = flipud(V).
    %
    % Example:
    %   [Xnew, Ynew] = orientMapGrid(X, Y, 'EW_SN');
@@ -17,6 +22,10 @@ function [X, Y] = orientMapGrid(X, Y, varargin)
    % Matt Cooper, 11-Mar-2023, https://github.com/mgcooper
    %
    % See also: prepareMapGrid, mapGridInfo, mapGridCellSize
+
+   % Track whether the data was flipped so callers can keep a value array aligned.
+   didFlipLR = false;
+   didFlipUD = false;
 
    % If scalar coordinates or an unstructured grid were passed in, return
    if isscalar(X) && isscalar(Y) || ...
@@ -44,12 +53,14 @@ function [X, Y] = orientMapGrid(X, Y, varargin)
       case 'WE'
          if X(1,1) ~= min(X(:)) || X(1,2) < X(1,1)
             X = fliplr(X);
+            didFlipLR = true;
             msg = ['Input argument 1, X, was re-oriented W-E. ' ...
                'Ensure the data referenced by X is oriented W-E.'];
          end
       case 'EW'
          if X(1,1) ~= max(X(:)) || X(1,2) > X(1,1)
             X = fliplr(X);
+            didFlipLR = true;
             msg = ['Input argument 1, X, was re-oriented E-W. ' ...
                'Ensure the data referenced by X is oriented E-W.'];
          end
@@ -60,12 +71,14 @@ function [X, Y] = orientMapGrid(X, Y, varargin)
       case 'NS'
          if Y(1,1) ~= max(Y(:)) || Y(1,1) < Y(2,1)
             Y = flipud(Y);
+            didFlipUD = true;
             msg = ['Input argument 2, Y, was re-oriented N-S. ' ...
                'Ensure the data referenced by Y is oriented N-S.'];
          end
       case 'SN'
          if Y(1,1) ~= min(Y(:)) || Y(1,1) > Y(2,1)
             Y = flipud(Y);
+            didFlipUD = true;
             msg = ['Input argument 2, Y, was re-oriented S-N. ' ...
                'Ensure the data referenced by Y is oriented S-N.'];
          end

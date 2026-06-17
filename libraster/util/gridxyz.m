@@ -1,32 +1,55 @@
 function varargout = gridxyz(X, Y, V, varargin)
-   %GRIDXYZ grid geolocated x, y, z data
+   %GRIDXYZ Grid geolocated x, y, z data and gap-fill missing values.
    %
-   %  [X, Y, V] = gridxyz(X, Y, V)
-   %  [X, Y, V] = gridxyz(X, Y, V, OutputFormat='fullgrids')
-   %  [X, Y, V] = gridxyz(X, Y, V, OutputFormat='coordinates')
-   %  [X, Y, V] = gridxyz(_, testplot=true)
+   % Output arguments are returned in the order V, R, X, Y, I, LOC. Request as
+   % many as needed (note: with THREE outputs you get V, X, Y -- not R):
+   %
+   %  V                    = gridxyz(X, Y, V)
+   %  [V, R]               = gridxyz(X, Y, V)
+   %  [V, X, Y]            = gridxyz(X, Y, V)
+   %  [V, R, X, Y]         = gridxyz(X, Y, V)
+   %  [V, R, X, Y, I]      = gridxyz(X, Y, V)
+   %  [V, R, X, Y, I, LOC] = gridxyz(X, Y, V)
+   %  [...] = gridxyz(_, OutputFormat='fullgrids')    % default; X,Y,V as 2-d grids
+   %  [...] = gridxyz(_, OutputFormat='coordinates')  % X,Y as column vectors
+   %  [...] = gridxyz(_, method=..., extrap=..., testplot=true)
+   %
+   % Outputs:
+   %  V   - gridded values with missing cells gap-filled. Known cells are
+   %        preserved exactly; only NaN/missing cells are interpolated.
+   %  R   - spatial referencing object for the fullgrid (from rasterref).
+   %  X,Y - fullgrid coordinates (2-d grids, or column vectors for
+   %        OutputFormat='coordinates').
+   %  I   - logical mask, true where a fullgrid cell matches an input X,Y pair.
+   %  LOC - indices of those matching pairs in the original input X, Y.
    %
    % Description:
    %
-   %  [X, Y, V] = gridxyz(X, Y, V) returns geolocated data X, Y, V as a regular
-   %  grid and gap-fills missing values in V.
+   %  gridxyz returns geolocated data X, Y, V as a regular grid and gap-fills
+   %  missing values in V. It creates fullgrids from the input X,Y regardless of
+   %  their format, then uses scatteredInterpolation (with the requested method
+   %  and extrapolation) to infill missing pixels of the fullgrid. Care is needed
+   %  to ensure the returned values are valid if the input X,Y coordinates and
+   %  data V are not fullgrids. Unlike rasterize, gridxyz supports multi-column V
+   %  (e.g. a stack of layers sharing a single X,Y grid).
    %
-   % Note that gridxyz creates fullgrids from the input X,Y regardless of their
-   % format, then uses scatteredInterpolation with nearest-neighbor
-   % extrapolation, so it is guaranteed to infill missing pixels of the fullgrid
-   % representations of X and Y. Care is needed to ensure the values returned by
-   % this function are valid if the input X,Y coordinates and data V are not
-   % fullgrids.
-   %
-   % See also: rasterize
+   % See also: rasterize, scatteredInterpolation, rasterref
 
-   % See map2grid, need to decide which to keep
+   % Relationship to rasterize (assessed Jun 2026): rasterize converts SCATTERED
+   % (x,y,z) data to a raster at a caller-specified resolution
+   % (rasterSize/cellextent) for a single 2-d layer, via griddata. gridxyz instead
+   % takes coordinates that already imply a grid (possibly with gaps), builds that
+   % fullgrid, and gap-fills it for one OR MANY value columns, returning the
+   % cell<->input index mapping (I, LOC). They are complementary: rasterize is not
+   % a drop-in replacement for gridxyz (no multi-column support, different
+   % resolution model), so both are kept.
+   % (The earlier "% See map2grid, need to decide which to keep" note was removed:
+   % no map2grid function exists in this repo's history.)
 
    %% notes
 
-   % inpainting needs to happen on the full grid, but note that
-   % inpaintn and inpaintn_nans do not utilize the x,y coordinates, so
-   % use naninterp2
+   % % inpainting needs to happen on the full grid, but note that inpaintn and
+   % % inpaintn_nans do not utilize the x,y coordinates, so use naninterp2
    % round(inpaintn(V))
    % round(inpaint_nans(V))
    % naninterp2(X, Y, V)
@@ -72,22 +95,47 @@ function varargout = gridxyz(X, Y, V, varargin)
    Y1 = Y;
    V1 = V;
 
-   % prepare the grid
-   [X, Y, dX, dY, GridType, tfgeo, I, LOC] = prepareMapGrid(X, Y, 'fullgrids');
+   % prepare the grid (also report any W-E / N-S flips it applied)
+   [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, didFlipLR, didFlipUD] = ...
+      prepareMapGrid(X, Y, 'fullgrids');
+
+   % prepareMapGrid computes the I/LOC membership against its internally-oriented
+   % copy of the input. If it reoriented a full-grid input, apply the same flips
+   % to the saved input X1,Y1,V1 so the indices line up. Coordinate-list input is
+   % never reoriented (didFlip* are false), so this is a no-op there.
+   if didFlipLR
+      X1 = fliplr(X1); Y1 = fliplr(Y1); V1 = fliplr(V1);
+   end
+   if didFlipUD
+      X1 = flipud(X1); Y1 = flipud(Y1); V1 = flipud(V1);
+   end
+   if didFlipLR || didFlipUD
+      % A reoriented V is a full grid here; flatten to a value list
+      % (npts x nlayers) so it indexes like the coordinate lists below.
+      V1 = reshape(V1, [], size(V1, 3));
+   end
 
    % I is true for x,y pairs in X,Y that are also in X1,Y1
    % LOC is the indices of these x,y pairs on X1,Y1 such that:
    assert( isequal( X(I), X1(LOC(LOC>0)) ) )
    assert( isequal( Y(I), Y1(LOC(LOC>0)) ) )
 
-   % If X or Y were flipped in prepareMapGrid, then V needs to be
-   % flipped / rotated accordingly first, before I is applied
+   % Build the output value array and place the known values.
    V = nan(numel(X), size(V1, 2));
    V(I(:), :) = V1(LOC(LOC>0), :);
 
-   % inpaint missing values
-   V = scatteredInterpolation(X(:), Y(:), V, X(:), Y(:), ...
-      kwargs.method, kwargs.extrap);
+   % Gap-fill only the missing entries: build the interpolant from the known
+   % samples (NaNs are excluded inside scatteredInterpolation), query the full
+   % grid, then overwrite ONLY the previously-missing cells. Known cells keep
+   % their exact input values rather than being replaced by interpolated ones,
+   % matching the documented "gap-fill" contract. Skip the work entirely when
+   % nothing is missing.
+   inan = isnan(V);
+   if any(inan(:))
+      Vq = scatteredInterpolation(X(:), Y(:), V, X(:), Y(:), ...
+         kwargs.method, kwargs.extrap);
+      V(inan) = Vq(inan);
+   end
 
    % send the data back in full
    switch kwargs.OutputFormat
@@ -107,22 +155,20 @@ function varargout = gridxyz(X, Y, V, varargin)
       figure
       subplot(1, 2, 1)
       hold on
-      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled'); % plot(P{:});
+      scatter(X1(:), Y1(:), 150, mean(V1, 2), 'filled');
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('original data')
 
       subplot(1, 2, 2)
       hold on
-      scatter(X(:), Y(:), 150, mean(V, 2), 'filled'); % plot(P{:});
+      scatter(X(:), Y(:), 150, mean(V, 2), 'filled');
       scatter(X(:), Y(:), 20, 'r', 'filled');
       title('gridded and gap filled data')
-
-      % P = loadSitePoly("leverett", "min");
-      % plot(P)
    end
 
    switch nargout
       case 1
+         [varargout{1:nargout}] = dealout(V);
       case 2
          [varargout{1:nargout}] = dealout(V, R);
       case 3
