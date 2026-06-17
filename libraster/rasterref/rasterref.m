@@ -1,92 +1,75 @@
 function [R, X, Y] = rasterref(X, Y, varargin)
-   %RASTERREF construct spatial referencing object R from full grids X,Y
+   %RASTERREF Construct a spatial referencing object R from grids/vectors X, Y.
    %
-   % R = rasterref(X,Y,cellInterpretation) constructs spatial
-   % referencing object R from 2-d grids X,Y that define the E-W and N-S
-   % coordinates of each grid cell. User provides cellInterpretation as
-   % 'Postings' if the X,Y coordinate pairs represent the centroids of each
-   % grid cell, typical of climate model data, or 'Cells' if the X,Y coordinate
-   % pairs represent the edges of the grid cells, typical of image-based
-   % satellite data. X and Y can be geographic or projected (planar)
-   % coordinates.
+   % R = rasterref(X, Y) builds a raster reference object from the E-W (X /
+   % longitude) and N-S (Y / latitude) coordinates of a regular grid. X, Y may be
+   % 2-d full grids or 1-d grid vectors; if 2-d they must be the same size. They
+   % are reoriented so the (1,1) element is the northwest cell, and a full grid is
+   % built from grid vectors. By default X, Y are treated as cell CENTERS, and R's
+   % outer limits are placed half a cell beyond them so the cell centers coincide
+   % with X, Y -- the correct choice for centroid grids such as climate-model /
+   % netCDF data. X, Y may be geographic (lon/lat) or projected (planar)
+   % coordinates; rasterref detects which (override with 'UseGeoCoords').
    %
-   %   This function exists because many geospatial datasets are provided with
-   %   vectors or grids of latitude/longitude and/or planar coordinate values
-   %   that represent the centroid or cell edges of each grid-cell, but many
-   %   Matlab Mapping Toolbox functions require the spatial referencing object
-   %   R as input. This function creates the object R from the
-   %   latitude/longitude or x/y coordinate vectors or grids.
+   % R = rasterref(X, Y, cellInterpretation) sets the interpretation:
+   %   'cells'    (default) X,Y are cell CENTERS; R's limits pad half a cell beyond.
+   %   'postings'           X,Y are the sample (posting) positions; R's limits
+   %                        coincide with the outer X,Y, with no half-cell offset.
+   % cellInterpretation may be given positionally (e.g. rasterref(X,Y,'postings'))
+   % or as the 'cellInterpretation' name-value pair; it is case-insensitive and the
+   % singular form ('cell'/'posting') is accepted.
    %
-   %   Author: Matt Cooper, guycooper@ucla.edu, June 2019 Citation: Matthew
-   %   Cooper (2019). matrasterlib: a software library for processing
-   %   satellite and climate model data in Matlab
-   %   (https://www.github.com/mguycooper/matrasterlib), GitHub. Retrieved MMM
-   %   DD, YYYY.
+   % R = rasterref(__, Name, Value) sets additional options:
+   %   'cellInterpretation'  'cells' (default) | 'postings'  (see above)
+   %   'projection'          a projcrs to assign to R.ProjectedCRS (planar grids)
+   %   'UseGeoCoords'        true/false to force geographic vs planar (default:
+   %                         auto-detected from the coordinate ranges)
+   %   'silent'              true to suppress the geographic/planar detection note
    %
-   %   Syntax
+   % [R, X, Y] = rasterref(__) also returns the reoriented, gridded X, Y (2-d full
+   % grids oriented W-E and N-S) that were actually used to build R.
    %
-   %   R = rasterref(X,Y,cellInterpretation)
-   %   R = rasterref(LON,LAT,cellInterpretation)
+   % R is a MapCellsReference / MapPostingsReference (planar) or a
+   % GeographicCellsReference / GeographicPostingsReference (geographic) object.
    %
-   %   Description
+   % rasterref exists because many geospatial datasets provide coordinate
+   % vectors/grids of cell centers (or edges), while many Mapping Toolbox functions
+   % require a raster reference object R; rasterref builds R from those coordinates.
    %
-   %   R = rasterref(X,Y) constructs spatial referencing object R from 1-d
-   %   vectors or 2-d grids of E-W (longitude) and N-S (latitude) coordinates
-   %   X,Y. If X and Y are 2-d numeric matrices (grids) they must be equal
-   %   size. If they are not oriented E-W and N-S such that the linear
-   %   (row,col) index (1,1) is the northwest corner grid cell, they are
-   %   re-oriented E-W and N-S. The coordinate pair X(1,1),Y(1,1) is
-   %   intepreted as the centroid of the northwest corner grid cell for
-   %   cellInterpretation 'Postings' and as the edge of the northwest corner
-   %   grid cell for cellInterpretation 'Cells'. X defines the E-W
-   %   (longitude or projected coordinate) value of every grid cell centroid
-   %   and Y defines the N-S (latitude or projected coordinate) value of every
-   %   grid cell centroid. The 'Postings' interpretation is consistent
-   %   with an interpretation of raster grid cell values representing the
-   %   centroid of each grid cell, for example as would be provided in a
-   %   netcdf or h5 scientific raster dataset or if using [X,Y]=meshgrid(x,y)
-   %   where x and y are vectors that span min(x):x_cell_extent:max(x) and
-   %   min(y):y_cell_extent:max(y) where x and y define the coordinates of
-   %   data values (not cell edges). X and Y can be geographic or planar
-   %   coordinate systems.
+   % Limitations: X, Y must form a regular (uniform or rectilinear) grid -- X
+   % varies only across columns and Y only down rows. rasterref does NOT accept
+   % irregular / curvilinear grids. The usual way to end up with one is
+   % reprojection: a grid that is regular in ITS OWN coordinate system becomes
+   % curvilinear when reprojected to a different, non-aligned system. For example,
+   % starting from a grid that is regular in projection 'proj', going to lon/lat
+   % and then forward into a different projection 'projnew' yields xnew,ynew whose
+   % spacing varies in both dimensions:
+   %   [lat, lon]   = projinv(proj, x, y);          % x,y regular in 'proj'
+   %   [xnew, ynew] = projfwd(projnew, lat, lon);   % xnew,ynew curvilinear in 'projnew'
+   %   Rnew = rasterref(xnew, ynew)                 % errors: not a rectilinear grid
+   % (The same happens to a regular lon/lat grid projected into a planar CRS.) To
+   % reference such data, first regularize it onto a uniform grid -- e.g. RASTERIZE
+   % (resample scattered / curvilinear x,y,z onto a new regular grid) or GRIDXYZ
+   % (build the implied regular grid and gap-fill it) -- then call rasterref.
    %
-   %   R = rasterref(X,Y,'Cells') applies the 'Cells' intepretation instead of
-   %   'Postings', which is consistent with an interpretation that X,Y define
-   %   the E-W and N-S coordinates of the grid cell edges, for example as
-   %   is commonly the case for image-based data (e.g. MODIS satellite
-   %   imagery).
+   % Example:
+   %   [LON, LAT] = meshgrid(0:30:90, 30:-30:-60);   % cell centers, 30-deg grid
+   %   R  = rasterref(LON, LAT);                      % 'cells': limits padded +-15
+   %   Rp = rasterref(LON, LAT, 'postings');          % limits = outer LON,LAT
    %
-   %  NOTE: this function does not work with irregular X,Y grids, so you can't
-   %  do something like:
-   %  [lt,ln] = projinv(proj,x,y);
-   %  [xnew,ynew] = projfwd(projnew,lt,ln);
-   %  Rnew = rasterref(xnew,ynew)
+   % Author: Matt Cooper, guycooper@ucla.edu, June 2019.
    %
-   %  See also rasterref, georefcells, maprefcells, meshgrid
+   % See also: georefcells, georefpostings, maprefcells, maprefpostings,
+   %   rasterize, prepareMapGrid, meshgrid
 
-   % Programming note:
-   % Based on the results of my comparison, rasterref is correct. The issue is
-   % with Matlab's interpretation of 'surface' vs 'texture' and 'cells' vs
-   % 'postings'. But also check the latest results with
-   % test_cells_vs_postings_v2. This suggests if I use 'postings' I need to
-   % adjust the limits at the poles.
-
-   % April 2024 - IMPORTANT NOTE: Because I added prepareMapGrid, this function
-   % may produce different results than rasterize or other functions, because
-   % prepareMapGrid confirms that the actual X, Y points are ... ok figured it
-   % out, this is wrong, b/c if there are missing pixels, they are not
-   % identified or accounted for, the X, Y returned by prepareMapGrid won't have
-   % regular spacing, there may be missing rows or columns so
-   % unique(diff(Y(:, 1)) may return 5000, 10000, 15000, where all but one or
-   % two values are 5000, and one or two are 10000 or 15000. So until that is
-   % fixed, error. HOWEVER, also pay attention to rasterize since it creates an
-   % interpolation grid from R using R2grid, so if there are missing pixels,
-   % this means they are interpolated. But Note the check for that using
-   % gridmember at the end of rasterize, so it should be ok.
-
-   % Actually rasterize depends on rasterref ... and rasterref remains
-   % dependable if we know we're working with a full grid, so allow it.
-   % ... moved warning from here to isfullgrid check
+   % Convention: rasterref treats X,Y as cell CENTERS and pads the limits half a
+   % cell to build a 'cells' reference (see the header and
+   % docs/raster-conventions-journey.md). rasterize now shares this convention.
+   %
+   % Caveat: if X,Y are not a full grid (missing rows/columns), prepareMapGrid's
+   % cell-size inference can be off -- unique(diff(Y(:,1))) returns the modal
+   % spacing plus the gaps. The isfullgrid check below warns about this; rasterize
+   % guards it with a gridmember mask.
 
    %% Prepare inputs
 
@@ -156,27 +139,33 @@ function R = rasterrefmap(X, Y, halfX, halfY, cellInterpretation, tol)
    xmax = round(max(X(:)), tol); % changed from ceil(max(X(:)))
    ymin = round(min(Y(:)), tol);
    ymax = round(max(Y(:)), tol);
-   xlims = double([xmin-halfX xmax+halfX]);
-   ylims = double([ymin-halfY ymax+halfY]);
    rasterSize = size(X);
 
    if strcmp(cellInterpretation,'cells')
+      % 'cells': X,Y are cell CENTERS; maprefcells limits are the outer cell
+      % edges, so pad the center extent outward by half a cell.
+      xlims = double([xmin-halfX xmax+halfX]);
+      ylims = double([ymin-halfY ymax+halfY]);
       R = maprefcells(xlims, ylims, rasterSize, ...
          'ColumnsStartFrom', 'north', ...
          'RowsStartFrom', 'west');
    elseif strcmp(cellInterpretation, 'postings')
+      % 'postings': X,Y are the sample (posting) positions themselves; use their
+      % extent directly with NO half-cell padding (padding would shift every
+      % posting by half a cell).
+      xlims = double([xmin xmax]);
+      ylims = double([ymin ymax]);
       R = maprefpostings(xlims, ylims, rasterSize, ...
          'ColumnsStartFrom', 'north', ...
          'RowsStartFrom', 'west');
    end
 end
 
-function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation, tol)
+function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation)
 
-   % May 2024, removed round(xmin, tol), see notes in map version.
-   if nargin < 6
-      tol = 0;
-   end
+   % May 2024: removed the round(xmin, tol) snapping (and its unused tol
+   % argument), see the note in the map version above -- rounding the limits is
+   % wrong for global/edge grids.
 
    % 'columnstartfrom','south' is default and corresponds to S-N oriented grid
    % as often provided by netcdf and h5 but I require this function accept N-S
@@ -185,12 +174,16 @@ function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation, tol)
    [xmin, xmax, ymin, ymax] = deal(...
       min(X(:)), max(X(:)), min(Y(:)), max(Y(:)));
 
-   xlims = double([xmin-halfX xmax+halfX]);
-   ylims = double([ymin-halfY ymax+halfY]);
-
    rasterSize = size(X);
 
    if strcmp(cellInterpretation,'cells')
+
+      % 'cells': LON/LAT are cell CENTERS; georefcells limits are the outer cell
+      % edges, so pad outward by half a cell. Clamp latitude to [-90, 90] so a
+      % grid whose cells reach the poles does not produce limits outside the
+      % valid latitude range (georefcells errors otherwise).
+      xlims = double([xmin-halfX xmax+halfX]);
+      ylims = double([max(ymin-halfY, -90) min(ymax+halfY, 90)]);
 
       R = georefcells(ylims, xlims, rasterSize, ...
          'ColumnsStartFrom', 'north', ...
@@ -208,6 +201,12 @@ function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation, tol)
       %  'RowsStartFrom', 'west');
 
    elseif strcmp(cellInterpretation,'postings')
+
+      % 'postings': LON/LAT are the sample (posting) positions themselves; use
+      % their extent directly with NO half-cell padding (padding would shift
+      % every posting by half a cell).
+      xlims = double([xmin xmax]);
+      ylims = double([ymin ymax]);
 
       R = georefpostings(ylims,xlims,rasterSize, ...
          'ColumnsStartFrom','north', ...
@@ -247,24 +246,44 @@ end
 function [X, Y, cellType, mapProj, UseGeoCoords] = ...
       parseinputs(X, Y, funcname, varargin)
 
+   validCellTypes = {'cells', 'postings'};
+
+   % Accept cellInterpretation as a leading positional argument
+   % (rasterref(X,Y,'cells'|'postings'), case-insensitive, singular accepted) in
+   % addition to the 'cellInterpretation',value name-value pair. If the first
+   % extra argument matches a valid cell type, consume it; otherwise it is a
+   % name-value key (e.g. 'projection') and is left for the parser.
+   cellTypePositional = '';
+   if ~isempty(varargin) && (ischar(varargin{1}) || isstring(varargin{1}))
+      try
+         cellTypePositional = validatestring(varargin{1}, validCellTypes);
+         varargin(1) = [];
+      catch
+         cellTypePositional = '';
+      end
+   end
+
    UseGeoCoordsDefault = false;
 
    parser = inputParser;
    parser.FunctionName = funcname;
    addRequired( parser, 'X', @validateGridCoordinates);
    addRequired( parser, 'Y', @validateGridCoordinates);
-   addParameter(parser, 'cellInterpretation', 'cells', @mustBeTextScalar);
+   addParameter(parser, 'cellInterpretation', 'cells', ...
+      @(s) ~isempty(validatestring(s, validCellTypes)));
    addParameter(parser, 'projection', 'unknown', @validateProjection);
    addParameter(parser, 'UseGeoCoords', UseGeoCoordsDefault, @islogicalscalar);
    addParameter(parser, 'silent', false, @islogicalscalar);
    parse(parser, X, Y, varargin{:});
 
-   % Confirm X and Y are numeric and of equal size.
-   % validateattributes(X, ...
-   %    {'numeric'}, {'size', size(Y)}, 'rasterref', 'X', 1)
-
-   % Retreive parameter values.
-   cellType = char(parser.Results.cellInterpretation);
+   % Retrieve parameter values. Normalize cellInterpretation to its canonical
+   % form ('cells'/'postings') so the downstream strcmp branches match regardless
+   % of case or singular/plural input. A positional value takes precedence.
+   if ~isempty(cellTypePositional)
+      cellType = cellTypePositional;
+   else
+      cellType = validatestring(parser.Results.cellInterpretation, validCellTypes);
+   end
    mapProj = parser.Results.projection;
    UseGeoCoords = parser.Results.UseGeoCoords;
 
