@@ -7,6 +7,10 @@ function Y = yfullgrid(varargin)
    %  [X, Y] = YFULLGRID(X, Y, 'gridvectors') returns Y as a grid vector
    %  [X, Y] = YFULLGRID(X, Y, 'coordinates') returns Y as a coordinate list
    %
+   %  Y is oriented DESCENDING (N-S), the north-up "image" convention shared by
+   %  gridvec/ygridvec/fullgrid. Flip Y for planar grids needing S-N order; see
+   %  ygridvec for the caveat.
+   %
    % See also: fullgrid, gridvec, fastgrid, meshgrid, ndgrid
 
    % input checks
