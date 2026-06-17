@@ -55,16 +55,23 @@ function [Z, mask, info] = maskraster(Z, mask, kwargs)
       mask = repmat(mask, 1, 1, size(Z, 3));
    end
 
-   % Apply the mask by setting masked values to NaN
+   % Apply the mask by setting masked values to NaN. By convention mask==true
+   % marks values to REMOVE, consistent with the 'mask' output and the
+   % NumberMasked statistic below.
    if kwargs.invertMask
-      Z(mask) = NaN; % assume logical true means drop
+      Z(~mask) = NaN; % inverted: true marks values to KEEP
    else
-      Z(~mask) = NaN; % assume logical true means keep
+      Z(mask) = NaN; % default: true marks values to remove
    end
 
-   % Calculate statistics
+   % Calculate statistics. NumberMasked counts the values actually set to NaN,
+   % which is the complement of mask when invertMask is set (see above).
    totalPixels = numel(Z(:));
-   numMasked = sum(mask(:));
+   if kwargs.invertMask
+      numMasked = sum(~mask(:));
+   else
+      numMasked = sum(mask(:));
+   end
    percentMasked = 100 * numMasked / totalPixels;
 
    % Prepare the stats table
@@ -86,19 +93,22 @@ end
 function mask = computeStdvMask(Z, sigmaThreshold)
 
    % Calculate the mean across the third dimension (time)
-   mu = nanmean(Z, 3);
+   mu = mean(Z, 3, 'omitnan');
 
    % Global mean and standard deviation
-   mu_global = nanmean(mu(:));
-   sd_global = nanstd(mu(:));
+   mu_global = mean(mu(:), 'omitnan');
+   sd_global = std(mu(:), 0, 'omitnan');
 
-   % Create the mask based on the sigma threshold
-   mask = abs(mu - mu_global) < sigmaThreshold * sd_global;
+   % Mask (true) where a pixel deviates beyond the threshold -- an outlier to
+   % remove. (Previously used '<', which returned a keep-mask, inconsistent with
+   % the documented "removed values" semantics and NumberMasked.)
+   mask = abs(mu - mu_global) >= sigmaThreshold * sd_global;
 end
 
 function mask = computeNodataMask(Z, noDataValue)
-   % Mask wherever noDataValue occurs
-   mask = ~any(Z == noDataValue, 3);
+   % Mask (true) wherever noDataValue occurs on any page -- to remove.
+   % (Previously negated, which returned a keep-mask.)
+   mask = any(Z == noDataValue, 3);
 end
 
 % function Z = applyMask(Z, mask, pageApplyFlag)

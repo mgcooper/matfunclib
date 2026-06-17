@@ -135,19 +135,12 @@ function varargout = plotraster(varargin)
    end
 end
 
-% % Check that X,Y are defined correctly
-% scatter(X(1,1), Y(1,1), 'filled')
-% scatter(X(1,2), Y(1,2), 'filled')
-
-% % This deosn't work b/c for pcolor, we would need to extend the grid outward
-% by 1/2 pixel
+% Example of the cell-EDGES trap (kept deliberately as a "does NOT work" case):
+% pcolor treats X,Y as cell EDGES and drops the last row/col, so passing a
+% center-referenced grid shifts the data half a cell. Convert centers to edges
+% first (gridNodesToEdges) -- see ../README.md / the conventions journey.
 % [X, Y] = prepareMapGrid(X, Y);
-% figure; pcolor(X,Y,Z);
-
-% % Set properties if necessary
-% if ~isempty(props)
-%   set(H,props{:,1},props{:,2});
-% end
+% figure; pcolor(X, Y, Z);   % wrong without edge conversion
 %
 % % Set labels if necessary
 % if ~isempty(xlbl)
