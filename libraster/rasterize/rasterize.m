@@ -10,6 +10,8 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    % [Z,R] = RASTERIZE(_,method). Options: 'linear', 'nearest', 'natural',
    %  'cubic', or 'v4'. The default method is 'natural'.
    % [Z,R] = RASTERIZE(_,method,extrap). Extrapolates to missing values.
+   % [Z,R] = RASTERIZE(_,'plot'). Also displays the result with rastersurf(Z,R).
+   % [Z,R] = RASTERIZE(_,proj). Applies a projcrs projection to R (as in rasterref).
    % [_,X,Y] = RASTERIZE(_) also returns 2-d coordinate arrays X,Y with
    % size equal to size(Z) that specify the x/y map/geographic coordinates of
    % each data value in Z
@@ -57,20 +59,20 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    %
    % See also rasterinterp, rasterref, rastersurf
 
-   % TODO: Completely refactor the input parsing. It is impossible to modify.
-   % Use an arguments block. Need to support projection input like rasterref.
-
    %% Check inputs
 
-   % must be 4-6 inputs
-   narginchk(4,6)
+   % Up to: x,y,z + (rasterSize | cellextentX,cellextentY) + method + 'extrap'
+   % flag + 'plot' flag + projection (projcrs).
+   narginchk(4, 9)
 
    % confirm mapping toolbox is installed
    assert( license('test','map_toolbox')==1, ...
       [mfilename ' requires Matlab''s Mapping Toolbox.'])
 
-   % check if lat/lon or planar and validate attributes accordingly
-   tf = islatlon(y,x);
+   % check if lat/lon or planar. Use isGeoGrid -- the same detector rasterref
+   % uses -- so rasterize and rasterref agree on geographic vs planar (islatlon
+   % is a looser range-only check and could disagree on small integer grids).
+   tf = isGeoGrid(y, x);
 
    % confirm x, y, and z are 2d numeric arrays of equal size
    validateattributes(x,{'numeric'},{'real','2d','nonempty','size',size(y)}, ...
@@ -85,21 +87,36 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    y = double(y);
    z = double(z);
 
-   % initialize 'method' to natural and then override if passed in by user
-   numarg = nargin-3; % three required arguments
-   method = 'natural';
-   checkarg = varargin{numarg};
-   if ischar(checkarg) || (isstring(checkarg) && isscalar(checkarg))
-      method = checkarg;
-      method = lower(method);
-      numarg = numarg-1;
-   end % else, varargin{numarg} is not method
+   % Parse optional inputs. Order-independent options (the 'extrap' and 'plot'
+   % flags and a projcrs projection) are pulled out FIRST so they do not interfere
+   % with the positional rasterSize/cellextent/method detection below. Each is
+   % removed from varargin and numarg is decremented. This keeps the existing
+   % positional API intact while allowing the added options.
+   numarg = nargin - 3; % three required arguments
 
-   % check if 'extrap' was provided
-   extrap = any(cellfun(@(v) strcmp('extrap', v), varargin));
-   if extrap
-      varargin(cellfun(@(v) strcmp('extrap', v), varargin)) = [];
-      numarg = numarg -1;
+   % 'extrap' flag -- extrapolate beyond the convex hull.
+   isopt = cellfun(@(v) (ischar(v) || isstring(v)) && strcmp('extrap', v), varargin);
+   extrap = any(isopt);
+   varargin(isopt) = []; numarg = numarg - nnz(isopt);
+
+   % 'plot' flag -- display the gridded result with rastersurf(Z, R).
+   isopt = cellfun(@(v) (ischar(v) || isstring(v)) && strcmp('plot', v), varargin);
+   doplot = any(isopt);
+   varargin(isopt) = []; numarg = numarg - nnz(isopt);
+
+   % projection -- a projcrs object, applied to R (like rasterref).
+   isopt = cellfun(@(v) isa(v, 'projcrs'), varargin);
+   if any(isopt); mapProj = varargin{find(isopt, 1)}; else; mapProj = []; end
+   varargin(isopt) = []; numarg = numarg - nnz(isopt);
+
+   % 'method' -- the remaining trailing char/string (default 'natural').
+   method = 'natural';
+   if numarg >= 1
+      checkarg = varargin{numarg};
+      if ischar(checkarg) || (isstring(checkarg) && isscalar(checkarg))
+         method = lower(checkarg);
+         numarg = numarg - 1;
+      end
    end
 
    % parse remaining args
@@ -162,12 +179,16 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 
          % Get unique values of x and y:
          [xs, ~, xi] = unique(x(:), 'sorted');
-         [~ , ~, yi] = unique(y(:), 'sorted');
+         [ys, ~, yi] = unique(y(:), 'sorted');
 
-         if numel(xs) == numel(z)
+         % If every point has a distinct x AND a distinct y, there is no grid
+         % structure to accumulate into -- the data is genuinely scattered, so
+         % warn. (A 1xN or Nx1 grid has unique x or y but not both, and is fine;
+         % the old numel(xs)==numel(z) test false-warned on those.)
+         if numel(xs) == numel(z) && numel(ys) == numel(z)
             warning(...
-               ['This data appears to be scattered with irregular X, Y spacing.' ...
-               ' Rasterize may rpoduce incorrect results in this case.'])
+               ['This data appears to be scattered with irregular X, Y spacing. ' ...
+               'Rasterize may produce incorrect results in this case.'])
          end
 
          % Sum up all the Z values in each x,y grid point:
@@ -200,133 +221,62 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
       ymin = round(min(y(:)), -ytol);
       ymax = round(max(y(:)), -ytol);
 
-      % This can rectify some issues where rounding to x/ytol fails to
-      % encompass the entire extent, but extending by xmindif can also
-      % substantially increase the extent and therefore slow down the
-      % function because it increases the interpolation below
+      % (xmin..ymax above are the extent of the grid-point CENTERS. Nearest
+      % rounding can occasionally trim the extent; a directional floor/ceil would
+      % guarantee coverage -- see docs/raster-conventions-journey.md.)
 
-      % ymin = round(min(y(:)), -ytol) - ymindiff;
-      % ymax = round(max(y(:)), -ytol) + ymindiff;
-      % xmin = round(min(x(:)), -xtol) - xmindiff;
-      % xmax = round(max(x(:)), -xtol) + xmindiff;
-      xlims = [xmin xmax];
-      ylims = [ymin ymax];
-
-      % i could also push the extent outward by 1/10th of its value ...
-      % ... but this will fail for global datasets
-      % xoffset = (max(x(:))-min(x(:)))/10;
-      % yoffset = (max(y(:))-min(y(:)))/10;
-
-      % determine if the data is planar or geographic and build the R object
-
-      % NOTE: to allow either rasterSize or cellextent to be specified, I use
-      % inbuilt map/georefcells, but that means the lat/lon limits are not
-      % adjusted for 1/2 cell size as they would be with rasterref.
-      % since the data are scattered, we cannot know the desired cell size
-      % unless the user provides it. If provided, we can adjust the x/y
-      % limits in the R structure by 1/2 cell size so the raster is correctly
-      % interpreted as an image. Below this tf block, I use R2grid to
-      % construct the X,Y query grid, but R2grid assumes the R structure was
-      % built correctly using rasterref and adjusts for 1/2 cell size INWARD
-      % i.e. it assumes the x,y limits in R are the image borders, not the
-      % outermost x,y cell centers.
-
-      % to avoid all of this, I could build the grid myself and then use
-      % rasterref, which is basically the opposite of this approach. But then
-      % I would need to figure out how to deal with rasterSize vs cellExtent
-      % checking. For now I am leaving it alone.
-
-      % UPDATE JAN 2024 on above: The 1/2 cell thing is problematic, for example
-      % I passed in the x,y coords for the SW sector grid but the X,Y query grid
-      % returned by R2grid is not coincident with the input x,y coords, it's
-      % offset by 1/2 cell size, so I cannot direclty compare (and the
-      % interpolation may not be optimal). THUS I ADDED A 1/2 CELL SIZE
-      % ADJUSTMENT TO THE CASE WHERE CELL SIZE IS KNOWN).
-
-      % Back again Apr 2024 - Key thing to remember is input x,y are the GRID
-      % POINTS, and xlims, ylims are the GRID POINT extents.
-      %
-      % noticing that rasterize and rasterref return different R's for the SW
-      % sector masked points (the 1487 or 2479, in both cases the grid is the
-      % same). So just noting that if tfreg is false, which it is, then xlims,
-      % ylims are the GRID POINT extents. So it is correct to
-
-      if tf
-         if inrasterSize
-            R = georefcells(ylims, xlims, rasterSize, ...
-               'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom', 'west');
-         else
-            R = georefcells(ylims, xlims, cellextentY, cellextentX, ...
-               'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom', 'west');
-         end
-      else % note: x,y positioning is reversed for maprefcells
-         if inrasterSize
-
-            R = maprefcells(xlims, ylims, rasterSize, ...
-               'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom', 'west');
-         else
-            % Jan 2024 - this means we know cellextent, so adjust xlims,ylims
-            xlims = xlims + [-cellextentX +cellextentX] / 2;
-            ylims = ylims + [-cellextentY +cellextentY] / 2;
-            R = maprefcells(xlims, ylims, cellextentX, cellextentY, ...
-               'ColumnsStartFrom', 'north', ...
-               'RowsStartFrom', 'west');
-         end
+      % Build a regular grid of cell CENTERS spanning the data extent, then let
+      % rasterref construct the matching reference object. rasterref treats x,y as
+      % cell CENTERS and pads the limits half a cell, so rasterize and rasterref
+      % now return the SAME R for the same data. (This branch previously handed the
+      % raw extent to geo/maprefcells -- which treat limits as cell EDGES -- then
+      % R2grid'd it back, leaving the grid offset half a cell from rasterref. The
+      % history is in docs/raster-conventions-journey.md.)
+      if inrasterSize
+         xc = linspace(xmin, xmax, rasterSize(2));
+         yc = linspace(ymax, ymin, rasterSize(1)); % rows start north (N-S)
+      else
+         xc = xmin:cellextentX:xmax;
+         yc = ymax:-cellextentY:ymin;
       end
+      [X, Y] = meshgrid(xc, yc);
+      R = rasterref(X, Y, 'UseGeoCoords', tf, 'silent', true);
 
-      % build a grid and reshape to arrays for interpolation
-      [X, Y] = R2grid(R);
-      xq = reshape(X, size(X,1) * size(X,2), 1);
-      yq = reshape(Y, size(Y,1) * size(Y,2), 1);
+      % Interpolation query points are the cell centers.
+      xq = X(:);
+      yq = Y(:);
 
-      % convert from geographic/map coordinates to intrinsic to improve the
-      % speed and accuracy of the interpolation. note the order of output xq,yq
-      % vs input xq,yq for geographicToIntrinsic.
-
-      % Commented this out pending further tests. Does this reduce the precision
-      % of the x,y coordinates, e.g. if you have a scattered coordinate that is
-      % within a grid cell, that scattered coordinate gets converted to an
-      % intrinsic grid cell coordinate, unless worldToIntrinsic has sub-grid
-      % cell precision. Keeping it for refrence.
-
-      % if tf % note order of output xq,yq vs input xq,yq
-      %    [xq,yq] = geographicToIntrinsic(R,yq,xq);
-      %    [x,y] = geographicToIntrinsic(R,y,x);
-      % else
-      %    [xq,yq] = worldToIntrinsic(R,xq,yq);
-      %    [x,y] = worldToIntrinsic(R,y,x);
-      % end
-
-      % apply griddata and reshape to a grid. NOTE: griddata uses "nearest"
-      % interpolation if method is "nearest" and "none" otherwise.
+      % Apply griddata and reshape to a grid. NOTE: griddata uses "nearest"
+      % interpolation if method is "nearest" and "none" otherwise. (A commented
+      % world->intrinsic conversion that might speed up griddata was never
+      % validated -- it risks snapping sub-cell coordinates to grid resolution --
+      % so it was dropped; see docs/raster-conventions-journey.md.)
       Z = griddata(x, y, z, xq, yq, method);
 
       assert(~isempty(Z), ...
          ['The interpolated surface, Z, is empty. You may not ' ...
          'have provided sufficient x,y values to fit a surface.']);
 
-      Z = reshape(Z, size(X,1), size(X,2));
+      Z = reshape(Z, size(X, 1), size(X, 2));
 
-      % griddata won't extrapolate, but it will interpolate onto the convex
-      % hull, which may include x,y values outside the actual x,y domain. Here,
-      % try to set values that don't have data nan. This works if cellextent was
-      % passed in, and the halfcell adjustment was done above.
+      % griddata won't extrapolate, but it interpolates over the convex hull,
+      % which may include points outside the actual x,y domain; mask cells with no
+      % nearby data to NaN.
       LI2 = gridmember(X, Y, x, y);
       Z(~LI2) = nan;
+   end
 
-      % figure
-      % rastersurf(Z, R)
-      % hold on
-      % plot(X(LI2), Y(LI2), 'x')
-      % plot(X(~LI2), Y(~LI2), 'rx')
+   % Apply the optional projection and display.
+   if isa(mapProj, 'projcrs')
+      R.ProjectedCRS = mapProj;
+   end
+   if doplot
+      rastersurf(Z, R)
    end
 end
 
 %%
-function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap)
+function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap) %#ok<DEFNU>
    %GRIDMAPDATA Convert geolocated planar data array to regular data grid.
    %
    %   [B,R] = GRIDMAPDATA(X, Y, V, CELLSIZE) converts the geolocated data
@@ -425,7 +375,7 @@ function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap)
 end
 
 %%
-function [B, R] = gridgeodata(lat, lon, V, cellsize, method, extrap)
+function [B, R] = gridgeodata(lat, lon, V, cellsize, method, extrap) %#ok<DEFNU>
    %GRIDGEODATA Convert geolocated data array to regular data grid
    %
    %   [B,R] = GRIDGEODATA(LAT,LON,V,CELLSIZE) converts the geolocated data
