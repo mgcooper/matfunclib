@@ -20,6 +20,7 @@
 %   3. Cells vs Postings reference: the half-cell offset (display VIA the R)
 %   4. Quantitative proof: geointerp transect at lat = 0
 %   5. libraster display helpers (plotraster, rastersurf, rastercontour, transparent)
+%   6. Real data: the bundled example_*.tif round-trip on the libraster tools
 %
 % See also: ../README.md, ../docs/raster-conventions-journey.md, rastersurf,
 % plotraster, rastercontour, rasterref, gridNodesToEdges
@@ -201,6 +202,32 @@ if hasMap
    Zt = Z; Zt(Z == 6 | Z == 11) = NaN;     % blank two interior cells
    rastersurf(Zt, Rcell, 'transparent'); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
    title({'rastersurf(..., ''transparent'')', 'only cells 6 & 11 are transparent'});
+end
+
+%% 6. Real data: the bundled example_*.tif round-trip (2x2)
+% example_cells.tif and example_postings.tif hold the SAME AOD grid written with
+% a cells vs a postings reference and read back; example_post2cells.tif is the
+% postings grid reinterpreted as cells. GeoTIFF only stores pixel-is-area vs
+% pixel-is-point, so the read-back R class is whatever the file encodes -- the
+% reason example_post2cells.tif exists. The panels exercise the libraster display
+% tools on real data; the printout shows each file's recovered reference.
+if hasMap && ~isempty(which('example_cells.tif'))
+   [Zc, Rc] = readgeoraster('example_cells.tif');
+   [Zp, Rp] = readgeoraster('example_postings.tif');
+   Zc = double(Zc); Zp = double(Zp);
+
+   fprintf('\n-- example_*.tif recovered references (geotiff round-trip) --\n');
+   fprintf('  example_cells.tif    -> %s, lon [%.3f %.3f]\n', ...
+      class(Rc), Rc.LongitudeLimits);
+   fprintf('  example_postings.tif -> %s, lon [%.3f %.3f]\n', ...
+      class(Rp), Rp.LongitudeLimits);
+
+   figure('Name', '6. Real data: example_*.tif', 'Colormap', cmap);
+   tiledlayout(2, 2);
+   nexttile; plotraster(Zc, Rc); title('plotraster(example\_cells.tif)');
+   nexttile; plotraster(Zp, Rp); title('plotraster(example\_postings.tif)');
+   nexttile; rastersurf(Zc, Rc); title('rastersurf(example\_cells.tif)');
+   nexttile; rastercontour(Zc, Rc); title('rastercontour(example\_cells.tif)');
 end
 
 %% local helpers
