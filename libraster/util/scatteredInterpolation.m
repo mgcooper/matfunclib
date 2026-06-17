@@ -18,8 +18,15 @@ function [Vq] = scatteredInterpolation(X, Y, V, Xq, Yq, varargin)
    % computed on X, Y, then applied to all values of V in the higher dimensions
    % (like a time series).
 
-   % Input checks
-   [V, X, Y] = validateGridData(V, X, Y, mfilename, 'V', 'X', 'Y');
+   % Input checks. validateGridData requires X,Y to form a recognized grid, but
+   % scatteredInterpolant (and this wrapper) also handle genuinely scattered
+   % (irregular) points. Branch on the detected format so irregular input gets a
+   % lightweight column check instead of being rejected as an invalid grid.
+   if ismember(mapGridFormat(X, Y), {'irregular', 'unstructured'})
+      [V, X, Y] = validateScatteredData(V, X, Y, mfilename);
+   else
+      [V, X, Y] = validateGridData(V, X, Y, mfilename, 'V', 'X', 'Y');
+   end
 
    % Set default method and extrapolation
    method = 'natural';
@@ -46,24 +53,40 @@ function [Vq] = scatteredInterpolation(X, Y, V, Xq, Yq, varargin)
    % Check for nan values
    inan = isnan(V);
 
-   % Perform interpolation for each column of v
+   % Interpolate each column of V. The scattered interpolant's triangulation
+   % depends only on the sample locations (X, Y), not the values, so it is built
+   % once and reused across columns by reassigning F.Values rather than
+   % reconstructing F (and its Delaunay triangulation) for every column.
 
-   if sum(inan) == 0
-      for n = 1:size(V, 2)
-         F = scatteredInterpolant(X, Y, V(:, n), method, extrap);
+   if ~any(inan(:))
+      % No NaNs: all columns share the same sample locations, so a single
+      % interpolant serves every column.
+      F = scatteredInterpolant(X, Y, V(:, 1), method, extrap);
+      Vq(:, 1) = F(Xq, Yq);
+      for n = 2:size(V, 2)
+         F.Values = V(:, n);
          Vq(:, n) = F(Xq, Yq);
       end
 
    else % interpolate over nans
-      for n = 1:size(V, 2)
-         m = inan(:, n);
+      % With NaNs the sample set differs per column, but columns that share an
+      % identical NaN mask share a triangulation. Group columns by their mask so
+      % the interpolant is rebuilt only once per distinct mask, not per column.
+      [~, ~, groupOfColumn] = unique(inan.', 'rows');
+      for g = unique(groupOfColumn).'
+         cols = find(groupOfColumn == g);
+         m = inan(:, cols(1));
 
-         F = scatteredInterpolant(X(~m), Y(~m), V(~m, n), method, extrap);
-         Vq(:, n) = F(Xq, Yq);
-
-         % % Might need an intermediate step
-         % F = scatteredInterpolant(x, y, v(:, n), method, extrap);
-         % Vq(:, n) = F(xq, yq);
+         % Build the interpolant once for this mask, then reuse it for the
+         % remaining columns in the group by swapping only F.Values. Index by
+         % position (2:numel(cols)) so a single-column group runs zero inner
+         % iterations rather than one empty iteration.
+         F = scatteredInterpolant(X(~m), Y(~m), V(~m, cols(1)), method, extrap);
+         Vq(:, cols(1)) = F(Xq, Yq);
+         for k = 2:numel(cols)
+            F.Values = V(~m, cols(k));
+            Vq(:, cols(k)) = F(Xq, Yq);
+         end
       end
    end
 
