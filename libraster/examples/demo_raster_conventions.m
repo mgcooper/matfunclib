@@ -168,7 +168,8 @@ if hasMap
    end
 
    figure('Name', '4. geointerp transect (lat = 0)');
-   plot(lonq, correct, 'k--', 'LineWidth', 3, 'DisplayName', 'correct'); hold on
+   hold on
+   plot(lonq, correct, 'k--', 'LineWidth', 3, 'DisplayName', 'correct');
    co = lines(numel(refs));
    for r = 1:numel(refs)
       plot(lonq, vals(r, :), '-', 'LineWidth', 1.5, 'Color', co(r, :), ...
@@ -249,7 +250,7 @@ if hasMap && ~isempty(which('example_cells.tif'))
 
    nexttile;
    try
-      plotraster(Zc, Rc); set(gca, 'XTickMode', 'auto', 'YTickMode', 'auto');
+      plotraster(Zc, Rc);   % ticks land on the actual cell coordinates
    catch ME
       showPanelError(ME);
    end
@@ -257,7 +258,7 @@ if hasMap && ~isempty(which('example_cells.tif'))
 
    nexttile;
    try
-      plotraster(Zp, Rp); set(gca, 'XTickMode', 'auto', 'YTickMode', 'auto');
+      plotraster(Zp, Rp);
    catch ME
       showPanelError(ME);
    end
