@@ -185,23 +185,45 @@ end
 % All four panels use the SAME labeled grid + cells reference, so differences are
 % the function's doing, not the data's. The last panel blanks two interior cells
 % (6 and 11) to show that 'transparent' makes ONLY NaN cells see-through.
+% Each panel is wrapped so that if one display wrapper misbehaves when composed
+% in a tiledlayout, the others (and the 2x2 layout) still render.
 if hasMap
    figure('Name', '5. libraster display helpers', 'Colormap', cmap);
    tiledlayout(2, 2);
 
-   nexttile; plotraster(Z, Rcell); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
-   title('plotraster(Z, Rcells)');
+   nexttile;
+   try
+      plotraster(Z, Rcell); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
+   catch ME
+      showPanelError(ME);
+   end
+   title('plotraster(Z, Rcells)', 'Interpreter', 'none');
 
-   nexttile; rastersurf(Z, Rcell); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
-   title('rastersurf(Z, Rcells)');
+   nexttile;
+   try
+      rastersurf(Z, Rcell); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
+   catch ME
+      showPanelError(ME);
+   end
+   title('rastersurf(Z, Rcells)', 'Interpreter', 'none');
 
-   nexttile; rastercontour(Z, Rcell); styleRefAxes(gca);
-   title('rastercontour(Z, Rcells)');
+   nexttile;
+   try
+      rastercontour(Z, Rcell); styleRefAxes(gca);
+   catch ME
+      showPanelError(ME);
+   end
+   title('rastercontour(Z, Rcells)', 'Interpreter', 'none');
 
    nexttile;
    Zt = Z; Zt(Z == 6 | Z == 11) = NaN;     % blank two interior cells
-   rastersurf(Zt, Rcell, 'transparent'); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
-   title({'rastersurf(..., ''transparent'')', 'only cells 6 & 11 are transparent'});
+   try
+      rastersurf(Zt, Rcell, 'transparent'); labelZ(gca, LON, LAT, Z); styleRefAxes(gca);
+   catch ME
+      showPanelError(ME);
+   end
+   title({'rastersurf(..., ''transparent'')', 'only cells 6 & 11 are transparent'}, ...
+      'Interpreter', 'none');
 end
 
 %% 6. Real data: the bundled example_*.tif round-trip (2x2)
@@ -224,10 +246,38 @@ if hasMap && ~isempty(which('example_cells.tif'))
 
    figure('Name', '6. Real data: example_*.tif', 'Colormap', cmap);
    tiledlayout(2, 2);
-   nexttile; plotraster(Zc, Rc); title('plotraster(example\_cells.tif)');
-   nexttile; plotraster(Zp, Rp); title('plotraster(example\_postings.tif)');
-   nexttile; rastersurf(Zc, Rc); title('rastersurf(example\_cells.tif)');
-   nexttile; rastercontour(Zc, Rc); title('rastercontour(example\_cells.tif)');
+
+   nexttile;
+   try
+      plotraster(Zc, Rc); set(gca, 'XTickMode', 'auto', 'YTickMode', 'auto');
+   catch ME
+      showPanelError(ME);
+   end
+   title('plotraster(example\_cells.tif)');
+
+   nexttile;
+   try
+      plotraster(Zp, Rp); set(gca, 'XTickMode', 'auto', 'YTickMode', 'auto');
+   catch ME
+      showPanelError(ME);
+   end
+   title('plotraster(example\_postings.tif)');
+
+   nexttile;
+   try
+      rastersurf(Zc, Rc);
+   catch ME
+      showPanelError(ME);
+   end
+   title('rastersurf(example\_cells.tif)');
+
+   nexttile;
+   try
+      rastercontour(Zc, Rc);
+   catch ME
+      showPanelError(ME);
+   end
+   title('rastercontour(example\_cells.tif)');
 end
 
 %% local helpers
@@ -258,4 +308,14 @@ function plotRefBox(ax, R)
       xl = R.XWorldLimits; yl = R.YWorldLimits;
    end
    plot(ax, xl([1 2 2 1 1]), yl([1 1 2 2 1]), 'g-', 'LineWidth', 2);
+end
+
+function showPanelError(ME)
+   % Graceful degradation: if a panel's display wrapper fails, blank the tile and
+   % print the error so the rest of the figure (and the layout) still renders.
+   ax = gca;
+   cla(ax, 'reset'); axis(ax, 'off');
+   text(ax, 0.5, 0.5, sprintf('panel unavailable:\n%s', ME.message), ...
+      'Units', 'normalized', 'HorizontalAlignment', 'center', ...
+      'VerticalAlignment', 'middle', 'Color', [0.6 0 0], 'Interpreter', 'none');
 end
