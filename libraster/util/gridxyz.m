@@ -132,9 +132,18 @@ function varargout = gridxyz(X, Y, V, varargin)
    % nothing is missing.
    inan = isnan(V);
    if any(inan(:))
-      Vq = scatteredInterpolation(X(:), Y(:), V, X(:), Y(:), ...
+      % Query only the nodes that are missing in at least one column, rather than
+      % the whole grid. The interpolant is built from all known samples either
+      % way, but for a grid with few gaps this evaluates far fewer query points.
+      qrows = any(inan, 2);
+      Vq = scatteredInterpolation(X(:), Y(:), V, X(qrows), Y(qrows), ...
          kwargs.method, kwargs.extrap);
-      V(inan) = Vq(inan);
+      % Overwrite only the previously-missing entries among the queried nodes;
+      % known cells keep their exact input values.
+      block = V(qrows, :);
+      qnan = inan(qrows, :);
+      block(qnan) = Vq(qnan);
+      V(qrows, :) = block;
    end
 
    % send the data back in full
