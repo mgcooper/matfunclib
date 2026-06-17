@@ -72,5 +72,38 @@ classdef testPlotRaster < matlab.unittest.TestCase
             testCase.verifyTrue(contains(ME.message, "RasterValues"));
          end
       end
+
+      function testReferenceObjectInput(testCase)
+         % Folded in from the legacy test_plotraster script: plotraster(Z, R).
+         [Z, R] = testCase.defaultData();
+         H = plotraster(Z, R, testCase.TestAxes);
+         testCase.verifyEqual(H.Parent, testCase.TestAxes);
+      end
+
+      function testReferenceObjectInputWithAxisType(testCase)
+         [Z, R] = testCase.defaultData();
+         H = plotraster(Z, R, testCase.TestAxes, "equal");
+         testCase.verifyEqual(H.Parent, testCase.TestAxes);
+         testCase.verifyEqual(testCase.TestAxes.DataAspectRatio, [1 1 1]);
+      end
+
+      function testReferenceObjectStyleBeforeAxes(testCase)
+         [Z, R] = testCase.defaultData();
+         H = plotraster(Z, R, "normal", testCase.TestAxes);
+         testCase.verifyEqual(H.Parent, testCase.TestAxes);
+      end
+   end
+
+   methods (Access = private)
+      function [Z, R, X, Y] = defaultData(testCase)
+         % Default gridded data from defaultGridData (derived from
+         % example_cells.tif). Skip the referencing-object tests when the Mapping
+         % Toolbox or the example raster are unavailable, rather than failing.
+         testCase.assumeTrue(license('test', 'map_toolbox') == 1, ...
+            'Mapping Toolbox required for referencing-object tests.');
+         testCase.assumeFalse(isempty(which('example_cells.tif')), ...
+            'example_cells.tif not found on the path.');
+         [X, Y, Z, R] = defaultGridData();
+      end
    end
 end
