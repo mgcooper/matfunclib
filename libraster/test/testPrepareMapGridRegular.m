@@ -111,6 +111,23 @@ classdef testPrepareMapGridRegular < matlab.unittest.TestCase
          testCase.verifyEqual(gt, 'uniform');
       end
 
+      function testNdgridInputCanonicalizedToMeshgrid(testCase)
+         % prepareMapGrid transposes ndgrid input to meshgrid, so an ndgrid grid
+         % and its meshgrid equivalent produce identical outputs -- including the
+         % I/LOC membership that consumers rely on. matfunclib-dif
+         x = 1:4; y = 10:10:70;     % non-square so the transpose is observable
+         [Xn, Yn] = ndgrid(x, y);
+         [Xm, Ym] = meshgrid(x, y);
+         [X2n, Y2n, dXn, dYn, gtn, ~, I2n, LOC1n] = prepareMapGrid(Xn, Yn, 'fullgrids');
+         [X2m, Y2m, dXm, dYm, gtm, ~, I2m, LOC1m] = prepareMapGrid(Xm, Ym, 'fullgrids');
+         testCase.verifyEqual(X2n, X2m);
+         testCase.verifyEqual(Y2n, Y2m);
+         testCase.verifyEqual([dXn dYn], [dXm dYm]);
+         testCase.verifyEqual(gtn, gtm);
+         testCase.verifyEqual(I2n, I2m);
+         testCase.verifyEqual(LOC1n, LOC1m);
+      end
+
       function testReprojectedJitterAxisIsIrregular(testCase)
          % a uniform axis perturbed by ~8% (far above the float32 jitter floor,
          % e.g. a reprojected grid) must still be classified irregular.

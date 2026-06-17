@@ -74,6 +74,19 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
    % noise as regular without any rounding, so the round is both redundant for the
    % case it targeted and harmful for projected grids.
 
+   % Canonicalize an ndgrid-oriented full grid to MATLAB's meshgrid convention
+   % before any of the meshgrid-assuming machinery below (gridvec/fullgrid treat
+   % size(X,2) as the X axis; orientMapGrid's flips and the I/LOC membership also
+   % assume meshgrid). Detection is gradient-based, so it resolves square grids
+   % too; a genuinely ambiguous (~45-degree rotated) grid is left as meshgrid. The
+   % output is always meshgrid -- ndgrid output is not produced. The value array V
+   % is never seen here, so V-carrying callers must canonicalize their own input.
+   % See matfunclib-dif.
+   if gridIsNdgrid(X1, Y1)
+      X1 = X1.';
+      Y1 = Y1.';
+   end
+
    % Determine input grid format.
    InputFormat = mapGridFormat(X1, Y1);
 
