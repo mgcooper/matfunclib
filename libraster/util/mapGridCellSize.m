@@ -71,8 +71,9 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
    % If one is uniform but the other not, determine just how non-uniform it is
    if xIsUniform && ~yIsUniform
 
-      % If Y is a vector of constant values, then the "grid" is a vector,
-      % assume uniformity.
+      % Single-row / constant-Y grid: Y carries no spacing of its own, so adopt
+      % the X cell size as a safe square-cell default. (Returning NaN here would
+      % propagate into rasterref's half-cell padding and break the reference.)
       if isvector(Y) && all(diff(Y)==0)
          yIsUniform = true;
          cellSizeY = cellSizeX;

@@ -98,6 +98,19 @@ classdef testPrepareMapGridRegular < matlab.unittest.TestCase
          testCase.verifyEqual(dY, 15, 'AbsTol', 1e-3);
       end
 
+      function testSingleRowGridGetsSquareCellDefault(testCase)
+         % a single-row (constant-Y) grid has no Y spacing of its own;
+         % mapGridCellSize adopts the X cell size rather than returning NaN
+         % (which would break rasterref's half-cell padding). matfunclib-lnh.11
+         x = (0:10:100);
+         y = 50 * ones(size(x));
+         [csx, csy, gt] = mapGridCellSize(x, y);
+         testCase.verifyEqual(csx, 10, 'AbsTol', 1e-9);
+         testCase.verifyEqual(csy, 10, 'AbsTol', 1e-9);
+         testCase.verifyFalse(any(isnan([csx csy])));
+         testCase.verifyEqual(gt, 'uniform');
+      end
+
       function testReprojectedJitterAxisIsIrregular(testCase)
          % a uniform axis perturbed by ~8% (far above the float32 jitter floor,
          % e.g. a reprojected grid) must still be classified irregular.

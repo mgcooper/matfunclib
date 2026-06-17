@@ -65,16 +65,29 @@ function varargout = plotraster(varargin)
       if R.CoordinateSystemType == "planar"
 
          [X, Y] = R.intrinsicToWorld([1 rasterSize(2)], [1 rasterSize(1)]);
-         dX = R.CellExtentInWorldX;
-         dY = R.CellExtentInWorldY;
+         % Cells references expose CellExtentInWorld*, postings references expose
+         % SampleSpacingInWorld* -- use whichever this R has (dX/dY only set the
+         % tick spacing below).
+         if isprop(R, 'CellExtentInWorldX')
+            dX = R.CellExtentInWorldX;
+            dY = R.CellExtentInWorldY;
+         else
+            dX = R.SampleSpacingInWorldX;
+            dY = R.SampleSpacingInWorldY;
+         end
 
          % Create full grids:
          % [Xgrid, Ygrid] = R.worldGrid;
       else
 
          [Y, X] = R.intrinsicToGeographic([1 rasterSize(2)], [1 rasterSize(1)]);
-         dX = R.CellExtentInLongitude;
-         dY = R.CellExtentInLatitude;
+         if isprop(R, 'CellExtentInLongitude')
+            dX = R.CellExtentInLongitude;
+            dY = R.CellExtentInLatitude;
+         else
+            dX = R.SampleSpacingInLongitude;
+            dY = R.SampleSpacingInLatitude;
+         end
 
          % Create full grids:
          % [Ygrid, Xgrid] = R.geographicGrid;
