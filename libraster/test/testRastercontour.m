@@ -35,5 +35,14 @@ classdef testRastercontour < matlab.unittest.TestCase
          h = rastercontour(testCase.Z, testCase.R);
          testCase.verifyTrue(isgraphics(h));
       end
+
+      function testReturnsAxesAndColorbar(testCase)
+         % the [H,AX] / [H,AX,C] output forms previously referenced an undefined
+         % 'ax' and errored; verify they now return the axes and colorbar.
+         [h, ax, cb] = rastercontour(testCase.Z, testCase.R);
+         testCase.verifyTrue(isgraphics(h));
+         testCase.verifyClass(ax, 'matlab.graphics.axis.Axes');
+         testCase.verifyClass(cb, 'matlab.graphics.illustration.ColorBar');
+      end
    end
 end

@@ -136,11 +136,14 @@ function varargout = rastercontour(Z, R, varargin)
 
    end
 
-   shading flat
+   % NOTE: no 'shading flat' here -- it applies to surfaces, not contour objects
+   % (a contour is an hggroup with no surface/patch), so it is a no-op at best and
+   % a failure point at worst.
    axis image
    hold on
 
-   set(gca, 'Box', 'on', 'TickDir', 'out', 'LineWidth', 1.5);
+   ax = gca;
+   set(ax, 'Box', 'on', 'TickDir', 'out', 'LineWidth', 1.5);
 
    % add colorbar using default location
    cb = colorbar;
