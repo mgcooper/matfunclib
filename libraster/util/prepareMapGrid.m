@@ -1,5 +1,5 @@
-function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2] = ...
-      prepareMapGrid(X1, Y1, OutputFormat)
+function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
+      didFlipLR, didFlipUD] = prepareMapGrid(X1, Y1, OutputFormat)
    %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis.
    %
    % [X2, Y2] = prepareMapGrid(X1, Y1, OutputFormat)
@@ -17,6 +17,9 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2] = ...
    %   - dX, dY: Scalars, the cell size in the X and Y directions.
    %   - gridType: Char, the grid type ('uniform', 'regular', 'irregular').
    %   - tfGeoCoords: Boolean flag, indicates if the coordinates are geographic.
+   %   - didFlipLR, didFlipUD: (outputs 11-12) whether the input was flipped
+   %           left-right / up-down to reach W-E / N-S orientation. Use them to
+   %           flip a full-grid value array V so it stays aligned with X2,Y2.
    %
    % The function supports three types of input:
    %   1) Grid arrays of coordinate pairs.
@@ -58,9 +61,18 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2] = ...
    % an appropriate tolerance, but i was not able to get a "true" isuniform for
    % that case until I set tol to 6
 
-   % Round input to nearest 1e-10. This is ad-hoc, from experience (e.g. MERRA2)
-   X1 = round(X1, 10);
-   Y1 = round(Y1, 10);
+   % NOTE (matfunclib-hfe): a blanket round(X1,10)/round(Y1,10) used to live here
+   % "from experience (e.g. MERRA2)" to snap float noise away before the
+   % uniformity test. It is REMOVED. Rounding to 10 *absolute* decimal places
+   % injects ~1e-10 of quantization noise into large-magnitude projected
+   % coordinates (e.g. MAR/RACMO polar-stereo axes with magnitudes ~1e3-1e6 and
+   % native ULP ~1e-13). That injected noise then exceeds the regularity
+   % tolerance and mis-flags a perfectly uniform axis as "irregular" (a uniform
+   % MAR 15 km axis goes from diff-spread 2e-13 to 1e-10 purely from the round).
+   % The downstream uniformity checks (customIsUniform / isuniform in
+   % mapGridCellSize) are already tolerance-aware and classify MERRA2-scale float
+   % noise as regular without any rounding, so the round is both redundant for the
+   % case it targeted and harmful for projected grids.
 
    % Determine input grid format.
    InputFormat = mapGridFormat(X1, Y1);
@@ -146,7 +158,10 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2] = ...
    % immediately. Update Sep 2023, added call to orient X1, Y1 b/c they were
    % being sent in as unoriented grid vectors so Y1 was a row but Y2 was a
    % column which made gridmember fail.
-   [X1, Y1] = orientMapGrid(X1, Y1, 'off');
+   % Capture the flips applied to orient the input, so a value array V the same
+   % size as the (full-grid) input can be flipped to match the output X2,Y2:
+   % if didFlipLR, V = fliplr(V); if didFlipUD, V = flipud(V).
+   [X1, Y1, didFlipLR, didFlipUD] = orientMapGrid(X1, Y1, 'off');
    [X2, Y2] = orientMapGrid(X2, Y2, 'off');
 
    % Find the mapping between the input X,Y and output X,Y. Suppress this for
