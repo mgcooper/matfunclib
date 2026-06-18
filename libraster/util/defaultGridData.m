@@ -1,43 +1,30 @@
-function varargout = defaultGridData(varargin)
-   %DEFAULTGRIDDATA Load, save, or view default gridded data
+function varargout = defaultGridData(option)
+   %DEFAULTGRIDDATA Generate (or plot) default gridded test data.
    %
-   %  [X, Y] = defaultGridData()
-   %  [X, Y, Z] = defaultGridData()
+   %  [X, Y]       = defaultGridData()
+   %  [X, Y, Z]    = defaultGridData()
    %  [X, Y, Z, R] = defaultGridData()
-   %  [_] = defaultGridData('load')
-   %  defaultGridData('save')
    %  defaultGridData('plot')
    %
-   % See also: validateGridData
+   % Derives the grid coordinates from the bundled example raster
+   % (example_cells.tif) on the fly, so callers and tests do not depend on a saved
+   % gridded.mat. Requires the Mapping Toolbox (readgeoraster) and example_cells.tif
+   % on the path.
+   %
+   % See also: validateGridData, plotraster, R2grid
 
-   if nargin < 1
-      option = 'load';
-   else
-      option = varargin{1};
+   arguments
+      option (1, :) char {mustBeMember(option, {'data', 'plot'})} = 'data'
    end
 
-   switch option
-      case 'save'
-         try
-            [Z, R] = readgeoraster('example_cells.tif');
-         catch
-            error('example_cells.tif not found')
-         end
-         [X, Y] = R2grid(R);
+   % Read the example raster and derive the cell-center grid coordinates.
+   [Z, R] = readgeoraster('example_cells.tif');
+   [X, Y] = R2grid(R);
 
-         save("data/gridded.mat", "X", "Y", "Z", "R")
-
-      case 'load'
-         load('gridded.mat', 'X', 'Y', 'Z', 'R')
-
-      case 'plot'
-
-         load('gridded.mat', 'X', 'Y', 'Z', 'R')
-         plotraster(Z, X, Y)
-         % rastersurf(Z, R)
-         % plotraster(Z)
-      otherwise
-         error('unrecognized option')
+   % Optionally display it (still returns the data, as before).
+   if strcmp(option, 'plot')
+      plotraster(Z, X, Y)
    end
+
    [varargout{1:nargout}] = dealout(X, Y, Z, R);
 end

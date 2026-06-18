@@ -8,6 +8,9 @@ function varargout = plotMapGrid(varargin)
    % H = plotMapGrid(fig, X, Y) or H = plotMapGrid(ax, X, Y) plots the grid
    % centroids and grid edges into the specified figure or axis.
    %
+   % H = plotMapGrid(..., 'force') plots grids larger than 1e5 cells, which are
+   % otherwise refused because plotting every centroid/edge is slow.
+   %
    % See also: prepareMapGrid
 
    % Parse possible axes input.
@@ -29,8 +32,13 @@ function varargout = plotMapGrid(varargin)
    % Remove X and Y and parse remaining arguments
    args = args(3:end);
 
-   % Remove the plotting option if provided
-   iopt = cellfun(@ischar, args);
+   % Remove the 'force' flag if provided (overrides the large-grid guard below).
+   iforce = cellfun(@(a) (ischar(a) || isstring(a)) && strcmp('force', a), args);
+   force = any(iforce);
+   args(iforce) = [];
+
+   % Remove the plotting option ('centroids' | 'edges' | 'both') if provided.
+   iopt = cellfun(@(a) ischar(a) || isstring(a), args);
    if any(iopt)
       opt = args(iopt);
       args(iopt) = [];
@@ -44,7 +52,7 @@ function varargout = plotMapGrid(varargin)
          if isscalar(X) && isscalar(Y)
             error('X and Y are scalar, cell size is required')
          else
-            [gridType, cellsizex, cellsizey, tfGeoCoords] = mapGridInfo(X, Y);
+            [~, cellsizex, cellsizey, ~] = mapGridInfo(X, Y);
          end
       case 1
          cellsizex = args{1};
@@ -58,10 +66,21 @@ function varargout = plotMapGrid(varargin)
    validateGridCoordinates(cellsizex, cellsizey, mfilename, ...
       'cellsizex', 'cellsizey', 'point')
 
+   % Guard against plotting an impractically large grid (each centroid is a
+   % marker and each cell edge a mesh line). Require 'force' for large grids.
+   if isvector(X) && isvector(Y)
+      nCells = numel(X) * numel(Y);
+   else
+      nCells = numel(X);
+   end
+   if nCells > 1e5 && ~force
+      error('matfunclib:plotMapGrid:gridTooLarge', ...
+         ['Grid has %d cells (> 1e5); plotting every centroid/edge may be very ' ...
+         'slow. Pass ''force'' to plot anyway.'], nCells);
+   end
+
    % Obtain the grid edges
    [Xedges, Yedges] = gridNodesToEdges(X, Y, 'fullgrids', cellsizex, cellsizey);
-
-   % TODO: check size of X,Y and if too big, exit. Add optional argument to force.
 
    % Plot the grid centroids and edges
    H = plotGrid(target, X, Y, Xedges, Yedges, opt);

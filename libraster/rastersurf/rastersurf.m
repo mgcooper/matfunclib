@@ -1,4 +1,4 @@
-function varargout = rastersurf(Z, R, varargin)
+function varargout = rastersurf(varargin)
    %RASTERSURF create raster surface plot using mapshow or geoshow.
    %
    % rastersurf(Z,R,varargin) project and display spatially referenced raster Z
@@ -76,22 +76,30 @@ function varargout = rastersurf(Z, R, varargin)
    %
    %   See also geoshow, mapshow, rastercontour, rastersurf3, rastercontour3
 
-   %% TODO
-
-   % accept lat, lon, z for compatibility with mapshow/geoshow, which permits lists
-   % of georeferenced x,y data, but possibly also irregularly spaced data, so
-   % double check if that is consistent with the intent of libraster, or if
-   % rasterize should be suggested.
-
-   % to allow postings:
-   % check if R and or Rq are of type 'postings'. If so, tell the user to
-   % convert to type 'cell' and exit
-   % assert(~strcmp(R.RasterInterpretation,'postings') , ...
-   %    ['Input argument 2, R, and input argument 3, Rq, must be of type ' ...
-   %    '''cells'' rasterInterpretation. Use RPost2Cells.m to convert. ' ...
-   %    'Support for type ''postings'' will be provided in a future release']);
-
-   % support mapshow(Z, cmap, R), but see image_tricks for clarity.
+   %% Notes
+   %
+   % Input forms (all accept trailing mapshow/geoshow Name,Value pairs):
+   %   rastersurf(Z, R)         gridded Z + raster reference (primary form)
+   %   rastersurf(Z, R, cmap)   as above with an Nx3 colormap third argument
+   %   rastersurf(lat, lon, Z)  geolocated coordinate/data arrays passed straight
+   %   rastersurf(x,   y,   Z)  through to geoshow/mapshow (compatibility form)
+   %
+   % By default the raster is drawn with DisplayType 'texturemap', which renders
+   % crisp, correctly-centered cells (like grid2image) while still using
+   % geoshow/mapshow, rather than the interpolated look of 'surface'. Pass an
+   % explicit 'DisplayType' (e.g. 'surface', 'mesh') to override. Postings
+   % references do not support 'texturemap', so they fall back to 'surface'.
+   %
+   % Options handled by rastersurf itself (NOT forwarded to mapshow/geoshow):
+   %   'transparent'      render NaN cells of Z as transparent
+   %   'Colormap', cmap   apply an Nx3 colormap (equivalent to the third
+   %                      positional argument; use this to disambiguate a 1-row
+   %                      colormap from a 1-by-3 referencing vector)
+   %
+   % Both 'cells' and 'postings' references are accepted. In the (Z, R) form R
+   % may also be a referencing vector/matrix (converted internally). The
+   % (lat,lon,Z) form expects geolocated arrays that geoshow/mapshow accept -- it
+   % is not a scattered-point gridder (use RASTERIZE for truly scattered data).
 
    %% Check inputs
 
@@ -99,76 +107,126 @@ function varargout = rastersurf(Z, R, varargin)
    assert( license('test','map_toolbox')==1, ...
       'rastersurf requires Matlab''s Mapping Toolbox.')
 
-   % If varargin{2} is not a MapCells/Postings or GeographicCells/Postings
-   % Reference, first try converting using refvecToGeoRasterReference, which
-   % will fail if R is not a vector. Then try refmatToGeoRasterReference,
-   % which will generally fail because the values in R will produce lat/lon
-   % values that are inconsistent. Finally try refmatToMapRasterReference
+   narginchk(2, Inf)
+   args = varargin;
 
-   if (~isa(R,'map.rasterref.MapCellsReference')) && ...
-         (~isa(R,'map.rasterref.GeographicCellsReference') || ...
-         ~isa(R,'map.rasterref.MapPostingsReference')) && ...
-         (~isa(R,'map.rasterref.GeographicPostingsReference'))
-      try
-         R = refvecToGeoRasterReference(R,size(Z));
-      catch
-         try
-            R = refmatToGeoRasterReference(R,size(Z));
-         catch
-            try
-               R = refmatToMapRasterReference(R,size(Z));
-            catch
-               error(['Expected input argument 2, R, to be a referencing ' ...
-                  'matrix or a map raster reference object that relates ' ...
-                  'the subscripts of Z to map coordinates. If Z is a ' ...
-                  'geographic data grid, R can be a geographic raster ' ...
-                  'reference object, a referencing vector, or a ' ...
-                  'referencing matrix.']);
-            end
-         end
+   % Pull out rastersurf-specific display options that are NOT forwarded to
+   % mapshow/geoshow: the 'transparent' flag and a 'Colormap',cmap pair.
+   [transparent, args] = localScanFlag(args, 'transparent');
+   [cmap, args]        = localScanColormapNV(args);
+
+   % Determine the input form from the leading positional arguments.
+   isZR = localIsRasterRef(args{2}) || localIsRefMatVec(args{2});
+   isCoord = ~isZR && numel(args) >= 3 ...
+      && isnumeric(args{1}) && isnumeric(args{2}) && isnumeric(args{3});
+
+   if isCoord
+      % geolocated coordinate/data arrays, for mapshow/geoshow compatibility:
+      % rastersurf(lat, lon, Z, ...) (geographic) or rastersurf(x, y, Z, ...).
+      coord1 = args{1}; coord2 = args{2}; Z = args{3}; passthrough = args(4:end);
+   else
+      % primary form: rastersurf(Z, R, ...), with an optional Nx3 colormap as the
+      % third positional argument: rastersurf(Z, R, cmap, ...).
+      Z = args{1}; R = args{2}; passthrough = args(3:end);
+      if isempty(cmap) && ~isempty(passthrough) && localIsColormap(passthrough{1})
+         cmap = passthrough{1};
+         passthrough = passthrough(2:end);
       end
    end
 
-   % confirm Z is a numeric or logical grid of size R.RasterSize
-   validateattributes(Z, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
-      mfilename, 'Z', 1)
+   % Did the caller pin a DisplayType? If not, default to 'texturemap' so cells
+   % render crisply (like grid2image) instead of as an interpolated 'surface'.
+   hasDisplayType = any(cellfun(@(a) (ischar(a) || isstring(a)) ...
+      && strcmpi(a, 'DisplayType'), passthrough));
 
-   % confirm R is either a MapCells or GeographicCellsReference objects. Note,
-   % this is redundant with try catch block above, but keep for further testing.
-   % validateattributes(R, ...
-   %    {'map.rasterref.MapCellsReference', ...
-   %    'map.rasterref.GeographicCellsReference'}, ...
-   %    {'scalar'}, 'rastersurf', 'R', 2)
+   %% Display
 
-   validateattributes(R, ...
-      {'map.rasterref.MapCellsReference', ...
-      'map.rasterref.GeographicCellsReference', ...
-      'map.rasterref.MapPostingsReference', ...
-      'map.rasterref.GeographicPostingsReference'}, ...
-      {'scalar'}, mfilename, 'R', 2)
+   if isCoord
+      % Pass the coordinate/data arrays straight through to geoshow/mapshow,
+      % deciding geographic vs planar from the coordinates themselves.
+      extra = passthrough;
+      if ~hasDisplayType, extra = [{'DisplayType', 'texturemap'}, extra]; end
+      if isGeoGrid(coord1, coord2)
+         h = geoshow(coord1, coord2, Z, extra{:});
+      else
+         h = mapshow(coord1, coord2, Z, extra{:});
+      end
+   else
+      % (Z, R) / (Z, R, cmap) forms. If R is not already a raster reference
+      % object, try converting it: first from a referencing vector
+      % (refvecToGeoRasterReference, fails unless R is a vector), then a
+      % geographic referencing matrix (usually fails on inconsistent lat/lon),
+      % then a map referencing matrix. The first that succeeds wins.
+      if ~localIsRasterRef(R)
+         try
+            R = refvecToGeoRasterReference(R, size(Z));
+         catch
+            try
+               R = refmatToGeoRasterReference(R, size(Z));
+            catch
+               try
+                  R = refmatToMapRasterReference(R, size(Z));
+               catch
+                  error(['Expected input argument 2, R, to be a referencing ' ...
+                     'matrix or a map raster reference object that relates ' ...
+                     'the subscripts of Z to map coordinates. If Z is a ' ...
+                     'geographic data grid, R can be a geographic raster ' ...
+                     'reference object, a referencing vector, or a ' ...
+                     'referencing matrix.']);
+               end
+            end
+         end
+      end
 
-   %% convert to double if
-   if isa(Z,'double') ~= 1
-      Z = double(Z);
+      % confirm Z is a numeric or logical grid of size R.RasterSize
+      validateattributes(Z, {'numeric', 'logical'}, {'size', R.RasterSize}, ...
+         mfilename, 'Z', 1)
+
+      % confirm R is a cells or postings reference (map or geographic)
+      validateattributes(R, ...
+         {'map.rasterref.MapCellsReference', ...
+         'map.rasterref.GeographicCellsReference', ...
+         'map.rasterref.MapPostingsReference', ...
+         'map.rasterref.GeographicPostingsReference'}, ...
+         {'scalar'}, mfilename, 'R', 2)
+
+      if ~isa(Z, 'double')
+         Z = double(Z);
+      end
+
+      % NOTE: since this relies on R, it is also a convenient way to display the
+      % raster cells correctly with an axesm-based map using meshm/surfm:
+      %   geomap(R.LatitudeLimits, R.LongitudeLimits); meshm(Z, R);
+
+      % Choose the default DisplayType: 'texturemap' draws crisp cells, but it is
+      % NOT supported for postings references, so those fall back to 'surface'.
+      isPostings = isa(R, 'map.rasterref.MapPostingsReference') || ...
+         isa(R, 'map.rasterref.GeographicPostingsReference');
+      extra = {'CData', Z};
+      if ~hasDisplayType
+         if isPostings
+            extra = [extra, {'DisplayType', 'surface'}];
+         else
+            extra = [extra, {'DisplayType', 'texturemap'}];
+         end
+      end
+      extra = [extra, passthrough];
+
+      % build a flat surface (ZData = zeros) colored by Z
+      Z0 = zeros(size(Z));
+      if strcmp(R.CoordinateSystemType, 'planar')
+         h = mapshow(Z0, R, extra{:});
+      else % 'geographic'
+         h = geoshow(Z0, R, extra{:});
+      end
    end
 
-   %% apply the function
-
-   % NOTE: since this function relies on R, this is a convenient way to get meshm
-   % and surfm to display the raster cells correctly using axesm based map
-   % figure
-   % geomap(R.LatitudeLimits, R.LongitudeLimits)
-   % meshm(V, R);
-
-   % make a surface of zeros.
-   Z0 = zeros(size(Z));
-
-   if strcmp(R.CoordinateSystemType, 'planar')
-      h = mapshow(Z0, R, 'CData', Z, 'DisplayType', 'surface', varargin{:});
-
-   elseif strcmp(R.CoordinateSystemType, 'geographic')
-      h = geoshow(Z0, R, 'CData', Z, 'DisplayType', 'surface', varargin{:});
+   % Keep the raster flat (z = 0) regardless of DisplayType.
+   if isprop(h, 'ZData') && ~isempty(h.ZData)
+      h.ZData = zeros(size(h.ZData));
    end
+
+   %% Default styling
 
    shading flat
    axis image
@@ -179,9 +237,18 @@ function varargout = rastersurf(Z, R, varargin)
    ax.TickDir = 'out';
    ax.LineWidth = 1.5;
 
-   % % need further testing: set nan transparant and adjust aspect ratio
-   % set(h,'FaceAlpha','texturemap','AlphaData',double(~isnan(Z)));
-   % ax.DataAspectRatio = [diff(ax.XLim) diff(ax.XLim) diff(ax.ZLim)];
+   % Render NaN cells (and only those) transparent when requested. This works
+   % cleanly with the default 'texturemap' DisplayType, where AlphaData is
+   % texture-mapped onto the faces just like CData; on a plain 'surface' the
+   % per-cell mapping is unreliable.
+   if transparent
+      set(h, 'FaceAlpha', 'texturemap', 'AlphaData', double(~isnan(Z)));
+   end
+
+   % Apply a user-supplied colormap (from 'Colormap',cmap or the Z,R,cmap form).
+   if ~isempty(cmap)
+      colormap(ax, cmap);
+   end
 
    % add colorbar using default location
    cb = colorbar;
@@ -214,5 +281,45 @@ function varargout = rastersurf(Z, R, varargin)
 
       otherwise
          error('Unrecognized number of outputs.')
+   end
+end
+
+%% local helpers
+
+function tf = localIsRasterRef(R)
+   tf = isa(R, 'map.rasterref.MapCellsReference') || ...
+      isa(R, 'map.rasterref.GeographicCellsReference') || ...
+      isa(R, 'map.rasterref.MapPostingsReference') || ...
+      isa(R, 'map.rasterref.GeographicPostingsReference');
+end
+
+function tf = localIsRefMatVec(R)
+   % A referencing matrix (3-by-2) or referencing vector (1-by-3).
+   tf = isnumeric(R) && (isequal(size(R), [3 2]) || isequal(size(R), [1 3]));
+end
+
+function tf = localIsColormap(A)
+   % An Nx3 real matrix with all entries in [0,1] (a colormap).
+   tf = isnumeric(A) && ismatrix(A) && size(A, 2) == 3 && size(A, 1) >= 1 ...
+      && isreal(A) && all(A(:) >= 0 & A(:) <= 1);
+end
+
+function [tf, args] = localScanFlag(args, name)
+   % Remove a standalone char/string flag from args; report whether it was present.
+   idx = cellfun(@(a) (ischar(a) || isstring(a)) && strcmpi(a, name), args);
+   tf = any(idx);
+   args(idx) = [];
+end
+
+function [cmap, args] = localScanColormapNV(args)
+   % Remove a 'Colormap',value name-value pair from args, if present.
+   cmap = [];
+   idx = find(cellfun(@(a) (ischar(a) || isstring(a)) && strcmpi(a, 'Colormap'), args));
+   if ~isempty(idx)
+      i = idx(end);
+      if i + 1 <= numel(args)
+         cmap = args{i + 1};
+         args([i i + 1]) = [];
+      end
    end
 end

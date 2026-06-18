@@ -16,6 +16,10 @@ function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
    %  EXTRA - names present in NAMES which are not in EXPECTEDNAMES.
    %  MISSING - names present in EXPECTEDNAMES which are missing from NAMES.
    %
+   % A cell is only a names array if it is a cellstr; a cell of data (e.g. a
+   % multi-variable data input) has no names. Honor the documented "otherwise
+   % empty names" contract instead of calling cellstr on non-text and erroring.
+   %
    % See also
 
    arguments(Input)
@@ -40,8 +44,12 @@ function [names, found, extra, missing] = parseFieldNames(V, expected, kwargs)
          else
             names = fieldnames(V);
          end
-      case {'char', 'cell', 'string'}
+      case 'char'
          names = cellstr(V);
+      case {'cell', 'string'}
+         if iscellstr(V) || isstring(V)
+            names = cellstr(V);
+         end
 
       otherwise
          try
