@@ -10,6 +10,10 @@ function varargout = fullgrid(varargin)
    %  [X, Y] = FULLGRID(X, Y, 'gridvectors') returns X, Y as grid vectors.
    %  [X, Y] = FULLGRID(X, Y, 'coordinates') returns X, Y as coordinate lists.
    %
+   %  Output orientation: X ascends (W-E), Y DESCENDS (N-S) -- the north-up
+   %  "image" convention (via xgridvec/ygridvec). Correct for geographic rasters;
+   %  flip Y for planar grids that need ascending (S-N) northing. See ygridvec.
+   %
    % Example
    %
    %

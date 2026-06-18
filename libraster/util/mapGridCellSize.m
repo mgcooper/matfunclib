@@ -30,8 +30,6 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
    % fo unstructured grids, for that would need unique(X(:),'stable') ... need
    % to revisit
 
-   debug = false;
-
    % validate X and Y
    validateGridCoordinates(X, Y, mfilename)
 
@@ -43,7 +41,7 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
       return
    end
 
-   if verLessThan('matlab', '9.13')
+   if isMATLABReleaseOlderThan('R2022b')   % builtin isuniform predates R2022b
       [xIsUniform, cellSizeX] = customIsUniform(unique(X(:)));
       [yIsUniform, cellSizeY] = customIsUniform(unique(Y(:)));
    else
@@ -71,8 +69,9 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
    % If one is uniform but the other not, determine just how non-uniform it is
    if xIsUniform && ~yIsUniform
 
-      % If Y is a vector of constant values, then the "grid" is a vector,
-      % assume uniformity.
+      % Single-row / constant-Y grid: Y carries no spacing of its own, so adopt
+      % the X cell size as a safe square-cell default. (Returning NaN here would
+      % propagate into rasterref's half-cell padding and break the reference.)
       if isvector(Y) && all(diff(Y)==0)
          yIsUniform = true;
          cellSizeY = cellSizeX;
@@ -141,35 +140,10 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
       % cellSizeX = NaN;
       % cellSizeY = NaN;
    end
-
-   if debug == true
-
-      xu = unique(X(:));
-      yu = unique(Y(:));
-      idx = findjumps(yu);
-      [~, nu] = intersect(Y(:), yu(idx));
-
-      figure;
-      scatter(X(:), Y(:), 'filled'); hold on;
-      scatter(X(nu), Y(nu), 'filled')
-
-      % try grid vecs
-      [xvec, yvec] = gridvec(X, Y);
-
-      % this was the debugging that lead to checkuniformity
-      xjumps = findjumps(unique(X(:)));
-      yjumps = findjumps(unique(Y(:)));
-
-      dx = diff(unique(X(:)));
-      dy = diff(unique(Y(:)));
-      xnu = sum(mode(dx) ~= dx);
-      ynu = sum(mode(dy) ~= dy);
-   end
 end
 
 function [tf, cellsize] = checkuniformity(x, tol)
 
-   xjumps = findjumps(x);
    dx = diff(x);
    xnu = sum(mode(dx) ~= dx);
 

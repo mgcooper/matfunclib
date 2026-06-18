@@ -3,6 +3,11 @@ function Y = ygridvec(Y)
    %
    %  Y = YGRIDVEC(Y) converts coordinates in Y to grid vector
    %
+   %  Y is returned DESCENDING (N-S) -- the north-up "image" convention shared by
+   %  gridvec, ygridvec, fullgrid, and yfullgrid. Correct for geographic rasters;
+   %  for planar grids whose Y (northing) is conventionally ascending (S-N), flip
+   %  Y yourself if S-N order is required.
+   %
    % See also: gridvec, xgridvec, fullgrid
 
    % input checks
