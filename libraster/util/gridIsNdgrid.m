@@ -1,4 +1,4 @@
-function tf = gridIsNdgrid(X, Y)
+function [tf, ambiguous] = gridIsNdgrid(X, Y)
    %GRIDISNDGRID True if a full grid is in ndgrid (not meshgrid) orientation.
    %
    %  tf = gridIsNdgrid(X, Y) returns true if the 2-D coordinate arrays X, Y are
@@ -19,6 +19,11 @@ function tf = gridIsNdgrid(X, Y)
    %      whose row and column gradients are equal -- returns false, i.e. is left
    %      as meshgrid (the safe default that preserves existing behavior).
    %
+   %  [tf, ambiguous] = gridIsNdgrid(X, Y) also returns whether the orientation
+   %  was AMBIGUOUS -- the row and column gradients tie (a ~45-degree rotation) or
+   %  X and Y disagree (curvilinear). When ambiguous is true, tf is false (meshgrid
+   %  is assumed); a caller that KNOWS its grid is ndgrid should pre-transpose.
+   %
    %  Limitation: for a truly rotated/curvilinear grid the dominant-gradient guess
    %  can be wrong, but such a grid is non-separable and is rejected downstream as
    %  'irregular' regardless of orientation, so a wrong guess here does not produce
@@ -36,6 +41,7 @@ function tf = gridIsNdgrid(X, Y)
    if ~ismatrix(X) || ~ismatrix(Y) || ~isequal(size(X), size(Y)) ...
          || isvector(X) || any(size(X) < 2)
       tf = false;
+      ambiguous = false;
       return
    end
 
@@ -47,10 +53,23 @@ function tf = gridIsNdgrid(X, Y)
    yAcrossCols = mean(abs(diff(Y, 1, 2)), 'all', 'omitnan');
 
    % ndgrid: X varies mainly down rows AND Y varies mainly across columns. Require
-   % both to agree and neither axis to be an exact tie (the ~45-degree case).
+   % both axes to agree and neither to be a near-tie (the ~45-degree case).
    xSaysNdgrid = xDownRows > xAcrossCols;
    ySaysNdgrid = yAcrossCols > yDownRows;
-   noTie = (xDownRows ~= xAcrossCols) && (yDownRows ~= yAcrossCols);
+
+   % Near-tie test, RELATIVE not exact: an exact 45-degree rotation still differs
+   % by floating round-off (sin(pi/4) ~= cos(pi/4)), so == would miss it. For a
+   % rectilinear grid one gradient is ~0, so its difference from the other is the
+   % full cell size -- far above tieTol -- and is never a tie.
+   gradScale = max([xDownRows, xAcrossCols, yDownRows, yAcrossCols]);
+   tieTol = 1e-9 * gradScale;
+   xTie = abs(xDownRows - xAcrossCols) <= tieTol;
+   yTie = abs(yDownRows - yAcrossCols) <= tieTol;
+   noTie = ~xTie && ~yTie;
 
    tf = xSaysNdgrid && ySaysNdgrid && noTie;
+
+   % Ambiguous when a tie occurs or the two axes disagree -- orientation could not
+   % be confidently determined and meshgrid (tf = false) was assumed.
+   ambiguous = ~noTie || (xSaysNdgrid ~= ySaysNdgrid);
 end

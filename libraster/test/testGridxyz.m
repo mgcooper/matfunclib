@@ -51,6 +51,16 @@ classdef testGridxyz < matlab.unittest.TestCase
          testCase.verifyEqual(V, 10 * X + Y);
       end
 
+      function testNdgridInputAlignsV(testCase)
+         % An ndgrid-oriented 2D grid is transposed to meshgrid inside
+         % prepareMapGrid; gridxyz replays that transpose (via the transform
+         % struct) on V so it stays aligned with the output X,Y. matfunclib-dif
+         [Xn, Yn] = ndgrid(0:4, 10:10:40);   % non-square so the transpose shows
+         Zn = 10 * Xn + Yn;
+         [V, ~, X, Y] = gridxyz(Xn, Yn, Zn);
+         testCase.verifyEqual(V, 10 * X + Y);
+      end
+
       function testSecondOutputIsReferenceObject(testCase)
          % With two outputs the order is [V, R].
          xs = [0 1 2 0 1 2 0 1 2].'; ys = [0 0 0 1 1 1 2 2 2].'; vs = (1:9).';

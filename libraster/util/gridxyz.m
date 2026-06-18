@@ -95,22 +95,27 @@ function varargout = gridxyz(X, Y, V, varargin)
    Y1 = Y;
    V1 = V;
 
-   % prepare the grid (also report any W-E / N-S flips it applied)
-   [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, didFlipLR, didFlipUD] = ...
+   % prepare the grid (also report the transforms it applied)
+   [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, ~, ~, tform] = ...
       prepareMapGrid(X, Y, 'fullgrids');
 
-   % prepareMapGrid computes the I/LOC membership against its internally-oriented
-   % copy of the input. If it reoriented a full-grid input, apply the same flips
-   % to the saved input X1,Y1,V1 so the indices line up. Coordinate-list input is
-   % never reoriented (didFlip* are false), so this is a no-op there.
-   if didFlipLR
+   % prepareMapGrid computes the I/LOC membership against its internally
+   % canonicalized copy of the input. If it transposed an ndgrid full grid and/or
+   % flipped it to reach meshgrid W-E/N-S, replay the SAME transforms (transpose
+   % first, then flips) on the saved input X1,Y1,V1 so the indices line up.
+   % Coordinate-list input is never transformed (all flags false), so this is a
+   % no-op there.
+   if tform.didTranspose
+      X1 = X1.'; Y1 = Y1.'; V1 = permute(V1, [2 1 3]);
+   end
+   if tform.didFlipLR
       X1 = fliplr(X1); Y1 = fliplr(Y1); V1 = fliplr(V1);
    end
-   if didFlipUD
+   if tform.didFlipUD
       X1 = flipud(X1); Y1 = flipud(Y1); V1 = flipud(V1);
    end
-   if didFlipLR || didFlipUD
-      % A reoriented V is a full grid here; flatten to a value list
+   if tform.didTranspose || tform.didFlipLR || tform.didFlipUD
+      % A transformed V is a full grid here; flatten to a value list
       % (npts x nlayers) so it indexes like the coordinate lists below.
       V1 = reshape(V1, [], size(V1, 3));
    end

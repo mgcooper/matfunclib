@@ -1,5 +1,5 @@
 function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
-      didFlipLR, didFlipUD] = prepareMapGrid(X1, Y1, OutputFormat)
+      didFlipLR, didFlipUD, transform] = prepareMapGrid(X1, Y1, OutputFormat)
    %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis.
    %
    % [X2, Y2] = prepareMapGrid(X1, Y1, OutputFormat)
@@ -18,8 +18,15 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
    %   - gridType: Char, the grid type ('uniform', 'regular', 'irregular').
    %   - tfGeoCoords: Boolean flag, indicates if the coordinates are geographic.
    %   - didFlipLR, didFlipUD: (outputs 11-12) whether the input was flipped
-   %           left-right / up-down to reach W-E / N-S orientation. Use them to
-   %           flip a full-grid value array V so it stays aligned with X2,Y2.
+   %           left-right / up-down to reach W-E / N-S orientation.
+   %   - transform: (output 13) a struct recording every transform applied to
+   %           reach the meshgrid / W-E / N-S output: didTranspose (an
+   %           ndgrid->meshgrid transpose), didFlipLR, didFlipUD, and
+   %           orientationAmbiguous. Replay it on a value array V the same size as
+   %           the INPUT grid, in this order, to keep V aligned with X2,Y2:
+   %             if transform.didTranspose, V = V.';      end
+   %             if transform.didFlipLR,    V = fliplr(V); end
+   %             if transform.didFlipUD,    V = flipud(V); end
    %
    % The function supports three types of input:
    %   1) Grid arrays of coordinate pairs.
@@ -52,37 +59,17 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
    %
    % See also: mapGridInfo, orientMapGrid, mapGridCellSize
 
-   % NOTE: This is failing in at least one known case - the gridded albedo from
-   % Johnny. There, the lat lon grid vectors are projected to SIPSN. The
-   % resolution is 1km, but mapGridFormat is returning "irregular" because the
-   % call to customIsUniform returns false. That function is not ideal b/c it
-   % does not consider the 2d grid orientation and take the diff along the
-   % appropriate dimension. It should be possible to fix this using the mode and
-   % an appropriate tolerance, but i was not able to get a "true" isuniform for
-   % that case until I set tol to 6
-
-   % NOTE (matfunclib-hfe): a blanket round(X1,10)/round(Y1,10) used to live here
-   % "from experience (e.g. MERRA2)" to snap float noise away before the
-   % uniformity test. It is REMOVED. Rounding to 10 *absolute* decimal places
-   % injects ~1e-10 of quantization noise into large-magnitude projected
-   % coordinates (e.g. MAR/RACMO polar-stereo axes with magnitudes ~1e3-1e6 and
-   % native ULP ~1e-13). That injected noise then exceeds the regularity
-   % tolerance and mis-flags a perfectly uniform axis as "irregular" (a uniform
-   % MAR 15 km axis goes from diff-spread 2e-13 to 1e-10 purely from the round).
-   % The downstream uniformity checks (customIsUniform / isuniform in
-   % mapGridCellSize) are already tolerance-aware and classify MERRA2-scale float
-   % noise as regular without any rounding, so the round is both redundant for the
-   % case it targeted and harmful for projected grids.
-
    % Canonicalize an ndgrid-oriented full grid to MATLAB's meshgrid convention
    % before any of the meshgrid-assuming machinery below (gridvec/fullgrid treat
    % size(X,2) as the X axis; orientMapGrid's flips and the I/LOC membership also
    % assume meshgrid). Detection is gradient-based, so it resolves square grids
    % too; a genuinely ambiguous (~45-degree rotated) grid is left as meshgrid. The
-   % output is always meshgrid -- ndgrid output is not produced. The value array V
-   % is never seen here, so V-carrying callers must canonicalize their own input.
-   % See matfunclib-dif.
-   if gridIsNdgrid(X1, Y1)
+   % output is always meshgrid. The transpose -- and the orientation flips below --
+   % are reported in the 'transform' output so a V-carrying caller can replay them
+   % on its own value array. See matfunclib-dif.
+   [isNdgrid, orientationAmbiguous] = gridIsNdgrid(X1, Y1);
+   didTranspose = isNdgrid;
+   if isNdgrid
       X1 = X1.';
       Y1 = Y1.';
    end
@@ -182,4 +169,13 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
    if nargout > 6
       [I2, LOC1, I1, LOC2] = gridmember(X2, Y2, X1, Y1);
    end
+
+   % Record of the transforms applied (in application order) to reach the
+   % meshgrid, W-E, N-S output, so a V-carrying consumer can replay them on a
+   % value array the same size as the INPUT grid (see the header).
+   transform = struct( ...
+      'didTranspose', didTranspose, ...
+      'didFlipLR', didFlipLR, ...
+      'didFlipUD', didFlipUD, ...
+      'orientationAmbiguous', orientationAmbiguous);
 end

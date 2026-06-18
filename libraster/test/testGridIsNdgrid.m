@@ -50,7 +50,18 @@ classdef testGridIsNdgrid < matlab.unittest.TestCase
          th = pi / 4;
          Xr = Xm * cos(th) - Ym * sin(th);
          Yr = Xm * sin(th) + Ym * cos(th);
-         testCase.verifyFalse(gridIsNdgrid(Xr, Yr));
+         [tf, ambiguous] = gridIsNdgrid(Xr, Yr);
+         testCase.verifyFalse(tf);
+         testCase.verifyTrue(ambiguous);
+      end
+
+      function testCleanGridsAreNotAmbiguous(testCase)
+         [Xm, Ym] = meshgrid(1:5, 1:7);
+         [~, ambM] = gridIsNdgrid(Xm, Ym);
+         testCase.verifyFalse(ambM);
+         [Xn, Yn] = ndgrid(1:5, 1:7);
+         [~, ambN] = gridIsNdgrid(Xn, Yn);
+         testCase.verifyFalse(ambN);
       end
    end
 end
