@@ -1,5 +1,5 @@
 function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
-      didFlipLR, didFlipUD, transform] = prepareMapGrid(X1, Y1, OutputFormat)
+      transform] = prepareMapGrid(X1, Y1, OutputFormat)
    %PREPAREMAPGRID Prepare planar or geographic X,Y grids for spatial analysis.
    %
    % [X2, Y2] = prepareMapGrid(X1, Y1, OutputFormat)
@@ -17,9 +17,7 @@ function [X2, Y2, dX, dY, GridType, tfGeoCoords, I2, LOC1, I1, LOC2, ...
    %   - dX, dY: Scalars, the cell size in the X and Y directions.
    %   - gridType: Char, the grid type ('uniform', 'regular', 'irregular').
    %   - tfGeoCoords: Boolean flag, indicates if the coordinates are geographic.
-   %   - didFlipLR, didFlipUD: (outputs 11-12) whether the input was flipped
-   %           left-right / up-down to reach W-E / N-S orientation.
-   %   - transform: (output 13) a struct recording every transform applied to
+   %   - transform: (output 11) a struct recording every transform applied to
    %           reach the meshgrid / W-E / N-S output: didTranspose (an
    %           ndgrid->meshgrid transpose), didFlipLR, didFlipUD, and
    %           orientationAmbiguous. Replay it on a value array V the same size as

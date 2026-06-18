@@ -96,7 +96,7 @@ function varargout = gridxyz(X, Y, V, varargin)
    V1 = V;
 
    % prepare the grid (also report the transforms it applied)
-   [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, ~, ~, tform] = ...
+   [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, tform] = ...
       prepareMapGrid(X, Y, 'fullgrids');
 
    % prepareMapGrid computes the I/LOC membership against its internally

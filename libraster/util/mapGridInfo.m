@@ -62,5 +62,5 @@ function [GridType, cellSizeX, cellSizeY, tfGeoCoords, tfLatLonOrder] = ...
    [cellSizeX, cellSizeY, GridType] = mapGridCellSize(X, Y);
 
    % Determine if the coordinates are geographic and if X,Y are Lat,Lon
-   [tfGeoCoords,tfLatLonOrder] = isGeoGrid(Y, X);
+   [tfGeoCoords, tfLatLonOrder] = isGeoGrid(Y, X);
 end
