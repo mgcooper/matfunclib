@@ -52,17 +52,9 @@ function [V, ambiguous] = orientValueToGrid(V, X, Y)
       return
    end
 
-   % 2-D array axes: replay prepareMapGrid's transform record on V (transpose,
-   % then flips), so V matches the meshgrid / W-E / N-S output it canonicalizes to.
+   % 2-D array axes: read the transform prepareMapGrid would apply to reach its
+   % meshgrid / W-E / N-S output, then replay it on V so V matches that grid.
    [~, ~, ~, ~, ~, ~, ~, ~, ~, ~, tform] = prepareMapGrid(X, Y, 'fullgrids');
    ambiguous = tform.orientationAmbiguous;
-   if tform.didTranspose
-      V = permute(V, [2 1, 3:ndims(V)]);
-   end
-   if tform.didFlipLR
-      V = fliplr(V);
-   end
-   if tform.didFlipUD
-      V = flipud(V);
-   end
+   V = applyGridTransform(V, tform);
 end
