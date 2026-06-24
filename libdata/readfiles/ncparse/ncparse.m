@@ -26,7 +26,13 @@ function T = ncparse(fname)
 
    % If struct2table failed, and the assignment of the "Attributes" column
    % failed, then there are no attributes to expand.
-   if none(cellfun(@isstruct, T.Attributes)) && all(isnan(T.Attributes))
+   if iscell(T.Attributes)
+      hasAttributes = any(cellfun(@isstruct, T.Attributes));
+   else
+      hasAttributes = isstruct(T.Attributes);
+   end
+
+   if ~hasAttributes && all(isnan(T.Attributes))
       return
    end
 

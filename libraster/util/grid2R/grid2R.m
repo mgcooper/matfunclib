@@ -32,84 +32,14 @@ function R = grid2R(X,Y)
    %
    %   See also rasterref, georefcells, maprefcells, meshgrid
 
-   % NOTE: I might delete everything in here (which is identical to rasterref
-   % and replace with this:
-
-   %% Check inputs
-
-   % confirm there are two inputs
-   narginchk(2,2)
-
-   % confirm mapping toolbox is installed
-   assert( license('test','map_toolbox')==1, ...
-      'grid2R requires Matlab''s Mapping Toolbox.')
-
-   % confirm X and Y are 2d numeric grids of equal size
-   validateattributes(X, {'numeric'}, {'2d','size',size(Y)}, 'grid2R', 'X', 1)
-   validateattributes(Y, {'numeric'}, {'2d','size',size(X)}, 'grid2R', 'Y', 2)
-
-   % NaN positions correspond?
-   assert(isequal(isnan(X),isnan(Y)), ...
-      ['grid2R expected its first and second input arguments, ', ...
-      'X and Y, to have NaN-separators in corresponding positions.'])
-
-   % confirm X and Y have constant grid spacing (rounding error tol = 10^-6)
-   % TEST - make the tolerance dependent on the grid spacing size
-   % I could add an if statement that checks the assert statement and if it is
-   % n't true, issues a warning and takes the first difference. For now, take
-   % the first difference and make the function dumb i.e. assume it is
-   % constant grid spacing
-   xres = diff(X(1,:));
-   yres = diff(Y(:,1));
-   xres = xres(1);
-   yres = yres(1);
-   % assert(all(roundn(diff(X(1,:),2),-6)==0),'X must have uniform grid spacing');
-   % assert(all(roundn(diff(Y(:,1),2),-6)==0),'Y must have uniform grid spacing');
-
-   % confirm X is oriented W-E and Y is N-S
-   % assert(X(1,1)==min(X(:)) & X(1,2)>X(1,1),'X must be oriented W-E');
-   % assert(Y(1,1)==max(Y(:)) & Y(1,1)>Y(2,1),'Y must be oriented N-S');
-   if X(1,1)~=min(X(:)) && X(1,2)<X(1,1)
-      X = fliplr(X);
-      warning(['It appears the X grid is oriented E-W from left to right.' ...
-         'The grid was re-oriented W-E. Make sure this is correct']);
-   elseif Y(1,1)~=max(Y(:)) && Y(1,1)<Y(2,1)
-      Y = flipud(Y);
-      warning(['It appears the Y grid is oriented S-N from top to bottom.' ...
-         'The grid was re-oriented N-S. Make sure this is correct']);
-   end
-
-   % determine if R is planar or geographic and call the appropriate function
-   tf = islatlon(Y(1,1),X(1,1));
-   if tf
-      R = geogrid2R(X,Y);
-   else
-      R = mapgrid2R(X,Y);
-   end
-end
-
-%% apply the appropriate function
-
-function R = mapgrid2R(X,Y)
-
-   % build query grid from R, adjusted to cell centroids
-   xlims = double([min(X(:)) max(X(:))]);
-   ylims = double([min(Y(:)) max(Y(:))]);
-   rasterSize = size(X);
-   R = maprefcells(xlims,ylims,rasterSize, ...
-      'ColumnsStartFrom','north', ...
-      'RowsStartFrom', 'west');
-end
-
-function R = geogrid2R(X,Y)
-
-   % 'columnstartfrom','south' is default and corresponds to N-S
-   % oriented grid as in index (1,1) is NW corner
-
-   xlims = double([min(X(:)) max(X(:))]);
-   ylims = double([min(Y(:)) max(Y(:))]);
-   rasterSize = size(X);
-   R = georefcells(ylims,xlims,rasterSize, ...
-      'ColumnsStartFrom','north', ...
-      'RowsStartFrom', 'west');
+   % grid2R is a thin alias for rasterref, as the original author's "I might
+   % delete everything in here ... identical to rasterref" note intended. The
+   % previous standalone body did NOT match this header's cell-CENTRE convention:
+   % it passed the centre min/max straight to maprefcells/georefcells as EDGE
+   % limits (no half-cell pad), so the centres landed half a cell off and did not
+   % round-trip, and it detected geographic vs planar with the looser islatlon.
+   % rasterref applies the centre convention (limits padded half a cell) and the
+   % shared isGeoGrid detection, fixing both. See matfunclib-eg3.
+   narginchk(2, 2)
+   R = rasterref(X, Y);
 end

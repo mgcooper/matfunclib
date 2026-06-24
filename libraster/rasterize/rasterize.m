@@ -5,6 +5,9 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    % raster reference object R from scattered data z referenced to geo/map
    % coordinates x,y
    %
+   % [Z,R] = RASTERIZE(x,y,z) grids x,y,z that already lie on a grid (the grid is
+   %  taken from the coordinates; no rasterSize/cellextent is needed). For
+   %  scattered x,y a rasterSize or cellextent is required (forms below).
    % [Z,R] = RASTERIZE(x,y,z,rasterSize)
    % [Z,R] = RASTERIZE(x,y,z,cellextentX,cellextentY)
    % [Z,R] = RASTERIZE(_,method). Options: 'linear', 'nearest', 'natural',
@@ -61,9 +64,12 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 
    %% Check inputs
 
-   % Up to: x,y,z + (rasterSize | cellextentX,cellextentY) + method + 'extrap'
-   % flag + 'plot' flag + projection (projcrs).
-   narginchk(4, 9)
+   % x,y,z + OPTIONAL (rasterSize | cellextentX,cellextentY) + method + 'extrap'
+   % flag + 'plot' flag + projection (projcrs). rasterSize/cellextent is required
+   % only for SCATTERED input (to set the invented grid's resolution); for input
+   % that is already on a grid, the grid comes from the coordinates, so x,y,z
+   % alone suffice.
+   narginchk(3, 9)
 
    % confirm mapping toolbox is installed
    assert( license('test','map_toolbox')==1, ...
@@ -120,7 +126,13 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
    end
 
    % parse remaining args
+   hasGridSpec = true;       % a rasterSize or cellextent was supplied
    switch numarg
+      case 0 % no rasterSize/cellextent -- valid only for already-gridded input
+             % (the regular branch builds the grid from the coordinates). The
+             % scattered branch errors below if it is reached without a spec.
+         inrasterSize = false;
+         hasGridSpec = false;
       case 1 % user passed in rasterSize
          inrasterSize = true;
          rasterSize = varargin{1};
@@ -147,57 +159,65 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
                {'real','scalar','finite','positive'}, ...
                mfilename, 'cellextentY', 5)
          end
+      otherwise
+         error('matfunclib:rasterize:tooManyPositionalArgs', ...
+            ['Expected at most rasterSize or cellextentX,cellextentY after ' ...
+            'x,y,z (got %d unmatched positional arguments).'], numarg)
    end
 
    %% Now have 1) rasterSize or 2) cellextent, build the spatial reference R
 
-   % Check if the user passed in regularly-spaced data that isn't gridded
-   if isxyregular(x, y)
+   % Regularly-spaced input: x,y already lie on a (uniform or regular) grid, so no
+   % interpolation is needed -- place z onto the grid the coordinates imply. z may
+   % or may not fill every cell (a regular grid can have gaps). Classify with
+   % mapGridInfo -- the SAME classifier prepareMapGrid uses internally -- so the
+   % branch decision and the gridding below can never disagree (a separate
+   % isxyregular test could classify a tolerance-boundary grid differently from
+   % prepareMapGrid and send it down a path that then errors).
+   if ~strcmp(mapGridInfo(x, y), 'irregular')
 
-      % If so, then simply grid it. Apr 2024 - but if the data is regular but
-      % not a full grid, then z cannot be reshaped to match the size of the
-      % grids produced by meshgrid, so I added the check numel(z) == numel(X),
-      % if that passes, then assume its a full grid already. If not, then the
-      % data need to be embedded into their
+      % Guard: if every point has a distinct x AND a distinct y there is no grid
+      % structure to place values into -- the data is genuinely scattered despite
+      % uniform unique-value spacing. Warn (a 1xN/Nx1 grid trips only one test).
+      if numel(unique(x(:))) == numel(z) && numel(unique(y(:))) == numel(z)
+         warning(...
+            ['This data appears to be scattered with irregular X, Y spacing. ' ...
+            'Rasterize may produce incorrect results in this case.'])
+      end
 
-      [X, Y] = meshgrid(unique(x(:), 'sorted'), flipud(unique(y(:), 'sorted')));
+      % Build the implied full grid and the input->grid index mapping with
+      % prepareMapGrid -- the same machinery gridxyz uses. This replaces the
+      % older hand-rolled meshgrid(unique) + reshape-or-accumarray placement:
+      % prepareMapGrid is the robust form of the numel/isfullgrid test, places
+      % values via the I/LOC mapping (leaving gaps NaN), and also canonicalizes
+      % orientation. I is true for grid cells present in the input; LOC indexes
+      % those input points.
+      z1 = z;
+      [X, Y, ~, ~, ~, ~, I, LOC, ~, ~, tform] = prepareMapGrid(x, y, 'fullgrids');
 
-      if numel(z) == numel(X)
+      % If prepareMapGrid transposed/flipped the input to reach meshgrid W-E/N-S,
+      % replay the SAME transforms on z so its indices line up with I/LOC.
+      % Coordinate-list input is never transformed, so this is a no-op there.
+      z1 = applyGridTransform(z1, tform);
+      z1 = z1(:);
 
-         Z = reshape(z, size(X,1), size(Y,2));
+      % Place known values onto the full grid; cells with no data stay NaN.
+      Z = nan(numel(X), 1);
+      Z(I(:)) = z1(LOC(LOC > 0));
+      Z = reshape(Z, size(X));
 
-         % check for missing values
-         if any(isnan(Z(:))) && extrap
-            Z = inpaintn(Z);
-            prec = ceil(log10(Z));
-            prec(prec > 0) = 0;
-            Z = round(Z, mode(prec(:)));
-         end
-
-      else
-         % Apply Chad Greene's magic.
-
-         % Get unique values of x and y:
-         [xs, ~, xi] = unique(x(:), 'sorted');
-         [ys, ~, yi] = unique(y(:), 'sorted');
-
-         % If every point has a distinct x AND a distinct y, there is no grid
-         % structure to accumulate into -- the data is genuinely scattered, so
-         % warn. (A 1xN or Nx1 grid has unique x or y but not both, and is fine;
-         % the old numel(xs)==numel(z) test false-warned on those.)
-         if numel(xs) == numel(z) && numel(ys) == numel(z)
-            warning(...
-               ['This data appears to be scattered with irregular X, Y spacing. ' ...
-               'Rasterize may produce incorrect results in this case.'])
-         end
-
-         % Sum up all the Z values in each x,y grid point:
-         Z = accumarray([yi xi], z(:), [], [], NaN);
-         % wow it worked
-
-         % This should hold if it worked.
-         assert(all(size(Z) == size(X)))
-         assert(all(size(Z) == size(Y)))
+      % Gap-fill missing cells if requested. inpaintn ignores the x,y coordinates
+      % and assumes unit cell spacing -- exact for a 'uniform' grid (this branch's
+      % usual case) and a good approximation for a 'regular' grid (uniform per
+      % axis, anisotropic spacing). Coordinate-aware gap-fill that respects
+      % anisotropy is gridxyz's job (scatteredInterpolation).
+      % NOTE: inpaintn lives in fexlib (libspatial/inpaintn), not on the default
+      % path; 'extrap' on a gapped regular grid requires it loaded.
+      if any(isnan(Z(:))) && extrap
+         Z = inpaintn(Z);
+         prec = ceil(log10(Z));
+         prec(prec > 0) = 0;
+         Z = round(Z, mode(prec(:)));
       end
 
       % Construct the referencing matrix.
@@ -205,25 +225,45 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 
    else % build a query grid and interpolate the scattered data onto it
 
+      % Scattered input has no implied grid, so a resolution is required.
+      if ~hasGridSpec
+         error('matfunclib:rasterize:missingGridSpec', ...
+            ['Scattered (non-gridded) x,y require a rasterSize or ' ...
+            'cellextentX,cellextentY argument to set the output grid resolution.'])
+      end
+
       % Determine the x-y extent of the interpolation query grid. This method
       % attempts to account for both very small and large domains. It might not
       % work all the time.
 
-      % Note that extending by xmindif can substantially increase the extent
+      % Pick a rounding precision from the smallest nonzero spacing so false
+      % precision in the coordinates (e.g. 67.080001) does not leak into the grid
+      % limits, then round DIRECTIONALLY -- floor the mins, ceil the maxes -- so
+      % the box always covers every data point. (Nearest round() here could trim
+      % the extent and drop edge points; this is the clean answer reached in
+      % docs/raster-conventions-journey.md sec 4.)
+      %
+      % Precision-from-spacing is a recurring concept in libraster, but with two
+      % distinct estimators for two purposes: for already-gridded data the cell
+      % size is the MODAL spacing (mapGridCellSize/isxyregular, and exactremap's
+      % axis reconstruction); for inventing a grid over SCATTERED data, as here,
+      % the MINIMUM nonzero spacing is the right proxy -- it preserves the finest
+      % distinguishable scale. So this stays min-based; it is not the same need as
+      % the modal cell-size inference. ponytail: in-place, single caller; extract a
+      % scatterExtent() helper only if a second scattered caller appears.
       xdiffs = abs(diff(x(:)));
       ydiffs = abs(diff(y(:)));
       xmindiff = min(xdiffs(xdiffs > 0.0));
       ymindiff = min(ydiffs(ydiffs > 0.0));
-      xtol = floor(log10(xmindiff)) - 1;
-      ytol = floor(log10(ymindiff)) - 1;
-      xmin = round(min(x(:)), -xtol);
-      xmax = round(max(x(:)), -xtol);
-      ymin = round(min(y(:)), -ytol);
-      ymax = round(max(y(:)), -ytol);
+      xscale = 10 ^ -(floor(log10(xmindiff)) - 1);
+      yscale = 10 ^ -(floor(log10(ymindiff)) - 1);
+      xmin = floor(min(x(:)) * xscale) / xscale;
+      xmax = ceil( max(x(:)) * xscale) / xscale;
+      ymin = floor(min(y(:)) * yscale) / yscale;
+      ymax = ceil( max(y(:)) * yscale) / yscale;
 
-      % (xmin..ymax above are the extent of the grid-point CENTERS. Nearest
-      % rounding can occasionally trim the extent; a directional floor/ceil would
-      % guarantee coverage -- see docs/raster-conventions-journey.md.)
+      % xmin..ymax are the extent of the grid-point CENTERS; rasterref pads the
+      % half-cell out to the EDGES when it builds R below.
 
       % Build a regular grid of cell CENTERS spanning the data extent, then let
       % rasterref construct the matching reference object. rasterref treats x,y as
@@ -247,10 +287,7 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
       yq = Y(:);
 
       % Apply griddata and reshape to a grid. NOTE: griddata uses "nearest"
-      % interpolation if method is "nearest" and "none" otherwise. (A commented
-      % world->intrinsic conversion that might speed up griddata was never
-      % validated -- it risks snapping sub-cell coordinates to grid resolution --
-      % so it was dropped; see docs/raster-conventions-journey.md.)
+      % interpolation if method is "nearest" and "none" otherwise.
       Z = griddata(x, y, z, xq, yq, method);
 
       assert(~isempty(Z), ...
@@ -259,11 +296,21 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
 
       Z = reshape(Z, size(X, 1), size(X, 2));
 
-      % griddata won't extrapolate, but it interpolates over the convex hull,
-      % which may include points outside the actual x,y domain; mask cells with no
-      % nearby data to NaN.
-      LI2 = gridmember(X, Y, x, y);
-      Z(~LI2) = nan;
+      % Trim cells outside the actual data footprint. griddata already returns
+      % NaN outside the convex hull for linear/natural/cubic, but 'nearest'/'v4'
+      % fill the whole query box, and even the convex hull can bulge over a
+      % concave domain. Mask cells outside a concave boundary of the samples so a
+      % concave footprint or a 'nearest' fill does not invent values far from any
+      % data. (The previous gridmember mask did EXACT coordinate matching -- right
+      % for a gapped GRID, where x,y are a subset of grid nodes, but it blanks the
+      % whole surface for genuinely scattered x,y, since no grid node coincides
+      % with a sample. Gapped grids now take the regular branch above, so this
+      % branch only ever sees scattered data.)
+      xy = unique([x(:), y(:)], 'rows');
+      if size(xy, 1) >= 3
+         k = boundary(xy(:, 1), xy(:, 2), 0.5);
+         Z(~inpolygon(X, Y, xy(k, 1), xy(k, 2))) = NaN;
+      end
    end
 
    % Apply the optional projection and display.
@@ -274,6 +321,23 @@ function [Z,R,X,Y] = rasterize(x,y,z,varargin)
       rastersurf(Z, R)
    end
 end
+
+%% Superseded subfunctions (kept for reference)
+%
+% gridmapdata/gridgeodata are the original map/geo-split scattered gridders
+% (modified geoloc2grid). They are NOT called by rasterize anymore and are
+% retained only as reference -- hence %#ok<DEFNU>.
+%
+% EDGE-CONVENTION NOTE: these build R by handing floor/ceil-padded limits
+% straight to maprefcells/georefcells, which treat limits as cell EDGES. The
+% production scattered branch above instead builds a grid of cell CENTERS and
+% calls rasterref, which pads the half cell to the edges -- so rasterize and
+% rasterref now return the SAME R (see docs/raster-conventions-journey.md sec 5,
+% which records that the center convention superseded this edge approach). The
+% floor/ceil-to-whole-degree padding here is also the approach sec 4 flags as
+% broken for small extents. Two ideas worth salvaging if these are ever revived:
+% gridgeodata's longitude-wrap warning, and scatteredInterpolant's extrapolation
+% support (the production branch uses griddata, which cannot extrapolate).
 
 %%
 function [B, R] = gridmapdata(X, Y, V, cellsize, method, extrap) %#ok<DEFNU>

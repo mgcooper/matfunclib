@@ -86,7 +86,11 @@ function R = bbox2R(bbox, gridRes, varargin)
    xres = gridRes;
    yres = gridRes;
 
-   % determine if the data is planar or geographic
+   % determine if the data is planar or geographic. Uses the permissive islatlon
+   % (not rasterref's stricter isGeoGrid) deliberately: a bare bbox has no grid to
+   % read a geographic signature from, so erring toward geographic for in-range
+   % bounds is the safer default here (isGeoGrid would misclassify an in-range
+   % integer-degree geographic bbox as planar). See matfunclib-a65.
    tfgeo = islatlon(minY,minX);
 
    % if provided, parse the map projection

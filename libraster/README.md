@@ -118,6 +118,20 @@ coordinates/point/irregular), `prepareMapGrid`/`prepareGeoGrid`/`prepareGeoCoord
 `scatteredInterpolation` (wraps `scatteredInterpolant`; accepts gridded or
 irregular input via `validateScatteredData`), `rasterinterp`.
 
+**Which gridder?** The boundary is *"are the input coordinates already on a
+grid?"* — decided with `mapGridInfo` (the same classifier `prepareMapGrid` uses):
+
+| Input | Tool | What it does |
+|---|---|---|
+| Already on a grid (uniform/regular), **may have gaps**, single layer | `rasterize` *(regular branch)* | builds the implied full grid via `prepareMapGrid`, **places** values onto it by the I/LOC map (no interpolation of existing data); optional `inpaintn` gap-fill under `'extrap'` (valid only because the grid is uniform — `inpaintn` ignores coordinates) |
+| Already on a grid, gappy, **one or many** layers, coordinate-aware gap-fill | `gridxyz` | same `prepareMapGrid` placement, then `scatteredInterpolation` (uses x,y) to fill only the missing cells |
+| Genuinely **scattered** (not on any grid) → new raster at a chosen resolution | `rasterize` *(scattered branch)* | invents a regular cell-center grid (false-precision-aware, directionally-rounded extent) and `griddata` interpolates onto it; trims cells outside the data's concave `boundary` |
+
+Rule of thumb: gridded-but-gappy → `gridxyz` (or `rasterize` for a single layer);
+truly scattered → `rasterize` with a `rasterSize`/`cellextent`. `rasterize`
+gap-fills with `inpaintn` (coordinate-free, uniform grids only); `gridxyz`
+gap-fills with coordinate-aware `scatteredInterpolation`.
+
 ### Masking / display / extraction
 `plotraster`, `plotMapGrid`, `maskraster` (mask==true ⇒ remove), `coverlay`,
 `rastersurf`, `rastercontour`, `rasterclip`/`rastercrop`, `floodFillExterior`,

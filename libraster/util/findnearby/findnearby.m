@@ -30,9 +30,6 @@ function varargout = findnearby(x,y,xq,yq,N)
    %
    % See also: dsearchn
 
-   % I might have broken this by adding multiple points b/c the found thing
-   % might remove them before they are found nearest the others
-
    if nargin == 4 || isempty(N)
       N = 1;
    end
@@ -60,8 +57,14 @@ function varargout = findnearby(x,y,xq,yq,N)
    while n<N
       n = n+1;
 
-      [idx(:, n), dst(:, n)] = dsearchn([x(~found) y(~found)], [xq yq]);
-      [row(:, n), col(:, n)] = ind2sub(sizexy,idx(:, n));
+      % dsearchn searches only the not-yet-found subset and returns indices INTO
+      % that subset, so map them back to indices in the full x,y before storing or
+      % excluding (otherwise idx/found refer to the wrong points -- the bug noted
+      % above). avail holds the full-array indices of the available points.
+      avail = find(~found);
+      [sub, dst(:, n)] = dsearchn([x(avail) y(avail)], [xq yq]);
+      idx(:, n) = avail(sub);
+      [row(:, n), col(:, n)] = ind2sub(sizexy, idx(:, n));
       found(idx(:, n)) = true;
    end
 
@@ -79,44 +82,3 @@ function varargout = findnearby(x,y,xq,yq,N)
       [varargout{1:nargout}] = dealout(row, col, dst, idx);
    end
 end
-
-
-% % This is the version before I added multi point support to debug
-% function [row,col,distance,idx] = findnearby(x,y,xq,yq,N)
-%
-%    row     = nan(N,1);
-%    col     = nan(N,1);
-%    idx     = nan(N,1);
-%    dst     = nan(N,1);
-%
-%    % keep the original size of the x,y coordinate arrays
-%    sizexy  = size(x);
-%    x       = x(:);
-%    y       = y(:);
-%
-%    % we will exclude found points
-%    found   = false(size(x));
-%
-%    % find N requested nearby points
-%    n = 0;
-%    while n<N
-%
-%       n = n+1;
-%
-%       [idx(n),dst(n)] =   dsearchn([x(~found) y(~found)],[xq yq]);
-%       [row(n),col(n)] =   ind2sub(sizexy,idx(n));
-%
-%       % exclude the found point and repeat the search
-%       found(idx(n))   =   true;
-%    end
-%
-%    distance = dst;
-%
-%    % package output
-%    nargoutchk(1, 4)
-%    if nargout == 1
-%       varargout{1} = idx;
-%    else
-%       [varargout{1:nargout}] = dealout(row, col, dst, idx);
-%    end
-% end
