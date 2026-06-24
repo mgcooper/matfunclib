@@ -36,7 +36,7 @@ function [tf, pa] = polyorder(x,y,order)
       end
    else
       % checkxy(lon, lat, mfilename, 'X', 'Y', 1, 2)
-      [first, last] = findFirstLastNonNan(x);
+      [first, last] = nonnansegments(x(:));
       numParts = numel(first);
       if isrow(x)
          tf = zeros(1,numParts);
@@ -63,7 +63,7 @@ end
 
 function A = signedPolyArea(x,y)
 
-   [x, y] = removeDuplicates(x, y);
+   [x, y] = removeDuplicateVertices(x, y);
    x = x - mean(x);
    n = numel(x);
    if n <= 2
@@ -77,25 +77,3 @@ function A = signedPolyArea(x,y)
    A = A/2;
 end
 
-function [x, y] = removeDuplicates(x, y)
-   % ... including duplicate start and end points.
-
-   is_closed = ~isempty(x) && (x(1) == x(end)) && (y(1) == y(end));
-   if is_closed
-      x(end) = [];
-      y(end) = [];
-   end
-
-   dups = [false; (diff(x(:)) == 0) & (diff(y(:)) == 0)];
-   x(dups) = [];
-   y(dups) = [];
-end
-
-function [first, last] = findFirstLastNonNan(x)
-   % Given a vector X containing NaN-delimited sequences of numbers, find the
-   % indices of the first and last element of each sequence.  X may contain
-   % runs of multiple NaNs, and X may start or end with one or more NaNs.
-   n = isnan(x(:));
-   first = find(~n & [true; n(1:end-1)]);
-   last = find(~n & [n(2:end); true]);
-end

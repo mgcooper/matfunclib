@@ -127,9 +127,11 @@ function [cellSizeX, cellSizeY, gridType] = mapGridCellSize(X, Y, varargin)
       else
 
          % Here and next isn't really right, to know te actual grid size I need
-         % ot know the vertices or the edges of the first or last
-         cellSizeX = diff(X);
-         cellSizeY = diff(Y);
+         % ot know the vertices or the edges of the first or last.
+         % diff(X(:)) forces a column so the [first; rest] concat below works for
+         % ROW-vector input too (a row would vertcat a scalar onto a row -> error).
+         cellSizeX = diff(X(:));
+         cellSizeY = diff(Y(:));
 
          % This section appends the first element because diff returns 1 fewer
          % element than the input X,Y:

@@ -14,11 +14,25 @@ function [X,Y] = R2grid(R)
    assert(license('test','map_toolbox')==1, ...
       'rasterinterp requires Matlab''s Mapping Toolbox.')
 
-   % confirm R is either MapCells or GeographicCellsReference objects
+   % confirm R is a cells or postings reference (planar or geographic)
    validateattributes(R, ...
       {'map.rasterref.MapCellsReference', ...
-      'map.rasterref.GeographicCellsReference'}, ...
+      'map.rasterref.GeographicCellsReference', ...
+      'map.rasterref.MapPostingsReference', ...
+      'map.rasterref.GeographicPostingsReference'}, ...
       {'scalar'}, 'R2grid', 'R', 2) % might need {'scalar', 'object'}
+
+   % Postings: R's limits coincide with the outer sample POINTS (no half-cell
+   % edge), so there is no inward half-cell adjustment to make -- the built-in
+   % grid accessors already return the posting positions, oriented per R. The
+   % cells path below (with the diagram) handles the cell-CENTRE case.
+   if isa(R, 'map.rasterref.MapPostingsReference')
+      [X, Y] = worldGrid(R);
+      return
+   elseif isa(R, 'map.rasterref.GeographicPostingsReference')
+      [Y, X] = geographicGrid(R);    % geographicGrid returns [lat, lon]
+      return
+   end
 
    % Regarding the construction of the grid from the R object. From the
    % documentation for MapCellsReference: "The Mapping Toolbox™ and Image
@@ -118,8 +132,11 @@ function [X,Y] = R2grid(R)
          Y = flipud(Y);
       end
 
-      % flip the x-coordinates left/right if oriented E-W
-      if strcmp(R.ColumnsStartFrom,'east')
+      % flip the x-coordinates left/right if oriented E-W. The horizontal
+      % direction is RowsStartFrom ('west'|'east'); ColumnsStartFrom is the
+      % VERTICAL direction ('north'|'south') and is never 'east', so the old
+      % ColumnsStartFrom test here was a dead branch (X never flipped).
+      if strcmp(R.RowsStartFrom,'east')
          X = fliplr(X);
       end
 
@@ -147,8 +164,11 @@ function [X,Y] = R2grid(R)
          Y = flipud(Y);
       end
 
-      % flip the x-coordinates left/right if oriented E-W
-      if strcmp(R.ColumnsStartFrom,'east')
+      % flip the x-coordinates left/right if oriented E-W. The horizontal
+      % direction is RowsStartFrom ('west'|'east'); ColumnsStartFrom is the
+      % VERTICAL direction ('north'|'south') and is never 'east', so the old
+      % ColumnsStartFrom test here was a dead branch (X never flipped).
+      if strcmp(R.RowsStartFrom,'east')
          X = fliplr(X);
       end
 

@@ -45,12 +45,20 @@ function [start, count] = ncrowcol(ncvar, ncX, ncY, coords, kwargs)
       kwargs.ycellbuffer (1, 1) {mustBeInteger} = 0
    end
 
-   % Parse the coordinates
-   if ~isa(coords, 'polyshape')
-      coords = polyshape(coords(:, 1), coords(:, 2));
+   % Parse the coordinates. A single point (or fewer than 3 vertices) cannot be a
+   % polyshape -- polyshape silently drops a lone vertex, which left xcoords empty
+   % and crashed the nearest-point branch below -- so keep the raw coordinates in
+   % that case and only build a polyshape for an actual polygon.
+   if isa(coords, 'polyshape')
+      xcoords = coords.Vertices(:, 1);
+      ycoords = coords.Vertices(:, 2);
+   else
+      xcoords = coords(:, 1);
+      ycoords = coords(:, 2);
+      if numel(xcoords) > 2
+         coords = polyshape(xcoords, ycoords);
+      end
    end
-   xcoords = coords.Vertices(:, 1);
-   ycoords = coords.Vertices(:, 2);
 
    % Assume a data var was provided rather than char variable name
    waschar = ischar(ncvar);

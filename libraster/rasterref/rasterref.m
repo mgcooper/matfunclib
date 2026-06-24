@@ -124,21 +124,17 @@ function [R, X, Y] = rasterref(X, Y, varargin)
 end
 
 %% Apply the appropriate function
-function R = rasterrefmap(X, Y, halfX, halfY, cellInterpretation, tol)
+function R = rasterrefmap(X, Y, halfX, halfY, cellInterpretation)
 
-   % Note: rounding wont work in general esp for large and/or global grids e.g.
-   % if the min coordinate is near the edge round to 0 will force the x/ymin
-   % values to the edge and then adjusting by half cell will put the edge
-   % outside the limits.
-   if nargin < 6
-      tol = 0;
-   end
-
-   % convert X,Y grids stored as type uint to double.
-   xmin = round(min(X(:)), tol); % changed from floor(min(X(:)))
-   xmax = round(max(X(:)), tol); % changed from ceil(max(X(:)))
-   ymin = round(min(Y(:)), tol);
-   ymax = round(max(Y(:)), tol);
+   % Use the raw coordinate min/max -- do NOT round the limits. The old
+   % round(min(X(:)), tol) with tol = 0 snapped the limits to the nearest INTEGER,
+   % which is wrong for any planar grid with non-integer coordinates (UTM,
+   % polar-stereo metres, ...): it shifts the limits up to half a unit and breaks
+   % the cell center/edge alignment (the half-cell pad below then lands the edges
+   % off the data). The geographic branch dropped this same snapping in May 2024
+   % for the same reason; the two now match. See matfunclib-43n.
+   [xmin, xmax, ymin, ymax] = deal( ...
+      min(X(:)), max(X(:)), min(Y(:)), max(Y(:)));
    rasterSize = size(X);
 
    if strcmp(cellInterpretation,'cells')
@@ -184,6 +180,18 @@ function R = rasterrefgeo(X, Y, halfX, halfY, cellInterpretation)
       % valid latitude range (georefcells errors otherwise).
       xlims = double([xmin-halfX xmax+halfX]);
       ylims = double([max(ymin-halfY, -90) min(ymax+halfY, 90)]);
+
+      % Warn when the clamp actually fires: a cell CENTERED at +/-90 cannot have a
+      % symmetric half-cell edge (it would pass the pole), so the polar row's cell
+      % is distorted and R2grid will not recover those centers exactly. Common for
+      % pole-touching grids (e.g. MERRA-2 lat -90:0.5:90). Pass the data as
+      % 'postings' to reference the pole points exactly. See matfunclib-m0x.
+      if (ymin - halfY) < -90 || (ymax + halfY) > 90
+         warning([mfilename ':LatitudeClampedAtPole'], ...
+            ['Latitude limits clamped to [-90, 90]: cells centered at the pole ' ...
+            'are distorted (R2grid will not recover the polar centers exactly). ' ...
+            'Use cellInterpretation=''postings'' to reference pole points exactly.'])
+      end
 
       R = georefcells(ylims, xlims, rasterSize, ...
          'ColumnsStartFrom', 'north', ...

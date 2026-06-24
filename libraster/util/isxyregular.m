@@ -1,115 +1,41 @@
-function [tf,tflatlon,tol] = isxyregular(x,y,varargin)
+function [tf, tflatlon, tol] = isxyregular(x, y, varargin)
    %ISXYREGULAR Determine if the values in x and y are regularly spaced.
    %
-   %  TF = isxyregular(X,Y) returns a logical scalar TF that is true if the
-   %  distance between each element of X and each element of Y is constant up to
-   %  roundoff error. No check is made for distance between X and Y values.
+   %  TF = isxyregular(X,Y) returns a logical scalar TF that is true if X and Y
+   %  EACH have uniform spacing -- i.e. they form a uniform or regular grid, not
+   %  an irregular one -- up to a relative tolerance. No check is made of the
+   %  distance between X and Y values.
    %
-   %  [TF,TFLATLON,TOL] = isxyregular(X,Y) also returns a logical scalar
-   %  TFLATLON that is true if the data in X and Y are geographic coordinates,
-   %  and a numeric scalar TOL that represents the roundoff error used.
+   %  [TF,TFLATLON,TOL] = isxyregular(X,Y) also returns TFLATLON (true if X and Y
+   %  are geographic coordinates) and TOL (retained for the legacy signature; see
+   %  the note below).
    %
-   % See also: isuniform, isGeoGrid
+   %  isxyregular is a thin wrapper over libraster's canonical grid estimator
+   %  mapGridCellSize/customIsUniform (relative-tolerance, mode-based cell size).
+   %  The earlier bespoke round(diff(diff),tol) test was retired so the library
+   %  has a SINGLE uniformity estimator. See matfunclib-jjo and, for the tolerance
+   %  rationale, matfunclib-hfe.
+   %
+   % See also: mapGridCellSize, customIsUniform, mapGridInfo, isGeoGrid, isuniform
 
-   % % input checks not implemented yet
-   % if ~isreal(x) || ~isreal(y)
-   %    error(message('LIBRASTER:isxyregular:MustBeReal'));
-   % end
-   %
-   % if isscalar(x) || isempty(x) || isscalar(y) || isempty(y)
-   %    tf = false;
-   %    return
-   % end
-   %
-   % Note: I don't want this check because this function must work with grids,
-   % but it shows an example of how it is done for vectors.
-   %
-   % if ~isvector(x) || ~isvector(y)
-   %    error(message('LIBRASTER:isxyregular:MustBeVector'));
-   % end
-   %
-   %step = NaN('like',x);
+   % Delegate the uniformity decision to the canonical estimator: the grid is
+   % "regular" when neither axis is irregular (GridType is 'uniform' or 'regular',
+   % and 'point' for a degenerate single coordinate -- not 'irregular').
+   [~, ~, gridType] = mapGridCellSize(x, y);
+   tf = ~strcmp(gridType, 'irregular');
 
-   % NOTE: in at least one case where coordinate lists were passed in, all
-   % values of x were uniform spaced, and all but one of y were, the one
-   % non-uniform y diff was twice the true (uniform) spacing, because the pairs
-   % were captured by interpolationPoints and I think it must have failed to
-   % capture one row, not sure how best to deal with this. In exactremap I use
-   % the mode of celldiffs to estimate the cell resolution.
+   % geographic vs planar
+   tflatlon = islatlon(y, x);
 
-   % check if the coordinates are lat lon or planar
-   tflatlon = islatlon(y,x);
-
-   % check that the gridding is uniform.
-   if nargin>2
+   % TOL is kept only for backward compatibility with the [tf,tflatlon,tol]
+   % signature. customIsUniform uses a RELATIVE tolerance internally, so this
+   % absolute decimal value is nominal: an explicitly supplied tol no longer
+   % affects the uniformity decision (which is now made by mapGridCellSize).
+   if nargin > 2
       tol = varargin{1};
    elseif tflatlon
       tol = 7; % approximately 1 cm in units of degrees
    else
       tol = 2; % nearest cm
    end
-
-   % get the unique coordinate values
-   xu = unique(x(:),'sorted');
-   yu = unique(y(:),'sorted');
-
-   % get an estimate of the grid resolution (i.e. the grid cell size)
-   xres = diff(xu);
-   yres = diff(yu);
-
-   % if length(xu) or length(yu) is <= 2, then
-
-   % check x
-   if length(xres) == 1
-      tfx = true;
-   else
-      tfx = all(round(diff(xres,1),tol)==0);
-   end
-
-   % check y
-   if length(yres) == 1
-      tfy = true;
-   else
-      tfy = all(round(diff(yres,1),tol)==0);
-   end
-
-   tf = tfx == true && tfy == true;
-
 end
-
-%% for reference, this is how isuniform does it
-
-% maxElement = max(abs(x(1)),abs(x(end)));
-% tol = 4*eps(maxElement);
-% numSpaces = numel(x) - 1;
-% span = x(end) - x(1);
-% if isfinite(span)
-%    mean_step = span/numSpaces;
-% else
-%    mean_step = x(end)/numSpaces - x(1)/numSpaces;
-% end
-%
-% stepAbs = abs(mean_step);
-% if stepAbs < tol
-%    % Special cases for very small step sizes
-%    if stepAbs < eps(maxElement)
-%       % Avoid having a tolerance that is tighter then round-off error
-%       tol = eps(maxElement);
-%    else
-%       tol = stepAbs;
-%    end
-% end
-%
-% tf = all(abs(diff(x) - mean_step) <= tol);
-%
-% if ~tf && numel(x) == 2 && allfinite(x)
-%    % Correctly handle finite data causing the mean step to overflow
-%    tf = true;
-%    if nargout == 2
-%       error(message('MATLAB:isuniform:StepTooLarge'));
-%    end
-% end
-%
-% if tf
-%    step = mean_step;
-% end

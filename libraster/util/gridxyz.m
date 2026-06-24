@@ -48,29 +48,18 @@ function varargout = gridxyz(X, Y, V, varargin)
 
    %% notes
 
-   % % inpainting needs to happen on the full grid, but note that inpaintn and
-   % % inpaintn_nans do not utilize the x,y coordinates, so use naninterp2
-   % round(inpaintn(V))
-   % round(inpaint_nans(V))
-   % naninterp2(X, Y, V)
+   % Why scatteredInterpolation and not inpaintn/inpaint_nans here: inpaintn
+   % ignores the x,y coordinates (assumes unit cell spacing), so it is only valid
+   % on a UNIFORM grid. gridxyz must also gap-fill regular-but-non-uniform grids,
+   % which need coordinate-aware interpolation -- hence scatteredInterpolation
+   % below. (rasterize's regular branch can use inpaintn because it runs only when
+   % isxyregular passed, i.e. the grid is uniform.) naninterp2(X,Y,V) is the
+   % coordinate-aware inpaintn variant if a grid-shaped fill is ever wanted.
 
-   % % If inpaintn is used, this might be necessary:
-   % V = inpaintn(V);
-   % prec = ceil(log10(abs(V)));
-   % prec(prec>0) = 0;
-   % V = round(V, mode(prec(:)));
-
-   % % just keeping in case it comes in handy
-   % if numel(xgridvec(X)) * numel(ygridvec(Y)) ~= numel(V)
-   % end
-
-   % % This would be the default parsing for mapinterp
-   % if nargin < 5
-   %    method = 'linear';
-   % else
-   %    method = validatestring(method, {'nearest', 'linear', 'cubic', 'spline'}, ...
-   %       mfilename, 'method');
-   % end
+   % The "is V a full grid?" check -- numel(xgridvec(X))*numel(ygridvec(Y)) ==
+   % numel(V) -- is necessary but not sufficient (see isfullgrid); it is not
+   % needed here anyway, because prepareMapGrid builds the full grid and returns
+   % the I/LOC mapping that places known values and leaves gaps NaN.
 
    %% main code
 
@@ -101,19 +90,12 @@ function varargout = gridxyz(X, Y, V, varargin)
 
    % prepareMapGrid computes the I/LOC membership against its internally
    % canonicalized copy of the input. If it transposed an ndgrid full grid and/or
-   % flipped it to reach meshgrid W-E/N-S, replay the SAME transforms (transpose
-   % first, then flips) on the saved input X1,Y1,V1 so the indices line up.
-   % Coordinate-list input is never transformed (all flags false), so this is a
-   % no-op there.
-   if tform.didTranspose
-      X1 = X1.'; Y1 = Y1.'; V1 = permute(V1, [2 1 3]);
-   end
-   if tform.didFlipLR
-      X1 = fliplr(X1); Y1 = fliplr(Y1); V1 = fliplr(V1);
-   end
-   if tform.didFlipUD
-      X1 = flipud(X1); Y1 = flipud(Y1); V1 = flipud(V1);
-   end
+   % flipped it to reach meshgrid W-E/N-S, replay the SAME transforms on the saved
+   % input X1,Y1,V1 so the indices line up. Coordinate-list input is never
+   % transformed (all flags false), so this is a no-op there.
+   X1 = applyGridTransform(X1, tform);
+   Y1 = applyGridTransform(Y1, tform);
+   V1 = applyGridTransform(V1, tform);
    if tform.didTranspose || tform.didFlipLR || tform.didFlipUD
       % A transformed V is a full grid here; flatten to a value list
       % (npts x nlayers) so it indexes like the coordinate lists below.
