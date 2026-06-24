@@ -64,5 +64,16 @@ classdef testMapGridCellSize < matlab.unittest.TestCase
 
          testCase.verifyEqual(gridType, 'irregular');
       end
+
+      function testIrregularRowVectorDoesNotCrash(testCase)
+         % Regression: an irregular ROW-vector input used to error in the
+         % irregular branch ([cellSizeX(1); cellSizeX] vertcat a scalar onto a
+         % row). It must classify 'irregular' without throwing, for both
+         % orientations.
+         [~, ~, gtRow] = mapGridCellSize([0 1 2 4 8], 0:4);   % rows
+         testCase.verifyEqual(gtRow, 'irregular');
+         [~, ~, gtCol] = mapGridCellSize([0 1 2 4 8].', (0:4).');
+         testCase.verifyEqual(gtCol, 'irregular');
+      end
    end
 end
