@@ -1,4 +1,4 @@
-function ax = coverlay(cm, varargin)
+function varargout = coverlay(cm, varargin)
    %COVERLAY Overlay contours on axes.
    %
    % coverlay(cm,figh,Name,Value,...) Overlay any figure with contour lines as
@@ -67,6 +67,7 @@ function ax = coverlay(cm, varargin)
    % Restore hold state
    set(ax, 'NextPlot', washeld);
 
+   % Only return the axes handle when an output is requested
    if nargout == 1
       varargout{1} = ax;
    end

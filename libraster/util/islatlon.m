@@ -58,33 +58,35 @@ function tf = islatlon(lat,lon)
 % 
 % See also wrapTo180, wrapTo360, projfwd, and projinv.  
 
-% Make sure there are two inputs: 
+% Make sure there are two inputs:
 narginchk(2,2)
 
-% Set default output: 
-tf = true; 
+% Set default output:
+tf = true;
 
-%% If *any* inputs don't look like lat,lon, assume none of them are lat,lon. 
+%% If *any* inputs don't look like lat,lon, assume none of them are lat,lon.
 
-if ~isnumeric(lat)
-    tf = false; 
+% islatlon is the shared geographic-BOUNDS predicate: it answers only "do these
+% values fall within geographic coordinate ranges", with no check that they carry
+% a geographic SIGNATURE (that stricter test is isGeoGrid, which calls this for
+% its bounds stage so the two share one bounds definition).
+
+if ~isnumeric(lat) || ~isnumeric(lon)
+    tf = false;
     return
 end
 
-if ~isnumeric(lon)
-    tf = false; 
-    return
-end
-if any(abs(lat(:))>90)
-    tf = false; 
+% Latitude must be within [-90, 90].
+if any(abs(lat(:)) > 90)
+    tf = false;
     return
 end
 
-if any(lon(:)>360)
-    tf = false; 
-    return
-end    
-
-if any(lon(:)<-180)
-    tf = false; 
+% Longitude must lie entirely within ONE convention -- [-180, 180] or [0, 360] --
+% rather than the looser [-180, 360] (which would accept a nonsensical mix such as
+% -50 and 200 together).
+lonInRange = (all(lon(:) >= -180) && all(lon(:) <= 180)) || ...
+             (all(lon(:) >= 0)    && all(lon(:) <= 360));
+if ~lonInRange
+    tf = false;
 end

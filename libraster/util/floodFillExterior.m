@@ -80,7 +80,11 @@ function filled = floodFillExterior(binaryImage, startX, startY)
       end
    end
 
-   % Invert the filled image and remove padding.
-   filled = ~filled;
+   % The exterior region is the set of cells the flood newly filled -- i.e. cells
+   % that are now true but were originally false. (After the loop, `filled` is true
+   % at the obstacle AND the flooded exterior, so the old `~filled` returned all
+   % false. `filled & ~paddedImage` keeps only the flooded exterior, leaving the
+   % obstacle and any enclosed interior holes false.) Then remove the padding.
+   filled = filled & ~paddedImage;
    filled = filled(2:end-1, 2:end-1);
 end

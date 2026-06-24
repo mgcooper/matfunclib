@@ -40,23 +40,19 @@ function [tfGeoCoords, tfLatLonOrder] = isGeoGrid(Lat, Lon)
    % longitudes > 180, or negative latitudes). All-integer, non-negative, <=180
    % grids are therefore treated as ambiguous and classified planar -- pass
    % UseGeoCoords=true to force geographic for such a grid.
-   if inGeoBounds(Lon, Lat) && hasGeoSignature(Lon, Lat)
+   % Bounds stage shares ONE definition with islatlon (islatlon(lat, lon) is the
+   % geographic-range predicate). isGeoGrid adds the stricter hasGeoSignature so a
+   % same-range planar grid is not misclassified geographic.
+   if islatlon(Lat, Lon) && hasGeoSignature(Lon, Lat)
       tfGeoCoords = true;
       tfLatLonOrder = true;
 
       % Check if coordinates are geographic but ordered X = Lat, Y = Lon (a
       % common user input error when swapping coordinate systems).
-   elseif nargout == 2 && inGeoBounds(Lat, Lon) && hasGeoSignature(Lat, Lon)
+   elseif nargout == 2 && islatlon(Lon, Lat) && hasGeoSignature(Lat, Lon)
       tfGeoCoords = true;
       tfLatLonOrder = false;
    end
-end
-
-function tf = inGeoBounds(lon, lat)
-   % Longitudes within [-180,180] or [0,360] and latitudes within [-90,90].
-   tf = ((min(lon) >= -180 && max(lon) <= 180) ...
-      || (min(lon) >= 0 && max(lon) <= 360)) ...
-      && (min(lat) >= -90 && max(lat) <= 90);
 end
 
 function tf = hasGeoSignature(lon, lat)
