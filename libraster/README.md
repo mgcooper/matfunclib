@@ -151,6 +151,18 @@ gap-fills with coordinate-aware `scatteredInterpolation`.
 
 ---
 
+### Note on earth surface area calculations
+
+`libraster` contains three thin wrappers over `libspatial`'s sphericalpolyarea:
+
+| Wrapper | What it adds | Needed? |
+|---------|--------------|---------|
+| `geoarea` | CW-positive convention, per-part handling, WGS84 default | Keep as the primary named geographic-area API; decide if `exactremap` should call it. |
+| `earthSurfaceArea` | Units (deg/rad) + fraction-of-sphere normalization | Largely redundant with `geoarea`; Consider deprecating, only an example script calls it. |
+| `llpoly2steradians` | `abs` on the unit sphere: default ellipsoid = [1 0] | Optional convenience; E3SM runoff scripts use it. |
+
+---
+
 ## See also
 - `examples/demo_raster_conventions.m` — runnable demonstration of the
   centers/edges/postings/image differences.
