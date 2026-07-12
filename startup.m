@@ -315,17 +315,17 @@ if inmatlab
    end
 
    try
-      statset();
+      statsOptions = statset();
    catch
    end
 
    try
-      fitoptions();
+      curveFitOptions = fitoptions();
    catch
    end
 
    try
-      optimoptions("fminunc");
+      optimOptions = optimoptions("fminunc");
    catch
    end
 
