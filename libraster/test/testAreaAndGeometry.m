@@ -3,7 +3,7 @@ classdef testAreaAndGeometry < matlab.unittest.TestCase
    %
    % Covers the util/ area-and-geometry family that had NO test coverage:
    % geoarea, earthSurfaceArea, llpoly2steradians, floodFillExterior,
-   % enclosedGridCells_bk, findnearby, fix_geometries, defaultGridData.
+   % floodFillInterior, findnearby, fix_geometries, defaultGridData.
    %
    % Includes regression guards for three functions that were just fixed:
    %   * earthSurfaceArea -- used to crash on an unassigned absolute_units when
@@ -131,33 +131,15 @@ classdef testAreaAndGeometry < matlab.unittest.TestCase
          testCase.verifyTrue(logical(filled(1, 1)));
       end
 
-      % ---- enclosedGridCells_bk ----
-      function testEnclosedGridCellsClassifiesInsideAndBoundary(testCase)
-         [X, Y] = meshgrid(0:10, 0:10);
-         % Polygon enclosing the central block of cells.
-         PX = [2.5; 7.5; 7.5; 2.5; 2.5];
-         PY = [2.5; 2.5; 7.5; 7.5; 2.5];
-         [IN, ON] = enclosedGridCells_bk(X, Y, PX, PY);
-         testCase.verifyEqual(size(IN), size(X));
-         testCase.verifyEqual(size(ON), size(X));
-         testCase.verifyClass(IN, 'logical');
-         testCase.verifyClass(ON, 'logical');
-         % Boundary cells (containing a polygon vertex) are detected.
-         testCase.verifyGreaterThan(nnz(ON), 0);
-         % IN and ON are disjoint (boundary cells removed from interior).
-         testCase.verifyFalse(any(IN(:) & ON(:)));
-         % Far corner cell is neither inside nor on the boundary.
-         testCase.verifyFalse(IN(Y == 0 & X == 0));
-         testCase.verifyFalse(ON(Y == 0 & X == 0));
-         % enclosedGridCells_bk (a backup variant) computes IN via its OWN local
-         % floodFillExterior copy and assumes ON forms a flood-tight wall; the
-         % vertex-only ON here lets the flood leak in, so IN is empty. This is a
-         % deeper algorithmic gap in the backup function, tracked separately;
-         % guard the interior assertion (the standalone floodFillExterior is fixed
-         % and tested above).
-         testCase.assumeGreaterThan(nnz(IN), 0, ...
-            "enclosedGridCells_bk IN empty: fragile flood-wall (tracked, see bead)");
-         testCase.verifyTrue(IN(Y == 5 & X == 5));
+      % ---- floodFillInterior ----
+      function testFloodFillInteriorFillsEnclosedHole(testCase)
+         % Ring boundary encloses exactly its one-cell hole; boundary and
+         % exterior cells stay false.
+         ring = false(5);
+         ring(2:4, 2:4) = true;
+         ring(3, 3) = false;
+         in = floodFillInterior(ring, 1, 1);
+         testCase.verifyEqual(find(in), sub2ind([5 5], 3, 3));
       end
 
       % ---- fix_geometries ----
