@@ -103,7 +103,6 @@ rules above. Opinionated, project-varying choices belong in `STYLE.local.md`.
   debug from full stdout/stderr. Prefer the MATLAB MCP only for short
   interactive checks when an already-open session is available and its returned
   result shape is sufficient.
-- If `matlab` is not on `$PATH` invoke the binary inside the install
-  (e.g. `/Applications/MATLAB_R<release>.app/bin/matlab`). If a machine-specific
-  launcher path matters, record it in `STYLE.local.md` instead of the shared
-  style file.
+- If `matlab` is not on `$PATH`, locate the installed binary and invoke its
+  absolute path. Record a durable machine- or project-specific launcher path in
+  `STYLE.local.md`, not this shared style file.
