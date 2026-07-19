@@ -35,8 +35,9 @@ function filled = floodFillExterior(binaryImage, startX, startY)
    %   filled = floodFillExterior(binaryImage, startX, startY);
 
 
-   % Pad the input binary image with a false border.
-   paddedImage = padarray(binaryImage, [1 1], false, 'both');
+   % Pad the input binary image with a false border (toolbox-free padarray).
+   paddedImage = false(size(binaryImage) + 2);
+   paddedImage(2:end-1, 2:end-1) = binaryImage;
 
    % Initialize variables and preallocate the deque.
    filled = paddedImage;
