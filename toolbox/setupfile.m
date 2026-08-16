@@ -68,9 +68,11 @@ function setupfile(varargin)
       projectpath = varargin{2};
    end
 
-   % To implement mtoolbox.toml or mproject.toml concept:
-   if ~isfile(fullfile(projectpath, 'mproject.toml'))
-   end
+   % The mproject.toml manifest at the project root declares dependencies.
+   % matfunclib manager's workon resolves it (resolveprojectdeps); this
+   % standalone setup file does not, so a project run without manager
+   % relies on the vendored dependencies installed by
+   % tbx.internal.installRequiredFiles.
 
    % Safely add all paths to the userpath
    localpathadd(projectpath, '-begin')

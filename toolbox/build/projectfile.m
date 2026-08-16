@@ -5,9 +5,14 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    % MyProject.prj and adds all files in the toolbox/ directory to the project.
    % Files in the top level directory are not added to the project.
    %
-   % projectfile('resolve', 'depsFolder', 'toolbox/+tbx/private') copies all
-   % missing dependencies to toolbox/+tbx/private/. Use this prior to packaging
-   % the toolbox for release, so all files are available.
+   % list = projectfile('listfiles') returns the open project's file
+   % list as a string column (requires an open MATLAB Project; untested
+   % in the template suite for that reason).
+   %
+   % Note: dependency vendoring is not this function's job. Declare
+   % dependencies in mproject.toml and vendor files for release with
+   % tbx.internal.installRequiredFiles (the template's one dependency
+   % mechanism; see the matfunclib redesign DesignSpec, decision 4).
    %
    % See also: buildfile, setupfile
 
@@ -17,16 +22,13 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    arguments(Input)
 
       buildOption (1,:) string {mustBeMember(buildOption, ...
-         ["create", "delete", "update", "resolve", "listfiles"])} ...
+         ["create", "delete", "update", "listfiles"])} ...
          = "create"
 
       projectName (1,1) string ...
          = string(NaN)
 
       codeFolders (:,1) string ...
-         = string(NaN)
-
-      opts.depsFolder (1,1) string ...
          = string(NaN)
 
       opts.addCodeFiles (1,1) logical ...
@@ -68,15 +70,11 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
          proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
             opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
 
-      case 'resolve'
-         % Resolve dependencies
-         resolveDependencies(projectFolder, opts.depsFolder)
-
       case 'listfiles'
          % This should probably be an internal function or in a new namespace
          % convention such as +project but put here for now.
          proj = currentProject;
-         list = [proj.Files.Path].';
+         proj = [proj.Files.Path].';
    end
 end
 
@@ -99,52 +97,20 @@ function codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
    end
 end
 %%
-function resolveDependencies(projectFolder, depsFolder)
-
-   depsFolder = fullfile(projectFolder, depsFolder);
-   if ~isfolder(depsFolder)
-      mkdir(depsFolder)
-   end
-
-   wasProjectOpen = true;
-   try
-      projectObj = currentProject;
-   catch
-      wasProjectOpen = false;
-      projectObj = openProject(projectFolder);
-   end
-
-   projectFiles = [projectObj.Files.Path].';
-   requiredFiles = listRequiredFiles(projectObj, projectFiles);
-   missingFiles = setdiff(requiredFiles, projectFiles);
-
-   for srcfile = missingFiles'
-      [~, filename, fext] = fileparts(srcfile);
-      dstfile = fullfile(depsFolder, strcat(filename, fext));
-      copyfile(srcfile, dstfile);
-      addFile(projectObj, dstfile);
-   end
-
-   updateDependencies(projectObj);
-
-   if ~wasProjectOpen
-      close(currentProject);
-   end
-end
-
 %%
-function mustBeValidOption(option)
-   % To use this, add this back to the arguments block:
-   % buildOption (1, 1) char {mustBeValidOption(buildOption)} = 'create'
-
-   % Test for membership in list
-   validopts = {'create', 'delete', 'update', 'resolvedeps'};
-   if ~ismember(option, validopts)
-      eid = 'Option:notValid';
-      msg = 'Input option must be ''add'' or ''multiply''.';
-      throwAsCaller(MException(eid,msg))
-   end
-end
+% Dormant alternative validator, kept as commented code. To use it, add
+% this back to the arguments block:
+%   buildOption (1, 1) char {mustBeValidOption(buildOption)} = 'create'
+%
+% function mustBeValidOption(option)
+%    % Test for membership in list
+%    validopts = {'create', 'delete', 'update'};
+%    if ~ismember(option, validopts)
+%       eid = 'Option:notValid';
+%       msg = 'Input option must be ''add'' or ''multiply''.';
+%       throwAsCaller(MException(eid,msg))
+%    end
+% end
 % This is from teh delete project section. It is based on my initial attempts to
 % create a project programmatically in icom-msd project create_matlab_project
 % script where I had to close it first b/c I had just created it, but I am not

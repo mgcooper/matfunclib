@@ -1,0 +1,11 @@
+# mproject.toml - project dependency manifest, resolved by matfunclib
+# manager's workon via resolveprojectdeps. Entries are registry names.
+# Fill in the project name (mkproject's rename does not process .toml
+# files) and declare dependencies as they accrue.
+
+[project]
+name = "tbx"
+
+[dependencies]
+projects = []
+toolboxes = []
