@@ -24,4 +24,4 @@ f_argcomplete2(T1, "test1", "test2", "test3")
 f_argcomplete2(T2, "test1", "test2", "test3"
 
 % if I use a char, then the auto complete goes away after the first one
-% barchartcats(T2, 'test3',     )
+% groupstats.barchartcats(T2, 'test3',     )

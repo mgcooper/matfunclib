@@ -23,7 +23,6 @@ function choices = tablecompletions(tbl, options)
       options.rowtimes = true;
       options.selectby = string.empty()
       options.vartype = string.empty()
-      % options.vartype (1,1) string = ""
    end
 
    choices = {};
@@ -40,8 +39,8 @@ function choices = tablecompletions(tbl, options)
       if ~isempty(options.selectby)
          % This requires care b/c there could be many unique values, but this
          % function is only used for function development and the 'selectby'
-         % option should only ever be called from the functionSignatures file
-         choices = groupmembers(tbl, options.selectby);
+         % option should only ever be called from the functionSignatures file.
+         choices = unique(tbl.(options.selectby));
          if iscategorical(choices)
             if ~isordinal
                choices = string(choices);
