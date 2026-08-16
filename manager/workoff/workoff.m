@@ -76,6 +76,10 @@ function workoff(varargin)
       rmprojectpaths(projpath);
    end
 
+   % Deactivate exactly the dependencies this project's workon resolution
+   % activated (ledger-tracked; manual activations are untouched).
+   teardownprojectdeps(projname);
+
    % unset the active project
    setprojectactive('default');
 end

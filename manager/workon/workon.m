@@ -94,6 +94,20 @@ function workon(varargin)
    % Manage project paths.
    addprojectpaths(projname);
 
+   % Resolve the project's declared dependencies (mproject.toml): after
+   % the project's own paths, before its hooks run, so hooks can rely on
+   % dependencies being active. On failure, unwind this workon's own
+   % state too (the resolver already rolled back everything it recorded),
+   % so a failed activation does not leave the project marked active with
+   % its paths added.
+   try
+      resolveprojectdeps(projname);
+   catch resolveErr
+      rmprojectpaths(projpath);
+      setprojectactive('default');
+      rethrow(resolveErr)
+   end
+
    % cd to the activated tb if requested
    try
       cd(projpath)

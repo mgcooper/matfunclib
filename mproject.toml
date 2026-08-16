@@ -1,0 +1,9 @@
+# mproject.toml - project dependency manifest, resolved by manager's
+# workon via resolveprojectdeps. Entries are registry names. Schema:
+# the DesignSpec, settled decision 3.
+
+[project]
+name = "matfunclib"
+
+[dependencies]
+toolboxes = ["b17", "exportToPPTX", "landmask", "MarkdownPanel"]

@@ -17,6 +17,12 @@ function openprojectfiles(projectname, activefiles)
       activefiles = getprojectfiles(projectname);
    end
 
+   % No-op headless: the editor API needs the desktop, and workon must
+   % stay runnable in -batch sessions.
+   if ~usejava('desktop')
+      return
+   end
+
    % Open the project files (skipping those which are already open).
    if ~isempty(activefiles)
       openfiles = getopenfiles();

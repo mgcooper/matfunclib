@@ -10,7 +10,6 @@ function varargout = activate(tbname, varargin)
       tbname, mfilename, varargin{:});
 
    % MAIN FUNCTION
-   success = false;
    if asproject
       try
          tbxpath = getprojectfolder(tbname);
@@ -33,7 +32,7 @@ function varargout = activate(tbname, varargin)
    % If the toolbox is active, issue a warning, but suppress warnings about
    % filename conflicts
    withwarnoff('MATLAB:dispatcher:nameConflict');
-   [tbname, wid, msg] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
+   [tbname, ~, ~] = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
 
    % I started to add the onpath check after a situation where startup failed so
    % standard toolboxes were not actually activated but marked active in the
@@ -64,8 +63,11 @@ function varargout = activate(tbname, varargin)
    % Get the toolbox source path
    tbpath = toolboxes.source{tbidx};
 
-   % Update May 2025 - repair tb parent path
-   if toolboxes.library{tbidx} == ""
+   % Update May 2025 - repair tb parent path. Flat-registered toolboxes
+   % (no library subfolder) come back from the CSV as a missing string,
+   % which brace-indexing cannot convert; treat missing as flat.
+   libname = toolboxes.library(tbidx);
+   if ismissing(libname) || libname == ""
       [parent, folder] = fileparts(fileparts(tbpath));
    else
       % account for the library folder
