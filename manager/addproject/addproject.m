@@ -93,25 +93,3 @@ function [projectname, opts] = parseinputs(projectname, funcname, varargin)
    opts = parser.Results;
    projectname = char(projectname);
 end
-
-% % No longer used, but keep for reference.
-% function addtojsondirectory(projects,prjidx,directoryname)
-%
-%    % 23 Nov 2022 - use choices={ for prjfind to append new projects rather than
-%    % searching for the last entry using prjidx-1
-%
-%    jspath      = getprjjsonpath(directoryname);
-%    wholefile   = readprjjsonfile(jspath);
-%
-%    % append the new project to the choices array:
-%    prjfind     = sprintf('%s','choices={');
-%    prjreplace  = sprintf('%s''%s'',',prjfind,projects.name{prjidx});
-%    wholefile   = strrep(wholefile,prjfind,prjreplace);
-%
-%    % write it over again
-%    writeprjjsonfile(jspath,wholefile)
-%
-%    % method that replaced the most recent entry with itself + the new one:
-%    %prjfind     = sprintf('''%s''',projects.name{prjidx-1});
-%    %prjreplace  = sprintf('%s,''%s''',prjfind,projects.name{prjidx});
-% end

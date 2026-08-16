@@ -11,7 +11,7 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %  INSTALLREQUIREDFILES(_, REMOTEREPONAME=REPONAME)
    %  INSTALLREQUIREDFILES(_, REMOTEBRANCH=BRANCHNAME)
    %  INSTALLREQUIREDFILES(_, GITHUBUSERNAME=USERNAME)
-   %  INSTALLREQUIREDFILES(_, INSTALLMISSING=TRUE)
+   %  INSTALLREQUIREDFILES(_, DRYRUN=TRUE)
    %
    % Description
    %
@@ -30,8 +30,10 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %  requirements for files contained in IGNOREFOLDER.
    %
    %  REQUIREDFILES - (optional, positional) a list of required functions. If
-   %  not provided or if empty, PROJECTPATH becomes required, and the
-   %  requirements for all files in the PROJECTPATH folder are installed.
+   %  not provided or if empty, the requirements are read from
+   %  REQUIREMENTSFILE when one is supplied; otherwise PROJECTPATH becomes
+   %  required, and the requirements for all files in the PROJECTPATH folder
+   %  are installed.
    %
    %  PROJECTPATH - (optional, name-value) a full path (scalar text) to a
    %  folder. Requirements for all files within this folder are generated and
@@ -40,7 +42,13 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %  INSTALLPATH argument to control where dependencies are installed.
    %
    %  REQUIREMENTSFILE - (optional, name-value) a full path to a file containing
-   %  a list of required files. NOT CURRENTLY IMPLEMENTED.
+   %  a list of required files. Two formats are supported: a .mat file
+   %  containing a variable named "missingFiles" (preferred) or
+   %  "requiredFiles" (the format GETREQUIREDFILES writes when called with
+   %  SAVEREQUIREMENTSFILE=TRUE), or a plain-text file with one file name or
+   %  path per line (blank lines and lines starting with # are ignored). If
+   %  REQUIREDFILES is also supplied (non-empty), it takes precedence and
+   %  REQUIREMENTSFILE is ignored.
    %
    %  NOTE: If none of the three arguments above are supplied, the default
    %  behavior uses the current working directory as the PROJECTPATH parameter,
@@ -64,9 +72,9 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
    %
    %  INSTALLPATH - full path to location where files are installed. The default
    %  value is a folder named "dependencies" in the PROJECTPATH.
-   %  DRYRUN - logical flag indicating if the files are installed. If false, the
-   %  list of files are returned and printed to the screen. The default value is
-   %  true.
+   %  DRYRUN - logical flag controlling whether files are installed. If true,
+   %  nothing is downloaded; the resolved file and url lists are returned and
+   %  printed to the screen. The default value is false (files are installed).
    %
    % See also: getRequiredFiles
 
@@ -76,7 +84,7 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
          = []
 
       kwargs.requirementsFile (1, :) string {mustBeTextScalar} ...
-         = "" % Note: requirementsFile is currently not implemented.
+         = ""
 
       kwargs.projectPath (1, :) string {mustBeFolder} ...
          = pwd()
@@ -99,23 +107,35 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
 
       %%% The following arguments control where and if files get installed:
 
+      % if installPath is supplied dependencies are installed there. If it is
+      % not supplied dependencies are installed to projectPath/dependencies.
       kwargs.installPath (1, :) string {mustBeTextScalar} ...
-         = fullfile(pwd(), "dependencies");
+         = ""
 
-      kwargs.testRun (1, 1) logical {mustBeNumericOrLogical} ...
+      kwargs.dryrun (1, 1) logical {mustBeNumericOrLogical} ...
          = false
    end
 
-   [projectPath, ignoreFolder, localSourcePath, remoteSourcePath] = ...
-      parseargs(kwargs);
+   [projectPath, ignoreFolder, localSourcePath, remoteSourcePath, ...
+      requirementsFile, installPath] = parseargs(kwargs);
 
-   % Remember current folder and go to folder for external dependencies
+   % Remember current folder and go to folder for external dependencies.
+   % The job cleanup object restores pwd: explicitly via the delete(job)
+   % below on the normal path, or at scope exit if an error is thrown.
    job = withcd(projectPath);
 
-   % Find the required files
+   % Find the required files: an explicit list wins, then a requirements
+   % file, then generation from the project folder.
    if all(isempty(requiredFiles))
-      requiredFiles = getRequiredFiles(projectPath, "ignoreList", ignoreFolder);
-      requiredFiles = requiredFiles.missingFiles;
+      if strlength(requirementsFile) > 0
+         requiredFiles = readRequirementsFile(requirementsFile);
+      else
+         % referenceList is the project itself: its own files count as
+         % satisfied, independent of which manager project is active.
+         requiredFiles = getRequiredFiles(projectPath, ...
+            "ignoreList", ignoreFolder, "referenceList", projectPath);
+         requiredFiles = requiredFiles.missingFiles;
+      end
    end
 
    % Build a url list for the remote files
@@ -123,26 +143,28 @@ function [requirementsList, urlList] = installRequiredFiles(requiredFiles, kwarg
       requiredFiles, projectPath, localSourcePath, remoteSourcePath);
 
    % Option to install the missing requirement locally
-   fileList = kwargs.installPath + filesep + requirementsList;
-   if not(kwargs.testRun)
+   fileList = installPath + filesep + requirementsList;
+   if not(kwargs.dryrun)
 
-      if ~isfolder(kwargs.installPath)
-         mkdir(kwargs.installPath)
+      if ~isfolder(installPath)
+         mkdir(installPath)
       end
-      outFileList = strings(size(requirementsList));
       for n = 1:numel(requirementsList)
          try
-            outFileList(n) = websave(fileList(n), urlList(n));
+            websave(fileList(n), urlList(n));
          catch ME
             warning('Failed to download file: %s\nReason: %s', ...
                requirementsList(n), ME.message);
          end
       end
    else
-      fprintf("\n Files will be installed to: \n %s \n", kwargs.installPath)
-      fprintf("\n The following files will be installed: \n")
+      fprintf(1, "\n Files will be installed to: \n %s \n", installPath)
+      fprintf(1, "\n The following files will be installed: \n")
       disp(urlList)
    end
+
+   % Restore the original working directory.
+   delete(job)
 
    % % This was in a script in icom-msd project which I deleted but wanted to
    % % preserve this snippet. Seems most useful / applicable to this function.
@@ -164,7 +186,7 @@ end
 
 %% Local Functions
 function [projectPath, ignoreFolder, localSourcePath, ...
-      remoteSourcePath, requirementsFile] = parseargs(kwargs)
+      remoteSourcePath, requirementsFile, installPath] = parseargs(kwargs)
 
    % Retrieve the Github user name
    if isempty(kwargs.GitHubUserName)
@@ -181,7 +203,8 @@ function [projectPath, ignoreFolder, localSourcePath, ...
    end
 
    if isempty(kwargs.remoteRepoName)
-      error('Set "remotesource" or environment variable "MATLAB_FUNCTION_PATH"')
+      error(['Set "remoteRepoName" to the GitHub repository ' ...
+         'which hosts the required files'])
    else
       GITHUB_URL = 'https://raw.githubusercontent.com/';
       remoteSourcePath = strcat(GITHUB_URL, GITHUB_USER_NAME, '/', ...
@@ -197,8 +220,50 @@ function [projectPath, ignoreFolder, localSourcePath, ...
    projectPath = kwargs.projectPath;
    requirementsFile = kwargs.requirementsFile;
 
+   % Derive the documented installPath default ("dependencies" inside
+   % PROJECTPATH) when the caller did not supply one.
+   if strlength(kwargs.installPath) == 0
+      installPath = fullfile(projectPath, "dependencies");
+   else
+      installPath = kwargs.installPath;
+   end
+
    % Full path to ignore folder
    ignoreFolder = fullfile(projectPath, kwargs.ignoreFolder);
+end
+
+function requiredFiles = readRequirementsFile(requirementsFile)
+   %READREQUIREMENTSFILE Read a required-files list from a requirements file.
+   %
+   % Supports the .mat format written by getRequiredFiles
+   % (saveRequirementsFile=true), preferring its "missingFiles" variable and
+   % falling back to "requiredFiles", and plain text with one entry per line
+   % (blank lines and #-comment lines ignored).
+
+   if ~isfile(requirementsFile)
+      error('installRequiredFiles:requirementsFileNotFound', ...
+         'requirementsFile not found: %s', requirementsFile)
+   end
+
+   [~, ~, ext] = fileparts(requirementsFile);
+   if strcmpi(ext, '.mat')
+      vars = load(requirementsFile);
+      if isfield(vars, 'missingFiles')
+         requiredFiles = string(vars.missingFiles);
+      elseif isfield(vars, 'requiredFiles')
+         requiredFiles = string(vars.requiredFiles);
+      else
+         error('installRequiredFiles:badRequirementsFile', ...
+            ['requirementsFile %s must contain a variable named ' ...
+            '"missingFiles" or "requiredFiles"'], requirementsFile)
+      end
+   else
+      % Plain text: one file per line; ignore blanks and # comments.
+      requiredFiles = strtrim(readlines(requirementsFile));
+      requiredFiles(requiredFiles == "") = [];
+      requiredFiles(startsWith(requiredFiles, "#")) = [];
+   end
+   requiredFiles = reshape(requiredFiles, 1, []);
 end
 
 function [requirementsList, urlList] = remoteDependencyList( ...

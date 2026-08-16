@@ -32,3 +32,16 @@ No matfunclib-specific override.
 - Add the project to the path inside `TestClassSetup` with a `PathFixture` (see
   `liblogic/test/testBlankTextHelpers.m`) so the suite runs from the repo root
   without manual path setup.
+
+## Prose examples
+
+Rewrite this:
+
+> Note that a container is preferable over a struct because isKey can be used
+> to check if a key exists, whereas a struct would require calling fieldnames
+> and then checking.
+
+as this:
+
+> Use a container, not a struct. isKey tests a key directly. A struct needs
+> fieldnames and a second test.

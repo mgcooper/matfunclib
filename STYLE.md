@@ -42,6 +42,99 @@ preference.
   never silently drop the detail a comment held.
 - Group operations logically.
 
+## Agent-authored prose
+
+Write all prose in Simplified Technical English. Follow the ASD-STE100
+guidelines as adapted by the rules below. This standard applies to all text
+an agent writes:
+
+- code comments and docstrings;
+- documentation, READMEs, and reports;
+- commit messages and planning records;
+- skill instructions and agent guidance;
+- chat responses to the user.
+
+### Write like this
+
+- Keep instruction sentences to 20 words or fewer. Keep descriptive
+  sentences to 25 words or fewer.
+- Give one instruction per sentence. Keep one topic per paragraph.
+- Use the active voice with a named actor. Write procedures as commands:
+  "Run the test", not "The test should be run".
+- Use the present tense unless the fact is about the past or the future.
+- Use one term for one concept. Do not vary a term for style.
+- Use the simplest accurate word: "use" not "utilize", "before" not
+  "prior to", "do" not "perform", "start" not "initiate".
+- Use verbs, not noun forms of verbs: "configure X", not "perform the
+  configuration of X".
+- Keep noun clusters to three words or fewer. Write the articles "a", "an",
+  and "the" where grammar requires them.
+- Use a vertical list for more than three parallel items.
+- Keep code identifiers, commands, file names, and technical terms verbatim.
+
+### Do not write
+
+- Metaphor, idiom, or drama: "silently", "gracefully", "under the hood",
+  "the whole point", "guarantees" as emphasis.
+- Filler emphasis: write "Note:" and then the fact. Do not write
+  "note that", "it is worth noting", or "importantly".
+- Abstraction nouns that carry no information: "contract", "boundary",
+  "layer", "registry", "semantics", "source of truth". Name the actual
+  file, function, variable, or rule instead.
+- Intensifiers that add nothing: "canonical", "authoritative", "robust",
+  "comprehensive", "exact" and "complete" as decoration.
+- Revision narration: "previously", "now", "used to", "no longer",
+  "replaced". Describe the code, not its history.
+- A comment longer than the code it explains.
+- A sentence that repeats another sentence.
+
+### Never remove
+
+When you edit prose, keep:
+
+- units, conventions, shapes, tolerances, and their meanings;
+- the reason a guard, workaround, or ordering exists;
+- citations, equation references, and identifiers;
+- facts, requirements, normative strength, and examples;
+- limitations and causal explanations.
+
+Never reflow or rewrap these structured regions:
+
+- parameter and name-value lists;
+- aligned tables and ASCII diagrams;
+- equation blocks and reference lists;
+- usage and signature lines;
+- commented-out code.
+
+Rewrite prose paragraphs only.
+
+### Worked example
+
+Rewrite this:
+
+> Note that we utilize a retry mechanism here in order to gracefully handle
+> the fact that the upstream service may occasionally experience transient
+> failures.
+
+as this:
+
+> Note: the upstream service fails intermittently. Retry three times, then
+> raise.
+
+Add one bad-to-good pair from this project's own code to `STYLE.local.md`.
+
+Accuracy outranks form. When a fact does not fit a rule, keep the fact and
+write the closest compliant sentence. A missing dictionary, style checker,
+or voice profile is never a reason to deviate from these rules.
+
+### Humanize pass
+
+Complete factual and structural editing before applying `$humanize-prose`.
+That skill defines the pass's targets, exclusions, preservation rules,
+and Quarto protections.
+The write-time rules above govern every file, including files the pass
+excludes.
+
 # MATLAB conventions
 
 Canonical conventions shared across MATLAB projects. These extend the language-agnostic
@@ -64,6 +157,14 @@ rules above. Opinionated, project-varying choices belong in `STYLE.local.md`.
   boundary is real.
 - No thin wrappers when function names change: update all call sites.
 - Close every function with an explicit `end`.
+
+## Shared tunables and mappings
+
+- Define every pipeline threshold, channel list, source mapping, alias, and other
+  policy-controlled tunable in one authoritative options, `+namelists`, or
+  dedicated function.
+- Derive name-value defaults, validators, aliases, and identity mappings from
+  that source. Do not repeat the governed literals or member lists in consumers.
 
 ## Formatting
 

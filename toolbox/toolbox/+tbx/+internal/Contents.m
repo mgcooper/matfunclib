@@ -7,7 +7,6 @@
 %   tbx.internal.buildpath                  - Build full path to toolbox folder or file
 %   tbx.internal.completions                - Generate function auto-completions for string literals
 %   tbx.internal.cpinfoxml                  - Copy info.xml and helptoc.xml to dstpath without overriding
-%   tbx.internal.dependencies               - Generate function and product dependencies for function
 %   tbx.internal.dependencyReport           - Generate dependency report
 %   tbx.internal.docpath                    - Return path to toolbox doc file
 %   tbx.internal.findSubdir                 - MFileList = findSubdir(aDirectory)
