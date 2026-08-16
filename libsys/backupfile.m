@@ -1,4 +1,4 @@
-function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
+function varargout = backupfile(filename, makecopy, makezip)
    %BACKUPFILE Create a backup file name or folder name and (optionally) a copy.
    %
    % [fullpath_bk, filename_bk] = backupfile(filename) returns the name and
@@ -15,6 +15,9 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
    % Examples:
    % 1. backupfile('/Users/user/test.m')
    % 2. backupfile('/Users/user/test_folder', true)
+   %
+   % With no output arguments nothing is returned or displayed (the outputs
+   % use varargout so a plain backupfile(...) call does not print ans).
    %
    % See also: tempdir, tempfile
 
@@ -56,11 +59,11 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
 
    if makecopy
       if ~fileexists(fullpath) && ~folderexists(fullpath)
-         % This lets backupfile be called without if isfile() in the caller
+         % This lets backupfile be called without if isfile() in the caller.
+         % Fall through (no early return) so the nargout switch below still
+         % assigns any requested outputs.
          warning('No backup made. File not found: %s', fullpath)
-         return
-      end
-      if fileexists(fullpath_bk) || folderexists(fullpath_bk)
+      elseif fileexists(fullpath_bk) || folderexists(fullpath_bk)
          warning('No backup made. Backup already exists: %s', fullpath_bk);
       else
          try
@@ -83,6 +86,15 @@ function [fullpath_bk, filename_bk] = backupfile(filename, makecopy, makezip)
       end
    end
 
+   % Return the backup path/name only when requested (harvested from the
+   % icemodel copy: fixed outputs printed ans on zero-output calls).
+   switch nargout
+      case 1
+         varargout{1} = fullpath_bk;
+      case 2
+         varargout{1} = fullpath_bk;
+         varargout{2} = filename_bk;
+   end
 end
 
 function filename = rmtrailingsep(filename)

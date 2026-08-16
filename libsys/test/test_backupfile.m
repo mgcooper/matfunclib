@@ -84,6 +84,9 @@ function test_warnings(testCase)
    backupfile(testCase.TestData.filename, true);
    lastwarn('');
    backupfile(testCase.TestData.filename, true);
-   [msg, id] = lastwarn;
-   assert(strcmp(msg, 'Backup already exists. No copy made.'), 'Warning for existing backup not triggered');
+   % Match the actual warning text (the historical assertion checked a
+   % message that the function never emitted, so this test always failed).
+   msg = lastwarn;
+   assert(startsWith(msg, 'No backup made. Backup already exists'), ...
+      'Warning for existing backup not triggered');
 end
