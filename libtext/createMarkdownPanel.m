@@ -19,7 +19,8 @@ function varargout = createMarkdownPanel(kwargs)
       kwargs.ContainerType = 'none'
    end
 
-   assert(activate('MarkdownPanel', 'silent', true))
+   % Lazy toolbox dependency; also declared in matfunclib's mproject.toml.
+   requiretoolbox('MarkdownPanel')
 
    %% Parse the kwargs
 

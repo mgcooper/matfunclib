@@ -91,7 +91,8 @@ end
 function mask = preparemask(X, Y, Z, kwargs)
    if kwargs.applyLandMask
       assert(isGeoGrid(Y, X));
-      assert(activate('landmask', 'silent', true))
+      % Lazy toolbox dependency; also declared in matfunclib's mproject.toml.
+      requiretoolbox('landmask')
       mask = landmask(Y, X);
    else
       mask = true(size(Z));

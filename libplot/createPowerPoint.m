@@ -307,7 +307,9 @@ function USE_EXPORTTOPPTX = chooseReportGenerator(kwargs)
       [~, onpath] = ismfile('exportToPPTX.m');
       if not(onpath)
          try
-            activate("exportToPPTX", "silent", true)
+            % Lazy toolbox dependency; also declared in matfunclib's
+            % mproject.toml.
+            requiretoolbox('exportToPPTX')
          catch e
             warning('exportToPPTX not found, trying Report Generator instead')
             USE_EXPORTTOPPTX = false;

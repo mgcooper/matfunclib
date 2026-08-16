@@ -27,7 +27,8 @@ function [flow, period] = floodReturnPeriod(T, Q, kwargs)
       flow
       period
    end
-   assert(activate('b17', 'silent', true))
+   % Lazy toolbox dependency; also declared in matfunclib's mproject.toml.
+   requiretoolbox('b17')
 
    % Create a timetable.
    Data = array2timetable(Q, 'RowTimes', T);
