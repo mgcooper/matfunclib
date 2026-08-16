@@ -69,6 +69,12 @@ function Requirements = getRequiredFiles(targetList, kwargs)
    %  Requirements = getRequiredFiles(_, requirementsFileName='requirements');
    %  Requirements = getRequiredFiles(_, saveRequirementsFile=true);
    %
+   % REQUIREMENTSFILENAME
+   %  Full path of the .mat file written when SAVEREQUIREMENTSFILE is true.
+   %  When omitted, it defaults to fullfile(toolboxpath(), "dependencies",
+   %  "requirements.mat"), and toolboxpath() is only consulted when a file is
+   %  actually written (so non-saving calls never require it).
+   %
    % Matt Cooper, 23-Dec-2022, https://github.com/mgcooper
    %
    % See also: installRequiredFiles, getFunctionConflicts
@@ -77,8 +83,7 @@ function Requirements = getRequiredFiles(targetList, kwargs)
       targetList (1, :) string
       kwargs.ignoreList (1, :) string = []
       kwargs.referenceList (1, :) string {mustBeFolder} = projectpath()
-      kwargs.requirementsFileName (1, 1) string {mustBeTextScalar} = ...
-         fullfile(toolboxpath(), "dependencies", "requirements.mat");
+      kwargs.requirementsFileName (1, 1) string {mustBeTextScalar} = ""
       kwargs.saveRequirementsFile (1, 1) logical = false
    end
 
@@ -132,8 +137,7 @@ function [requiredFiles, installedFiles] = detectInstalledFiles( ...
    [~, referenceFilenames] = fileparts(referenceFiles);
 
    % Find duplicates in requiredFilenames
-   [uniqueFilenames, ia, ic] = unique(requiredFilenames, 'stable');
-   duplicateIndices = setdiff(1:numel(requiredFilenames), ia);
+   [uniqueFilenames, ~, ic] = unique(requiredFilenames, 'stable');
 
    % Filter to get filenames that appear more than once in requiredFiles
    isDuplicate = accumarray(ic, 1) > 1;
@@ -179,6 +183,14 @@ function [targetFiles, referenceFiles, requirementsFileName, ...
    referenceList = kwargs.referenceList;
    requirementsFileName = kwargs.requirementsFileName;
    saveRequirementsFile = kwargs.saveRequirementsFile;
+
+   % Derive the default requirements-file location only when a file will be
+   % written and the caller did not name one (keeps toolboxpath() out of
+   % non-saving calls).
+   if saveRequirementsFile && strlength(requirementsFileName) == 0
+      requirementsFileName = ...
+         fullfile(toolboxpath(), "dependencies", "requirements.mat");
+   end
 
    % This works for files/folders passed as char or cellstr lists
    % 3/21/2026 - merged newer changes from icemodel, this was removed there
@@ -242,20 +254,24 @@ function [targetFiles, referenceFiles, ignoreFiles] = prepareFileLists(...
 end
 
 function fileList = fileListFromFolderList(folderList)
+   % Type-stable empty: with no folders (e.g. the [] ignoreList default),
+   % vertcat over an empty cell would yield a 0x0 double, which downstream
+   % setdiff calls reject as non-text.
+   if isempty(folderList)
+      fileList = strings(0, 1);
+      return
+   end
    fileList = cell(numel(folderList), 1);
    for n = 1:numel(folderList)
-      fileList{n} = listfiles(folderList(n), ...
+      % Normalize each folder's listing to a column string array so one
+      % vertcat yields the mx1 string array prepareFileLists needs for
+      % setdiff. The previous flow applied vertcat(fileList{:}) twice; the
+      % second call curly-indexed a string array, extracting raw char rows,
+      % and errored whenever two file names differed in length.
+      fileList{n} = reshape(string(listfiles(folderList(n), ...
          "subfolders", true, "mfiles", true, "matfiles", true, ...
-         "aslist", true, "fullpath", true, "asstring", true);
+         "aslist", true, "fullpath", true, "asstring", true)), [], 1);
    end
-   % 3/21/2026 - Not sure if this is supposed to collapse to a nx1 cell array,
-   % where n = numel(folderList), or a 1x1 cell array with all files. It
-   % requires to repeated calls to vertcat(fileList{:}) to get a mx1 string
-   % array, where m = numel(files), which is needed in prepareFileLists to avoid
-   % setdiff errors b/c setdiff requires two cell arrays of chars, or two string
-   % arrays. So for now I use the method in prepareFileLists where I expand the
-   % fileLists using {:}, but it should happen here
-   fileList = vertcat(fileList{:});
    fileList = vertcat(fileList{:});
 end
 
@@ -268,14 +284,17 @@ function fileList = validateFileList(fileList)
    % If a full file or folder path is provided and exists, use it directly.
    if not(isfile(fileList)) && not(isfolder(fileList))
       % Otherwise, if target is not a full path to an existing file or folder,
-      % try to provide specific feedback:
+      % try to provide specific feedback. The checks use builtins only (not
+      % the isfullfile/ispathlike helpers) so the +internal template copy of
+      % this file stays copy-portable with zero external dependencies.
+      [pathPart, ~, extPart] = fileparts(fileList);
 
-      if isfullfile(fileList)
+      if strlength(pathPart) > 0 && strlength(extPart) > 0
          % If a full file path was passed in but doesn't exist
          error('File does not exist or cannot be found.');
 
-      elseif ispathlike(fileList)
-         % If a full folder path was passed in but doesn't exist
+      elseif contains(fileList, filesep)
+         % If a folder-like path was passed in but doesn't exist
          error('Folder does not exist or cannot be found.');
 
       else
