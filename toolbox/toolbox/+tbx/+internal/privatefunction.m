@@ -19,6 +19,10 @@ function F = privatefunction(funcName)
    %
    % This function must be located in the toolbox's internal directory.
    %
+   % MATLAB shows a private folder only to code in its parent folder, so a
+   % test cannot call a private helper by name. This function changes
+   % directory into each private folder and builds the handle there.
+   %
    % See also: completions, listfolders, listfiles, projectpath
 
    % Validate input
@@ -39,6 +43,9 @@ function F = privatefunction(funcName)
    if nargin < 1
       F = cell(numel(allprivatefolders), 1);
       returnAllFunctions = true;
+   else
+      % Initialize so an unmatched name reaches the isempty check below.
+      F = [];
    end
 
    for n = 1:numel(allprivatefolders)
@@ -66,9 +73,11 @@ function F = privatefunction(funcName)
 
    if isempty(F)
       if nargin == 1
-         error('Function %s not found in any private directories.', funcName);
+         error('tbx:privatefunction:functionNotFound', ...
+            'Function %s not found in any private directories.', funcName);
       elseif nargin == 0
-         error('No functions found in any private directories.');
+         error('tbx:privatefunction:noFunctionsFound', ...
+            'No functions found in any private directories.');
       end
    end
 

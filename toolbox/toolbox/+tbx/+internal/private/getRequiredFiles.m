@@ -1,4 +1,4 @@
-function Requirements = getRequiredFiles(targetList, varargin)
+function Requirements = getRequiredFiles(targetList, kwargs)
    %GETREQUIREDFILES Retrieve requirements for MATLAB functions or toolboxes.
    %
    %  REQUIREMENTS = GETREQUIREDFILES(TARGETLIST)
@@ -69,21 +69,40 @@ function Requirements = getRequiredFiles(targetList, varargin)
    %  Requirements = getRequiredFiles(_, requirementsFileName='requirements');
    %  Requirements = getRequiredFiles(_, saveRequirementsFile=true);
    %
+   % REQUIREMENTSFILENAME
+   %  Full path of the .mat file written when SAVEREQUIREMENTSFILE is true.
+   %  When omitted, it defaults to fullfile(toolboxpath(), "dependencies",
+   %  "requirements.mat"), and toolboxpath() is only consulted when a file is
+   %  actually written (so non-saving calls never require it).
+   %
    % Matt Cooper, 23-Dec-2022, https://github.com/mgcooper
    %
    % See also: installRequiredFiles, getFunctionConflicts
 
-   % NOTE: see updates to this in icemodel/
+   arguments
+      targetList (1, :) string
+      kwargs.ignoreList (1, :) string = []
+      kwargs.referenceList (1, :) string {mustBeFolder} = projectpath()
+      % "" defers the default; see REQUIREMENTSFILENAME in the header.
+      kwargs.requirementsFileName (1, 1) string {mustBeTextScalar} = ""
+      kwargs.saveRequirementsFile (1, 1) logical = false
+   end
 
    % Parse inputs
    [targetFiles, referenceFiles, requirementsFileName, saveRequirementsFile] = ...
-      parseinputs(targetList, mfilename, varargin{:});
+      parseinputs(targetList, kwargs);
 
    % Call codetools.requiredFilesAndProducts on the file list
    [requiredFiles, requiredProducts] = processFileList(targetFiles);
 
-   % Find missing files (required files not included in the reference list)
+   % Remove required files which are listed twice - once because they already
+   % exist in the reference list, and again because they are
+   [requiredFiles, installedFiles] = detectInstalledFiles( ...
+      requiredFiles, referenceFiles);
+
+   % Find missing files (required files not included in the project)
    missingFiles = setdiff(requiredFiles, referenceFiles);
+   missingFiles = setdiff(missingFiles, installedFiles);
    missingFiles = string(missingFiles);
    requiredFiles = string(requiredFiles);
 
@@ -96,6 +115,48 @@ function Requirements = getRequiredFiles(targetList, varargin)
    Requirements.requiredFiles = requiredFiles;
    Requirements.requiredProducts = requiredProducts;
 end
+
+function [requiredFiles, installedFiles] = detectInstalledFiles( ...
+      requiredFiles, referenceFiles)
+
+   % If the required files exist both within the project (e.g. b/c they were
+   % already installed with this function) and elsewhere on the path (e.g. in
+   % the localSourcePath used by installRequiredFiles), they may be listed twice
+   % in requiredFiles, but only once in referenceFiles (the installed ones).
+   % This may occur b/c matlab.codetools.requiredFilesAndProducts finds them in
+   % localSourcePath first (b/c it is higher on the path), and then finds them
+   % in their installed location within the project. Then the setdiff above only
+   % removes the ones which are installed locally. The next step prunes the ones
+   % which exist locally but are listed as missing. Note, the desired behavior
+   % is unclear here - they could be reinstalled by default.
+
+   % installedFiles are the ones in localSourcePath, not the ones already in the
+   % toolbox b/c those are in referenceList.
+
+   % Extract file names without paths
+   [~, requiredFilenames] = fileparts(requiredFiles);
+   [~, referenceFilenames] = fileparts(referenceFiles);
+
+   % Find duplicates in requiredFilenames
+   [uniqueFilenames, ~, ic] = unique(requiredFilenames, 'stable');
+
+   % Filter to get filenames that appear more than once in requiredFiles
+   isDuplicate = accumarray(ic, 1) > 1;
+   duplicateFilenames = uniqueFilenames(isDuplicate);
+
+   % Find which of these duplicate filenames are also in the referenceFiles
+   installedFileIndices = ismember(requiredFilenames, duplicateFilenames) & ...
+      ismember(requiredFilenames, referenceFilenames);
+
+   % Extract the actual paths of these installed files from requiredFiles
+   installedDuplicateFiles = requiredFiles(installedFileIndices);
+
+   % Get the list of installed files (files identified as required but which
+   % already exist in the toolbox).
+   installedFiles = installedDuplicateFiles(~ismember(installedDuplicateFiles, ...
+      referenceFiles));
+end
+
 
 %% Local Functions
 function [requiredFiles, requiredProducts] = processFileList(fileList)
@@ -116,36 +177,34 @@ end
 
 %% Input Parsing
 function [targetFiles, referenceFiles, requirementsFileName, ...
-      saveRequirementsFile] = parseinputs(targetList, mfuncname, varargin)
-
-   parser = inputParser;
-   parser.FunctionName = mfuncname;
-   parser.CaseSensitive = true;
-   parser.KeepUnmatched = true;
-
-   parser.addRequired('targetList', @ischarlike);
-   parser.addParameter('ignoreList', '', @ischarlike);
-   parser.addParameter('referenceList', '', @ischarlike);
-   parser.addParameter('requirementsFileName', 'requirements.mat', @ischarlike);
-   parser.addParameter('saveRequirementsFile', false, @islogical);
-   parser.parse(targetList, varargin{:});
+      saveRequirementsFile] = parseinputs(targetList, kwargs)
 
    % Retreive the arguments
-   ignoreList = parser.Results.ignoreList;
-   referenceList = parser.Results.referenceList;
-   requirementsFileName = parser.Results.requirementsFileName;
-   saveRequirementsFile = parser.Results.saveRequirementsFile;
+   ignoreList = kwargs.ignoreList;
+   referenceList = kwargs.referenceList;
+   requirementsFileName = kwargs.requirementsFileName;
+   saveRequirementsFile = kwargs.saveRequirementsFile;
+
+   % Derive the default requirements-file location only when a file will be
+   % written and the caller did not name one (keeps toolboxpath() out of
+   % non-saving calls).
+   if saveRequirementsFile && strlength(requirementsFileName) == 0
+      requirementsFileName = ...
+         fullfile(toolboxpath(), "dependencies", "requirements.mat");
+   end
 
    % This works for files/folders passed as char or cellstr lists
+   % 3/21/2026 - merged newer changes from icemodel, this was removed there
+   % likely b/c arguments parsing casts to string, retained here until confirmed
    targetList = string(targetList);
    ignoreList = string(ignoreList);
    referenceList = string(referenceList);
 
    % Validate each member of the target file / folder list
-   targetList = cellfun(@validateFileList, targetList, 'Uniform', false);
+   targetList = string(cellfun(@validateFileList, targetList, 'Uniform', false));
 
    % Decided this does not need to be validated.
-   % ignoreList = cellfun(@validateFileList, ignoreList, 'Uniform', false);
+   % ignoreList = string(cellfun(@validateFileList, ignoreList, 'Uniform', false));
 
    % If target is a folder, convert to file list
    [targetFiles, referenceFiles] = prepareFileLists(...
@@ -196,11 +255,23 @@ function [targetFiles, referenceFiles, ignoreFiles] = prepareFileLists(...
 end
 
 function fileList = fileListFromFolderList(folderList)
+   % Type-stable empty: with no folders (e.g. the [] ignoreList default),
+   % vertcat over an empty cell would yield a 0x0 double, which downstream
+   % setdiff calls reject as non-text.
+   if isempty(folderList)
+      fileList = strings(0, 1);
+      return
+   end
    fileList = cell(numel(folderList), 1);
    for n = 1:numel(folderList)
-      fileList{n} = listfiles(folderList(n), ...
+      % Normalize each folder's listing to a column string array so one
+      % vertcat yields the mx1 string array prepareFileLists needs for
+      % setdiff. The previous flow applied vertcat(fileList{:}) twice; the
+      % second call curly-indexed a string array, extracting raw char rows,
+      % and errored whenever two file names differed in length.
+      fileList{n} = reshape(string(listfiles(folderList(n), ...
          "subfolders", true, "mfiles", true, "matfiles", true, ...
-         "aslist", true, "fullpath", true, "asstring", true);
+         "aslist", true, "fullpath", true, "asstring", true)), [], 1);
    end
    fileList = vertcat(fileList{:});
 end
@@ -214,14 +285,17 @@ function fileList = validateFileList(fileList)
    % If a full file or folder path is provided and exists, use it directly.
    if not(isfile(fileList)) && not(isfolder(fileList))
       % Otherwise, if target is not a full path to an existing file or folder,
-      % try to provide specific feedback:
+      % try to provide specific feedback. The checks use builtins only (not
+      % the isfullfile/ispathlike helpers) so the +internal template copy of
+      % this file stays copy-portable with zero external dependencies.
+      [pathPart, ~, extPart] = fileparts(fileList);
 
-      if isfullfile(fileList)
+      if strlength(pathPart) > 0 && strlength(extPart) > 0
          % If a full file path was passed in but doesn't exist
          error('File does not exist or cannot be found.');
 
-      elseif ispathlike(fileList)
-         % If a full folder path was passed in but doesn't exist
+      elseif contains(fileList, filesep)
+         % If a folder-like path was passed in but doesn't exist
          error('Folder does not exist or cannot be found.');
 
       else
@@ -245,3 +319,4 @@ function fileList = validateFileList(fileList)
       end
    end
 end
+

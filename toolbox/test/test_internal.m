@@ -31,7 +31,9 @@ end
 %
 % or doc verifyTrue, then scroll to the bottom for the table
 
-function setup(testCase)
+function setup(~)
+   % The argument is unused until the commented examples below are enabled;
+   % restore the testCase name when enabling them.
 
    % Save the test data
    % testCase.TestData = tbx.internal.generateTestData(funcname);
@@ -44,7 +46,7 @@ function setup(testCase)
    % generateTestData
 end
 
-function teardown(testCase) %#ok<INUSD>
+function teardown(~)
 
 end
 
@@ -81,4 +83,34 @@ end
 function test_privatefunction(testCase)
    func = tbx.internal.privatefunction("isoctave");
    testCase.verifyFalse(func())
+end
+
+function test_privatefunction_unknown_name(testCase)
+   % An unmatched name must raise the function's own identified error, not
+   % an undefined-variable crash (the search result is initialized so the
+   % not-found check is reached).
+   testCase.verifyError( ...
+      @() tbx.internal.privatefunction("tbx_no_such_function"), ...
+      'tbx:privatefunction:functionNotFound')
+end
+
+function test_runtests_returns_scalar_result(testCase)
+   % A caller requesting an output gets the real TestResult array
+   % (varargout{1} = result), not an empty varargout: run a one-test
+   % fixture suite in a temp folder through the explicit-folder syntax.
+   fixtureDir = fullfile(tempname(), 'test');
+   mkdir(fixtureDir)
+   cleanup = onCleanup(@() rmdir(fileparts(fixtureDir), 's'));
+   writelines([ ...
+      "function tests = test_tbxfixture"; ...
+      "tests = functiontests(localfunctions);"; ...
+      "end"; ...
+      "function test_pass(testCase)"; ...
+      "verifyTrue(testCase, true)"; ...
+      "end"], ...
+      fullfile(fixtureDir, "test_tbxfixture.m"));
+   returned = tbx.internal.runtests(fixtureDir);
+   testCase.verifyClass(returned, 'matlab.unittest.TestResult')
+   testCase.verifyNumElements(returned, 1)
+   testCase.verifyTrue(returned.Passed)
 end

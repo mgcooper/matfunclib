@@ -45,11 +45,11 @@ function varargout = runtests(varargin)
    end
 
    % Parse output
-   if numel(result) == 1
+   if isscalar(result)
       result = result{1};
    end
    if nargout
-      varargout = result;
+      varargout{1} = result;
    end
 end
 
@@ -95,6 +95,10 @@ function result = runOneSuite(testname, varargin)
 
    % Note: in the current setup, "testname" is always a test/ or tests/ folder.
    % See notes above for more details.
+   %
+   % Answering the open question above: on R2025b, fromFolder pointed at a
+   % +pkg folder and fromPackage given that package's dotted name return the
+   % same suite. A folder path is enough in both cases.
    suite = TestSuite.fromFolder(testname, 'IncludingSubfolders', true);
 
    if nargin < 2
@@ -156,6 +160,11 @@ function result = runOneSuite(testname, varargin)
    %    'Producing',CoverageReport('+tbx/+test/tbxCoverageResults', ...
    %    'MainFile','tbxCoverageTestResults.html')))
    % runner.run(suite)
+   %
+   % A project build file can wire this up by reading an environment
+   % variable (groupstats does this: `buildtool test` with its coverage
+   % variable set to a folder path); this template's build file does not
+   % implement it yet.
 
    % % Import a parameterized test suite from a class directory:
    % suite = TestSuite.fromClass(?ParameterizedTestTbx);
@@ -166,21 +175,34 @@ function tests = parseTestPaths(tests)
 
    if isempty(tests)
 
-      % Define the default test/ folders:
+      % Define the default test/ folders, where <+pkg> is this toolbox's
+      % package folder:
       % projectpath/test
       % projectpath/tests
-      % projectpath/toolbox/+tbx/test
-      % projectpath/toolbox/+tbx/tests
+      % projectpath/toolbox/<+pkg>/+test
+      % projectpath/toolbox/<+pkg>/+tests
+      %
+      % Derive the package folder rather than hard-coding it, so a project
+      % stamped from the toolbox template finds its own test package without
+      % editing this file.
+      [~, withplus] = mpackagename();
 
       tests_ = fullfile(projectpath(), ...
          {'test', ...
          'tests', ...
-         fullfile('toolbox/+tbx/+test'), ...
-         fullfile('toolbox/+tbx/+tests')} ...
+         fullfile('toolbox', withplus, '+test'), ...
+         fullfile('toolbox', withplus, '+tests')} ...
          );
 
       % Determine which of the default test folders exist
       tests = tests_(isfolder(tests_));
+
+      % Keep only the folders that hold an m-file. An empty folder contributes
+      % an empty result, which makes the output a cell array of TestResult
+      % arrays rather than one TestResult array.
+      hasmfiles = cellfun( ...
+         @(folder) ~isempty(dir(fullfile(folder, '**', '*.m'))), tests);
+      tests = tests(hasmfiles);
 
       if isempty(tests)
          error(['No test/ or tests/ folder found in top level directory ' ...
