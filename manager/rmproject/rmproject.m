@@ -77,7 +77,14 @@ function rmproject(projectname, varargin)
    if wasactive
       projlist.activeproject(1:end) = false;
       projlist.activeproject(ismember(projlist.name, 'default')) = true;
-      setenv('MATLABACTIVEPROJECT', 'default');
+      % Canonical env name (the old misspelled MATLABACTIVEPROJECT set a
+      % variable nothing reads). The _PATH/_DATA_PATH vars are deliberately
+      % left holding the removed project's paths: with keepsource those
+      % folders still exist, and blanking would break readers that treat a
+      % set-but-empty var as usable (isenv('') is true, so cddata would
+      % cd('')). juq.7's choke-point config owns defining a real
+      % inactive-state convention for these vars.
+      setenv('MATLAB_ACTIVE_PROJECT', 'default');
    end
 
    % final step

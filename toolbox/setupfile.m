@@ -23,8 +23,6 @@ function setupfile(varargin)
    %  MATLAB_ACTIVE_PROJECT set to PROJECTNAME
    %  MATLAB_ACTIVE_PROJECT_PATH set to PROJECTPATH
    %  MATLAB_ACTIVE_PROJECT_DATA_PATH set to PROJECTPATH/data
-   %  MATLAB_ACTIVE_PROJECT_TESTS_PATH set to PROJECTPATH/tests
-   %  MATLAB_ACTIVE_PROJECT_TOOLBOX_PATH set to PROJECTPATH/toolbox
    %
    %  To set these variables, PROJECTNAME is inferred from the path to the
    %  directory in which this file is saved. For example, if this file is saved
@@ -77,12 +75,13 @@ function setupfile(varargin)
    % Safely add all paths to the userpath
    localpathadd(projectpath, '-begin')
 
-   % Set default environment variables
+   % Set default environment variables. Canonical MATLAB_ACTIVE_* family:
+   % exactly this trio, matching manager's setprojectactive writer. The old
+   % _TESTS_PATH and _TOOLBOX_PATH variants had no readers anywhere and were
+   % removed at the 2026 unification.
    setenv('MATLAB_ACTIVE_PROJECT', projectname);
    setenv('MATLAB_ACTIVE_PROJECT_PATH', projectpath);
    setenv('MATLAB_ACTIVE_PROJECT_DATA_PATH', fullfile(projectpath, 'data'));
-   setenv('MATLAB_ACTIVE_PROJECT_TESTS_PATH', fullfile(projectpath, 'tests'));
-   setenv('MATLAB_ACTIVE_PROJECT_TOOLBOX_PATH', fullfile(projectpath, 'toolbox'));
 
    % Run user hooks (e.g., config.m, read .env, etc). The dot folder removal
    % should not ever be necessary, but it doesn't hurt to check.

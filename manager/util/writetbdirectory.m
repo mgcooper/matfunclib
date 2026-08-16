@@ -55,7 +55,7 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
          info = dir(tbDirectoryPath);
          if info.bytes > 0
             toolboxes_backup = readtable(tbDirectoryPath, ...
-               'Delimiter', ',', 'ReadVariableNames', true); %#ok<NASGU>
+               'Delimiter', ',', 'ReadVariableNames', true);
             if height(toolboxes_backup) > 0
                backuppath = gettbbackuppath();
                save(backuppath, 'toolboxes_backup');
@@ -69,4 +69,7 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
    end
 
    writetable(toolboxes, tbDirectoryPath);
+
+   % Rotate the backup pool (toolbox backups use the tbd_*.mat prefix).
+   prunedirectorybackups(fileparts(tbDirectoryPath), "tbd_*.mat");
 end
