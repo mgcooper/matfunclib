@@ -1,229 +1,342 @@
-function varargout = createMatlabProject(projectFolder, projectName, ...
-      addProjectFiles, addProjectFolders, addChildFiles, projectSubfolders, ...
-      ignoredSubFolders)
-   %CREATEMATLABPROJECT Create a new MATLAB project.
+function varargout = createMatlabProject(projectFolder, opts)
+   %CREATEMATLABPROJECT Create or open a MATLAB Project and import its files.
    %
-   %    proj = createMatlabProject(projectFolder, projectName, ...
-   %       addProjectFiles, addProjectFolders, addChildFiles, ...
-   %       projectSubfolders, ignoredSubFolders)
+   %    proj = createMatlabProject()
+   %    proj = createMatlabProject(projectFolder)
+   %    proj = createMatlabProject(projectFolder, Name, Value)
    %
    % Description
    %
-   %  This function creates a new MATLAB project, adds files and/or folders in
-   %  the projectFolder to the project, and recursively adds files from all
-   %  projectSubfolders if addChildFiles is true. Finally, it updates the
-   %  dependencies of the project.
+   %  Creates a MATLAB Project in PROJECTFOLDER, or opens the one already
+   %  there, then imports the requested files and folders. Re-running the
+   %  function on an existing Project converges: files already in the
+   %  Project are never re-added, so a double run changes nothing. The
+   %  Project is left open and returned; the caller closes it.
    %
-   % Inputs (all optional)
+   %  With "references" true (the default), Referenced Projects are
+   %  generated from the project's mproject.toml through addprojectrefs.
+   %  With "sync" true, missing required files are imported and the
+   %  dependency cache refreshed through syncprojectfiles.
    %
-   %  PROJECTFOLDER - The parent (top level) project folder (scalar text). Can
-   %  be a full path or name from which the full path is constructed using the
-   %  MATLAB_PROJECT_PATH environment variable. The default is pwd().
+   % Inputs
    %
-   %  PROJECTNAME - Scalar text used for the .prj filename. If not provided, the
-   %  PROJECTFOLDER folder name is used for PROJECTNAME. The .prj filename is
-   %  constructed automatically by the function matlab.project.createProject,
-   %  which capitalizes the first letter only, for instance, <Projectname>.prj.
-   %  Thus if PROJECTFOLDER="/path/to/my/awesomeproject", and PROJECTNAME is not
-   %  supplied, PROJECTNAME will be "awesomeproject", and the .prj file will be
-   %  Awesomeproject.prj. Provide a value for PROJECTNAME to use an alternative
-   %  such as CamelCase: <AwesomeProjectName>.prj. The default is PROJECTFOLDER.
+   %  PROJECTFOLDER - The project root folder (scalar text). Either a full
+   %  path or a bare name resolved against the MATLAB_PROJECT_PATH
+   %  environment variable. The default is pwd().
    %
-   %  ADDPROJECTFILES - Flag (logical scalar) to control if all files in the
-   %  top-level PROJECTFOLDER are added to the project. The default is false.
+   % Name-value options
    %
-   %  ADDPROJECTFOLDERS - Flag (logical scalar) to control if all folders in the
-   %  top-level PROJECTFOLDER are added to the project. Note that files within
-   %  these folders are not added unless ADDCHILDFILES is true. The default is
+   %  projectName - Scalar text for the Project name at creation time. An
+   %  existing Project keeps its name. The default is the PROJECTFOLDER
+   %  folder name. Note: matlab.project.createProject derives the .prj
+   %  filename from the name with only the first letter capitalized, so
+   %  pass CamelCase text for a CamelCase .prj filename.
+   %
+   %  addProjectFiles - Import the top-level *.m files. Default false.
+   %
+   %  addProjectFolders - Import the project subfolders (their trees when
+   %  addChildFiles is true, the bare folder nodes otherwise). Default
    %  false.
    %
-   %  ADDCHILDFILES - Flag (logical scalar) to control if all files in
-   %  PROJECTFOLDER and PROJECTSUBFOLDERS are recursively added to the project.
-   %  The default is false.
+   %  addChildFiles - Import files inside the imported subfolders
+   %  recursively. Default false.
    %
-   %  PROJECTSUBFOLDERS - String array specifying which subfolders of
-   %  PROJECTFOLDER should be added to the project. If ADDPROJECTFILES is false,
-   %  but ADDCHILDFILES is true and PROJECTSUBFOLDERS is not empty, then all
-   %  PROJECTSUBFOLDERS and files within them are added to the project,
-   %  regardless of the value of ADDPROJECTFOLDERS (which is specific to how the
-   %  top-level folders/files are treated). Use this to ignore certain files
-   %  and/or folders in the top level of a project (such as LICENSE or any other
-   %  file), instead restricting project-managed files to a subfolder, such as a
-   %  toolbox/ folder. The default is an empty string.
+   %  projectSubfolders - Folder names restricting which subfolders are
+   %  imported (for example "toolbox" to keep the Project scoped to a
+   %  shipped folder). The filter refines an enabled import: passing it
+   %  without addProjectFolders is an error, because there would be no
+   %  import for it to restrict. Empty means every subfolder not
+   %  ignored. Default empty.
    %
-   %  IGNOREDSUBFOLDERS - String array of subfolders within PROJECTFOLDER to be
-   %  ignored when adding folders and files to the project. Use this to
-   %  selectively ignore certain folders such as those ignored by your version
-   %  control system.
+   %  ignoredSubFolders - Folder names excluded from the import wherever
+   %  they appear, appended to the built-in ignore set [".git" ".svn"].
+   %  The root resources/ folder (Project metadata) is always excluded
+   %  by position; nested resources folders are ordinary content and
+   %  import normally. Default empty.
+   %
+   %  references - Generate Referenced Projects from mproject.toml via
+   %  addprojectrefs. Default true. A missing manifest declares nothing
+   %  and is not an error.
+   %
+   %  sync - Import missing required files and refresh the dependency
+   %  cache via syncprojectfiles. Default false because the dependency
+   %  walk is slow on large projects.
    %
    % Outputs
    %
-   %  PROJ: The MATLAB project object.
+   %  PROJ - The open matlab.project.Project object.
    %
-   % See also: projectfile
-
-   % TODO:
-   % - args need to be name-value.
-   % - option to add folders to project path, see "addPath" function
+   % See also: addprojectrefs, syncprojectfiles, projectfile, mkproject
 
    arguments
-      projectFolder (1,1) string {mustBeFolder} = pwd()
-      projectName string = string(NaN)
-      addProjectFiles (1, 1) logical = false
-      addProjectFolders (1, 1) logical = false
-      addChildFiles (1, 1) logical = false
-      projectSubfolders (:,1) string = string(NaN)
-      ignoredSubFolders (1, :) string = ""
+      projectFolder (1,1) string = pwd()
+      opts.projectName (1,1) string = string(NaN)
+      opts.addProjectFiles (1,1) logical = false
+      opts.addProjectFolders (1,1) logical = false
+      opts.addChildFiles (1,1) logical = false
+      opts.projectSubfolders (:,1) string = string.empty()
+      opts.ignoredSubFolders (1,:) string = string.empty()
+      opts.references (1,1) logical = true
+      opts.sync (1,1) logical = false
    end
 
-   if isempty(projectName) || ismissing(projectName)
-      [~, projectName, ~] = fileparts(projectFolder);
-      projectName = string(projectName);
+   % The subfolder filter refines the folder import; without an import
+   % it would select nothing without a message, so make that misuse an
+   % error instead.
+   if ~isempty(opts.projectSubfolders) && ~opts.addProjectFolders
+      error("matfunclib:createMatlabProject:filterWithoutImport", ...
+         "projectSubfolders was passed but addProjectFolders is " + ...
+         "false, so there is no folder import for it to restrict.")
    end
 
-   defaultIgnore = [".git",".svn","resources"];
-   if isempty(ignoredSubFolders)
-      ignoredSubFolders = defaultIgnore;
+   % Resolve a bare project name against MATLAB_PROJECT_PATH, so
+   % callers can name projects the way the project directory does,
+   % without building paths.
+   projectFolder = resolveProjectFolder(projectFolder);
+
+   % An existing Project keeps its name; missing means "use the folder
+   % name" at creation time. fileparts treats a dot in a folder name as
+   % an extension separator, so rejoin the parts to keep dotted folder
+   % names whole.
+   if ismissing(opts.projectName)
+      [~, folderBase, folderExt] = fileparts(projectFolder);
+      projectName = string(folderBase) + string(folderExt);
    else
-      ignoredSubFolders = [ignoredSubFolders, defaultIgnore];
+      projectName = opts.projectName;
    end
 
-   % % This doesn't work b/c the project name is converted to a valid varname %
-   % Check if a project with the same name already exists projectPath =
-   % fullfile(projectFolder, projectName + ".prj"); if isfile(projectPath)
-   %     error("A project with the name '%s' already exists in '%s'.",
-   %     projectName, projectFolder)
-   % end
+   % .git and .svn are version-control state, excluded wherever they
+   % appear. The ROOT resources/ folder holds Project metadata and is
+   % excluded inside collectImports by position, not by name, so nested
+   % resource folders shipping product assets stay importable.
+   ignoredSubFolders = [opts.ignoredSubFolders, ".git", ".svn"];
 
-   % Get a list of all sub-folders to add to the project. This step is performed
-   % first because creating the project generates new folders.
-   [projectSubfolders, ~] = getProjectFolders(projectFolder, ...
-      projectSubfolders, ignoredSubFolders);
-
-   % Note: the second output of getProjectFolders (projectFiles) is a list of
-   % all files in all subfolders, and the top level (I think). It is a cleaner
-   % list, but I decided against passing it directly to proj.addFile, instead I
-   % use proj.addFolderIncludingChildFiles which achieves the same thing but
-   % adds all files e.g. .DS_Store. Overall I think its better this way though
-   % b/c Projects want to manage all subfolders and files, and I don't think
-   % there's any harm in adding all files.
-   %
-   % However, this was also done to make it easier to only add the toolbox/
-   % folder e.g., the following would only add the toolbox/ folder:
-   %     addProjectFiles=false
-   %     addProjectFolders=false,
-   %     addChildFiles=true
-   %     projectSubfolders="toolbox"
-   %
-   % This is how makeproject/projectfile is configured.
-
-   % Create a new project
-   proj = matlab.project.createProject( ...
-      "Name", projectName, "Folder", projectFolder);
-
-   % Add all top-level files
-   if addProjectFiles
-      projectFiles = dir(fullfile(projectFolder, '*.m'));
-      projectFiles = fullfile({projectFiles.folder}', {projectFiles.name}');
-      cellfun(@(file) proj.addFile(file), projectFiles);
+   % Create-or-open, classified by projectstate (the check
+   % addprojectrefs also applies to reference targets): a folder with
+   % both markers opens, a folder with neither is created, and a folder
+   % with one marker but not the other (for example an orphaned
+   % resources/project tree with no .prj) fails fast with the repair
+   % named, because openProject cannot open it and creating over it
+   % would mix stale state into the new Project.
+   switch projectstate(projectFolder)
+      case "project"
+         proj = openProject(projectFolder);
+      case "none"
+         proj = matlab.project.createProject( ...
+            "Name", projectName, "Folder", projectFolder);
+      otherwise
+         % resolveProjectFolder already rejected missing folders, so
+         % this branch reports orphaned (partial) Project state.
+         error("matfunclib:createMatlabProject:orphanedProjectState", ...
+            "Folder ""%s"" has Project state ""%s"" (a root .prj or " + ...
+            "a resources/project tree, but not both). Delete the " + ...
+            "stale remnant, then re-run to generate a fresh Project.", ...
+            projectFolder, projectstate(projectFolder))
    end
 
-   % Recursively add all files in all projectSubfolders.
-   if addProjectFolders
+   % The root path the Project reports, used for all containment checks
+   % so macOS /var vs /private/var aliases cannot break them.
+   projectRoot = string(proj.RootFolder);
 
-      if addChildFiles
-         % Add files in each projectSubfolder and their subfolders.
-         cellfun(@(folder) ...
-            proj.addFolderIncludingChildFiles(folder), projectSubfolders);
-      else
-         % Add files in the top-level of each projectSubfolder
-         cellfun(@(folder) ...
-            proj.addFile(folder), projectSubfolders);
-      end
+   % Everything the options select, as one deterministic list of folders
+   % and files. Filtering against the Project's current file set is what
+   % makes a re-run a no-op.
+   toImport = collectImports(projectRoot, opts.addProjectFiles, ...
+      opts.addProjectFolders, opts.addChildFiles, ...
+      opts.projectSubfolders, ignoredSubFolders);
+
+   existing = listprojectfiles(proj);
+   for entry = toImport(~ismember(toImport, existing)).'
+      proj.addFile(entry);
    end
 
-   % Update dependencies
-   updateDependencies(proj);
+   % addFile tracks membership only; folders reach the MATLAB path in a
+   % clean session only through the Project path, and the path is not
+   % recursive. Register every imported folder's path root (pathrootof
+   % strips +package/@class/private segments, so a special folder
+   % contributes its ordinary ancestor), plus the project root itself
+   % when its top-level files were imported, idempotently, so
+   % openProject exposes all the code and Referenced Projects
+   % contribute their folders.
+   importedFolders = toImport(isfolder(toImport));
+   pathRoots = strings(numel(importedFolders), 1);
+   for k = 1:numel(importedFolders)
+      pathRoots(k) = pathrootof(importedFolders(k));
+   end
+   if opts.addProjectFiles
+      pathRoots = [projectRoot; pathRoots];
+   end
+   pathRoots = unique(pathRoots, "stable");
+   heldPath = listprojectpath(proj);
+   for entry = pathRoots(~ismember(pathRoots, heldPath)).'
+      proj.addPath(entry);
+   end
 
-   % Return the project object if requested
+   % Referenced Projects come from mproject.toml, the one place project
+   % dependencies are declared; the .prj reference set is derived from
+   % it, never hand-maintained.
+   if opts.references
+      addprojectrefs(projectRoot);
+   end
+
+   % The sync pass imports missing required files and refreshes the
+   % dependency cache; it is opt-in because the walk is slow.
+   if opts.sync
+      syncprojectfiles(projectRoot);
+   end
+
+   % Return the open Project only when asked, so scripted calls do not
+   % echo the object.
    if nargout
       varargout{1} = proj;
    end
 end
 
-function [projectSubfolders, projectFiles] = getProjectFolders( ...
-      projectFolder, projectSubfolders, ignoreFolders)
-   %GETPROJECTFOLDERS Returns a list of subfolders within projectFolder.
-   %
-   % projectSubfolders: String array. A list of specific subfolders to be
-   % included. If this is empty, all subfolders within projectFolder are
-   % returned.
-   %
-   % The function also excludes certain folders like '.git', '.svn', and
-   % 'resources' from the returned list.
-   %
-   % Note: It returns only the subfolders, and 'addFolderIncludingChildFiles'
-   % takes care of adding files from these subfolders to the project.
+%% local functions
 
-   % Note: I could return all the files, including the top level projectFolder
-   % ones, and use addFile on all of them, but for now, I return the subfolders,
-   % and addFolderIncludingChildFiles takes care of recursive files.
+function projectFolder = resolveProjectFolder(projectFolder)
+   %RESOLVEPROJECTFOLDER Resolve a path or bare name to an existing folder.
 
-   % Get all subfolders
-   allSubfolders = dir(fullfile(projectFolder, '**/*'));
-   allSubfolders(strncmp({allSubfolders.name}, '.', 1)) = [];
-   allSubfolders = allSubfolders([allSubfolders.isdir]);
-
-   % Remove .git, .svn, and resources folders.
-   allSubfolders = allSubfolders(~contains({allSubfolders.folder},ignoreFolders));
-   allSubfolders = allSubfolders(~ismember({allSubfolders.name},ignoreFolders));
-
-   % If no subfolders are specified, use all subfolders (except ignored ones).
-   if ismissing(projectSubfolders) || isempty(projectSubfolders)
-      projectSubfolders = allSubfolders;
-   else
-      % Use the specified projectSubfolders
-      projectSubfolders = allSubfolders( ...
-         ismember({allSubfolders.name}, projectSubfolders));
+   arguments
+      projectFolder (1,1) string
    end
 
-   % Check if specified subfolders are actual subfolders of the projectFolder
-   if ~all(startsWith({projectSubfolders.folder}, projectFolder))
-      error('All projectSubfolders must be subfolders of projectFolder.')
+   if isfolder(projectFolder)
+      return
    end
 
-   % Remove .git, .svn, and resources folders.
-   projectSubfolders = projectSubfolders(~contains( ...
-      {projectSubfolders.folder}, ignoreFolders));
+   % A bare name resolves under MATLAB_PROJECT_PATH, matching how the
+   % project directory (readprjdirectory) addresses projects.
+   candidate = fullfile(getenv("MATLAB_PROJECT_PATH"), projectFolder);
+   if isfolder(candidate)
+      projectFolder = string(candidate);
+      return
+   end
 
-   projectSubfolders = projectSubfolders(~ismember( ...
-      {projectSubfolders.name}, ignoreFolders));
+   error("matfunclib:createMatlabProject:folderNotFound", ...
+      "Project folder ""%s"" is not a folder and does not resolve " + ...
+      "under MATLAB_PROJECT_PATH.", projectFolder)
+end
 
-   % Convert from dir struct to full path.
-   projectSubfolders = fullfile( ...
-      {projectSubfolders.folder}', {projectSubfolders.name}');
+function toImport = collectImports(projectRoot, addProjectFiles, ...
+      addProjectFolders, addChildFiles, projectSubfolders, ignoredSubFolders)
+   %COLLECTIMPORTS List the folders and files the options select.
+   %
+   % Returns a string column of full paths: top-level *.m files when
+   % addProjectFiles is set, then each selected subfolder and (with
+   % addChildFiles) every file under it. Explicit enumeration with one
+   % addFile call per entry is what makes the import idempotent, because
+   % the caller can filter this list against the Project's file set.
 
-   % Get a list of all files in the project folder.
-   if isempty(projectSubfolders)
-      % This occurs when the folder has no subfolders. Could generate a list of
-      % files in the top level folder, but that's what addProjectFiles is for.
-      %
-      % projectFiles = dir(fullfile(projectFolder, '*.m'));
+   arguments
+      projectRoot (1,1) string
+      addProjectFiles (1,1) logical
+      addProjectFolders (1,1) logical
+      addChildFiles (1,1) logical
+      projectSubfolders (:,1) string
+      ignoredSubFolders (1,:) string
+   end
 
-      projectFiles = projectSubfolders;
+   parts = {};
+
+   % Top-level *.m files.
+   if addProjectFiles
+      found = dir(fullfile(projectRoot, "*.m"));
+      parts{end + 1} = compose(found);
+   end
+
+   if addProjectFolders
+      % Every directory under the root, minus dotfolders and the ignore
+      % set. Matching prunes by path segment so an ignored name excludes
+      % its whole subtree.
+      found = dir(fullfile(projectRoot, "**", "*"));
+      found = found([found.isdir]);
+      found = found(~startsWith({found.name}, "."));
+      folders = compose(found);
+      folders = folders(~ignoredPath(folders, projectRoot, ignoredSubFolders));
+
+      % A dot-prefixed segment anywhere in the relative path excludes
+      % the whole subtree, so .github/workflows goes with .github
+      % rather than surviving the basename filter above.
+      dotted = false(numel(folders), 1);
+      for k = 1:numel(folders)
+         segments = split(erase(folders(k), projectRoot + filesep), ...
+            filesep);
+         dotted(k) = any(startsWith(segments, "."));
+      end
+      folders = folders(~dotted);
+
+      % Only the ROOT resources/ folder is Project metadata; a nested
+      % resources folder is ordinary product content and stays.
+      rootResources = fullfile(projectRoot, "resources");
+      folders = folders(folders ~= rootResources ...
+         & ~startsWith(folders, rootResources + filesep));
+
+      % An explicit projectSubfolders list keeps only trees rooted at a
+      % matching folder name, so "toolbox" selects toolbox/ and its
+      % descendants.
+      if ~isempty(projectSubfolders)
+         keep = false(size(folders));
+         for name = projectSubfolders.'
+            base = fullfile(projectRoot, name);
+            keep = keep | folders == base ...
+               | startsWith(folders, base + filesep);
+         end
+         folders = folders(keep);
+         if isempty(folders)
+            error("matfunclib:createMatlabProject:subfolderNotFound", ...
+               "No subfolder of ""%s"" matches projectSubfolders [%s].", ...
+               projectRoot, strjoin(projectSubfolders, ", "))
+         end
+      end
+      parts{end + 1} = folders;
+
+      % Files inside the selected folders, when requested. Dotfiles stay
+      % out so .DS_Store and friends never enter the Project.
+      if addChildFiles
+         perFolder = cell(numel(folders), 1);
+         for k = 1:numel(folders)
+            found = dir(fullfile(folders(k), "*"));
+            found = found(~[found.isdir]);
+            found = found(~startsWith({found.name}, "."));
+            perFolder{k} = compose(found);
+         end
+         parts{end + 1} = vertcat(strings(0, 1), perFolder{:});
+      end
+   end
+
+   toImport = unique(vertcat(strings(0, 1), parts{:}), "stable");
+end
+
+function ignored = ignoredPath(paths, projectRoot, ignoredSubFolders)
+   %IGNOREDPATH True where a path contains an ignored folder name segment.
+
+   % Compare per-path segments so an ignored name anywhere in the path
+   % excludes the whole subtree beneath it.
+
+   arguments
+      paths (:,1) string
+      projectRoot (1,1) string
+      ignoredSubFolders (1,:) string
+   end
+   relative = erase(paths, projectRoot + filesep);
+   ignored = false(numel(paths), 1);
+   for k = 1:numel(paths)
+      ignored(k) = any(ismember(split(relative(k), filesep), ...
+         ignoredSubFolders));
+   end
+end
+
+function paths = compose(found)
+   %COMPOSE Convert a dir() struct to a string column of full paths.
+
+   arguments
+      found struct
+   end
+
+   if isempty(found)
+      paths = strings(0, 1);
    else
-
-      % The only problem with this is it does not ignore the folders which were
-      % removed from projectSubfolders above, but this gets all the files in teh
-      % project without calling listfiles. Plus these files aren't even used in
-      % the main function.
-      projectFiles = dir(fullfile(projectFolder, '**/*'));
-      projectFiles(strncmp({projectFiles.name}, '.', 1)) = [];
-      projectFiles = projectFiles(~[projectFiles.isdir]);
-      projectFiles = fullfile({projectFiles.folder}', {projectFiles.name}');
-
-      % listfiles is the only dependency so use the method above.
-      %projectFiles = listfiles(projectSubfolders, "subfolders", true, ...
-      %   "aslist", true, "fullpath", true);
+      paths = string(fullfile({found.folder}, {found.name})).';
    end
 end

@@ -31,6 +31,23 @@ function msg = copytoolboxtemplate(projectname, opts)
       error(eid, msg);
    end
 
+   % A template carrying generated MATLAB Project state would merge that
+   % state into the destination, where it cannot be separated from any
+   % pre-existing destination Project. Refuse before copying anything:
+   % Projects are generated per project by createMatlabProject and must
+   % never live in the template. The historical ToolboxTemplate.prj stub
+   % is exempt; the post-copy cleanup deletes it by name.
+   sourcePrj = dir(fullfile(TOOLBOX_TEMPLATE_PATH, '*.prj'));
+   sourcePrj = sourcePrj(~strcmp({sourcePrj.name}, 'ToolboxTemplate.prj'));
+   if isfolder(fullfile(TOOLBOX_TEMPLATE_PATH, 'resources')) ...
+         || ~isempty(sourcePrj)
+      eid = ['custom:' mfilename ':templateContainsProjectState'];
+      error(eid, ['The toolbox template at %s contains generated ' ...
+         'MATLAB Project state (a root .prj or resources/). Remove it ' ...
+         'from the template before copying; Projects are generated ' ...
+         'per project by createMatlabProject.'], TOOLBOX_TEMPLATE_PATH)
+   end
+
    % Determine if PROJECTNAME 1) is a fullpath, 2) points to an existing project
    % folder, and 3) is an existing project. If not, make the folder and copy the
    % toolbox template there.
@@ -139,7 +156,8 @@ function deleteUnwantedFiles(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    % When the toolbox is copied, several files are copied which should be
    % deleted from the new project:
    %
-   % ToolboxTemplate.prj
+   % ToolboxTemplate.prj (only when a stale template copy carried one;
+   % the template ships no .prj)
    % sandbox/
 
    previousState = recycle("on");
@@ -153,12 +171,16 @@ function deleteUnwantedFiles(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    % Double check against the env var.
    assert(~strcmp(getenv('MATLAB_TOOLBOX_TEMPLATE_PATH'), PROJECT_FOLDER_PATH))
 
-   % This is the file we will delete.
+   % The pre-copy guard in the main function refuses a template that
+   % carries generated Project state, so the only Project artifact a
+   % copy can hold is the historical ToolboxTemplate.prj stub from a
+   % stale template checkout. Delete it by name when present; never
+   % touch other .prj files or resources/, which can only belong to a
+   % pre-existing destination.
    copiedProjectFile = fullfile(PROJECT_FOLDER_PATH, 'ToolboxTemplate.prj');
-
-   % Confirm the copied file exists, then delete it (send to recycle bin).
-   assert(isfile(copiedProjectFile))
-   delete(copiedProjectFile)
+   if isfile(copiedProjectFile)
+      delete(copiedProjectFile)
+   end
 
    %%%% Part 2: the sandbox/ folder
 

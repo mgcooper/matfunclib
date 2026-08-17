@@ -41,12 +41,16 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
          = ["sandbox", "testbed"]
    end
 
-   % Define the main project folder
-   projectFolder = fileparts(mfilename('fullpath'));
+   % Define the main project folder. This file lives in build/, one
+   % level below the project root.
+   projectFolder = fileparts(fileparts(mfilename('fullpath')));
 
-   % Define the project name
+   % Define the project name. fileparts treats a dot in a folder name
+   % as an extension separator, so rejoin the parts to keep dotted
+   % folder names whole.
    if ismissing(projectName)
-      [~, projectName] = fileparts(projectFolder);
+      [~, folderBase, folderExt] = fileparts(projectFolder);
+      projectName = string(folderBase) + string(folderExt);
    end
 
    switch buildOption
@@ -66,9 +70,24 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
          codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
             projectName, buildOption, mfilename);
 
-         % Create the project
-         proj = createMatlabProject(projectFolder, opts.addProjectFiles, ...
-            opts.addCodeFiles, codeFolders, projectName, opts.ignoreFolders);
+         % The subfolder filter only applies when the code import is
+         % enabled; with addCodeFiles=false nothing below the root is
+         % imported, so no filter is passed.
+         if opts.addCodeFiles
+            subfolders = codeFolders;
+         else
+            subfolders = string.empty();
+         end
+
+         % Create (or converge) the project through the manager
+         % generator's name-value interface.
+         proj = createMatlabProject(projectFolder, ...
+            projectName=projectName, ...
+            addProjectFiles=opts.addProjectFiles, ...
+            addProjectFolders=opts.addCodeFiles, ...
+            addChildFiles=opts.addCodeFiles, ...
+            projectSubfolders=subfolders, ...
+            ignoredSubFolders=opts.ignoreFolders(:).');
 
       case 'listfiles'
          % This should probably be an internal function or in a new namespace
@@ -98,19 +117,6 @@ function codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
 end
 %%
 %%
-% Dormant alternative validator, kept as commented code. To use it, add
-% this back to the arguments block:
-%   buildOption (1, 1) char {mustBeValidOption(buildOption)} = 'create'
-%
-% function mustBeValidOption(option)
-%    % Test for membership in list
-%    validopts = {'create', 'delete', 'update'};
-%    if ~ismember(option, validopts)
-%       eid = 'Option:notValid';
-%       msg = 'Input option must be ''add'' or ''multiply''.';
-%       throwAsCaller(MException(eid,msg))
-%    end
-% end
 % This is from teh delete project section. It is based on my initial attempts to
 % create a project programmatically in icom-msd project create_matlab_project
 % script where I had to close it first b/c I had just created it, but I am not

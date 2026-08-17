@@ -148,8 +148,9 @@ function success = mkproject(projectname, varargin)
    if opts.createMatlabProject
       % WARNING: If the createMatlabProject function signature changes, this
       % needs to be updated!
-      createMatlabProject(projectpath, projectname, true, true, true, ...
-         string(NaN), "sandbox")
+      createMatlabProject(projectpath, projectName=projectname, ...
+         addProjectFiles=true, addProjectFolders=true, addChildFiles=true, ...
+         ignoredSubFolders="sandbox")
    end
 
    if ~nargout
