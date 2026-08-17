@@ -6,7 +6,42 @@
 - Update gettingStarted.mlx
 - Run projectfile when ready
 - Delete _Contents.m and run tbx.internal.makecontents
-- Delete _toolboxPackaging and create the actual toolbox package when ready
+- Delete _toolboxPackaging; `releasefile` packages the toolbox (see Build
+  workflow below), so no packaging prj is made by hand
+
+## Build workflow
+
+One project uses four build files. All of them run headless.
+
+- `mproject.toml` declares the project's dependencies (projects and
+  toolboxes by the names in the manager's project and toolbox
+  directories). It is the one declared source: `workon`
+  resolves it at activation and the Project generator derives
+  Referenced Projects from it. It never lists files.
+- `projectfile.m` (in `build/`) creates or updates the MATLAB Project
+  through manager's `createMatlabProject`, which imports the toolbox
+  folder, generates Referenced Projects from the manifest, and can sync
+  missing required files into the Project.
+- `buildfile.m` (project root) is the `buildtool` plan: `check` (zero
+  code issues over `toolbox/` and `test/`), `test` (the suites in
+  `test/`), `contents` (regenerate Contents.m), and `release`. It must
+  stay at the project root: `buildtool` discovers build files only in
+  the current folder and its parents, so a nested copy scopes its tasks
+  to the nested folder and reports success without checking the code.
+- `releasefile.m` (project root) packages `toolbox/` into a versioned
+  `.mltbx` under `release/`. Options come from
+  `<namespace>.internal.releaseoptions`: the Project's embedded Package
+  Toolbox task when one exists, otherwise constructed from the
+  `toolbox/` folder with the deterministic `<sanitized>-<hash>-toolbox`
+  identifier (stable across releases, distinct across project names).
+  The version is always pinned from `version.txt`. `buildtool release`
+  runs check and test first, then calls the same `releasefile`.
+
+To cut a release: update `toolbox/version.txt` (shipped with the
+package so installed code reports its own version), run
+`buildtool release`, and pick up the `.mltbx` from `release/`. The
+manifest test in `test/` verifies what a release would ship without
+packaging one.
 
 ## Getting Started
 
