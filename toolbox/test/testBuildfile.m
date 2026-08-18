@@ -158,6 +158,45 @@ classdef testBuildfile < matlab.unittest.TestCase
          returned = contains(string(fileread(contentsfile)), ...
             "STALE CONTENTS MARKER");
          testCase.verifyFalse(returned)
+
+         % The generator writes no trailing whitespace, so regenerated
+         % files do not fight the editor's smart indent.
+         lines = readlines(contentsfile);
+         returned = nnz(endsWith(lines, " ") ...
+            | endsWith(lines, sprintf("\t")));
+         expected = 0;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testProjectfileCreatesAtItsOwnRoot(testCase)
+         % projectfile self-locates the project root as its own folder,
+         % so the created Project must be rooted exactly there (a stale
+         % two-level derivation would target the parent folder and
+         % still pass every other test).
+         import matlab.unittest.fixtures.CurrentFolderFixture
+         import matlab.unittest.fixtures.PathFixture
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+
+         % projectfile delegates to manager's createMatlabProject, so
+         % the repository root goes on the path for this case.
+         testCase.applyFixture(PathFixture(fileparts(testCase.Root), ...
+            "IncludingSubfolders", true));
+
+         tmp = testCase.applyFixture(TemporaryFolderFixture);
+         root = fullfile(string(tmp.Folder), "projcopy");
+         mkdir(root)
+         copyfile(fullfile(testCase.Root, "projectfile.m"), root)
+         copyfile(fullfile(testCase.Root, "mproject.toml"), root)
+         copyfile(fullfile(testCase.Root, "toolbox"), ...
+            fullfile(root, "toolbox"))
+         testCase.applyFixture(CurrentFolderFixture(root));
+         testCase.addTeardown(@() closetestproject(root));
+
+         proj = projectfile("create");
+
+         returned = string(proj.RootFolder);
+         expected = root;
+         testCase.verifyEqual(returned, expected)
       end
 
       function testReleasefilePackagesHeadless(testCase)

@@ -50,6 +50,11 @@ function [refs, removed] = addprojectrefs(projectFolder, opts)
    %  REMOVED - String column of the reference target folders this call
    %  removed because the declarations do not cover them.
    %
+   % Note: addReference and removeReference are methods of
+   % matlab.project.Project, not path functions, so which -all does
+   % not list them. This file writes them with dot notation so they
+   % read as methods.
+   %
    % See also: createMatlabProject, readmanifest, resolveprojectdeps
 
    arguments
@@ -161,7 +166,7 @@ function [refs, removed] = addprojectrefs(projectFolder, opts)
 
    refs = targets(~ismember(targets, held));
    for k = 1:numel(refs)
-      addReference(proj, refs(k), "relative");
+      proj.addReference(refs(k), "relative");
    end
 
    % Removal scope per reference kind: external held references (target
@@ -183,7 +188,7 @@ function [refs, removed] = addprojectrefs(projectFolder, opts)
    end
    removed = held(drop);
    for k = 1:numel(removed)
-      removeReference(proj, removed(k));
+      proj.removeReference(removed(k));
    end
 end
 

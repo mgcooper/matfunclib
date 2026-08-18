@@ -18,7 +18,7 @@ One project uses four build files. All of them run headless.
   directories). It is the one declared source: `workon`
   resolves it at activation and the Project generator derives
   Referenced Projects from it. It never lists files.
-- `projectfile.m` (in `build/`) creates or updates the MATLAB Project
+- `projectfile.m` (project root) creates or updates the MATLAB Project
   through manager's `createMatlabProject`, which imports the toolbox
   folder, generates Referenced Projects from the manifest, and can sync
   missing required files into the Project.
@@ -36,6 +36,15 @@ One project uses four build files. All of them run headless.
   identifier (stable across releases, distinct across project names).
   The version is always pinned from `version.txt`. `buildtool release`
   runs check and test first, then calls the same `releasefile`.
+
+Two more concepts complete the project surface:
+
+- `setupfile.m` (project root) adds the toolbox to the path for a user
+  without manager or an open Project. The name is "setup", not
+  "install", because a source checkout has no install step beyond the
+  path (an `.mltbx` install is MATLAB's own Add-On mechanism).
+- `userhooks/` holds project-specific startup behavior; environment
+  and data-path setup belongs there, never in the build files.
 
 To cut a release: update `toolbox/version.txt` (shipped with the
 package so installed code reports its own version), run

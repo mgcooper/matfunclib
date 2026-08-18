@@ -41,9 +41,9 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
          = ["sandbox", "testbed"]
    end
 
-   % Define the main project folder. This file lives in build/, one
-   % level below the project root.
-   projectFolder = fileparts(fileparts(mfilename('fullpath')));
+   % Define the main project folder. This file lives at the project
+   % root, beside buildfile and releasefile.
+   projectFolder = fileparts(mfilename('fullpath'));
 
    % Define the project name. fileparts treats a dot in a folder name
    % as an extension separator, so rejoin the parts to keep dotted
@@ -56,7 +56,8 @@ function proj = projectfile(buildOption, projectName, codeFolders, opts)
    switch buildOption
 
       case 'delete'
-         % Delete the project
+         % Delete the project. An open Project must close before
+         % deleteProject can remove it.
          % TODO: Add warning with user input "y" or "n".
          try
             close(currentProject);
@@ -115,19 +116,3 @@ function codeFolders = parseCodeFolders(codeFolders, projectFolder, ...
       end
    end
 end
-%%
-%%
-% This is from teh delete project section. It is based on my initial attempts to
-% create a project programmatically in icom-msd project create_matlab_project
-% script where I had to close it first b/c I had just created it, but I am not
-% acutally sure it has to be closed.
-%    try
-%       projectRootFolder = currentProject().RootFolder;
-%    catch e
-%       if strcmp(e.message, 'No project is currently loaded.')
-%          openProject(projectFolder)
-%          projectRootFolder = currentProject().RootFolder;
-%       end
-%    end
-%    close(currentProject); matlab.project.deleteProject(projectRootFolder);
-%    return

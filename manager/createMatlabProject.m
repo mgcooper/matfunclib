@@ -66,6 +66,10 @@ function varargout = createMatlabProject(projectFolder, opts)
    %
    %  PROJ - The open matlab.project.Project object.
    %
+   % Note: addFile and addPath are methods of matlab.project.Project,
+   % not path functions, so which -all does not list them. This file
+   % writes them with dot notation so they read as methods.
+   %
    % See also: addprojectrefs, syncprojectfiles, projectfile, mkproject
 
    arguments
@@ -167,6 +171,20 @@ function varargout = createMatlabProject(projectFolder, opts)
       pathRoots = [projectRoot; pathRoots];
    end
    pathRoots = unique(pathRoots, "stable");
+
+   % MATLAB refuses a Project path entry with a resources segment (the
+   % name is reserved for Project metadata), so nested resources
+   % folders stay Project members without path registration.
+   keep = true(numel(pathRoots), 1);
+   for k = 1:numel(pathRoots)
+      if pathRoots(k) ~= projectRoot
+         segments = split(erase(pathRoots(k), ...
+            projectRoot + filesep), filesep);
+         keep(k) = ~any(segments == "resources");
+      end
+   end
+   pathRoots = pathRoots(keep);
+
    heldPath = listprojectpath(proj);
    for entry = pathRoots(~ismember(pathRoots, heldPath)).'
       proj.addPath(entry);

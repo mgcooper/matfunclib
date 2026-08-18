@@ -31,6 +31,11 @@ function report = syncprojectfiles(projectFolder)
    %    external   - required files resolving outside the root
    %                 (candidates for the manifest or vendoring).
    %
+   % Note: addFile, addPath, and updateDependencies are methods of
+   % matlab.project.Project, not path functions, so which -all does
+   % not list them. This file writes them with dot notation so they
+   % read as methods.
+   %
    % See also: createMatlabProject, addprojectrefs, installRequiredFiles
 
    arguments
@@ -51,7 +56,7 @@ function report = syncprojectfiles(projectFolder)
       % leave the Project synced.
       report = struct("added", strings(0, 1), ...
          "external", strings(0, 1));
-      updateDependencies(proj);
+      proj.updateDependencies();
       return
    end
 
@@ -116,6 +121,18 @@ function report = syncprojectfiles(projectFolder)
    % shared pathrootof) idempotently.
    pathRoots = unique(arrayfun(@(f) pathrootof(string(fileparts(f))), ...
       report.added));
+
+   % MATLAB refuses a Project path entry with a resources segment (the
+   % name is reserved for Project metadata), so a file imported from a
+   % nested resources folder stays a member without path registration.
+   keep = true(numel(pathRoots), 1);
+   for k = 1:numel(pathRoots)
+      segments = split(erase(pathRoots(k), projectRoot + filesep), ...
+         filesep);
+      keep(k) = ~any(segments == "resources");
+   end
+   pathRoots = pathRoots(keep);
+
    heldPath = listprojectpath(proj);
    for k = 1:numel(pathRoots)
       if ~any(heldPath == pathRoots(k))
@@ -125,5 +142,5 @@ function report = syncprojectfiles(projectFolder)
 
    % Refresh the dependency cache last, after every import, so the cache
    % reflects the final file set.
-   updateDependencies(proj);
+   proj.updateDependencies();
 end
