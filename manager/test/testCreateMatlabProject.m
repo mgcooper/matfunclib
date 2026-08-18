@@ -198,6 +198,69 @@ classdef testCreateMatlabProject < matlab.unittest.TestCase
          testCase.verifyTrue(returned)
       end
 
+      function testSubprojectsAddsInternalReferences(testCase)
+         % The hub layout in one call: a subfolder that is a Project of
+         % its own becomes an internal Referenced Project. The
+         % sub-library is generated first because addReference requires
+         % an openable target (leaves-first).
+         subDir = fullfile(testCase.projDir, "sublib");
+         mkdir(subDir)
+         writelines(["function y = subfun(x)"; "y = x;"; "end"], ...
+            fullfile(subDir, "subfun.m"));
+         sub = createMatlabProject(subDir, addProjectFiles=true);
+         close(sub)
+
+         proj = createMatlabProject(testCase.projDir, ...
+            subprojects="sublib");
+
+         returned = numel(proj.ProjectReferences);
+         expected = 1;
+         testCase.verifyEqual(returned, expected)
+
+         returned = endsWith( ...
+            string(proj.ProjectReferences(1).Project.RootFolder), ...
+            "sublib");
+         testCase.verifyTrue(returned)
+      end
+
+      function testEmptySubprojectsRemovesInternalReferences(testCase)
+         % The option separates "omitted" from "explicitly empty": an
+         % omitted option leaves held internal references alone, and an
+         % empty list reconciles them down to none. Both forwarding
+         % branches run here, in that order.
+         subDir = fullfile(testCase.projDir, "sublib");
+         mkdir(subDir)
+         writelines(["function y = subfun(x)"; "y = x;"; "end"], ...
+            fullfile(subDir, "subfun.m"));
+         sub = createMatlabProject(subDir, addProjectFiles=true);
+         close(sub)
+         held = createMatlabProject(testCase.projDir, ...
+            subprojects="sublib");
+         close(held)
+
+         kept = createMatlabProject(testCase.projDir);
+         returned = numel(kept.ProjectReferences);
+         expected = 1;
+         testCase.verifyEqual(returned, expected)
+         close(kept)
+
+         emptied = createMatlabProject(testCase.projDir, ...
+            subprojects=strings(0, 1));
+         returned = numel(emptied.ProjectReferences);
+         expected = 0;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testSubprojectsWithoutReferencesErrors(testCase)
+         % The reference pass is what generates internal references, so
+         % naming subprojects with it disabled fails fast instead of
+         % dropping them without a message.
+         testCase.verifyError( ...
+            @() createMatlabProject(testCase.projDir, ...
+            subprojects="sublib", references=false), ...
+            "matfunclib:createMatlabProject:subprojectsWithoutReferences")
+      end
+
       function testOrphanedProjectStateErrors(testCase)
          % A resources/project tree with no root .prj (the hydrobasins
          % breakage) is partial Project state: openProject cannot open

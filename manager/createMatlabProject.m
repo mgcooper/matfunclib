@@ -58,6 +58,16 @@ function varargout = createMatlabProject(projectFolder, opts)
    %  addprojectrefs. Default true. A missing manifest declares nothing
    %  and is not an error.
    %
+   %  subprojects - Subfolders of PROJECTFOLDER (given relative to it)
+   %  that are Projects in their own right, referenced as internal
+   %  Referenced Projects: the matfunclib hub layout. The manifest
+   %  declares external dependencies only, so this option is the one
+   %  declared source of internal references. Omitting it leaves held
+   %  internal references untouched; an explicit empty list
+   %  (subprojects=strings(0,1)) removes them all. Requires
+   %  references true, because addprojectrefs runs only in the
+   %  reference pass. Default omitted.
+   %
    %  sync - Import missing required files and refresh the dependency
    %  cache via syncprojectfiles. Default false because the dependency
    %  walk is slow on large projects.
@@ -81,6 +91,11 @@ function varargout = createMatlabProject(projectFolder, opts)
       opts.projectSubfolders (:,1) string = string.empty()
       opts.ignoredSubFolders (1,:) string = string.empty()
       opts.references (1,1) logical = true
+      % The missing default separates "option omitted" (internal
+      % references untouched) from an explicit empty list, which
+      % reconciles the internal references down to none. addprojectrefs
+      % applies the same distinction.
+      opts.subprojects (:,1) string = string(NaN)
       opts.sync (1,1) logical = false
    end
 
@@ -91,6 +106,17 @@ function varargout = createMatlabProject(projectFolder, opts)
       error("matfunclib:createMatlabProject:filterWithoutImport", ...
          "projectSubfolders was passed but addProjectFolders is " + ...
          "false, so there is no folder import for it to restrict.")
+   end
+
+   % The internal references are generated inside the reference pass, so
+   % naming subprojects with that pass disabled would drop them without
+   % a message. Make that misuse an error too.
+   subprojectsPassed = ~(isscalar(opts.subprojects) ...
+      && ismissing(opts.subprojects));
+   if subprojectsPassed && ~opts.references
+      error("matfunclib:createMatlabProject:subprojectsWithoutReferences", ...
+         "subprojects was passed but references is false, so the " + ...
+         "reference pass that would generate them does not run.")
    end
 
    % Resolve a bare project name against MATLAB_PROJECT_PATH, so
@@ -192,9 +218,16 @@ function varargout = createMatlabProject(projectFolder, opts)
 
    % Referenced Projects come from mproject.toml, the one place project
    % dependencies are declared; the .prj reference set is derived from
-   % it, never hand-maintained.
+   % it, never hand-maintained. Internal sub-library references have no
+   % manifest source, so they pass through from the subprojects option,
+   % which is forwarded only when the caller gave it: addprojectrefs
+   % reads an omitted option as "leave held internal references alone".
    if opts.references
-      addprojectrefs(projectRoot);
+      if subprojectsPassed
+         addprojectrefs(projectRoot, subprojects=opts.subprojects);
+      else
+         addprojectrefs(projectRoot);
+      end
    end
 
    % The sync pass imports missing required files and refreshes the
