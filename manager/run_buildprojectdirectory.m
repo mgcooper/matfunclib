@@ -6,7 +6,7 @@ clean
 prebuild = false;
 dryrun = true;
 
-fname = fullfile(getenv('PROJECTDIRECTORYPATH'),'projectdirectory.csv');
+fname = fullfile(getenv('MATLAB_DIRECTORY_PATH'),'projectdirectory.csv');
 
 if prebuild == true
 

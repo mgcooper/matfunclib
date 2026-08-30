@@ -1,7 +1,7 @@
 classdef testRegistrySafety < matlab.unittest.TestCase
    %TESTREGISTRYSAFETY Unit tests for manager registry hardening (juq.6).
    %
-   % Every test redirects PROJECTDIRECTORYPATH/TBDIRECTORYPATH to a fresh
+   % Every test redirects MATLAB_DIRECTORY_PATH to a fresh
    % temp folder, so the real registries in $HOME/MATLAB/directory are never
    % touched. The MATLAB_ACTIVE_* env family is saved and restored around
    % each test for the same reason.
@@ -17,7 +17,7 @@ classdef testRegistrySafety < matlab.unittest.TestCase
       % Env vars every test saves, redirects or mutates, and restores.
       % MATLAB_PROJECT_PATH is included because rmproject's name validation
       % scans that folder (validateProjectName -> projectdirectorylist).
-      envNames = ["PROJECTDIRECTORYPATH", "TBDIRECTORYPATH", ...
+      envNames = ["MATLAB_DIRECTORY_PATH", ...
          "MATLAB_PROJECT_PATH", "MATLAB_ACTIVE_PROJECT", ...
          "MATLAB_ACTIVE_PROJECT_PATH", "MATLAB_ACTIVE_PROJECT_DATA_PATH", ...
          "MATLAB_ACTIVE_PROJECT_TESTBED_PATH"]
@@ -42,7 +42,7 @@ classdef testRegistrySafety < matlab.unittest.TestCase
       function redirectRegistries(testCase)
          import matlab.unittest.fixtures.TemporaryFolderFixture
 
-         % Save the real env values, then point both registry paths at a
+         % Save the real env values, then point the registry path at a
          % fresh temp folder for this test.
          for name = testCase.envNames
             testCase.savedEnv.(matlab.lang.makeValidName(name)) = getenv(name);
@@ -51,8 +51,7 @@ classdef testRegistrySafety < matlab.unittest.TestCase
 
          tmp = testCase.applyFixture(TemporaryFolderFixture);
          testCase.regDir = string(tmp.Folder);
-         setenv('PROJECTDIRECTORYPATH', testCase.regDir);
-         setenv('TBDIRECTORYPATH', testCase.regDir);
+         setenv('MATLAB_DIRECTORY_PATH', testCase.regDir);
          % Fixture project folders, so name validation that scans
          % MATLAB_PROJECT_PATH accepts the fixture names.
          setenv('MATLAB_PROJECT_PATH', testCase.regDir);

@@ -10,11 +10,11 @@ function list = listallmfunctions
    if ~isenv('MATLAB_FUNCTION_PATH')
       error('set environment variable MATLAB_FUNCTION_PATH to use this function')
 
-   elseif isenv('FEXFUNCTIONPATH')
+   elseif isenv('MATLAB_FEX_PATH')
       if isenv('MATLAB_PROJECT_PATH')
-         plist = {'MATLAB_FUNCTION_PATH','FEXFUNCTIONPATH','MATLAB_PROJECT_PATH'};
+         plist = {'MATLAB_FUNCTION_PATH','MATLAB_FEX_PATH','MATLAB_PROJECT_PATH'};
       else
-         plist = {'MATLAB_FUNCTION_PATH','FEXFUNCTIONPATH'};
+         plist = {'MATLAB_FUNCTION_PATH','MATLAB_FEX_PATH'};
       end
    end
 

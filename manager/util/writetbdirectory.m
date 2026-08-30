@@ -15,7 +15,7 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
    %   REQUIRED FIELDS: name, source, active, library must all be present.
    %
    %   BACKUP BEFORE WRITE: The current canonical CSV is saved to a MAT file
-   %   in TBDIRECTORYPATH before every successful write. This mirrors the
+   %   in MATLAB_DIRECTORY_PATH before every successful write. This mirrors the
    %   backup behavior in writeprjdirectory and allows readtbdirectory to
    %   fall back to the most recent backup if the CSV becomes corrupted.
    %

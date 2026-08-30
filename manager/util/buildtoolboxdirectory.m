@@ -36,9 +36,9 @@ function varargout = buildtoolboxdirectory(varargin)
    %              readtbdirectory, which falls back to MAT backups if the CSV
    %              is corrupted) and copy the active state for matching names.
    %
-   % CANONICAL SOURCE: $TBDIRECTORYPATH/toolboxdirectory.csv
+   % CANONICAL SOURCE: $MATLAB_DIRECTORY_PATH/toolboxdirectory.csv
    % REBUILD SOURCE:   $MATLAB_TOOLBOX_PATH filesystem scan
-   % BACKUP FORMAT:    $TBDIRECTORYPATH/tbd_*.mat (written by writetbdirectory)
+   % BACKUP FORMAT:    $MATLAB_DIRECTORY_PATH/tbd_*.mat (written by writetbdirectory)
    %
    % See also: readtbdirectory, writetbdirectory, updatetbdirectory, buildprojectdirectory
 

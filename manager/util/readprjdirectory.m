@@ -10,7 +10,7 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
    %
    % Recovery order (mirroring readtbdirectory):
    %   1. Canonical projectdirectory.mat
-   %   2. Most recent tp*.mat backup in PROJECTDIRECTORYPATH
+   %   2. Most recent tp*.mat backup in MATLAB_DIRECTORY_PATH
    %   3. Error with rebuild guidance. Unlike readtbdirectory, no empty
    %      table is fabricated: the project schema is wider and less stable
    %      than the toolbox schema, and downstream indexing of a guessed

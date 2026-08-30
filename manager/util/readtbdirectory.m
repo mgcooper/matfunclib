@@ -11,7 +11,7 @@ function [toolboxes, source] = readtbdirectory(dbpath)
    %
    % Recovery order:
    %   1. Canonical CSV at dbpath (if non-empty and readable)
-   %   2. Most recent MAT backup (tbd_*.mat) in TBDIRECTORYPATH
+   %   2. Most recent MAT backup (tbd_*.mat) in MATLAB_DIRECTORY_PATH
    %   3. Empty table with correct schema (source = 'empty')
    %
    % The 'empty' case is intentionally NOT written back to disk. Callers
@@ -55,12 +55,12 @@ function [toolboxes, source] = readtbdirectory(dbpath)
          readErr.message);
    end
 
-   % --- Attempt 2: most recent MAT backup in TBDIRECTORYPATH ---
+   % --- Attempt 2: most recent MAT backup in MATLAB_DIRECTORY_PATH ---
    % Toolbox backups use the prefix 'tbd_' (set by gettbbackuppath) so they
    % can be found without scanning the project-directory backups (tp*.mat).
    source = 'backup';
    try
-      tbdir = getenv('TBDIRECTORYPATH');
+      tbdir = getenv('MATLAB_DIRECTORY_PATH');
       backups = dir(fullfile(tbdir, 'tbd_*.mat'));
 
       if isempty(backups)

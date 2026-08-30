@@ -6,7 +6,7 @@ function opentbdirectory()
 
    try
       system(sprintf('open %s', ...
-         fullfile(getenv('TBDIRECTORYPATH'),'toolboxdirectory.csv')));
+         fullfile(getenv('MATLAB_DIRECTORY_PATH'),'toolboxdirectory.csv')));
    catch
    end
 end

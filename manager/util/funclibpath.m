@@ -74,15 +74,9 @@ function oldpath = setfunclibpath(option)
    ignorePaths = {'.git'; '.svn'; '.'; '..'; };
    keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
-   % custom remove for octave compatibility
+   % custom remove for octave compatibility (see octaveignorepaths)
    if inoctave
-      ignorePaths = [ignorePaths; {
-         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'libtext', 'printf'); ...
-         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'liblogic', 'iscomplex'); ...
-         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'liblogic', 'ifelse'); ...
-         fullfile(getenv('MATLAB_FUNCTION_PATH'), 'libstruct', 'numfields'); ...
-         fullfile(getenv('FEXFUNCTIONPATH'), 'libarrays', 'foreach'); ...
-         }];
+      ignorePaths = [ignorePaths; octaveignorepaths()];
    end
 
    for m = 1:numel(ignorePaths)

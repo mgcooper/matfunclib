@@ -19,7 +19,7 @@ classdef testDependencyResolution < matlab.unittest.TestCase
 
    properties (Constant)
       % Env vars every test saves, redirects or mutates, and restores.
-      envNames = ["PROJECTDIRECTORYPATH", "TBDIRECTORYPATH", ...
+      envNames = ["MATLAB_DIRECTORY_PATH", ...
          "MATLAB_PROJECT_PATH", "MATLAB_TOOLBOX_PATH", ...
          "MATLAB_ACTIVE_PROJECT", "MATLAB_ACTIVE_PROJECT_PATH", ...
          "MATLAB_ACTIVE_PROJECT_DATA_PATH"]
@@ -58,8 +58,7 @@ classdef testDependencyResolution < matlab.unittest.TestCase
 
          tmp = testCase.applyFixture(TemporaryFolderFixture);
          testCase.regDir = string(tmp.Folder);
-         setenv('PROJECTDIRECTORYPATH', testCase.regDir);
-         setenv('TBDIRECTORYPATH', testCase.regDir);
+         setenv('MATLAB_DIRECTORY_PATH', testCase.regDir);
          setenv('MATLAB_PROJECT_PATH', testCase.regDir);
          setenv('MATLAB_TOOLBOX_PATH', fullfile(testCase.regDir, "toolboxes"));
 

@@ -30,7 +30,7 @@ function varargout = buildprojectdirectory(varargin)
    %  backed-up directories if needed.
    %
    %  PROJECTLIST = BUILDPROJECTDIRECTORY('DRYRUN') builds a projectlist
-   %  directory that would be saved in the `PROJECTDIRECTORYPATH` folder but
+   %  directory that would be saved in the `MATLAB_DIRECTORY_PATH` folder but
    %  does not save it. Use this to build the project directory from scratch
    %  using the folders in the directory set by the MATLAB_PROJECT_PATH
    %  environment variable. If a USER_PROJECT_PATH environment variable exists,
@@ -39,7 +39,7 @@ function varargout = buildprojectdirectory(varargin)
    %
    %  BUILDPROJECTDIRECTORY() without any input or output arguments builds a
    %  project directory file named `projectdirectory.mat` and saves it in the
-   %  `PROJECTDIRECTORYPATH` folder.
+   %  `MATLAB_DIRECTORY_PATH` folder.
    %
    %  PROJECTLIST = BUILDPROJECTDIRECTORY() returns the project list saved in
    %  projectdirectory.mat.
@@ -88,7 +88,7 @@ function varargout = buildprojectdirectory(varargin)
    end
 
    % Read the directory into memory.
-   fname = fullfile(getenv('PROJECTDIRECTORYPATH'), 'projectdirectory.mat');
+   fname = fullfile(getenv('MATLAB_DIRECTORY_PATH'), 'projectdirectory.mat');
 
    % Build the project list (opts.rebuild==true uses the rebuild option).
    projectlist = buildprojectlist(opts);

@@ -20,7 +20,7 @@ classdef testProjectRefs < matlab.unittest.TestCase
 
    properties (Constant)
       % Env vars every test saves, redirects, and restores.
-      envNames = ["PROJECTDIRECTORYPATH", "TBDIRECTORYPATH", ...
+      envNames = ["MATLAB_DIRECTORY_PATH", ...
          "MATLAB_PROJECT_PATH", "MATLAB_TOOLBOX_PATH"]
       projNames = ["depD", "depB", "depC", "appA", "cycX", "cycY", ...
          "syncP", "default"]
@@ -54,8 +54,7 @@ classdef testProjectRefs < matlab.unittest.TestCase
 
          tmp = testCase.applyFixture(TemporaryFolderFixture);
          testCase.regDir = string(tmp.Folder);
-         setenv('PROJECTDIRECTORYPATH', testCase.regDir);
-         setenv('TBDIRECTORYPATH', testCase.regDir);
+         setenv('MATLAB_DIRECTORY_PATH', testCase.regDir);
          setenv('MATLAB_PROJECT_PATH', testCase.regDir);
          setenv('MATLAB_TOOLBOX_PATH', fullfile(testCase.regDir, ...
             "toolboxes"));
