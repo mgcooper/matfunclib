@@ -2,7 +2,7 @@
 %
 % This is the repo-owned startup file. MATLAB boots it through the permanent
 % three-line shim at $HOME/MATLAB/startup.m (userpath). Edit this file, never
-% the shim (matfunclib-juq.7, spec decision 8).
+% the shim.
 
 inoctave = (exist ("OCTAVE_VERSION", "builtin") > 0);
 inmatlab = ~inoctave;
@@ -12,8 +12,9 @@ USE_PYENV_PYTHON = false;
 %% manage warnings
 
 % remap the red close button associated with figure windows, potentially
-% preventing MATLAB from becoming unresponsive when closing figures.
-% Not needed on newer versions, remove eventually or use verlessthan check.
+% preventing MATLAB from becoming unresponsive when closing figures. Not needed
+% on newer versions, remove eventually or use verlessthan check.
+%
 % set(groot, 'defaultFigureCloseRequestFcn', @(o, ~) delete(o));
 
 % Save the current state of the warnings
@@ -28,18 +29,17 @@ warning("off", "MATLAB:rmpath:DirNotFound");
 warning("off", "MATLAB_FUNCTION_PATH:manager:toolboxAlreadyActive")
 
 % Suppress the Project path-overlap warning. The startup genpath below puts
-% matfunclib folders on the path before any Project opens, so the overlap is
-% by design (spec decision 7). Re-asserted after clearvars in FINAL STEPS,
-% because the warning-state restore above reverts this copy at script end.
+% matfunclib folders on the path before any Project opens, so the overlap is by
+% design (spec decision 7). Re-asserted after clearvars in FINAL STEPS, because
+% the warning-state restore above reverts this copy at script end.
 warning("off", "MATLAB:Project:Issues:PathFolderOnMATLABPath")
 
 %% Bootstrap the path-family environment
 
 % mconfig is the one function that sets the path-family env vars
-% (MATLAB_HOME_PATH, MATLAB_PROJECT_PATH, and the rest; see mconfig).
-% manager lives inside matfunclib, so no manager function can add
-% matfunclib to the path first: add the manager folder with one literal,
-% then call mconfig. The
+% (MATLAB_HOME_PATH, MATLAB_PROJECT_PATH, and the rest; see mconfig). manager
+% lives inside matfunclib, so no manager function can add matfunclib to the path
+% first: add the manager folder with one literal, then call mconfig. The
 % '-begin' puts manager at the front of the path, so a same-named function
 % elsewhere on the boot path cannot shadow mconfig; the genpath block below
 % re-adds the manager folders at their final position.
@@ -53,6 +53,7 @@ if usejava('desktop') % we're in the desktop (also means we're not in octave)
 
    % When Matlab is started from the desktop app, it inherits the default system
    % PATH, i.e., these should match:
+   %
    % [~, default_path] = system('echo -n $PATH');
    % isequal(default_path, getenv('PATH'))
 
@@ -68,8 +69,9 @@ if usejava('desktop') % we're in the desktop (also means we're not in octave)
    if inmatlab
       mSettings = settings;
 
-      % Prevent autoformatter from stripping blanks to prevent the cursor from being
-      % forced to the first position in indented code blocks (introduced in r2021b)
+      % Prevent autoformatter from stripping blanks to prevent the cursor from
+      % being forced to the first position in indented code blocks (introduced
+      % in r2021b)
       if ~isMATLABReleaseOlderThan('R2021b')
          mSettings.matlab.editor.indent.RemoveAutomaticWhitespace.PersonalValue = 0;
       end
@@ -90,9 +92,8 @@ end
 
 %% Set the user data environment variables
 
-% mconfig owns the MATLAB_* path family. The un-prefixed USER* data vars
-% are a separate family (matfunclib-juq.7 non-goal): set them here, not
-% in mconfig.
+% mconfig owns the MATLAB_* path family. The un-prefixed USER* data vars are a
+% separate family (matfunclib-juq.7 non-goal): set them here, not in mconfig.
 
 % Define $HOME (system variable) and $HOME/work
 HOMEPATH = getenv('HOME');
@@ -149,8 +150,7 @@ removePaths = {'.git'; '.svn'; '.'; '..'; };
 keep = @(folders, ignore) cellfun('isempty', (strfind(folders, ignore)));
 
 % Custom ignores for octave compatibility: one shared list, from
-% octaveignorepaths. mconfig has run, so the helper's getenv reads
-% match cfg.
+% octaveignorepaths. mconfig has run, so the helper's getenv reads match cfg.
 if inoctave
    removePaths = [removePaths; octaveignorepaths()];
 end
@@ -242,7 +242,8 @@ for n = 1:numel(default_toolboxes)
 end
 
 % add projects to the path
-% default_projects = {'bfra', 'merra2', 'graceGapFill', 'exactremap', 'groupstats'};
+% default_projects = ...
+%    {'bfra', 'merra2', 'graceGapFill', 'exactremap', 'groupstats'};
 default_projects = {};
 for n = 1:numel(default_projects)
    project_name = default_projects{n};
