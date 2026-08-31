@@ -35,8 +35,12 @@ function varargout = createMatlabProject(projectFolder, opts)
    %  addProjectFiles - Import the top-level *.m files. Default false.
    %
    %  addProjectFolders - Import the project subfolders (their trees when
-   %  addChildFiles is true, the bare folder nodes otherwise). Default
-   %  false.
+   %  addChildFiles is true, the bare folder nodes otherwise). Membership
+   %  follows git-tracked content: a folder with zero tracked files under
+   %  it stays out of the import, and a held member folder with zero
+   %  tracked content is removed on a re-run, so a fresh clone gains no
+   %  empty folders on first open. Without git the rule is skipped and
+   %  every selected folder imports. Default false.
    %
    %  addChildFiles - Import files inside the imported subfolders
    %  recursively. Default false.
@@ -168,16 +172,40 @@ function varargout = createMatlabProject(projectFolder, opts)
    % so macOS /var vs /private/var aliases cannot break them.
    projectRoot = string(proj.RootFolder);
 
+   % One git call lists the tracked files for the membership rule. A
+   % failed call means no git here (or no git
+   % binary): the rule is skipped without error.
+   [gitFailed, tracked] = gitTrackedFiles(projectRoot);
+
    % Everything the options select, as one deterministic list of folders
    % and files. Filtering against the Project's current file set is what
    % makes a re-run a no-op.
    toImport = collectImports(projectRoot, opts.addProjectFiles, ...
       opts.addProjectFolders, opts.addChildFiles, ...
-      opts.projectSubfolders, ignoredSubFolders);
+      opts.projectSubfolders, ignoredSubFolders, gitFailed, tracked);
 
    existing = listprojectfiles(proj);
    for entry = toImport(~ismember(toImport, existing)).'
       proj.addFile(entry);
+   end
+
+   % Held FOLDER members follow the same rule: a member folder with zero
+   % tracked content under it is removed, with its path entry, so a
+   % project generated before the rule repairs on regeneration. File
+   % members are never touched here, which keeps the generated
+   % .gitignore/.gitattributes members verbatim.
+   if ~gitFailed
+      heldFolders = existing(isfolder(existing));
+      staleFolders = heldFolders(~hasTrackedContent( ...
+         heldFolders, projectRoot, tracked));
+      stalePath = ismember(listprojectpath(proj), staleFolders);
+      heldEntries = listprojectpath(proj);
+      for entry = heldEntries(stalePath).'
+         proj.removePath(entry);
+      end
+      for entry = staleFolders.'
+         proj.removeFile(entry);
+      end
    end
 
    % addFile tracks membership only; folders reach the MATLAB path in a
@@ -270,7 +298,8 @@ function projectFolder = resolveProjectFolder(projectFolder)
 end
 
 function toImport = collectImports(projectRoot, addProjectFiles, ...
-      addProjectFolders, addChildFiles, projectSubfolders, ignoredSubFolders)
+      addProjectFolders, addChildFiles, projectSubfolders, ...
+      ignoredSubFolders, gitFailed, tracked)
    %COLLECTIMPORTS List the folders and files the options select.
    %
    % Returns a string column of full paths: top-level *.m files when
@@ -286,6 +315,8 @@ function toImport = collectImports(projectRoot, addProjectFiles, ...
       addChildFiles (1,1) logical
       projectSubfolders (:,1) string
       ignoredSubFolders (1,:) string
+      gitFailed (1,1) logical
+      tracked (:,1) string
    end
 
    parts = {};
@@ -340,6 +371,15 @@ function toImport = collectImports(projectRoot, addProjectFiles, ...
                projectRoot, strjoin(projectSubfolders, ", "))
          end
       end
+
+      % Membership follows git-tracked content: a
+      % folder with zero tracked files under it stays out, so a fresh
+      % clone gains no empty folders on first open. Without git the
+      % check is skipped and every selected folder stays.
+      if ~gitFailed
+         folders = folders(hasTrackedContent(folders, projectRoot, ...
+            tracked));
+      end
       parts{end + 1} = folders;
 
       % Files inside the selected folders, when requested. Dotfiles stay
@@ -357,6 +397,89 @@ function toImport = collectImports(projectRoot, addProjectFiles, ...
    end
 
    toImport = unique(vertcat(strings(0, 1), parts{:}), "stable");
+end
+
+function [failed, tracked] = gitTrackedFiles(projectRoot)
+   %GITTRACKEDFILES List git-tracked files under projectRoot.
+   %
+   % `git ls-files` reads the index, so staged-but-uncommitted files
+   % count. A nonzero exit means no repository here or no git binary;
+   % the caller skips the membership rule without error.
+
+   arguments
+      projectRoot (1,1) string
+   end
+
+   % The folder path goes to git -C as one shell-quoted literal
+   % argument, so folder names holding shell syntax ($(), backticks,
+   % spaces) cannot expand. The working directory never changes: a cd
+   % would let a git.exe inside the project shadow the real git on
+   % systems that search the working directory first.
+   % core.quotepath=false stops git from C-quoting non-ASCII bytes, so
+   % such a path matches its on-disk spelling. An escaped spelling
+   % would make a tracked folder look untracked and get it removed.
+   % NUL-delimited -z output is not an option: MATLAB's system()
+   % strips the NUL characters and returns one garbled line. A path
+   % that holds a double quote or a newline still comes back quoted
+   % and can be misread. Such names do not survive most tooling and
+   % are accepted as out of scope.
+   [status, out] = system("git -C " + shellquote(projectRoot) + ...
+      " -c core.quotepath=false ls-files");
+   failed = status ~= 0;
+   if failed
+      tracked = strings(0, 1);
+      return
+   end
+
+   % git prints one path per line, relative to projectRoot, with
+   % forward slashes on every platform.
+   tracked = splitlines(string(out));
+   tracked = tracked(strlength(tracked) > 0);
+end
+
+function quoted = shellquote(text)
+   %SHELLQUOTE Quote text for the system() shell as one literal argument.
+   %
+   % POSIX single quotes make every character literal; an embedded
+   % single quote closes the quote, escapes, and reopens. cmd.exe has
+   % no equally safe quoting, so on Windows the characters double
+   % quotes cannot neutralize (%VAR% expansion, the quote itself, and
+   % !NAME! delayed expansion) are refused instead of passed through.
+
+   arguments
+      text (1,1) string
+   end
+
+   if ispc
+      if contains(text, ["%", """", "!"])
+         error("matfunclib:createMatlabProject:unquotablePath", ...
+            "Folder ""%s"" contains a character cmd.exe cannot " + ...
+            "quote safely.", text)
+      end
+      quoted = """" + text + """";
+   else
+      quoted = "'" + replace(text, "'", "'\''") + "'";
+   end
+end
+
+function has = hasTrackedContent(folders, projectRoot, tracked)
+   %HASTRACKEDCONTENT True where a folder holds at least one tracked file.
+
+   arguments
+      folders (:,1) string
+      projectRoot (1,1) string
+      tracked (:,1) string
+   end
+
+   has = false(numel(folders), 1);
+   for k = 1:numel(folders)
+      relative = replace(erase(folders(k), projectRoot + filesep), ...
+         filesep, "/");
+      % A tracked submodule appears as the folder path itself, not as a
+      % child path, so the equality test keeps it.
+      has(k) = any(tracked == relative) ...
+         || any(startsWith(tracked, relative + "/"));
+   end
 end
 
 function ignored = ignoredPath(paths, projectRoot, ignoredSubFolders)
