@@ -60,7 +60,9 @@ function [toolboxes, source] = readtbdirectory(dbpath)
    % can be found without scanning the project-directory backups (tp*.mat).
    source = 'backup';
    try
-      tbdir = getenv('MATLAB_DIRECTORY_PATH');
+      % mgetenv keeps the folder absolute when the variable is unset,
+      % so the backup scan never resolves against cwd (matfunclib-47r).
+      tbdir = mgetenv('MATLAB_DIRECTORY_PATH');
       backups = dir(fullfile(tbdir, 'tbd_*.mat'));
 
       if isempty(backups)

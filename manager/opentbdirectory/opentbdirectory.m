@@ -5,8 +5,9 @@ function opentbdirectory()
    % See also:
 
    try
-      system(sprintf('open %s', ...
-         fullfile(getenv('MATLAB_DIRECTORY_PATH'),'toolboxdirectory.csv')));
+      % gettbdirectorypath keeps the target absolute when the variable
+      % is unset (matfunclib-47r).
+      system(sprintf('open %s', gettbdirectorypath()));
    catch
    end
 end

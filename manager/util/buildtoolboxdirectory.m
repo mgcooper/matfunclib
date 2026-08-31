@@ -106,7 +106,7 @@ function toolboxes = buildtoolboxlist(opts)
    % No subdirectory descent is performed within Zone 1 or Zone 2b — only
    % the named directory is registered, not its internal layout.
 
-   tbroot = getenv('MATLAB_TOOLBOX_PATH');
+   tbroot = mgetenv('MATLAB_TOOLBOX_PATH');
    if isempty(tbroot)
       error('matfunclib:buildtoolboxdirectory:noTbPath', ...
          'MATLAB_TOOLBOX_PATH environment variable is not set.');

@@ -16,7 +16,7 @@ function varargout = funclibpath(option)
 
    if strcmp(option, 'which')
       % Return the function library path.
-      varargout{1} = getenv('MATLAB_FUNCTION_PATH');
+      varargout{1} = mgetenv('MATLAB_FUNCTION_PATH');
    else
       % Add or remove the function library path from userpath.
       oldpath = setfunclibpath(option);
@@ -63,12 +63,12 @@ function oldpath = setfunclibpath(option)
 
    if strcmp(option, 'rmpath')
       % Note: this removes $HOME/MATLAB not matfunclib
-      rmpath(genpath(getenv('MATLAB_HOME_PATH')))
+      rmpath(genpath(mgetenv('MATLAB_HOME_PATH')))
       return
    end
 
    % Generate a list of all sub-folders
-   subpaths = strsplit(genpath(getenv('MATLAB_HOME_PATH')), pathsep);
+   subpaths = strsplit(genpath(mgetenv('MATLAB_HOME_PATH')), pathsep);
 
    % Remove ignored folders
    ignorePaths = {'.git'; '.svn'; '.'; '..'; };

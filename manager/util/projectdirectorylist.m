@@ -7,7 +7,7 @@ function list = projectdirectorylist
    %
    % See also: buildprojectdirectory
 
-   projectpath = getenv('MATLAB_PROJECT_PATH');
+   projectpath = mgetenv('MATLAB_PROJECT_PATH');
    list = mkprojectlist(projectpath);
 
    % Nov 30, 2022, migrated this from buildprojectdirectory so mkfunction and
@@ -26,7 +26,7 @@ function newlist = appendprojectlist(oldlist)
 
    % Jul 2024 - replace USER_PROJECT_PATH with MATLAB_PROJECT_PATH and stop using
    % USER_PROJECT_PATH for any matlab projects.
-   projectpath = getenv('MATLAB_PROJECT_PATH');
+   projectpath = mgetenv('MATLAB_PROJECT_PATH');
    projectlist = mkprojectlist(projectpath);
    newlist     = [oldlist; projectlist];
 end

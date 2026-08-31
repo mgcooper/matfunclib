@@ -255,7 +255,7 @@ function [functionpath, filenamepath] = parseFunctionPath( ...
 
       if project == "unsorted"
          % library is either a valid sublibrary or is "unsorted"
-         functionpath = fullfile(getenv('MATLAB_FUNCTION_PATH'), library);
+         functionpath = fullfile(mgetenv('MATLAB_FUNCTION_PATH'), library);
 
          % this creates the function in a folder of the same name
          % functionpath = fullfile(getenv('MATLAB_FUNCTION_PATH'),library,funcname);
@@ -263,10 +263,10 @@ function [functionpath, filenamepath] = parseFunctionPath( ...
       elseif project ~= "unsorted" && library == "unsorted"
 
          % assume the project is a matlab project
-         projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), project);
+         projectpath = fullfile(mgetenv('MATLAB_PROJECT_PATH'), project);
 
          if ~isfolder(projectpath)
-            projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), project);
+            projectpath = fullfile(mgetenv('MATLAB_PROJECT_PATH'), project);
 
             if ~isfolder(projectpath)
                error('project path not found')

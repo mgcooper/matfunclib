@@ -81,8 +81,8 @@ function varargout = activate(tbname, varargin)
       % pass
    end
 
-   if ~strcmp(fullfile(parent, folder), getenv('MATLAB_TOOLBOX_PATH'))
-      tbpath = strrep(tbpath, parent, getenv('MATLAB_TOOLBOX_PATH'));
+   if ~strcmp(fullfile(parent, folder), mgetenv('MATLAB_TOOLBOX_PATH'))
+      tbpath = strrep(tbpath, parent, mgetenv('MATLAB_TOOLBOX_PATH'));
       toolboxes.source{tbidx} = tbpath;
    end
 

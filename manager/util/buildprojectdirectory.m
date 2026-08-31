@@ -87,8 +87,9 @@ function varargout = buildprojectdirectory(varargin)
       opts = buildwarning(opts);
    end
 
-   % Read the directory into memory.
-   fname = fullfile(getenv('MATLAB_DIRECTORY_PATH'), 'projectdirectory.mat');
+   % Read the directory into memory. getprjdirectorypath keeps the
+   % target absolute when the variable is unset (matfunclib-47r).
+   fname = getprjdirectorypath();
 
    % Build the project list (opts.rebuild==true uses the rebuild option).
    projectlist = buildprojectlist(opts);
@@ -126,7 +127,7 @@ end
 %%
 function projectlist = buildprojectlist(opts)
 
-   projectpath = getenv('MATLAB_PROJECT_PATH');
+   projectpath = mgetenv('MATLAB_PROJECT_PATH');
    projectlist = getlist(projectpath,'*');
    projectlist = struct2table(projectlist);
    projectlist = appendprojects(projectlist); % 23 Nov 2022
@@ -142,7 +143,7 @@ function projectlist = buildprojectlist(opts)
    defaultproj.name = {'default'};
    try
       % Note: $HOME/MATLAB not matfunclib. This is the 'default' project.
-      defaultproj.folder = getenv('MATLAB_HOME_PATH');
+      defaultproj.folder = mgetenv('MATLAB_HOME_PATH');
    catch
       defaultproj.folder = userpath;
    end

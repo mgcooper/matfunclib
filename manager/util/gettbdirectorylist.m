@@ -23,7 +23,7 @@ function list = gettbdirectorylist(varargin)
    %
    % See also: readtbdirectory, gettbnamelist, addtoolbox
 
-   tbroot = gettbsourcepath();  % getenv('MATLAB_TOOLBOX_PATH')
+   tbroot = gettbsourcepath();  % mgetenv('MATLAB_TOOLBOX_PATH')
 
    if nargin < 1
       % Return stand-alone toolbox folder names (immediate children of

@@ -1,5 +1,7 @@
 classdef testMconfig < matlab.unittest.TestCase
-   %TESTMCONFIG Unit tests for the mconfig path-family choke point (juq.7).
+   %TESTMCONFIG Unit tests for the mconfig path-family choke point (juq.7)
+   %and for mgetenv with the path builders that resolve through it
+   %(matfunclib-47r).
    %
    % Every test saves the real path-family env values and restores them in
    % teardown, so running the suite never leaves a mutated environment.
@@ -121,6 +123,94 @@ classdef testMconfig < matlab.unittest.TestCase
             expected = first.(name);
             testCase.verifyEqual(returned, expected, name);
          end
+      end
+
+      function testEmptyHomeErrors(testCase)
+         % An empty HOME must error instead of deriving a relative
+         % 'MATLAB/...' family that passes isempty guards yet resolves
+         % against cwd (matfunclib-47r).
+         savedHome = getenv('HOME');
+         testCase.addTeardown(@() setenv('HOME', savedHome));
+         setenv('HOME', '');
+         testCase.verifyError(@() mconfig(), ...
+            'matfunclib:manager:mconfig:emptyHome');
+      end
+
+      function testMgetenvPrefersSetValue(testCase)
+         % A set variable wins over the mconfig default. Test fixtures
+         % rely on this order when they redirect family members to temp
+         % folders.
+         redirect = fullfile(tempdir, 'mgetenv-redirect');
+         setenv('MATLAB_DIRECTORY_PATH', redirect);
+         returned = mgetenv('MATLAB_DIRECTORY_PATH');
+         expected = redirect;
+         testCase.verifyEqual(returned, expected);
+      end
+
+      function testMgetenvFallsBackWhenUnset(testCase)
+         % An unset variable resolves to the mconfig default, and the
+         % fallback re-exports the family so later direct getenv reads
+         % are repaired too.
+         unsetenv('MATLAB_DIRECTORY_PATH');
+         returned = mgetenv('MATLAB_DIRECTORY_PATH');
+         expected = fullfile(getenv('HOME'), 'MATLAB', 'directory');
+         testCase.verifyEqual(returned, expected);
+         testCase.verifyEqual(getenv('MATLAB_DIRECTORY_PATH'), expected);
+      end
+
+      function testMgetenvUnknownNameErrors(testCase)
+         % An unset name outside the family errors instead of degrading
+         % to '', so a typo cannot produce a relative path.
+         unsetenv('MATLAB_NO_SUCH_PATH_VAR');
+         testCase.verifyError( ...
+            @() mgetenv('MATLAB_NO_SUCH_PATH_VAR'), ...
+            'matfunclib:manager:mgetenv:unknownVariable');
+      end
+
+      function testPathBuildersAbsoluteWhenUnset(testCase)
+         % With MATLAB_DIRECTORY_PATH unset, every registry path builder
+         % must return an absolute path under the mconfig default. The
+         % unguarded getenv versions degraded to bare relative names, so
+         % a shutdown save landed in cwd (matfunclib-47r). Each builder
+         % self-heals the family, so the variable is unset again before
+         % each call to exercise each builder's own fallback.
+         dirfolder = fullfile(getenv('HOME'), 'MATLAB', 'directory');
+
+         unsetenv('MATLAB_DIRECTORY_PATH');
+         returned = getprjdirectorypath();
+         expected = fullfile(dirfolder, 'projectdirectory.mat');
+         testCase.verifyEqual(returned, expected);
+
+         unsetenv('MATLAB_DIRECTORY_PATH');
+         returned = gettbdirectorypath();
+         expected = fullfile(dirfolder, 'toolboxdirectory.csv');
+         testCase.verifyEqual(returned, expected);
+
+         unsetenv('MATLAB_DIRECTORY_PATH');
+         returned = gettbbackuppath();
+         testCase.verifyTrue( ...
+            startsWith(returned, fullfile(dirfolder, 'tbd_')));
+         testCase.verifyTrue(endsWith(returned, '.mat'));
+
+         unsetenv('MATLAB_DIRECTORY_PATH');
+         returned = gettmpdirectorypath();
+         testCase.verifyTrue(startsWith(returned, [dirfolder filesep]));
+         testCase.verifyTrue(endsWith(returned, '.mat'));
+      end
+
+      function testPathBuildersHonorRedirect(testCase)
+         % With MATLAB_DIRECTORY_PATH redirected, every builder resolves
+         % under the redirect, preserving the fixture-redirect order.
+         redirect = fullfile(tempdir, 'mgetenv-builders');
+         setenv('MATLAB_DIRECTORY_PATH', redirect);
+         testCase.verifyEqual(getprjdirectorypath(), ...
+            fullfile(redirect, 'projectdirectory.mat'));
+         testCase.verifyEqual(gettbdirectorypath(), ...
+            fullfile(redirect, 'toolboxdirectory.csv'));
+         testCase.verifyTrue( ...
+            startsWith(gettbbackuppath(), fullfile(redirect, 'tbd_')));
+         testCase.verifyTrue( ...
+            startsWith(gettmpdirectorypath(), [redirect filesep]));
       end
    end
 end

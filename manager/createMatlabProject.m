@@ -258,7 +258,7 @@ function projectFolder = resolveProjectFolder(projectFolder)
 
    % A bare name resolves under MATLAB_PROJECT_PATH, matching how the
    % project directory (readprjdirectory) addresses projects.
-   candidate = fullfile(getenv("MATLAB_PROJECT_PATH"), projectFolder);
+   candidate = fullfile(mgetenv("MATLAB_PROJECT_PATH"), projectFolder);
    if isfolder(candidate)
       projectFolder = string(candidate);
       return

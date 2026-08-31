@@ -9,5 +9,5 @@ function [tf, hasfolder] = istoolbox(tbxname)
 
    tf = sum(findtbentry(readtbdirectory(gettbdirectorypath),tbxname)) > 0;
 
-   hasfolder = isfolder(fullfile(getenv('MATLAB_TOOLBOX_PATH'), tbxname));
+   hasfolder = isfolder(fullfile(mgetenv('MATLAB_TOOLBOX_PATH'), tbxname));
 end

@@ -15,7 +15,7 @@ function projpath = getprjsourcepath(projectname)
    % projpath = getprjsourcepath(projname); % get the full path to the project
 
    if nargin == 0
-      projpath = getenv('MATLAB_PROJECT_PATH');
+      projpath = mgetenv('MATLAB_PROJECT_PATH');
    else
       projlist = readprjdirectory;
       projindx = ismember(projlist.name,projectname);

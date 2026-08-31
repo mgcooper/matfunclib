@@ -6,7 +6,9 @@ clean
 prebuild = false;
 dryrun = true;
 
-fname = fullfile(getenv('MATLAB_DIRECTORY_PATH'),'projectdirectory.csv');
+% mgetenv keeps the target absolute when the variable is unset
+% (matfunclib-47r).
+fname = fullfile(mgetenv('MATLAB_DIRECTORY_PATH'),'projectdirectory.csv');
 
 if prebuild == true
 
@@ -25,7 +27,7 @@ if prebuild == true
    defaultproj = projectlist(end,:);
    defaultproj.name = {'default'};
    try
-      defaultproj.folder = getenv('MATLAB_HOME_PATH');
+      defaultproj.folder = mgetenv('MATLAB_HOME_PATH');
    catch
       defaultproj.folder = userpath;
    end

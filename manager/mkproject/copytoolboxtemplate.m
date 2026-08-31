@@ -22,8 +22,8 @@ function msg = copytoolboxtemplate(projectname, opts)
 
    % Set required paths
    PROJECT_NAME = projectname;
-   MATLAB_PROJECT_PATH = getenv('MATLAB_PROJECT_PATH');
-   TOOLBOX_TEMPLATE_PATH = getenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
+   MATLAB_PROJECT_PATH = mgetenv('MATLAB_PROJECT_PATH');
+   TOOLBOX_TEMPLATE_PATH = mgetenv('MATLAB_TOOLBOX_TEMPLATE_PATH');
 
    if isempty(TOOLBOX_TEMPLATE_PATH)
       eid = ['custom:' mfilename ':toolboxTemplatePathUndefined'];
@@ -169,7 +169,7 @@ function deleteUnwantedFiles(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH)
    assert(~strcmp(TOOLBOX_TEMPLATE_PATH, PROJECT_FOLDER_PATH))
 
    % Double check against the env var.
-   assert(~strcmp(getenv('MATLAB_TOOLBOX_TEMPLATE_PATH'), PROJECT_FOLDER_PATH))
+   assert(~strcmp(mgetenv('MATLAB_TOOLBOX_TEMPLATE_PATH'), PROJECT_FOLDER_PATH))
 
    % The pre-copy guard in the main function refuses a template that
    % carries generated Project state, so the only Project artifact a

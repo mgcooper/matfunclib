@@ -12,6 +12,13 @@ function ignorepaths = octaveignorepaths()
    % See also: startup funclibpath mconfig
 
    % Each entry shadows an Octave built-in or fails to parse in Octave.
+   % Deliberate raw getenv, not mgetenv: startup.m calls this helper
+   % before manager/util joins the path, so mgetenv is not resolvable
+   % here. mconfig has already run at that point, so the values are set.
+   % In any other session an empty value degrades each entry to a
+   % relative fragment. The fragment still substring-matches the
+   % absolute path entries it filters, so nothing resolves against cwd
+   % (matfunclib-47r).
    ignorepaths = {
       fullfile(getenv('MATLAB_FUNCTION_PATH'), 'libtext', 'printf'); ...
       fullfile(getenv('MATLAB_FUNCTION_PATH'), 'liblogic', 'iscomplex'); ...
