@@ -1,340 +1,260 @@
 function varargout = buildprojectdirectory(varargin)
-   %BUILDPROJECTDIRECTORY Build project directory file.
+   %BUILDPROJECTDIRECTORY Build or rebuild the project directory file.
    %
    %  projectlist = buildprojectdirectory()
-   %  projectlist = buildprojectdirectory('dryrun')
    %  projectlist = buildprojectdirectory('rebuild')
-   %  projectlist = buildprojectdirectory('rebuild', 'dryrun')
+   %  projectlist = buildprojectdirectory('fresh')
+   %  projectlist = buildprojectdirectory(..., 'dryrun')
    %
    % Description
    %
-   %  This function creates the project directory. Use it to setup a directory
-   %  from scratch, or rebuild one after changing the project parent path. Note
-   %  that this is called by "addproject", which is called by "mkproject", thus
-   %  everytime a new project is created, this function is called.
+   %  The project directory is the registry (projectdirectory.mat in
+   %  MATLAB_DIRECTORY_PATH) of projects manager tracks. Each row is one
+   %  project. The filesystem scan of MATLAB_PROJECT_PATH sets the name, folder,
+   %  and dir() attributes. Four columns hold custom attributes: activefiles
+   %  (files open when the project was last active), activeproject (which
+   %  project is active), activefolder (the project root, normally folder/name),
+   %  and linkedproject.
    %
-   %  Notes on moving projects or changing the project parent path:
+   %  Two modes:
    %
-   %  If a project is moved, or the MATLAB_PROJECT_PATH environment variable is
-   %  changed, use the 'rebuild', 'dryrun' option to dryrun the new directory.
-   %  When 'rebuild' is used, only the name, folder, and other atts created by
-   %  the dir function are updated. The other atts (activefiles, activeproject,
-   %  activefolder, and linkedproject) are copied over from the old list.
+   %  REBUILD (the default) scans the project path for current names and
+   %  folders, then carries each project's saved attributes forward by name from
+   %  the current registry. Use it after a project moves or after
+   %  MATLAB_PROJECT_PATH changes: the folders update while activefiles and
+   %  the active project are kept. addproject calls this, so every new
+   %  project rebuilds the directory.
    %
-   %  The next time a project is opened using "workon", the "reopenfiles"
-   %  method, used to reopen project files, will find the files if they exist on
-   %  the matlab path, even though their full path has changed, because it uses
-   %  "which" with the filename. Thus the activefiles self-repair themselves to
-   %  an extent. To be absolutely certain the activefiles are reset, ensure all
-   %  possible locations are on the matlab path. You can always check the
-   %  backed-up directories if needed.
+   %  FRESH rebuilds from the filesystem alone and discards all saved attributes
+   %  (every project starts with empty activefiles and inactive). It is the
+   %  explicit, destructive build; ask for it by name.
    %
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('DRYRUN') builds a projectlist
-   %  directory that would be saved in the `MATLAB_DIRECTORY_PATH` folder but
-   %  does not save it. Use this to build the project directory from scratch
-   %  using the folders in the directory set by the MATLAB_PROJECT_PATH
-   %  environment variable. If a USER_PROJECT_PATH environment variable exists,
-   %  folders in that directory will also be added to the project list. Internal
-   %  note: the .csv file is not used, modified, saved, deleted, in any way.
+   %  DRYRUN returns the list that would be saved without writing it. It
+   %  combines with either mode.
    %
-   %  BUILDPROJECTDIRECTORY() without any input or output arguments builds a
-   %  project directory file named `projectdirectory.mat` and saves it in the
-   %  `MATLAB_DIRECTORY_PATH` folder.
+   %  One project is one name. Every project lives under MATLAB_PROJECT_PATH,
+   %  so folder names are unique and a duplicate name is a defect, not a
+   %  layout: both modes fail loud on one (the check runs on the scanned
+   %  list before the mode branch). activefolder normally tracks
+   %  folder/name (the single location the environment variable defines). A
+   %  project whose saved activefolder extends past folder/name (a custom
+   %  sub-root) keeps that trailing offset under the new parent, so a custom
+   %  root survives a path change until the project moves to a normal layout.
    %
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY() returns the project list saved in
-   %  projectdirectory.mat.
-   %
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('REBUILD') rebuilds the project
-   %  directory from scratch, retaining the `activefiles` property of the
-   %  current directory for projects that exist in the existing and rebuilt
-   %  directory.
-   %
-   %  PROJECTLIST = BUILDPROJECTDIRECTORY('REBUILD', 'DRYRUN') returns the
-   %  project list that would be saved but does not save it.
-   %
-   % See also: workon, workoff, addproject, manager
+   %  A saved project missing from the scan is kept only when it still holds
+   %  activefiles or a linked project. A missing project marked active does
+   %  not block the rebuild: rebuild warns and clears its active flag.
    %
    % Updates
+   % 06 Sep 2026 - remove custom logic for cross-machine rebuilds
    % 19 Jan 2023 - appended projname to projectlist.activefolder and renamed
    % projectlist.folder to projectlist.parentfolder
    % 19 Jan 2023 - added 'activefolder' attribute to allow projects associated
    % with folders other than their namesake
    % 23 Nov 2022 - add projects in USER_PROJECT_PATH using appendprojects
    % 23 Nov 2022 - remove entries that are not directories
+   %
+   % See also: readprjdirectory, writeprjdirectory, workon, addproject
 
-   % NOTE: I started to add a method to "repairpaths" if I move a project and
-   % other projects have files from it in their activefiles attribute (or if
-   % files are moved in general). But if the files are anywhere on the path and
-   % have a unique name (or are found by which first), then reopenfiles will
-   % find them and open them next time the project is activated, and then the
-   % directory will be updated when workoff is called or finish.
+   % Parse the flags and pick the mode. rebuild is the default; fresh is the
+   % explicit destructive build; dryrun suppresses the write.
+   opts = parseflags(varargin);
 
-   % parse inputs
-   switch nargin
-      case 1
-         % the first option is either 'rebuild' or 'dryrun'
-         validatestring(varargin{1},{'rebuild','dryrun'},mfilename,'option',1);
-      case 2
-         % if the first option is 'rebuild', the second option can be 'dryrun'.
-         validatestring(varargin{2},{'dryrun'},mfilename,'option',2);
+   % Build a fresh project list by scanning MATLAB_PROJECT_PATH: current names,
+   % folders, and dir() attributes, with custom attribute columns empty.
+   projectlist = initializeProjectList();
+
+   % Require unique project names (project names are subfolders under
+   % MATLAB_PROJECT_PATH). If a folder named 'default' exists, it will collide
+   % with the synthetic 'default' project name which makes later name matches
+   % ambiguous, so reject it here, before the fresh/rebuild branch.
+   assertuniquenames(projectlist, 'scanned')
+
+   % Rebuild retains saved attributes, fresh keeps the empty ones.
+   if not(opts.fresh)
+      projectlist = rebuildProjectList(projectlist);
    end
 
-   % Set the options to true or false.
-   opts = optionParser({'rebuild','dryrun'},varargin(:));
-
-   % Warn if no rebuild or dryrun options are passed in.
-   if nargin == 0
-      opts = buildwarning(opts);
-   end
-
-   % Read the directory into memory. getprjdirectorypath keeps the
-   % target absolute when the variable is unset (matfunclib-47r).
-   fname = getprjdirectorypath();
-
-   % Build the project list (opts.rebuild==true uses the rebuild option).
-   projectlist = buildprojectlist(opts);
-
-   % Save the project directory.
+   % Save the project directory. writeprjdirectory applies the
+   % backup-before-write, empty-write refusal, and required-field checks.
    if not(opts.dryrun)
-      save(fname, 'projectlist');
+      writeprjdirectory(projectlist);
    end
 
-   % Return the project directory list.
+   % Return the list if requested.
    if nargout == 1
       varargout{1} = projectlist;
    end
 end
 
-%%
-function opts = buildwarning(opts)
+%% local functions
 
-   msg1 = 'Building project directory.';
-   msg2 = 'Warning: this will overwrite the existing directory if it exists.';
-   msg3 = 'Use option ''rebuild'' to rebuild the project directory and preserve existing directory attributes.';
-   msg4 = 'Press ''y'' to continue saving the new directory, or any other key to abort.';
-   msg = [newline msg1 newline msg2 newline msg3 newline msg4 newline];
+function opts = parseflags(args)
+   %PARSEFLAGS Resolve the option flags to a mode and a dryrun choice.
 
-   commandwindow;
-   str = input(msg,'s');
+   arguments
+      args (1,:) cell
+   end
 
-   if string(str) == "y"
-      opts.dryrun = false;
-   else
-      opts.dryrun = true;
+   % Reject any token that doesn't match a known flag, and keep validatestring's
+   % return value: it accepts an unambiguous prefix, so 'dry' must
+   % resolve to 'dryrun' here rather than pass validation and then be
+   % silently ignored by the presence checks below (which would turn a
+   % requested dry run into a real write).
+   valid = {'rebuild', 'fresh', 'dryrun'};
+   for k = 1:numel(args)
+      args{k} = validatestring(args{k}, valid, mfilename, 'option', k);
+   end
+
+   % Flags are order-independent presence checks over the valid names.
+   args = string(args);
+   opts.fresh = ismember("fresh", args);
+   opts.dryrun = ismember("dryrun", args);
+
+   % rebuild is the default and needs no flag. Passing both fresh and
+   % rebuild asks for opposite modes at once, so reject it.
+   if opts.fresh && ismember("rebuild", args)
+      error('matfunclib:buildprojectdirectory:conflictingOptions', ...
+         '''fresh'' and ''rebuild'' are opposite modes; pass at most one.')
    end
 end
 
-%%
-function projectlist = buildprojectlist(opts)
+function projectlist = initializeProjectList()
+   %initializeProjectList List the project folders under MATLAB_PROJECT_PATH.
+   %
+   % Returns one row per subfolder with the dir() attributes and empty
+   % attributes columns. activefolder defaults to folder/name, the single
+   % project folder location defined by MATLAB_PROJECT_PATH.
 
+   % Get the project parent folder and list all project subfolders.
    projectpath = mgetenv('MATLAB_PROJECT_PATH');
-   projectlist = getlist(projectpath,'*');
-   projectlist = struct2table(projectlist);
-   projectlist = appendprojects(projectlist); % 23 Nov 2022
-   projectlist = projectlist(logical(projectlist.isdir), :); % 23 Nov 2022
+   projectlist = struct2table(getlist(projectpath, '*'));
+   projectlist = projectlist(logical(projectlist.isdir), :);
 
-   % Decided to hold off on this b/c the catting of folder and name may be
-   % scattered throughout other functions. Could add a 'projectfolder' attribute.
-   % rename 'folder' to 'parentfolder'
-   % projectlist = renamevars(projectlist,'folder','parentfolder');
-
-   % Add a 'default' project.
-   defaultproj = projectlist(end,:);
+   % The 'default' project folder is MATLAB_HOME_PATH (not matfunclib), so
+   % a usable list exists even with an empty project path. Copy a scanned
+   % row for its schema, then override name and folder.
+   defaultproj = projectlist(end, :);
    defaultproj.name = {'default'};
-   try
-      % Note: $HOME/MATLAB not matfunclib. This is the 'default' project.
-      defaultproj.folder = mgetenv('MATLAB_HOME_PATH');
-   catch
-      defaultproj.folder = userpath;
-   end
+   defaultproj.folder = mgetenv('MATLAB_HOME_PATH');
    projectlist = [projectlist; defaultproj];
 
    % Add empty custom attributes: 'activefiles', 'activeproject',
-   % 'activefolder', and 'linkedproject'. The others are created by dir().
-   index = 1:size(projectlist, 1);
-   projectlist.activefiles(index) = {''};
-   projectlist.activeproject(index) = false;
+   % 'activefolder', and 'linkedproject'. The others are created by dir()
+   n = height(projectlist);
+   projectlist.activefiles(1:n) = {''};
+   projectlist.activeproject(1:n) = false;
    projectlist.activefolder = fullfile(projectlist.folder, projectlist.name);
-   projectlist.linkedproject(index) = {''};
+   projectlist.linkedproject(1:n) = {''};
+end
 
-   % IF FIRST TIME WE'RE DONE HERE SO FOR DRYRUN OR DEBUGGING CHECK PROJECTLSIT
+function newlist = rebuildProjectList(newlist)
+   %rebuildProjectList Rebuild the list carrying saved attributes forward.
 
-   % "rebuild" option preserves the existing custom attributes.
-   if opts.rebuild
-      projectlist = rebuildprojectlist(projectlist);
+   arguments
+      newlist table
    end
-end
 
-%%
-function projectlist = appendprojects(projectlist)
+   % Read the current project directory.
+   oldlist = readprjdirectory();
 
-   % Nov 2024 - this originally appended projects in USER_PROJECT_PATH to those
-   % in MATLAB_PROJECT_PATH. Now that I moved all matlab projects to
-   % MATLAB_PROJECT_PATH, I deactivated this. However, it could be convenient to
-   % be able to "workon" projects in that folder (or another) so I left it in
-   % place.
+   % Require the saved list to have unique project names, otherwise the name
+   % match below will be ambiguous. The scanned list was checked in main.
+   assertuniquenames(oldlist, 'saved')
 
-   % % Temporary update - use this path as an alternate instead
-   % projectpath = getenv('USER_PROJECT_PATH');
-   % if ~isempty(projectpath)
-   %    otherlist = getlist(projectpath, '*');
-   %    otherlist = struct2table(otherlist);
-   %    projectlist = [projectlist; otherlist];
-   % end
-end
+   % Define the custom attributes which are transferred from oldlist to newlist.
+   % activefolder is handled separately so it's updated when a path changes.
+   keepattrs = {'activefiles', 'activeproject', 'linkedproject'};
 
-%%
-function newlist = rebuildprojectlist(newlist)
+   % Find projects in both the old and new directories and merge the attributes.
+   for m = 1:height(newlist)
 
-   % These are the attributes which are transferred from old to new list.
-   keepatts = {'activefiles','activeproject','activefolder','linkedproject'};
+      % Check if this project name exists in the old list.
+      n = find(strcmp(oldlist.name, newlist.name{m}), 1);
+      if isempty(n)
+         continue
+      end
 
-   % Read the current project directory
-   oldlist = readprjdirectory(getprjdirectorypath);
+      % Assign the attributes.
+      for c = 1:numel(keepattrs)
+         newlist.(keepattrs{c})(m) = oldlist.(keepattrs{c})(n);
+      end
 
+      % newlist.activefolder is MATLAB_PROJECT_PATH/<project-name> by default.
+      % This function repairs a saved sub-folder for projects with custom
+      % sub-folder roots such as icom-msd/project.
+      newlist.activefolder{m} = repairProjectSubfolder( ...
+         oldlist.activefolder{n}, oldlist.folder{n}, oldlist.name{n}, ...
+         newlist.activefolder{m});
+   end
 
-   % 🔒 Enforce cellstr (char) for name, folder, and activefolder. This guards
-   % against the case where some other function used string for one or more of
-   % the values in any of these columns and the rest of the values are char. The
-   % mixed data type will cause unique to fail. This is fixed in the call to
-   % uniqueTableRows below, but do it here first to fix it more explicitly.
-   oldlist.name = cellfun(@char, oldlist.name, 'UniformOutput', false);
-   oldlist.folder = cellfun(@char, oldlist.folder, 'UniformOutput', false);
-   oldlist.activefolder = cellfun(@char, oldlist.activefolder, 'UniformOutput', false);
-
-   % 9 Nov 2024: On personal computer, when rebuilding after adding / moving all
-   % projects to MATLAB/projects, the newlist is the current saved list with all
-   % projects in MATLAB/projects appended to it which creates duplicate entries,
-   % so idx_new > 1 is true. Not sure if this problem will arise in other cases,
-   % but in this case, the simplest solution is to keep unique projects, but we
-   % need to know that the entire row is unique so the attrs are retained.
-
-   % unique works on newlist because there are no columns with non-uniform data,
-   % which is known b/c newlist is created from scratch.
-   newlist = unique(newlist, 'rows');
-
-   % unique will fail on oldlist if "activefiles" is non-uniform (or if any
-   % column is non-uniform, e.g., if one entry in "activefolder" is a string and
-   % the rest are chars. But the base case error is when "activefiles" has some
-   % cell arrays of files and some empty entries which are chars). This method
-   % replaces the cell arrays with unique values (integers) and then substitutes
-   % the original active files lists.
-   oldlist = uniqueTableRows(oldlist);
-
-   % find projects in both the old and new directories
-   for n = 1:numel(keepatts)
-
-      thisatt = keepatts{n};
-
-      for m = 1:size(newlist,1)
-
-         % Check if this project name exists in the old list.
-         if ismember(newlist.name(m), oldlist.name)
-
-            % Find the index on the old list, to retrieve the attrs.
-            idx_old = find(ismember(oldlist.name, newlist.name(m)));
-            idx_new = find(ismember(newlist.name, oldlist.name(idx_old)));
-
-            % This checks if both the name and the folder match. If duplicate
-            % project names are allowed, this can be used to determine if the
-            % duplicate projects exist in different folders, and let it pass ...
-            % or actually I think this was used to prevent copying over
-            % attributes from one to the other, and I had the note:
-            % "but it interferes with the case where the projects folder was
-            % moved or redefined"
-            % I am not sure why this was commented out for that case need to
-            % review the logic
-            % idx = find(ismember(oldlist.name, newlist.name(m)) & ...
-            %   ismember(oldlist.folder, newlist.folder(m)));
-
-            if numel(idx_old) > 1
-               % This occurred most recently when there was a "snowmodel" folder
-               % in both myprojects/matlab and MATLAB/projects. I resolved it by
-               % manually combining the two folders into the MATLAB/projects
-               % folder and manually removing the myprojects/matlab/snowmodel
-               % entry from the projectdirectory.mat file. This shows that there
-               % needs to be a "pruneprojects" or similar option to rebuild the
-               % projectdirectory file which specifically checks for entries
-               % with folders which no longer exist (since I deleted the
-               % myprojects/matlab/snowmodel folder but still got the error here
-               % b/c the entry still existed in projectdirectory.mat). But this
-               % could still have the same problem that this section originally
-               % addressed which is the case where the MATLAB_PROJECT_PATH
-               % changes, there's a chicken and egg issue, since the
-               % "pruneprojects" described above would find the folders dont
-               % exist b/c they're in the new folder.
-
-               % I started to add this but I think what is actually needed is to
-               % determine if the duplicate projects have "keepatts" b/c what we
-               % are trying to avoid is copying over the wrong attributes ...
-               if numel(idx_new) > 1
-                  % 9 Nov 2024: On personal computer, when rebuilding after
-                  % adding / moving all projects to MATLAB/projects, the newlist
-                  % is the current saved list with all projects in
-                  % MATLAB/projects appended to it which creates duplicate
-                  % entries, so idx_new > 1 is true. Not sure if this problem
-                  % will arise in other cases, but in this case, the simplest
-                  % solution is to keep unique projects, but we need to know
-                  % that the entire row is unique so the attrs are retained.
-                  % keep = unique(newlist, 'rows');
-
-               else
-                  % Issue an error to handle duplicates on a case by case basis
-                  % until a robust method is worked out.
-                  error('duplicate projects found')
-               end
-
-            elseif numel(idx_old) == 0
-               continue
-
-            elseif numel(idx_old) == 1 %#ok<ISCL>
-
-               newlist.(thisatt)(m) = oldlist.(thisatt)(idx_old);
-            end
-         end
+   % Don't let a saved project that wasn't found in the fresh directory scan
+   % block the rebuild. If a missing project is active, warn and deactivate it
+   % so a machine that lacks the folder still rebuilds the directory.
+   missing = ~ismember(oldlist.name, newlist.name);
+   for m = reshape(find(missing), 1, [])
+      if oldlist.activeproject(m)
+         warning('matfunclib:buildprojectdirectory:activeProjectMissing', ...
+            ['Active project "%s" is not under the project path; ' ...
+            'clearing its active flag.'], oldlist.name{m})
+         oldlist.activeproject(m) = false;
       end
    end
 
-   % Now that the attrs have been transferred from the old list to the new list,
-   % check if any projects exist in the old list which have non-empty attrs but
-   % are not in the new list. This occurred when the project folders were
-   % redefined (USER_PROJECT_PATH was replaced with MATLAB_PROJECT_PATH), and one
-   % project was left behind in USER_PROJECT_PATH.
-   in_old_not_new = ~ismember(oldlist.name, newlist.name);
+   % Keep a missing project only when it still holds attributes worth saving,
+   % so its activefiles survive until its folder reappears.
+   carry = missing ...
+      & ( ~cellfun(@isempty, oldlist.activefiles) ...
+      | ~cellfun(@isempty, oldlist.linkedproject) );
+   newlist = [newlist; oldlist(carry, :)];
+end
 
-   % NOTE: Need to NOT rebuild on new computer until all projects exist, at
-   % minimum the folders e.g. 'baseflow' exists on work but not personal
-   % computer, so it
+function assertuniquenames(list, which)
+   %ASSERTUNIQUENAMES Error when a name repeats in the project list.
 
-   activestate = oldlist.activeproject;
-   activefiles = oldlist.activefiles;
-   linkedprojs = oldlist.linkedproject;
-
-   % NOTE: 'activefolder' is not updated above. This is the only "keepatts" not
-   % updated. Cannot remember why. Maybe when redefining USERPOJECTSPATH (or
-   % whichever env var it was) that was needed. But when I moved
-   % myprojects/matlab to work/projects/matlab, and tried rebuilding, this was
-   % problematic b/c the activefolder needs to be updated for stuff like
-   % cdproject to work.
-
-
-   if any(in_old_not_new & activestate)
-      error('currently active project missing from new directory')
+   arguments
+      list table
+      which (1,:) char
    end
 
-   % This finds old projects with non-empty attrs missing from new
-   keep = in_old_not_new & ...
-      ( in_old_not_new & cellfun(@(c) ~isempty(c), activefiles) ...
-      | in_old_not_new & cellfun(@(c) ~isempty(c), linkedprojs) );
+   names = list.name;
+   [uniquenames, ~, ic] = unique(names);
+   if numel(uniquenames) < numel(names)
+      duplicated = uniquenames(accumarray(ic, 1) > 1);
+      error('matfunclib:buildprojectdirectory:duplicateName', ...
+         ['Duplicate project name(s) in the %s list: %s. ' ...
+         'One project is one name under MATLAB_PROJECT_PATH.'], ...
+         which, strjoin(string(duplicated), ', '))
+   end
+end
 
-   newlist = [newlist; oldlist(keep, :)];
-
-   % This could almost be sufficient to achieve the entire operation, but since
-   % "newlist" has the new folder, but oldlist has the attrs, it's still a few
-   % more steps to combine them from here, so I just retained the loop above.
+function newfolder = repairProjectSubfolder(oldactivefolder, oldfolder, oldname, ...
+      defaultfolder)
+   %repairProjectSubfolder Re-apply a saved activefolder sub-root under the new parent.
    %
-   % in_old_and_new = ismember(oldlist.name, newlist.name);
-   % keep = in_old_and_new ...
-   %    | in_old_not_new & cellfun(@(c) ~isempty(c), activefiles) ...
-   %    | in_old_not_new & cellfun(@(c) ~isempty(c), linkedprojs);
+   % defaultfolder is the scanned folder/name (the enforced location). When
+   % the saved activefolder extended past the old folder/name by a trailing
+   % offset (a custom sub-root), re-apply that offset under defaultfolder.
+   % Otherwise use defaultfolder.
+
+   arguments
+      oldactivefolder (1,:) char
+      oldfolder (1,:) char
+      oldname (1,:) char
+      defaultfolder (1,:) char
+   end
+
+   % Normalize a trailing separator so the offset, and the rebuilt path,
+   % match fullfile output (which never ends in a separator).
+   if ~isempty(oldactivefolder) && oldactivefolder(end) == filesep
+      oldactivefolder(end) = [];
+   end
+
+   oldbase = fullfile(oldfolder, oldname);
+   if startsWith(oldactivefolder, [oldbase filesep])
+      offset = oldactivefolder(numel(oldbase) + 2:end);
+      newfolder = fullfile(defaultfolder, offset);
+   else
+      newfolder = defaultfolder;
+   end
 end
