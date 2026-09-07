@@ -14,8 +14,8 @@ function value = mgetenv(name)
    %  different userpath, or a startup failure. fullfile('', file)
    %  degrades to a bare relative name, and save with a relative name
    %  writes to the current folder. That degradation wrote a registry
-   %  snapshot into a repository root at shutdown (matfunclib-47r), so
-   %  every family read routes through this fallback.
+   %  snapshot into a repository root at shutdown, so every family read
+   %  routes through this fallback.
    %
    %  A nonempty environment value always wins. Test fixtures rely on
    %  that order: they redirect family members to temp folders with
