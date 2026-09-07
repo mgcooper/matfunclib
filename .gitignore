@@ -12,6 +12,11 @@ manager/deactivate/functionSignatures.json
 # project's state is machine-local, not source.
 **/resources/*
 !**/resources/project/
+# MATLAB writes empty uuid-*.xml placeholders directly under
+# resources/project on open. They carry no project state (just <Info/>)
+# and no committed project tracks them, so ignore them while keeping the
+# real membership records under resources/project/<hash>/.
+**/resources/project/uuid-*.xml
 
 # ignore "submodules" (just repos in subfolders)
 exactextract*

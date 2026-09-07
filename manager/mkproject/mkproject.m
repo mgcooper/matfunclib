@@ -57,7 +57,7 @@ function success = mkproject(projectname, varargin)
    [projectname, opts] = parseinputs(projectname, mfilename, varargin{:});
 
    % Full path to project
-   projectpath = fullfile(getenv('MATLAB_PROJECT_PATH'), projectname);
+   projectpath = fullfile(mgetenv('MATLAB_PROJECT_PATH'), projectname);
 
    % Flags to proceed with making the new project or not.
    %

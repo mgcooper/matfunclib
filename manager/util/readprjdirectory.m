@@ -25,9 +25,16 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
 
    source = 'canonical';
 
+   % Resolve the Octave check before the try. isoctave lives outside
+   % manager (liboctave), so on a path holding manager alone it is
+   % undefined; inside the try that error was misdiagnosed as an
+   % unreadable canonical file and triggered the backup fallback over
+   % good data. Out here it errors loudly instead.
+   inoctave = isoctave;
+
    % --- Attempt 1: canonical MAT file ---
    try
-      if isoctave
+      if inoctave
          % May 2025 - projectstruct must not exist anymore, so another function
          % that writes the file is probably not saving it
          loaded = load(projectdirectorypath, 'projectstruct');
@@ -39,6 +46,12 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
       return
 
    catch readErr
+      % Loading an existing file never throws UndefinedFunction; that
+      % identifier means a code or path problem, and a backup fallback
+      % would mask it behind stale data.
+      if strcmp(readErr.identifier, 'MATLAB:UndefinedFunction')
+         rethrow(readErr)
+      end
       warning('matfunclib:readprjdirectory:canonicalFailed', ...
          'readprjdirectory: canonical file unreadable (%s). Trying backup.', ...
          readErr.message);
@@ -58,19 +71,24 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
          loaded = load(bkfile, 'projectlist');
          projectlist = loaded.projectlist;
          warning('matfunclib:readprjdirectory:restoredFromBackup', ...
-            'readprjdirectory: project directory restored from backup:\n  %s', ...
-            bkfile);
+            ['readprjdirectory: read the project directory from backup ' ...
+            '(canonical file left in place):\n  %s'], bkfile);
          return
       catch bkErr
+         % A missing helper is a code or path defect, not a bad backup
+         % file; surface it instead of falling through to the error.
+         if strcmp(bkErr.identifier, 'MATLAB:UndefinedFunction')
+            rethrow(bkErr)
+         end
          warning('matfunclib:readprjdirectory:backupFailed', ...
-            'readprjdirectory: backup restore failed (%s).', bkErr.message);
+            'readprjdirectory: backup read failed (%s).', bkErr.message);
       end
    end
 
    % --- Last resort: error with rebuild guidance ---
    error('matfunclib:readprjdirectory:noUsableDirectory', ...
       ['readprjdirectory: no usable project directory found at\n  %s\n' ...
-      'Run buildprojectdirectory to rebuild from the filesystem.'], ...
+      'Run buildprojectdirectory(''fresh'') to rebuild from the filesystem.'], ...
       projectdirectorypath);
 end
 % % old method that saved the directory as a table

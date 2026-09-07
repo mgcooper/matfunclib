@@ -9,5 +9,5 @@ function [tf, hasfolder] = isproject(projectname)
 
    tf = sum(getprjidx(projectname,readprjdirectory(getprjdirectorypath()))) ~= 0;
 
-   hasfolder = isfolder(fullfile(getenv('MATLAB_PROJECT_PATH'), projectname));
+   hasfolder = isfolder(fullfile(mgetenv('MATLAB_PROJECT_PATH'), projectname));
 end

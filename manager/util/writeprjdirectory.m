@@ -9,7 +9,7 @@ function writeprjdirectory(projectlist)
    %   EMPTY-WRITE PROTECTION: A 0-row table is refused. This prevents a
    %   caller that read an already-corrupted directory from silently
    %   destroying the canonical registry by writing the empty result back.
-   %   Run buildprojectdirectory to rebuild if the directory is legitimately
+   %   Run buildprojectdirectory('fresh') to rebuild if the directory is legitimately
    %   empty.
    %
    %   REQUIRED FIELDS: name, folder, activefiles, activeproject,
@@ -41,7 +41,7 @@ function writeprjdirectory(projectlist)
    if height(projectlist) == 0
       warning('matfunclib:writeprjdirectory:emptyWrite', ...
          ['writeprjdirectory: refusing to write empty project table to\n' ...
-         '  %s\nRun buildprojectdirectory to rebuild from the filesystem.'], ...
+         '  %s\nRun buildprojectdirectory(''fresh'') to rebuild from the filesystem.'], ...
          projectdirectorypath);
       return
    end
@@ -69,6 +69,12 @@ function writeprjdirectory(projectlist)
             copyfile(projectdirectorypath, tmpfile);
          end
       catch backupErr
+         % A missing helper (gettmpdirectorypath) is a code or path
+         % defect, not a copy failure; surface it before the canonical
+         % file is overwritten with no backup made.
+         if strcmp(backupErr.identifier, 'MATLAB:UndefinedFunction')
+            rethrow(backupErr)
+         end
          warning('matfunclib:writeprjdirectory:backupFailed', ...
             'writeprjdirectory: could not create backup before writing (%s).', ...
             backupErr.message);

@@ -7,7 +7,9 @@ function cfg = mconfig()
    % Description
    %
    %  mconfig is the one place that sets the path family (matfunclib-juq.7).
-   %  startup.m calls it at boot; consumers read the variables with getenv.
+   %  startup.m calls it at boot; consumers read the variables with
+   %  mgetenv, which falls back to this function when a variable is
+   %  unset (matfunclib-47r).
    %  Do not setenv these names elsewhere. Test fixtures are the exception:
    %  they save the caller's values, redirect family members (for example
    %  MATLAB_DIRECTORY_PATH, MATLAB_PROJECT_PATH, MATLAB_TOOLBOX_PATH) to
@@ -39,7 +41,14 @@ function cfg = mconfig()
    %
    % See also: startup getenvall
 
-   % Derive the family from the one root: $HOME/MATLAB.
+   % Derive the family from the one root: $HOME/MATLAB. Refuse an empty
+   % HOME: it would make every family value a relative 'MATLAB/...'
+   % prefix, which passes isempty guards yet resolves against cwd
+   % (matfunclib-47r).
+   if isempty(getenv('HOME'))
+      error('matfunclib:manager:mconfig:emptyHome', ...
+         'HOME is unset or empty; the path family cannot be derived.')
+   end
    homepath = fullfile(getenv('HOME'), 'MATLAB');
 
    cfg.MATLAB_HOME_PATH = homepath;

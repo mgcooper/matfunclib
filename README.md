@@ -15,7 +15,10 @@ clone opens without any generation step.
 
 `projectfile.m` at the repository root generates that state from its
 `SUBLIBRARIES` roster. Run it after you add, rename, or remove a library
-folder. It converges: a re-run adds no file and no reference.
+folder. It converges: a re-run adds no file and no reference. Membership
+follows git-tracked content. A folder with no tracked files stays out of
+the Project, and a re-run removes such a member. A fresh clone gains no
+empty folders.
 
     matlab -nodisplay -nosplash -batch \
       "addpath(genpath('manager')); projectfile('create')"

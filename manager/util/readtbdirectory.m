@@ -50,6 +50,12 @@ function [toolboxes, source] = readtbdirectory(dbpath)
       return   % success — source is already 'canonical'
 
    catch readErr
+      % Reading an existing file never throws UndefinedFunction; that
+      % identifier means a code or path problem, and a backup fallback
+      % would mask it behind stale data.
+      if strcmp(readErr.identifier, 'MATLAB:UndefinedFunction')
+         rethrow(readErr)
+      end
       warning('matfunclib:readtbdirectory:canonicalFailed', ...
          'readtbdirectory: canonical CSV unreadable (%s). Trying MAT backup.', ...
          readErr.message);
@@ -60,7 +66,9 @@ function [toolboxes, source] = readtbdirectory(dbpath)
    % can be found without scanning the project-directory backups (tp*.mat).
    source = 'backup';
    try
-      tbdir = getenv('MATLAB_DIRECTORY_PATH');
+      % mgetenv keeps the folder absolute when the variable is unset,
+      % so the backup scan never resolves against cwd (matfunclib-47r).
+      tbdir = mgetenv('MATLAB_DIRECTORY_PATH');
       backups = dir(fullfile(tbdir, 'tbd_*.mat'));
 
       if isempty(backups)
@@ -75,12 +83,16 @@ function [toolboxes, source] = readtbdirectory(dbpath)
       toolboxes.library = string(toolboxes.library);
 
       warning('matfunclib:readtbdirectory:restoredFromBackup', ...
-         'readtbdirectory: toolbox directory restored from backup:\n  %s', bkfile);
+         ['readtbdirectory: read the toolbox directory from backup ' ...
+         '(canonical file left in place):\n  %s'], bkfile);
       return
 
    catch bkErr
+      if strcmp(bkErr.identifier, 'MATLAB:UndefinedFunction')
+         rethrow(bkErr)
+      end
       warning('matfunclib:readtbdirectory:backupFailed', ...
-         'readtbdirectory: MAT backup restore failed (%s).', bkErr.message);
+         'readtbdirectory: MAT backup read failed (%s).', bkErr.message);
    end
 
    % --- Last resort: empty table with correct schema ---

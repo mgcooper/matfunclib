@@ -261,6 +261,101 @@ classdef testCreateMatlabProject < matlab.unittest.TestCase
             "matfunclib:createMatlabProject:subprojectsWithoutReferences")
       end
 
+      function testGitMembershipDropsUntrackedFolders(testCase)
+         % Membership follows git-tracked content (spec decision 6): with
+         % a git index in place, a folder holding only untracked files
+         % stays out of the import while a folder with tracked content,
+         % even deep in a nested subfolder, stays in.
+         nested = fullfile(testCase.projDir, "toolbox", "inner");
+         mkdir(nested)
+         writelines(["function y = deepfun(x)"; "y = x;"; "end"], ...
+            fullfile(nested, "deepfun.m"));
+
+         % git ls-files reads the index, so init+add is enough; no
+         % commit and no author identity are needed.
+         root = char(testCase.projDir);
+         [initStatus, ~] = system(sprintf( ...
+            'git -C "%s" init -q && git -C "%s" add toolbox topfun.m', ...
+            root, root));
+         testCase.assertEqual(initStatus, 0)
+
+         proj = createMatlabProject(testCase.projDir, ...
+            addProjectFiles=true, addProjectFolders=true);
+         files = listprojectfiles(proj);
+
+         returned = any(endsWith(files, filesep + "toolbox"));
+         testCase.verifyTrue(returned)
+         returned = any(endsWith(files, filesep + "inner"));
+         testCase.verifyTrue(returned)
+         returned = any(endsWith(files, filesep + "sandbox"));
+         testCase.verifyFalse(returned)
+      end
+
+      function testGitMembershipRemovesStaleFolderMembers(testCase)
+         % A project generated before the rule holds folder members the
+         % rule would exclude; a regeneration removes them and their
+         % path entries. Generate without git first (everything
+         % imports), then add a git index tracking only the toolbox
+         % folder and re-run.
+         first = createMatlabProject(testCase.projDir, ...
+            addProjectFolders=true);
+         close(first)
+
+         root = char(testCase.projDir);
+         [initStatus, ~] = system(sprintf( ...
+            'git -C "%s" init -q && git -C "%s" add toolbox', ...
+            root, root));
+         testCase.assertEqual(initStatus, 0)
+
+         second = createMatlabProject(testCase.projDir, ...
+            addProjectFolders=true);
+         files = listprojectfiles(second);
+         returned = any(endsWith(files, filesep + "toolbox"));
+         testCase.verifyTrue(returned);
+         returned = any(endsWith(files, filesep + "sandbox"));
+         testCase.verifyFalse(returned);
+
+         held = listprojectpath(second);
+         returned = any(endsWith(held, filesep + "sandbox"));
+         testCase.verifyFalse(returned);
+      end
+
+      function testGitMembershipSurvivesQuotedFolderName(testCase)
+         % A project folder whose name holds an apostrophe and a space
+         % exercises the POSIX shell-quoting of the git call end to end:
+         % the tracked folder must still count as content. The Windows
+         % refuse branch cannot execute on this host (ispc is false), so
+         % this covers the platform branch that runs here.
+         quotedDir = fullfile(testCase.base, "fix'ture proj");
+         mkdir(fullfile(quotedDir, "toolbox"))
+         mkdir(fullfile(quotedDir, "scratch"))
+         writelines(["function y = shipped(x)"; "y = x;"; "end"], ...
+            fullfile(quotedDir, "toolbox", "shipped.m"));
+         [initStatus, ~] = system(sprintf( ...
+            'git -C "%s" init -q && git -C "%s" add toolbox', ...
+            char(quotedDir), char(quotedDir)));
+         testCase.assertEqual(initStatus, 0)
+         testCase.addTeardown(@() closeprojectunder(quotedDir));
+
+         proj = createMatlabProject(quotedDir, addProjectFolders=true);
+         files = listprojectfiles(proj);
+         returned = any(endsWith(files, filesep + "toolbox"));
+         testCase.verifyTrue(returned);
+         returned = any(endsWith(files, filesep + "scratch"));
+         testCase.verifyFalse(returned);
+      end
+
+      function testNoGitSkipsMembershipCheck(testCase)
+         % Without a git repository the check is skipped without error,
+         % so every selected folder imports (the fixture default).
+         proj = createMatlabProject(testCase.projDir, ...
+            addProjectFolders=true);
+         files = listprojectfiles(proj);
+
+         returned = any(endsWith(files, filesep + "sandbox"));
+         testCase.verifyTrue(returned)
+      end
+
       function testOrphanedProjectStateErrors(testCase)
          % A resources/project tree with no root .prj (the hydrobasins
          % breakage) is partial Project state: openProject cannot open
