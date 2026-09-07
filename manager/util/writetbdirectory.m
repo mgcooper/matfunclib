@@ -62,6 +62,12 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
             end
          end
       catch backupErr
+         % A missing helper (gettbbackuppath) is a code or path defect,
+         % not a copy failure; surface it before the canonical file is
+         % overwritten with no backup made.
+         if strcmp(backupErr.identifier, 'MATLAB:UndefinedFunction')
+            rethrow(backupErr)
+         end
          warning('matfunclib:writetbdirectory:backupFailed', ...
             'writetbdirectory: could not create backup before writing (%s).', ...
             backupErr.message);

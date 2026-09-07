@@ -129,12 +129,109 @@ classdef testRegistrySafety < matlab.unittest.TestCase
          testCase.verifyEqual(source, 'backup')
       end
 
+      function testPrjHelperErrorNotMisdiagnosed(testCase)
+         % A failing helper inside the canonical read must propagate,
+         % not be misdiagnosed as an unreadable file. On a path holding
+         % manager alone, the undefined isoctave helper once triggered
+         % the backup fallback over good canonical data (2026-09-05
+         % incident). The test shadows isoctave with a throwing stub
+         % ahead of it on the path and requires the stub's error to
+         % surface even though canonical and a backup both exist.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         expected = testCase.fixtureProjectList();
+         writeprjdirectory(expected)
+         writeprjdirectory(expected)   % second write backs up the first
+         tmp = testCase.applyFixture(TemporaryFolderFixture);
+         writelines(["function tf = isoctave()"; ...
+            "error('fixture:isoctaveUnavailable', 'helper unavailable')"; ...
+            "end"], fullfile(tmp.Folder, "isoctave.m"));
+         testCase.addTeardown(@() rmpath(tmp.Folder))
+         addpath(tmp.Folder, '-begin')
+         testCase.verifyError(@() readprjdirectory(), ...
+            'fixture:isoctaveUnavailable')
+      end
+
+      function testPrjWriteBackupHelperErrorPropagates(testCase)
+         % A missing helper inside the write backup block must propagate,
+         % not be masked as 'could not create backup', because the
+         % canonical file would then be overwritten with no backup made
+         % (same misclassification class as the read path). Shadow the
+         % backup-path helper with a throwing stub ahead of it on the
+         % path, then require writeprjdirectory to surface that error and
+         % leave the canonical file unchanged.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         expected = testCase.fixtureProjectList();
+         writeprjdirectory(expected)   % canonical exists, so backup runs
+         canonical = fullfile(testCase.regDir, "projectdirectory.mat");
+         before = dir(canonical);
+         % The stub raises the exact identifier a genuinely missing
+         % function raises, because the backup helper is called inside
+         % the try and the guard rethrows only MATLAB:UndefinedFunction.
+         tmp = testCase.applyFixture(TemporaryFolderFixture);
+         writelines(["function p = gettmpdirectorypath()"; ...
+            "error('MATLAB:UndefinedFunction', 'Unrecognized function.')"; ...
+            "end"], fullfile(tmp.Folder, "gettmpdirectorypath.m"));
+         testCase.addTeardown(@() rmpath(tmp.Folder))
+         addpath(tmp.Folder, '-begin')
+         rehash
+         testCase.verifyError(@() writeprjdirectory(expected), ...
+            'MATLAB:UndefinedFunction')
+         after = dir(canonical);
+         testCase.verifyEqual(after.datenum, before.datenum)
+      end
+
       function testPrjNoUsableDirectoryErrors(testCase)
          % No canonical file and no backups: a clear error, not a
          % fabricated empty table.
          testCase.verifyError( ...
             @() readprjdirectory(), ...
             'matfunclib:readprjdirectory:noUsableDirectory')
+      end
+
+      function testTbReadBackupHelperErrorPropagates(testCase)
+         % The toolbox reader carries the same guard as the project
+         % reader: a missing helper in the backup block propagates
+         % instead of failing further into the fallback. Force the
+         % canonical read to fail (an unparseable CSV with no toolbox
+         % columns), shadow the backup-block helper (mgetenv) with a stub
+         % raising the missing-function identifier, and require the error
+         % to surface.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         canonical = fullfile(testCase.regDir, "toolboxdirectory.csv");
+         writelines("garbage", canonical)   % unparseable canonical
+         tmp = testCase.applyFixture(TemporaryFolderFixture);
+         writelines(["function v = mgetenv(name)"; ...
+            "error('MATLAB:UndefinedFunction', 'Unrecognized function.')"; ...
+            "end"], fullfile(tmp.Folder, "mgetenv.m"));
+         testCase.addTeardown(@() rmpath(tmp.Folder))
+         addpath(tmp.Folder, '-begin')
+         rehash
+         testCase.verifyError(@() readtbdirectory(char(canonical)), ...
+            'MATLAB:UndefinedFunction')
+      end
+
+      function testTbWriteBackupHelperErrorPropagates(testCase)
+         % The toolbox writer carries the same guard as the project
+         % writer: a missing backup-path helper propagates instead of
+         % being masked as 'could not create backup' before the canonical
+         % file is overwritten with no backup made.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         toolboxes = table({'tb1'}, {'/src'}, true, "lib1", ...
+            'VariableNames', {'name', 'source', 'active', 'library'});
+         writetbdirectory(toolboxes)   % canonical exists, so backup runs
+         canonical = fullfile(testCase.regDir, "toolboxdirectory.csv");
+         before = dir(canonical);
+         tmp = testCase.applyFixture(TemporaryFolderFixture);
+         writelines(["function p = gettbbackuppath()"; ...
+            "error('MATLAB:UndefinedFunction', 'Unrecognized function.')"; ...
+            "end"], fullfile(tmp.Folder, "gettbbackuppath.m"));
+         testCase.addTeardown(@() rmpath(tmp.Folder))
+         addpath(tmp.Folder, '-begin')
+         rehash
+         testCase.verifyError(@() writetbdirectory(toolboxes), ...
+            'MATLAB:UndefinedFunction')
+         after = dir(canonical);
+         testCase.verifyEqual(after.datenum, before.datenum)
       end
 
       function testBackupRotationCap(testCase)
