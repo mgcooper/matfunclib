@@ -244,13 +244,45 @@ classdef testDependencyResolution < matlab.unittest.TestCase
       function testTeardownWarnsAndContinuesOnFailure(testCase)
          % A ledger entry that cannot be reversed (a project absent from
          % the registry) warns, and the remaining entries still tear
-         % down; the ledger ends empty either way.
+         % down. The ledger keeps the failed entry so a later teardown can
+         % retry it (audit LOW 54), and a second warning says so.
          resolveprojectdeps('alpha')
          depledger('record', 'alpha', 'project', 'vanishedproject')
          testCase.verifyWarning(@() teardownprojectdeps('alpha'), ...
             'matfunclib:teardownprojectdeps:deactivateFailed')
          testCase.verifyFalse(testCase.tbfixActive())
-         testCase.verifyEmpty(depledger('list', 'alpha'))
+         % Only the failed entry stays; the reversed ones leave the ledger.
+         returned = {depledger('list', 'alpha').name};
+         expected = {'vanishedproject'};
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testTeardownRethrowsMissingFunction(testCase)
+         % A deactivate missing from the path is one code defect, not a
+         % per-entry failure. teardownprojectdeps rethrows it once. The
+         % ledger keeps the entry that raised and the unattempted ones,
+         % and drops an entry reversed before it (audit MEDIUM 33). The
+         % shadow deactivate succeeds for the project form and raises for
+         % the toolbox form. The ledger lists newest first, so the
+         % teardown reverses the project recorded last before the
+         % toolboxes.
+         depledger('record', 'alpha', 'toolbox', 'tbfix')
+         depledger('record', 'alpha', 'toolbox', 'tbtwo')
+         depledger('record', 'alpha', 'project', 'beta')
+         shadowDir = fullfile(testCase.regDir, "shadow");
+         mkdir(shadowDir)
+         writelines(["function deactivate(name, varargin)"; ...
+            "if isempty(varargin)"; ...
+            "   error('MATLAB:UndefinedFunction', 'Unrecognized function.')"; ...
+            "end"; ...
+            "end"], fullfile(shadowDir, "deactivate.m"))
+         addpath(shadowDir, '-begin')
+         rehash
+         testCase.verifyError(@() teardownprojectdeps('alpha'), ...
+            'MATLAB:UndefinedFunction')
+         returned = {depledger('list', 'alpha').name};
+         expected = {'tbtwo', 'tbfix'};
+         testCase.verifyEqual(returned, expected)
       end
 
       function testWorkonUnwindsOnResolutionFailure(testCase)
@@ -262,6 +294,26 @@ classdef testDependencyResolution < matlab.unittest.TestCase
          testCase.verifyFalse(strcmpi(getactiveproject('name'), 'cycA'))
          testCase.verifyFalse(testCase.fixtureOnPath("cycA"))
          testCase.verifyEmpty(depledger('list', 'cycA'))
+      end
+
+      function testWorkoffUnsetsTheProjectWhenTeardownRaises(testCase)
+         % workoff unsets the active project before it rethrows a code
+         % defect in the teardown (deactivate missing). The registry and
+         % environment then do not keep naming a project whose files are
+         % closed and paths removed.
+         workon('alpha', 'updatefiles', false)
+         shadowDir = fullfile(testCase.regDir, "shadow");
+         mkdir(shadowDir)
+         writelines(["function deactivate(varargin)"; ...
+            "error('MATLAB:UndefinedFunction', 'Unrecognized function.')"; ...
+            "end"], fullfile(shadowDir, "deactivate.m"))
+         addpath(shadowDir, '-begin')
+         rehash
+         testCase.verifyError(@() workoff('alpha', 'updatefiles', false), ...
+            'MATLAB:UndefinedFunction')
+         returned = getactiveproject('name');
+         expected = 'default';
+         testCase.verifyEqual(returned, expected)
       end
 
       function testMixedCaseOwnerTearsDown(testCase)

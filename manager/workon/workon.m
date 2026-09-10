@@ -25,11 +25,12 @@ function workon(varargin)
    %    default option is TRUE.
    %
    %    Note: The default behavior UPDATEFILES=TRUE enables efficient switching
-   %    between projects during an active matlab session. However, if workon is
-   %    called during startup, there will be no files open and the activefiles
-   %    list for the active project will be set empty. To prevent this, use
-   %    UPDATEFILES=FALSE in the call to workon from startup.m or any other case
-   %    where workon is called and no files are currently open.
+   %    between projects during an active matlab session. If startup.m calls
+   %    workon, no files are open. setprojectfiles then keeps the stored
+   %    activefiles list and warns, because an editor that holds none of
+   %    the stored files means the session never reopened them. Use
+   %    UPDATEFILES=FALSE when startup.m calls workon, or whenever no files
+   %    are open, so workon skips the write.
    %
    %  See also: workoff, manager, addproject
    %
