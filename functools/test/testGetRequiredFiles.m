@@ -108,6 +108,52 @@ classdef testGetRequiredFiles < matlab.unittest.TestCase
          testCase.verifyEqual(reshape(returned, [], 1), expected)
       end
 
+      function testMultiFileListMatchesFolderForm(testCase)
+         % A list of more than one file, as a row and as a column, returns
+         % the same requiredFiles and missingFiles as the containing folder.
+         % (matfunclib-juq.55: vertcat of a column reference list with a row
+         % target list failed for any list longer than one file.)
+         fileList = [ ...
+            fullfile(testCase.projFolder, "grft_main.m"), ...
+            fullfile(testCase.projFolder, "testbed", "grft_scratch.m")];
+         fromFolder = getRequiredFiles(testCase.projFolder, ...
+            "referenceList", testCase.projFolder);
+         fromRow = getRequiredFiles(fileList, ...
+            "referenceList", testCase.projFolder);
+         fromColumn = getRequiredFiles(reshape(fileList, [], 1), ...
+            "referenceList", testCase.projFolder);
+
+         expected = sort(fromFolder.missingFiles(:));
+         returned = sort(fromRow.missingFiles(:));
+         testCase.verifyEqual(returned, expected)
+         returned = sort(fromColumn.missingFiles(:));
+         testCase.verifyEqual(returned, expected)
+         expected = sort(fromFolder.requiredFiles(:));
+         returned = sort(fromRow.requiredFiles(:));
+         testCase.verifyEqual(returned, expected)
+         returned = sort(fromColumn.requiredFiles(:));
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testSingleFileListIsSubsetOfFolderForm(testCase)
+         % The single-file form omits the testbed script, so it is missing
+         % dep1 and dep2 only: a strict subset of the folder form's three.
+         fromFile = getRequiredFiles( ...
+            fullfile(testCase.projFolder, "grft_main.m"), ...
+            "referenceList", testCase.projFolder);
+         [~, names, exts] = fileparts(fromFile.missingFiles);
+         returned = sort(reshape(names + exts, [], 1));
+         expected = ["grft_dep1.m"; "grft_dep2.m"];
+         testCase.verifyEqual(returned, expected)
+
+         fromFolder = getRequiredFiles(testCase.projFolder, ...
+            "referenceList", testCase.projFolder);
+         returned = all(ismember(fromFile.missingFiles, ...
+            fromFolder.missingFiles));
+         expected = true;
+         testCase.verifyEqual(returned, expected)
+      end
+
       function testSaveRequirementsFileWritesMat(testCase)
          % saveRequirementsFile writes the .mat file installRequiredFiles'
          % requirementsFile input reads back.
