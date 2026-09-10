@@ -1,0 +1,72 @@
+# manager: out-of-manager requirements inventory (matfunclib-juq.41)
+#
+# One file per line, as a path relative to the matfunclib checkout.
+# installRequiredFiles(requirementsFile=..., source="local",
+# localSourcePath=<matfunclib checkout>) resolves each entry under the
+# checkout. A relative path names one file even where the bare name has
+# several copies (isoctave.m, listfolders.m, rmdotfolders.m and
+# projectfile.m each exist twice in matfunclib). Write a file at the
+# checkout root as "./name.m" so it carries a folder part.
+#
+# The inventory command is
+#   getRequiredFiles('manager', referenceList='manager', ignoreList='manager/testbed')
+# with matfunclib on the path (matfunclib-juq.41; last run 2026-09-09:
+# 139 required files, 32 outside manager). This file lists the 30
+# shippable files manager needs at HEAD: the run's entries less
+# libsys/getlatestfile.m (revertprojectdirectory lists its own
+# candidates) plus functools/foldscase.m (setprojectfiles) and
+# functools/isundefinedfunction.m (the readers, writers and teardown).
+#
+# This list excludes: userpath.m (MATLAB's own, under matlabroot);
+# functools/testbed/pvpairs2struct.m (a testbed scratch file reached
+# through parseparampairs, not a shippable dependency); and the
+# template's private copy toolbox/toolbox/+tbx/+internal/private/isoctave.m,
+# which would land at the same destination name as liboctave/isoctave.m
+# (the installer keeps the first and warns
+# installRequiredFiles:duplicateName).
+#
+# Note for the vendoring decision: replacePackagePrefix calls isoctave
+# unqualified from inside a package, and a package function cannot
+# resolve a sibling package file by an unqualified name. A flat
+# manager/+internal copy serves it only if the copy lives in
+# manager/+internal/private/ or the call is qualified. The same holds
+# for its other unqualified helper calls. That layout choice is part of
+# the pending decision, not of this list.
+#
+# The set is not "a handful of short helpers" (redesign DesignSpec
+# settled decision 14), so the vendoring into manager/+internal has NOT
+# run. The user decides whether to vendor all 30, trim manager's call
+# graph first, or accept the boot-time dependency. See the inventory
+# record at
+# .agents/plans/drafts/2026-09-09-juq.41-out-of-manager-inventory.md.
+#
+functools/isoneof.m
+functools/optionParser.m
+functools/parseoptarg.m
+functools/parseparampairs.m
+functools/tempfile.m
+libarrays/arraymap.m
+liblogic/ischarlike.m
+liblogic/islogicalscalar.m
+liblogic/isnumericscalar.m
+liblogic/isscalartext.m
+liblogic/istextlike.m
+liblogic/notempty.m
+liboctave/isoctave.m
+libsys/clean.m
+libsys/fnamefromlist.m
+libsys/getlist.m
+libsys/getopenfiles.m
+libsys/listfolders.m
+libsys/pathadd.m
+libsys/reopenfiles.m
+libsys/rmdotfolders.m
+libsys/showlist.m
+libsys/varlist.m
+libsys/varopen.m
+libsys/withwarnoff.m
+libtext/strpat.m
+./projectfile.m
+toolbox/toolbox/+tbx/+internal/replacePackagePrefix.m
+functools/foldscase.m
+functools/isundefinedfunction.m
