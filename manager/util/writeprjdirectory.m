@@ -1,8 +1,9 @@
-function writeprjdirectory(projectlist)
+function writeprjdirectory(projectlist, backuppath)
    %WRITEPRJDIRECTORY Write the project directory to canonical MAT file.
    %
    % writeprjdirectory(projectlist)
    % writeprjdirectory()   % re-writes the current directory (no-op refresh)
+   % writeprjdirectory(projectlist, backuppath)   % backup destination
    %
    % Invariants enforced (mirroring writetbdirectory):
    %
@@ -20,8 +21,11 @@ function writeprjdirectory(projectlist)
    %   canonical file skips the backup instead of erroring, so a first
    %   write into a fresh directory folder works. Backups rotate through
    %   prunedirectorybackups so the pool stops growing without bound.
+   %   backupdirectoryfile makes the copy; BACKUPPATH overrides the
+   %   tp*.mat destination so a test can drive the copy-failure branch.
    %
-   % See also: readprjdirectory, writetbdirectory, prunedirectorybackups
+   % See also: readprjdirectory, writetbdirectory, backupdirectoryfile,
+   %   prunedirectorybackups
 
    if isoctave
       error('writeprjdirectory is not supported in Octave.')
@@ -60,26 +64,14 @@ function writeprjdirectory(projectlist)
    % Backup: copy the current canonical file before overwriting. A missing
    % or zero-byte canonical file is skipped, not an error, so the first
    % write into a fresh directory folder succeeds. Non-fatal: a backup
-   % failure warns but does not block the write.
-   if isfile(projectdirectorypath)
-      try
-         info = dir(projectdirectorypath);
-         if info.bytes > 0
-            tmpfile = gettmpdirectorypath();
-            copyfile(projectdirectorypath, tmpfile);
-         end
-      catch backupErr
-         % A missing helper (gettmpdirectorypath) is a code or path
-         % defect, not a copy failure; surface it before the canonical
-         % file is overwritten with no backup made.
-         if strcmp(backupErr.identifier, 'MATLAB:UndefinedFunction')
-            rethrow(backupErr)
-         end
-         warning('matfunclib:writeprjdirectory:backupFailed', ...
-            'writeprjdirectory: could not create backup before writing (%s).', ...
-            backupErr.message);
-      end
+   % failure warns but does not block the write. gettmpdirectorypath runs
+   % outside backupdirectoryfile's try, so a missing helper raises its own
+   % error before the write overwrites the canonical file with no backup
+   % made.
+   if nargin < 2
+      backuppath = gettmpdirectorypath();
    end
+   backupdirectoryfile(projectdirectorypath, backuppath, mfilename);
 
    % If struct2table works in Octave, then this could be used to allow updating
    % in Octave, but test it first.

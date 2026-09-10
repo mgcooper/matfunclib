@@ -217,7 +217,14 @@ function checkManifestCycles(projectname, visiting, projectlist)
       return
    end
 
-   manifest = readmanifest(getprojectfolder(projectname));
+   % A registered project whose folder is gone also ends the walk.
+   % readmanifest treats a missing folder as a defect, and the caller's
+   % target check reports the missing target by name.
+   folder = getprojectfolder(projectname);
+   if ~isfolder(folder)
+      return
+   end
+   manifest = readmanifest(folder);
    for k = 1:numel(manifest.projects)
       checkManifestCycles(manifest.projects{k}, visiting, projectlist);
    end
@@ -259,7 +266,12 @@ function held = heldReferenceFolders(proj)
       % still count as held and can be removed by that folder.
       try
          held(k) = string(proj.ProjectReferences(k).Project.RootFolder);
-      catch
+      catch refErr
+         % A missing function is a code or path defect, not a broken
+         % reference (audit LOW 43).
+         if isundefinedfunction(refErr)
+            rethrow(refErr)
+         end
          held(k) = string(proj.ProjectReferences(k).File);
       end
    end

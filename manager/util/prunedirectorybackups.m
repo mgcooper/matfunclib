@@ -3,7 +3,8 @@ function pruned = prunedirectorybackups(folder, pattern, keep)
    %
    %  pruned = prunedirectorybackups(folder, pattern) keeps the newest 25
    %  files in FOLDER matching PATTERN and deletes the rest, returning the
-   %  deleted file names.
+   %  deleted file names as a cell array of char, not a string array, so
+   %  Octave can run the writers that call this.
    %
    %  pruned = prunedirectorybackups(folder, pattern, keep) keeps KEEP files.
    %
@@ -15,16 +16,26 @@ function pruned = prunedirectorybackups(folder, pattern, keep)
    %
    % See also: writeprjdirectory, writetbdirectory
 
-   arguments
-      folder (1, 1) string {mustBeFolder}
-      pattern (1, 1) string
+   % narginchk and validators stand in for an arguments block, because
+   % Octave does not parse arguments blocks and the writers that call this
+   % after every registry write must be able to run under Octave.
+   narginchk(2, 3)
+   folder = char(folder);
+   pattern = char(pattern);
+   if ~isfolder(folder)
+      error('matfunclib:prunedirectorybackups:notAFolder', ...
+         'prunedirectorybackups: %s is not a folder', folder);
+   end
+   if nargin < 3
       % Default retention count. juq.7's choke-point config may later expose
       % this as a configurable setting; until then this is the single source.
-      keep (1, 1) double {mustBeInteger, mustBeNonnegative} = 25
+      keep = 25;
    end
+   mustBeInteger(keep)
+   mustBeNonnegative(keep)
 
    backups = dir(fullfile(folder, pattern));
-   pruned = strings(0, 1);
+   pruned = cell(0, 1);
    if numel(backups) <= keep
       return
    end
@@ -34,7 +45,7 @@ function pruned = prunedirectorybackups(folder, pattern, keep)
    % drop slots left empty by failed deletions.
    [~, order] = sort([backups.datenum], 'descend');
    backups = backups(order);
-   pruned = strings(numel(backups) - keep, 1);
+   pruned = cell(numel(backups) - keep, 1);
    ndeleted = 0;
    for n = keep+1:numel(backups)
       target = fullfile(folder, backups(n).name);
@@ -52,7 +63,7 @@ function pruned = prunedirectorybackups(folder, pattern, keep)
             'Could not delete backup %s.', target);
       else
          ndeleted = ndeleted + 1;
-         pruned(ndeleted) = string(backups(n).name);
+         pruned{ndeleted} = backups(n).name;
       end
    end
    pruned = pruned(1:ndeleted);

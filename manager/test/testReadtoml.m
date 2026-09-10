@@ -135,6 +135,12 @@ classdef testReadtoml < matlab.unittest.TestCase
          file = testCase.writeToml(["[a]"; "b = 1"; "[a.b]"; "x = 1"]);
          testCase.verifyError(@() readtoml(file), ...
             'matfunclib:readtoml:nameCollision')
+         % A section under a top-level scalar key: the scalar is a
+         % non-struct intermediate, so readtoml reports a collision, not a
+         % raw assignment error (audit LOW 51).
+         file = testCase.writeToml(["a = 1"; "[a.b]"; "x = 1"]);
+         testCase.verifyError(@() readtoml(file), ...
+            'matfunclib:readtoml:nameCollision')
       end
 
       function testEmptyValueRejected(testCase)
