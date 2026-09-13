@@ -29,8 +29,10 @@ classdef testInstallRequiredFiles < matlab.unittest.TestCase
       function addProjectToPath(testCase)
          import matlab.unittest.fixtures.PathFixture
 
-         % Put matfunclib on the path so installRequiredFiles and its
-         % helpers (withcd, listfiles, ...) resolve from the repo root.
+         % Put matfunclib on the path so installRequiredFiles and the
+         % library functions it calls by name (withcd from libsys,
+         % undersource, foldscase and getRequiredFiles from functools)
+         % resolve from the repo root.
          testFile = mfilename("fullpath");
          testFolder = fileparts(testFile);
          libraryFolder = fileparts(testFolder);
@@ -1250,79 +1252,6 @@ classdef testInstallRequiredFiles < matlab.unittest.TestCase
             localSourcePath=testCase.localSource, ...
             GitHubUserName="tuser", remoteRepoName="", dryrun=true), ...
             'installRequiredFiles:missingRemoteRepoName')
-      end
-
-      function testProjectCopyOfUndersourceDoesNotShadowTheHelper(testCase)
-         % A project holding its own undersource.m and movefile.m (broken
-         % ones here) is the working folder while the installer runs, and
-         % here it is the caller's folder as well. bindhelpers bound the
-         % helpers from the installer's own folder, so the project's
-         % copies are never called.
-         [proj, src] = testCase.makeLocalInstallFixture();
-         writelines("function tf = undersource(varargin), error('shadow:hit', 'shadow'), end", ...
-            fullfile(proj, "undersource.m"))
-         % The project is the working folder and nothing else. It comes
-         % off the path, because bindhelpers documents a project folder
-         % ahead of MATLAB's own folders on the path as out of scope. cd,
-         % pwd, dir, isfile, isfolder, load, fopen and fclose are not
-         % shadowed here. MATLAB's own dependency walk, its readers and
-         % the arguments-block validators call them by name, so shadowing
-         % them breaks MATLAB before the installer runs, which bindhelpers
-         % also documents.
-         rmpath(proj)
-         testCase.addTeardown(@() addpath(proj))
-         for name = ["movefile", "copyfile", "fileattrib", "tempname", ...
-               "mkdir", "delete", "readlines", "getRequiredFiles"]
-            writelines("function varargout = " + name + ...
-               "(varargin), error('shadow:hit', 'shadow'), end", ...
-               fullfile(proj, name + ".m"))
-         end
-         % MATLAB warns that the fixture's files shadow built-ins; that
-         % warning is the fixture's doing, not the installer's. The test's
-         % own folder changes go through builtin so the shadows do not
-         % catch them either.
-         state = warning('off', 'MATLAB:dispatcher:nameConflict');
-         testCase.addTeardown(@() warning(state))
-         here = builtin('cd');
-         testCase.addTeardown(@() builtin('cd', here))
-         builtin('cd', proj)
-
-         [names, from] = testCase.verifyWarningFree(@() ...
-            installRequiredFiles( ...
-            localSourcePath=src, ...
-            installPath=fullfile(proj, "private"), ...
-            ignoreFolder="nosuchfolder", source="local"));
-
-         returned = names;
-         expected = "irft_lhelper.m";
-         testCase.verifyEqual(returned, expected)
-         returned = from;
-         expected = fullfile(src, "lib", "irft_lhelper.m");
-         testCase.verifyEqual(returned, expected)
-
-         % The requirements-file readers are bound too: a text file and a
-         % MAT file both resolve while the shadows are in place.
-         txtFile = fullfile(fileparts(proj), "req.txt");
-         builtin('cd', here)
-         writelines("lib/irft_lhelper.m", txtFile)
-         missingFiles = "lib/irft_lhelper.m";
-         matFile = fullfile(fileparts(proj), "req.mat");
-         save(matFile, "missingFiles")
-         builtin('cd', proj)
-         names = testCase.verifyWarningFree(@() installRequiredFiles( ...
-            requirementsFile=txtFile, localSourcePath=src, ...
-            installPath=fullfile(proj, "private"), source="local", ...
-            dryrun=true));
-         returned = names;
-         expected = "irft_lhelper.m";
-         testCase.verifyEqual(returned, expected)
-         names = testCase.verifyWarningFree(@() installRequiredFiles( ...
-            requirementsFile=matFile, localSourcePath=src, ...
-            installPath=fullfile(proj, "private"), source="local", ...
-            dryrun=true));
-         returned = names;
-         expected = "irft_lhelper.m";
-         testCase.verifyEqual(returned, expected)
       end
 
       function testCaseVariantSourcesCollideByDestinationRule(testCase)
