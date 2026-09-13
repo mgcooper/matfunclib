@@ -10,6 +10,8 @@ classdef testMconfig < matlab.unittest.TestCase
       % Explicit scalar default: a bare typed struct property initializes
       % 0x0, and dot assignment into an empty struct errors.
       savedEnv struct = struct()
+      % The isolated HOME each test runs against.
+      home string
    end
 
    properties (Constant)
@@ -44,9 +46,74 @@ classdef testMconfig < matlab.unittest.TestCase
          end
          testCase.addTeardown(@() testCase.restoreEnv())
       end
+
+      function isolateHome(testCase)
+         % mconfig raises when HOME holds no matfunclib, so every test runs
+         % against a fake checkout rather than wherever this one sits.
+         testCase.home = testCase.fakeHome(false);
+      end
    end
 
    methods (Access = private)
+      function home = fakeHome(testCase, linked)
+         %FAKEHOME An isolated HOME whose matfunclib holds marker files.
+         %
+         % functools/mconfigmarker.m must reach the path,
+         % .hidden/hiddenmarker.m must not, and libcells/vec/vecmarker.m
+         % must not under Octave.
+         %
+         % mconfig derives MATLAB_FUNCTION_PATH from HOME, so a test does not
+         % depend on where this checkout is. LINKED true makes
+         % MATLAB/projects/matfunclib a symlink to a folder elsewhere in the
+         % tree, as a user whose checkout lives outside HOME would have.
+         % Teardown restores HOME and the path and then removes the tree
+         % (teardowns run last-in first-out).
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         home = string(testCase.applyFixture(TemporaryFolderFixture).Folder);
+         savedPath = path();
+         testCase.addTeardown(@() path(savedPath));
+         savedHome = getenv('HOME');
+         testCase.addTeardown(@() setenv('HOME', savedHome));
+
+         projects = fullfile(home, 'MATLAB', 'projects');
+         if linked
+            checkout = fullfile(home, 'elsewhere', 'matfunclib');
+            mkdir(projects)
+         else
+            checkout = fullfile(projects, 'matfunclib');
+         end
+         mkdir(fullfile(checkout, 'functools'))
+         writelines("function mconfigmarker(), end", ...
+            fullfile(checkout, 'functools', 'mconfigmarker.m'))
+
+         % A dot folder, which mconfig must keep off the path.
+         mkdir(fullfile(checkout, '.hidden'))
+         writelines("function hiddenmarker(), end", ...
+            fullfile(checkout, '.hidden', 'hiddenmarker.m'))
+
+         % A folder octaveignorepaths lists, so an Octave test can check
+         % that the filter still applies.
+         mkdir(fullfile(checkout, 'libcells', 'vec'))
+         writelines("function vecmarker(), end", ...
+            fullfile(checkout, 'libcells', 'vec', 'vecmarker.m'))
+         if linked
+            [status, msg] = system("ln -s '" + checkout + "' '" ...
+               + fullfile(projects, 'matfunclib') + "'");
+            testCase.assertEqual(status, 0, "symlink failed: " + msg)
+         end
+         setenv('HOME', home);
+      end
+
+      function addExtraFolder(testCase)
+         %ADDEXTRAFOLDER Put a folder after everything mconfig added.
+         %
+         % If a later mconfig call re-added its folders, addpath would move
+         % them after this one and the path would change.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         extra = testCase.applyFixture(TemporaryFolderFixture).Folder;
+         addpath(extra, '-end')
+      end
+
       function restoreEnv(testCase)
          %RESTOREENV Put back the saved path-family env values.
          % Teardown hook: every test calls mconfig, which setenvs the whole
@@ -134,6 +201,99 @@ classdef testMconfig < matlab.unittest.TestCase
          setenv('HOME', '');
          testCase.verifyError(@() mconfig(), ...
             'matfunclib:manager:mconfig:emptyHome');
+      end
+
+      function testMissingFunctionPathErrors(testCase)
+         % matfunclib-juq.41: a missing matfunclib is one named error at
+         % the boot choke point, not a stack of MATLAB:UndefinedFunction
+         % errors from whichever manager function first reaches a helper.
+         % mconfig derives the family from HOME, so redirecting HOME is
+         % how a caller points MATLAB_FUNCTION_PATH at an absent folder.
+         import matlab.unittest.fixtures.TemporaryFolderFixture
+         emptyHome = testCase.applyFixture(TemporaryFolderFixture).Folder;
+         savedHome = getenv('HOME');
+         testCase.addTeardown(@() setenv('HOME', savedHome));
+         setenv('HOME', emptyHome);
+
+         testCase.verifyError(@() mconfig(), ...
+            'matfunclib:manager:mconfig:missingFunctionPath');
+      end
+
+      function testBootstrapAddsOnlyMissingFolders(testCase)
+         % mgetenv calls mconfig whenever a variable is unset, so repeat
+         % calls are normal. A second call must add nothing and must not
+         % move a folder that is already on the path.
+         checkout = fullfile(testCase.home, 'MATLAB', 'projects', ...
+            'matfunclib');
+         mconfig();
+         testCase.addExtraFolder();
+         before = path();
+
+         mconfig();
+         returned = path();
+         expected = before;
+         testCase.verifyEqual(returned, expected)
+         testCase.verifyNotEmpty(which('mconfigmarker'), ...
+            'the fake checkout must be on the path after mconfig')
+         testCase.verifyEmpty(which('hiddenmarker'), ...
+            'mconfig must not add a dot folder')
+
+         % A folder removed from the path is added again.
+         rmpath(fullfile(checkout, 'functools'))
+         testCase.assertEmpty(which('mconfigmarker'), ...
+            'the fixture must start with the marker off the path')
+         mconfig();
+         testCase.verifyNotEmpty(which('mconfigmarker'), ...
+            'mconfig must add a folder that is missing from the path')
+      end
+
+      function testBootstrapResolvesASymlinkedCheckout(testCase)
+         % addpath stores the resolved name of a symlinked folder, and
+         % genpath returns names through the link. A second call must still
+         % leave the path unchanged.
+         testCase.assumeTrue(isunix, "the fixture links with ln -s")
+         testCase.fakeHome(true);
+         mconfig();
+         testCase.addExtraFolder();
+         before = path();
+
+         mconfig();
+         returned = path();
+         expected = before;
+         testCase.verifyEqual(returned, expected)
+         testCase.verifyNotEmpty(which('mconfigmarker'), ...
+            'the linked checkout must be on the path after mconfig')
+      end
+
+      function testOctaveBootstrapResolvesASymlinkedCheckout(testCase)
+         % Octave, unlike MATLAB, moves a folder re-added through a link to
+         % the end of the path. mconfig must resolve the link under Octave,
+         % or a second call reorders the path. octaveignorepaths uses the
+         % unresolved name, so the test also checks that an ignored folder
+         % stays off the path.
+         [status, out] = system("command -v octave-cli");
+         exe = strtrim(string(out));
+         testCase.assumeTrue(isunix && status == 0 && strlength(exe) > 0, ...
+            "needs octave-cli and ln -s")
+         linkedHome = testCase.fakeHome(true);
+         extra = fullfile(linkedHome, 'extra');
+         mkdir(extra)
+
+         manager = fileparts(fileparts(mfilename("fullpath")));
+         script = "addpath('" + manager + "'); warning('off', 'all'); " ...
+            + "mconfig(); addpath('" + extra + "', '-end'); p = path(); " ...
+            + "mconfig(); printf('same=%d\n', strcmp(p, path())); " ...
+            + "printf('ignored=%d\n', isempty(which('vecmarker'))); " ...
+            + "printf('child_done\n');";
+         [status, out] = system("HOME='" + linkedHome + "' """ + exe ...
+            + """ --norc --eval """ + script + """");
+         out = string(out);
+
+         testCase.assertEqual(status, 0, ...
+            "octave-cli exited " + status + ": " + out)
+         testCase.assertSubstring(out, "child_done", out)
+         testCase.verifySubstring(out, "same=1", out)
+         testCase.verifySubstring(out, "ignored=1", out)
       end
 
       function testMgetenvPrefersSetValue(testCase)

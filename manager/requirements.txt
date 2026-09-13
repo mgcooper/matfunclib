@@ -11,11 +11,12 @@
 # The inventory command is
 #   getRequiredFiles('manager', referenceList='manager', ignoreList='manager/testbed')
 # with matfunclib on the path (matfunclib-juq.41; last run 2026-09-09:
-# 139 required files, 32 outside manager). This file lists the 30
+# 139 required files, 32 outside manager). This file lists the 31
 # shippable files manager needs at HEAD: the run's entries less
 # libsys/getlatestfile.m (revertprojectdirectory lists its own
-# candidates) plus functools/foldscase.m (setprojectfiles) and
-# functools/isundefinedfunction.m (the readers, writers and teardown).
+# candidates) plus functools/foldscase.m (setprojectfiles),
+# functools/isundefinedfunction.m (the readers, writers and teardown)
+# and libsys/withcd.m (configureproject, added 2026-09-12).
 #
 # This list excludes: userpath.m (MATLAB's own, under matlabroot);
 # functools/testbed/pvpairs2struct.m (a testbed scratch file reached
@@ -25,19 +26,17 @@
 # (the installer keeps the first and warns
 # installRequiredFiles:duplicateName).
 #
-# Note for the vendoring decision: replacePackagePrefix calls isoctave
+# Note for any future vendoring: replacePackagePrefix calls isoctave
 # unqualified from inside a package, and a package function cannot
 # resolve a sibling package file by an unqualified name. A flat
 # manager/+internal copy serves it only if the copy lives in
 # manager/+internal/private/ or the call is qualified. The same holds
-# for its other unqualified helper calls. That layout choice is part of
-# the pending decision, not of this list.
+# for its other unqualified helper calls.
 #
-# The set is not "a handful of short helpers" (redesign DesignSpec
-# settled decision 14), so the vendoring into manager/+internal has NOT
-# run. The user decides whether to vendor all 30, trim manager's call
-# graph first, or accept the boot-time dependency. See the inventory
-# record at
+# Redesign DesignSpec settled decision 14 resolves this set by boot
+# order, not vendoring: manager/mconfig.m adds matfunclib to the path,
+# and manager vendors none of these files. This file is an inventory
+# record, not an install input. See the inventory record at
 # .agents/plans/drafts/2026-09-09-juq.41-out-of-manager-inventory.md.
 #
 functools/isoneof.m
@@ -70,3 +69,4 @@ libtext/strpat.m
 toolbox/toolbox/+tbx/+internal/replacePackagePrefix.m
 functools/foldscase.m
 functools/isundefinedfunction.m
+libsys/withcd.m
