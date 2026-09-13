@@ -14,49 +14,25 @@ function ok = configureproject(projectpath, varargin)
    %  for a file named configscript and executes it.
    %
    %  ok = configureproject(_) returns true when at least one script or
-   %  userhooks/ script ran and every one that ran completed. It returns
-   %  false when a script raised an error, or when it found no script.
-   %  The function issues a script error as a warning with that error's
-   %  own identifier and message. A missing script produces no message,
-   %  because most projects have none.
+   %  userhooks/ script ran and every one that ran completed. It returns false
+   %  when a script raised an error, or when it found no script. The function
+   %  issues a script error as a warning with that error's own identifier and
+   %  message. A missing script produces no message, because most projects have
+   %  none.
    %
-   %  The scripts run with projpath as the current folder. A script is
-   %  then always the project's own file, even when another file of the
-   %  same name is earlier on the path. The function restores the caller's
-   %  folder on exit. configureproject reaches cd, pwd, dir, and isfolder
-   %  through builtin in MATLAB, so a project file of one of those names
-   %  cannot redirect it. Octave resolves dir and isfolder as M-files that
-   %  builtin cannot reach. Under Octave the function calls the plain
-   %  functions, and that protection does not apply (matfunclib-9ta.1).
-   %  Accepted limit: a project file can shadow any other function that
-   %  MATLAB itself calls by name (run, which, fullfile). The shadow
-   %  applies to every caller once the project folder is current. workon
-   %  cds into the project before this call, so that exposure is the same
-   %  as workon's own. The same holds for the matfunclib helpers this file
-   %  uses (isoctave, isundefinedfunction). The function resolves both
-   %  once before it enters the project folder, so a copy in the project's
-   %  root folder cannot intercept them. A copy on a project path that
-   %  workon added ahead of matfunclib can intercept them, as it can for
-   %  every helper that workon itself calls by name. The function refuses
-   %  a script name that matches one of its local helpers
-   %  (matfunclib:configureproject:reservedName). feval resolves a local
-   %  function before a project file. A project folder that does not
-   %  exist yields a warning matfunclib:configureproject:missingProject
-   %  and ok false, so a stale registry entry does not raise from here.
+   %  The scripts run with projpath as the current folder, so the script is
+   %  always the project's own file, even when another file of the same name is
+   %  earlier on the path. The function restores the caller's folder on exit
+   %  through withcd. The function refuses a script name that matches one of its
+   %  local helpers (matfunclib:configureproject:reservedName). projpath must
+   %  name a folder that exists, or withcd raises an error. workon checks the
+   %  folder before it changes any state.
    %
    % Example
    %
    %  configureproject(projpath,'Config.m')
    %
    % See also
-
-   % TODO: This is running configfile three times, at least in the case of
-   % calling "workon('icom-msd')", it prints "activating groupstats asproject"
-   % three times to the screen. I thought it must be due to running config in
-   % the top level and then again in userhooks/, but there is no userhooks/
-   % folder in the icom-msd project. Twice also does not make sense (one for
-   % uppercase and one for lower) b/c the upper was removed from tryscripts.
-   % Debug this later.
 
    % NOTE: for Setup/Install, we don't want to try re-installing stuff if we
    % don't have to, but if there isn't much overhead, we can just let it check
@@ -68,15 +44,16 @@ function ok = configureproject(projectpath, varargin)
    else
       tryscripts = cellstr(varargin{1});
    end
-   tryscripts = [tryscripts lower(tryscripts)]; % removed UPPER for now
+   % A name already in lower case, such as configfile or a caller's 'config',
+   % appears twice below. unique keeps one copy, so no script runs twice.
+   tryscripts = unique([tryscripts lower(tryscripts)], ...
+      'stable'); % removed UPPER for now
    % tryscripts = [tryscripts lower(tryscripts) upper(tryscripts)];
 
-   % feval inside this file resolves its local functions, and this
-   % function itself, before any project file. A requested name that
-   % matches one of them could run the helper (or recurse) and report
-   % success without the script. The default list never collides; only
-   % a caller-supplied name can.
-   reserved = {mfilename, 'restorecaller', 'raisedinside', 'runscript', ...
+   % Check if a caller-supplied script name matches this file or its local
+   % functions, which feval would resolve before the requested name and could
+   % run (or recurse) and report success without running the actual script.
+   reserved = {mfilename, 'raisedinside', 'runscript', ...
       'reportscripterror', 'entrykind'};
    collision = intersect(tryscripts, reserved);
    if ~isempty(collision)
@@ -85,83 +62,50 @@ function ok = configureproject(projectpath, varargin)
          collision{1});
    end
 
-   % Folder helpers go through builtin in MATLAB. A handle made from a
-   % built-in name still resolves a same-named file in the current folder
-   % at call time; only builtin bypasses it. Octave has no builtin dir or
-   % isfolder (both are M-files). Under Octave this code calls the plain
-   % functions and keeps no protection against such a project file
-   % (matfunclib-9ta.1). builtin('cd') with an output is the current
-   % folder in MATLAB. This code also resolves the two matfunclib helpers
-   % here, before the project folder is current, for the same reason.
+   % Create an octave compatible function handle to classify errors.
    fs.inoctave = isoctave;
    fs.isundefined = @isundefinedfunction;
-   if fs.inoctave
-      fs.cd = @cd;
-      fs.pwd = @pwd;
-      fs.dir = @dir;
-      fs.isfolder = @isfolder;
-   else
-      fs.cd = @(varargin) builtin('cd', varargin{:});
-      fs.pwd = @() builtin('cd');
-      fs.dir = @(varargin) builtin('dir', varargin{:});
-      fs.isfolder = @(varargin) builtin('isfolder', varargin{:});
-   end
 
-   % A missing project folder (a registry entry whose folder was moved or
-   % deleted) gets a warning, not an error. workon has already marked the
-   % project active when it calls this function, and an error here would
-   % leave that state half applied.
-   if ~fs.isfolder(projectpath)
-      warning('matfunclib:configureproject:missingProject', ...
-         'configureproject: project folder %s does not exist', projectpath);
-      ok = false;
-      return
-   end
-
-   % Every script runs with the project folder current. MATLAB searches
-   % the current folder before the path, so a bare name resolves to the
-   % project's own file whatever else the path holds. The bare name also
-   % has no path-length limit; feval accepts a full path only up to
-   % namelengthmax characters. The resolved folder overwrites the caller's
-   % spelling of projectpath, so a relative or ".." path compares equal to
-   % the absolute file names in the error stack. The function restores the
-   % caller's folder on exit when it still exists (workon cds into the
-   % project first, so its restore is a no-op). It enters the folder again
+   % Every script runs with the project folder current. MATLAB searches the
+   % current folder before the path, so a bare name resolves to the file in the
+   % project regardless of what else is on path. The bare name also has no
+   % path-length limit; feval accepts a full path only up to namelengthmax
+   % characters. The resolved folder overwrites the caller's spelling of
+   % projectpath, so a relative or ".." path compares equal to the absolute file
+   % names in the error stack. withcd restores the caller's folder on exit, and
+   % skips the restore when that folder no longer exists (workon cds into the
+   % project first, so its restore is a no-op). The loop enters the folder again
    % before each call because a script may cd elsewhere.
-   startfolder = fs.pwd();
-   restorefolder = onCleanup(@() restorecaller(startfolder, fs));
-   fs.cd(projectpath)
-   projectpath = fs.pwd();
+   %
+   % restorefolder is held for its lifetime, not read. Releasing it early would
+   % end the guard, and delete raises on an onCleanup object under Octave, so
+   % the analyzer's unused-assignment report is silenced here.
+   restorefolder = withcd(projectpath); %#ok<NASGU>
+   projectpath = pwd;
 
    % ok reports success only when a script ran and none failed. A failure
-   % persists. A later script that succeeds does not hide an earlier one
-   % that raised, because the caller sees one flag for the whole set.
-   % The flags live here, and every script executes in a helper's
-   % workspace (feval in its own, run in runscript's). A script that
-   % assigns a variable named ran or failed therefore cannot alter the
-   % result.
+   % persists. A later script that succeeds does not hide an earlier one that
+   % raised, because the caller sees one flag for the whole set. The flags live
+   % here, and every script executes in a helper's workspace (feval in its own,
+   % run in runscript's). A script that assigns a variable named ran or failed
+   % therefore cannot alter the result.
    ran = false;
    failed = false;
 
    for n = 1:numel(tryscripts)
 
-      % A script may change the current folder. The loop enters the
-      % project folder again before every candidate, ahead of any name
-      % that a folder a script moved into could shadow (fullfile
-      % included). It enters it again before every bare-name call.
-      fs.cd(projectpath)
+      % Change to the project folder each time in case a script changed the cwd.
+      cd(projectpath)
       scriptfile = fullfile(projectpath, [tryscripts{n} '.m']);
 
-      % The existence test compares names, not isfile. A file system that
-      % folds case reports 'setup.m' present when 'Setup.m' exists. MATLAB
-      % resolves names case-sensitively, so the bare call 'setup' would
-      % reach a same-named file elsewhere on the path or fail. The loop
-      % lists the folder per candidate because an earlier script may
-      % create or remove a later one, and a folder named like a script
-      % is not one. The listing uses a relative pattern, because dir reads
-      % '*' or '?' in the project path itself as wildcards and would list
-      % a sibling folder.
-      listing = fs.dir('*.m');
+      % Use dir rather than isfile to determine file existence - a file system
+      % that folds case reports 'setup.m' present when 'Setup.m' exists. MATLAB
+      % resolves names case-sensitively, so the bare call 'setup' would reach a
+      % same-named file elsewhere on the path or fail. List the folder each
+      % iteration because an earlier script may create or remove one. The
+      % listing uses a relative pattern, because dir reads '*' or '?' in the
+      % project path itself as wildcards and would list a sibling folder.
+      listing = dir('*.m');
       present = {listing(~[listing.isdir]).name};
       if any(strcmp(present, [tryscripts{n} '.m']))
          try
@@ -174,45 +118,44 @@ function ok = configureproject(projectpath, varargin)
             % try is 'config.m' (note: if feval doesn't care about case, then we
             % don't need to loop over both cases). Only an undefined script
             % itself is the skip. An undefined name raised from inside the
-            % script is the script's own error, reported below. The
-            % script's frame in the error's stack tells the two apart, and
-            % entrykind names the MATLAB and Octave forms of each error.
+            % script is the script's own error, reported below. The script's
+            % frame in the error's stack tells the two apart, and entrykind
+            % names the MATLAB and Octave forms of each error.
             kind = entrykind(ME, tryscripts{n}, scriptfile, fs);
             if strcmp(kind, 'undefined')
                continue
             end
 
-            % this occurs when the setup function accepts no inputs. The
-            % retry's own failure is the script's own error, so
-            % reportscripterror reports it (matfunclib-juq.38). The same
-            % identifier raised from inside the script (a helper called
-            % with too many inputs) is the script's error, not a signature
-            % mismatch, so the loop reports it and does not retry.
+            % this occurs when the setup function accepts no inputs. The retry's
+            % failure is the script's own error, so reportscripterror reports it
+            % (matfunclib-juq.38). The same identifier raised from inside the
+            % script (a helper called with too many inputs) is the script's
+            % error, not a signature mismatch, so the loop reports it and does
+            % not retry.
             if strcmp(kind, 'toomany')
                try
-                  fs.cd(projectpath)
+                  cd(projectpath)
                   feval(tryscripts{n});
                catch ME
                   failed = reportscripterror(ME, tryscripts{n}, projectpath);
                end
 
-            % if feval fails, try run (the case where the setup file is a
-            % script). run gets the full path so it executes the file the
-            % listing found.
+               % if feval fails, try run (the case where the setup file is a
+               % script). run gets the full path so it executes the file the
+               % listing found.
             elseif strcmp(kind, 'script')
                try
-                  fs.cd(projectpath)
+                  cd(projectpath)
                   runscript(scriptfile);
                catch ME
-                  % A failing run gets a warning, because the user must not
-                  % see a working activation over a broken configuration.
+                  % A failing run gets a warning.
                   failed = reportscripterror(ME, tryscripts{n}, projectpath);
                end
 
             else
                % Any other error is the script's own error. reportscripterror
-               % warns with its own identifier and message (HIGH #2 of the
-               % 2026-09-05 audit), and the activation reports the failure.
+               % warns with its own identifier and message, and the activation
+               % reports the failure.
                failed = reportscripterror(ME, tryscripts{n}, projectpath);
             end
          end
@@ -221,21 +164,19 @@ function ok = configureproject(projectpath, varargin)
    end
 
    % Run user hooks (e.g., config.m, read .env, etc). The dot folder removal
-   % should not ever be necessary, but it doesn't hurt to check. A failing
-   % hook is part of the project's configuration, so the loop reports and
-   % counts it like a top-level script (audit MEDIUM #24). dir is the
-   % bound handle because the project folder is current here too, and
-   % the loop drops a folder named like a script, as in the top-level
-   % listing. The loop lists the folder again after every hook, because a
-   % hook may create or remove another: a created hook runs, and a
-   % removed one gets no report. Hooks run in name order, each once. The
-   % bookkeeping stays in cell arrays because Octave has no string
-   % arrays, and the listing is relative to the project folder for the
-   % wildcard reason above.
+   % should not ever be necessary, but it doesn't hurt to check. A failing hook
+   % is part of the project's configuration, so the loop reports and counts it
+   % like a top-level script (audit MEDIUM #24). The loop drops a folder named
+   % like a script, as in the top-level listing. The loop lists the folder again
+   % after every hook, because a hook may create or remove another: a created
+   % hook runs, and a removed one gets no report. Hooks run in name order, each
+   % once. The bookkeeping stays in cell arrays because Octave has no string
+   % arrays, and the listing is relative to the project folder for the wildcard
+   % reason above.
    ranhooks = {};
    while true
-      fs.cd(projectpath)
-      hookslist = fs.dir(fullfile('userhooks', '*.m'));
+      cd(projectpath)
+      hookslist = dir(fullfile('userhooks', '*.m'));
       hookslist = hookslist(~[hookslist.isdir]);
       userhooks = fullfile({hookslist.folder}.', {hookslist.name}.');
       userhooks = userhooks(cellfun(@(p) ~endsWith(p, '.'), userhooks));
@@ -253,38 +194,22 @@ function ok = configureproject(projectpath, varargin)
       ranhooks = union(ranhooks, {hook});
    end
 
-   % A project with no script is a normal state (most projects have none),
-   % so the function prints nothing here. The ok output carries it to the
-   % caller (audit LOW #44 found a not-found message assigned here that
-   % was never shown, so none is built).
+   % A project with no script is normal (most projects have none), so the
+   % function prints nothing here. The ok output is returned to the caller.
    ok = ran && ~failed;
-end
-
-function restorecaller(startfolder, fs)
-   %RESTORECALLER Return to the caller's folder when it still exists.
-   %
-   % The caller's folder may be gone by now (a test fixture, a deleted
-   % checkout). A cd to it would raise an error from an onCleanup
-   % destructor, so the function skips the restore for a missing folder.
-   % The bound handles in FS keep a project file named isfolder or cd
-   % from intercepting the restore.
-   if fs.isfolder(startfolder)
-      fs.cd(startfolder)
-   end
 end
 
 function kind = entrykind(ME, name, scriptfile, fs)
    %ENTRYKIND Classify an error from calling NAME: how it failed to enter.
    %
-   % Returns 'undefined' (the script could not be resolved: the skip),
-   % 'toomany' (a function that takes no input was given one: retry with
-   % none), 'script' (a script was called as a function: retry with run),
-   % or '' (the script's own error, reported). MATLAB carries each case
-   % in an identifier. Octave carries two of them only in the message,
-   % with an empty identifier. Octave also raises its too-many-inputs
-   % error from the callee's own frame, so the frame test applies to
-   % MATLAB only. FS holds the helpers resolved before the loop entered
-   % the project folder.
+   % Returns 'undefined' (the script could not be resolved: the skip), 'toomany'
+   % (a function that takes no input was given one: retry with none), 'script'
+   % (a script was called as a function: retry with run), or '' (the script's
+   % own internal error, reported). MATLAB carries each case in an identifier.
+   % Octave carries two of them only in the message, with an empty identifier.
+   % Octave also raises its too-many-inputs error from the callee's own frame,
+   % so the frame test applies to MATLAB only. FS holds the helpers resolved
+   % before the loop entered the project folder.
    id = ME.identifier;
    msg = ME.message;
    kind = '';
@@ -318,31 +243,30 @@ function tf = raisedinside(ME, scriptfile)
    %RAISEDINSIDE True when ME was raised from a frame of SCRIPTFILE.
    %
    % MATLAB raises MATLAB:UndefinedFunction, MATLAB:TooManyInputs and
-   % MATLAB:feval:invalidFunctionName in two cases. One is when it cannot
-   % enter the script itself (the skip and the retries). The other is when
-   % a call inside the script fails the same way (the script's own error).
-   % An error that never entered the script has no frame from its file.
-   % The comparison ignores case because the loop tries both spellings of
-   % the name.
+   % MATLAB:feval:invalidFunctionName in two cases. One is when it cannot enter
+   % the script itself (the skip and the retries). The other is when a call
+   % inside the script fails the same way (the script's own error). An error
+   % that never entered the script has no frame from its file. The comparison
+   % ignores case because the loop tries both spellings of the name.
    tf = any(strcmpi({ME.stack.file}, scriptfile));
 end
 
 function runscript(scriptname)
    %RUNSCRIPT Execute a script in this helper's own workspace.
    %
-   % run executes the script in the caller's workspace. This wrapper keeps
-   % the script's variables out of configureproject, where they could
-   % overwrite the ran and failed flags.
+   % run executes the script in the caller's workspace. This wrapper keeps the
+   % script's variables out of configureproject, where they could overwrite the
+   % ran and failed flags.
    run(scriptname)
 end
 
 function failed = reportscripterror(ME, scriptname, projectpath)
    %REPORTSCRIPTERROR Warn with the script's own error and flag the failure.
    %
-   % The warning carries the caught error's identifier so a caller or a test
-   % can match it. Its message names the script and the project so the
-   % user knows which configuration broke. An error without an identifier
-   % gets a generic one, because warning needs a valid identifier.
+   % The warning carries the caught error's identifier so a caller or a test can
+   % match it. Its message names the script and the project so the user knows
+   % which configuration broke. An error without an identifier gets a generic
+   % one, because warning needs a valid identifier.
    id = ME.identifier;
    if isempty(id)
       id = 'matfunclib:configureproject:scriptFailed';

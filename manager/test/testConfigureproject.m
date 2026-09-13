@@ -407,41 +407,6 @@ classdef testConfigureproject < matlab.unittest.TestCase
          testCase.verifyEqual(returned, expected)
       end
 
-      function testProjectFilesCannotShadowTheFolderHelpers(testCase)
-         % A project holding pwd.m, cd.m, dir.m and isfolder.m that all
-         % error must not redirect configureproject: Config.m still runs,
-         % ok is true, and configureproject restores the caller's folder.
-         projectpath = testCase.fixtureProject([ ...
-            "function Config(varargin)"; ...
-            "setenv('CP_TEST_RAN', 'shadowed project')"; ...
-            "end"]);
-         for name = ["pwd", "cd", "dir", "isfolder"]
-            writelines(["function varargout = " + name + "(varargin)"; ...
-               "error('shadow:hit', 'shadow " + name + " was called')"; ...
-               "end"], fullfile(projectpath, name + ".m"))
-         end
-         testCase.addTeardown(@() setenv('CP_TEST_RAN', ''))
-         cd(testCase.regDir)
-
-         % MATLAB announces each shadow of a built-in name once; that
-         % notice is the fixture's, not configureproject's, so the test
-         % suppresses it for the call (the functools shadow test does the
-         % same).
-         conflict = warning('off', 'MATLAB:dispatcher:nameConflict');
-         testCase.addTeardown(@() warning(conflict))
-
-         returned = testCase.verifyWarningFree( ...
-            @() configureproject(projectpath));
-         expected = true;
-         testCase.verifyEqual(returned, expected)
-         returned = getenv('CP_TEST_RAN');
-         expected = 'shadowed project';
-         testCase.verifyEqual(returned, expected)
-         returned = string(pwd);
-         expected = testCase.regDir;
-         testCase.verifyEqual(returned, expected)
-      end
-
       function testFolderInUserhooksIsNotAHook(testCase)
          % A folder called archive.m inside userhooks/ is not a hook: the
          % real hook runs, no warning, ok is true.
@@ -535,19 +500,36 @@ classdef testConfigureproject < matlab.unittest.TestCase
             'matfunclib:configureproject:reservedName')
       end
 
-      function testMissingProjectFolderWarnsAndKeepsTheFolder(testCase)
-         % A project folder that does not exist gives a warning and ok
-         % false, and the caller's folder is untouched.
+      function testMissingProjectFolderRaisesAndKeepsTheFolder(testCase)
+         % A project folder that does not exist is an error from withcd.
+         % workon checks the folder before it calls configureproject, so
+         % this function does not repeat the check. The caller's folder is
+         % untouched.
          projectpath = char(fullfile(testCase.regDir, "gone"));
          cd(testCase.regDir)
 
-         returned = testCase.verifyWarning( ...
-            @() configureproject(projectpath), ...
-            'matfunclib:configureproject:missingProject');
-         expected = false;
-         testCase.verifyEqual(returned, expected)
+         testCase.verifyError(@() configureproject(projectpath), ...
+            'MATLAB:validators:mustBeFolder')
          returned = string(pwd);
          expected = testCase.regDir;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testLowerCaseScriptNameRunsOnce(testCase)
+         % The loop tries each name and its lower-case form. A name that is
+         % already lower case, such as configfile in the default list, must
+         % not run twice.
+         projectpath = testCase.fixtureProject([]);
+         writelines([ ...
+            "function configfile(varargin)"; ...
+            "setenv('CP_TEST_RAN', [getenv('CP_TEST_RAN') 'x'])"; ...
+            "end"], fullfile(projectpath, "configfile.m"))
+         setenv('CP_TEST_RAN', '')
+         testCase.addTeardown(@() setenv('CP_TEST_RAN', ''))
+
+         testCase.verifyTrue(configureproject(projectpath))
+         returned = getenv('CP_TEST_RAN');
+         expected = 'x';
          testCase.verifyEqual(returned, expected)
       end
 
