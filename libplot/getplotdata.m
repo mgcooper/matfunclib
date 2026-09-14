@@ -5,6 +5,14 @@ function varargout = getplotdata(varargin)
    %  [xdata, ydata] = getplotdata(ax)
    %  [xdata, ydata, zdata] = getplotdata(ax)
    %
+   %  [xdata, ydata, zdata] = getplotdata(ax) returns the XData, YData, and
+   %  ZData of the children of axes ax. It returns one of these, in order,
+   %  for each requested output. With no input, ax is the current axes (gca).
+   %  If ax has more than one child, each output is a cell array with one
+   %  element for each child. Every child of ax must have XData, YData,
+   %  and ZData (for example lines, scatter, and surfaces); a child such as
+   %  a Text annotation raises an error.
+   %
    % See also: getlegend
 
    if nargin == 0
