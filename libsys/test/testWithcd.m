@@ -59,6 +59,41 @@ classdef testWithcd < matlab.unittest.TestCase
          testCase.verifyEqual(returned, expected)
       end
 
+      function testClearReleasesTheGuard(testCase)
+         % withcd returns an onCleanup object, and clear, the release the
+         % help recommends, puts the caller's folder back.
+         start = pwd;
+         target = testCase.makeFolder();
+
+         guard = withcd(target);
+         testCase.verifyClass(guard, 'onCleanup')
+         returned = testCase.canonical(pwd);
+         expected = testCase.canonical(target);
+         testCase.verifyEqual(returned, expected)
+
+         clear guard
+         returned = pwd;
+         expected = start;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testFileCreatedUnderGuardLandsInTarget(testCase)
+         % A file opened by a relative name inside the guarded block is
+         % written to the target folder, not to the caller's folder.
+         target = testCase.makeFolder();
+
+         guard = withcd(target);
+         % fopen returns -1 when it cannot open the file.
+         fid = fopen('test.txt', 'w');
+         testCase.assertGreaterThan(fid, 0, ...
+            'failed to open test.txt for writing')
+         fclose(fid);
+         delete(guard)
+
+         returned = isfile(fullfile(target, 'test.txt'));
+         testCase.verifyTrue(returned)
+      end
+
       function testRestoresAfterAnError(testCase)
          % The cleanup runs when the caller's frame unwinds, so an error
          % inside the guarded block still leaves the caller where it was.
