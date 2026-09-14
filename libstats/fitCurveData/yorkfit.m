@@ -13,22 +13,26 @@ function [ab, stats] = yorkfit(X,Y,sigX,sigY,rxy,alpha)
 %   Y       = observed data points (y-axis values)
 %   sigX    = errors in the x-values
 %   sigY    = errors in the y-values
-%   rxy     = correlation between errors in the x-y values
-%   alpha   = significance level for fitted error statistics
-% 
+%   rxy     = correlation between errors in the x-y values (0 if omitted)
+%   alpha   = significance level for fitted error statistics (default 0.05)
+%
 % Intermediate values:
 %   wX      = weights of x-values (1/sigX^2)
 %   wY      = weights of y-values (1/sigY^2)
-%   ai      = alpha, sum of squared weigths
-%   ripai   = ri plus ai, correlation plus alpha, for faster computation
+%   ai      = sqrt(wX.*wY), geometric mean of the weights
+%   ripai   = rxy times ai, for faster computation
 %   riqai   = ri divided by ai, for faster computation
 %   Wi      = least squares term
 %   x       = least-squares adjusted data points (x-axis values)
 %   y       = least-squares adjusted data points (y-axis values)
-% 
+%
 % Outputs:
-%   a   = y-intercept
-%   b   = slope
+%   ab      = [a; b], y-intercept a and slope b
+%   stats   = struct with a, b, standard errors, confidence bounds,
+%             p-values, fitted values, and residuals. When sigX and sigY
+%             are both zero, or every York weight denominator is zero,
+%             yorkfit returns the ordinary least-squares fit and stats
+%             holds only a and b.
 
 
 %% INPUT CHECKS
@@ -46,7 +50,11 @@ validateattributes(sigX,{'numeric'},{'real','vector','nonempty',        ...
    'nonnan','finite'}, mfilename,'sigX',3)
 validateattributes(sigY,{'numeric'},{'real','vector','nonempty',        ...
    'nonnan','finite'}, mfilename,'sigY',4)
-% I removed 'nonzero' from X,Y ... should be OK
+% the X and Y checks do not include 'nonzero'; this should be OK
+
+% convert inputs to columns before the OLS short circuit, which requires
+% N-by-1 X and Y; validateattributes accepts row vectors
+X   = X(:); Y = Y(:); sigX = sigX(:); sigY = sigY(:);
 
 % if sigX and sigY are zero, short-circuit to ordinary least squares
 if all(sigX == 0 & sigY == 0)
@@ -55,9 +63,11 @@ if all(sigX == 0 & sigY == 0)
    return
 end
 
-% if rxy is not given but sigX and sigY are valid scalars, set it zero
-if nargin==4; rxy = corr(sigX,sigY);
-   if numel(sigX)==1 || numel(sigY)==1; rxy = 0; end
+% if rxy is not given, set it to zero, as the warning states. corr(sigX,sigY)
+% does not estimate rxy. It compares error sizes across points, not the x
+% and y errors of one point, and it is nan for constant sigma vectors.
+if nargin==4
+   rxy = 0;
    warning('error covariance set to zero')
 end
 
@@ -72,8 +82,8 @@ if numel(rxy)==1;   rxy     = rxy*ones(N,1);    end
 validateattributes(rxy,{'numeric'},{'real','vector','nonempty','nonnan',...
    'finite'},'yorkfit', 'rxy', 5) % rxy can be zero
 
-% convert inputs to columns and get the number of data points
-X   = X(:); Y = Y(:); sigX = sigX(:); sigY = sigY(:); rxy = rxy(:);
+% convert rxy to a column to match the other inputs
+rxy = rxy(:);
 
 
 %% MAIN PROGRAM
@@ -88,7 +98,10 @@ riqai   = rxy./ai;                      % quotient, for step 4
 
 % step 3
 
-% short circuit to reduced major axis
+% Parked design: a planned short circuit to reduced major axis. With zero
+% rxy and unit weights, the York solution is the major axis, not the
+% reduced major axis (see the major-axis note after step 9). The block is
+% empty, so the iterative solution below computes this case.
 if all(rxy==0)&&all(wX==1)&&all(wY==1)
 end
 
@@ -183,12 +196,22 @@ stats.xintercept = -stats.a/stats.b;
 
 % NOTE: PG 370 "in our work ... where the x-intercept is significant,
 % we normally interchange x and y data to obtain the original
-% x-intercept and its standard error" this is possible because yorkfit
-% of y on x is symmetrical with x on y. Above I added the x-intercept,
-% but if the standard error on the x-intercept is needed, use the
-% interchange procedure quoted above.
-    
+% x-intercept and its standard error". This is possible because yorkfit
+% of y on x is symmetrical with x on y. stats.xintercept holds the
+% x-intercept but not its standard error. For the standard error, use
+% the interchange procedure quoted above.
+end
+
 function [ab,stats] = statsOLS(X,Y,N)
+%STATSOLS Ordinary least-squares intercept and slope for yorkfit.
+%
+%  [ab, stats] = statsOLS(X, Y, N) returns ab = [a; b], the intercept and
+%  slope of the ordinary least-squares fit of Y on X for N data points.
+%  X and Y must be N-by-1 columns. stats contains only the fields a and b.
+%
+%  yorkfit calls statsOLS when sigX and sigY are both zero, or when every
+%  York weight denominator is zero. In both cases the York solution
+%  reduces to ordinary least squares.
 
 % need to fill in the rest of the values for OLS
 
@@ -212,4 +235,5 @@ stats.b         = ab(2);
 % stats.SSE       = sum(resids.*resids);
 % stats.SE        = sqrt(stats.SSE/(N-2));
 % stats.rsq       = corr(Y,stats.yhat,'Type','Pearson')^2;
-% 
+%
+end

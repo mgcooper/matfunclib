@@ -1,7 +1,7 @@
 function y = nanmean(varargin)
    %NANMEAN Compute the sample mean value, ignoring NaNs.
    %
-   % This function is a wrapper for built-in function mean with flag 'omitnan'
+   % This function wraps the built-in function mean with the 'omitnan' flag,
    % i.e., mean(varargin{:}, 'omitnan').
    %
    % Y = NANMEAN(X) returns the sample mean of X ignoring NaNs.
