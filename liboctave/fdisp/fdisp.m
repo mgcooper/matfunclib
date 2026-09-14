@@ -110,7 +110,7 @@ function fdisp(fid, x, varargin)
       elseif all(cellfun(@isnumeric, x) | cellfun(@islogical, x))
          for i = 1:numel(x)
             if numel(x{i}) <= sizelimit || ignore_sizelimit
-               if numel(x{i}) == 1
+               if isscalar(x{i})
                   fprintf(fid, '%g\n', x{i});
                else
                   for row = 1:size(x{i}, 1)
@@ -133,45 +133,4 @@ function fdisp(fid, x, varargin)
    else
       error('fdisp:InvalidInput', 'Input type not supported');
    end
-end
-
-% mgc: put this here as a reminder, could be useful in general e.g.
-% bfra.util.repline i believe is where i learned its better to put each line in
-% a cell array, but nowardays may be easier with string arrays
-function [c,errmsg] = csprintf(varargin)
-   %CSPRINTF Write formatted data into a cell array of strings.
-   %   C = CSPRINTF(FORMAT, A, ...) has the same operation as SPRINTF except
-   %   that the resulting text is written into one or more cells of a cell
-   %   array, controlled by the escape codes '\f' and '\v'.  These codes are
-   %   used much like '\n' except that instead of a new line, subsequent
-   %   characters are written to a new cell.
-   %
-   %   If the final character is '\f', it is suppressed so as not to leave a
-   %   final empty cell.  This behavior can be overridden by using '\v'
-   %   instead.
-   %
-   %   [C, ERRMSG] = CSPRINTF(FORMAT, A, ...) also returns any error message
-   %   from SPRINTF (used internally).
-   %
-   %   Examples
-   %      csprintf('cell 1\fcell 2')      %  { 'cell 1', 'cell 2' }
-   %      csprintf('%d\f',1:3)            %  { '1', '2', '3' }
-   %      csprintf('%d\v',1:3)            %  { '1', '2', '3', '' }
-   %
-   %   See also SPRINTF.
-   % Version: 1.0, 19 February 2012
-   % Author:  Douglas M. Schwarz
-   % Email:   dmschwarz=ieee*org, dmschwarz=urgrad*rochester*edu
-   % Real_email = regexprep(Email,{'=','*'},{'@','.'})
-   % Process the inputs with sprintf.
-   [str,errmsg] = sprintf(varargin{:});
-   % Delete a trailing form feed, '\f'.
-   form_feed = sprintf('\f');
-   if str(end) == form_feed
-      str(end) = [];
-   end
-   % Convert any vertical tabs, '\v', into form feeds.
-   str(str == sprintf('\v')) = form_feed;
-   % Split the string at the form feeds.
-   c = regexp(str,'\f','split');
 end
