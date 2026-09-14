@@ -10,8 +10,10 @@ function varargout = withcd(dir)
    %  for onCleanup type".
    %
    %  DIR must be a character vector or a string scalar naming a folder this
-   %  function can enter. MATLAB rejects anything else through the arguments
-   %  block below; Octave rejects it through inputParser.
+   %  function can enter. Under MATLAB the arguments block below converts DIR
+   %  to a string scalar before mustBeFolder runs. A 1-by-1 cell of text, or a
+   %  number that names a folder, therefore also passes. Under Octave,
+   %  inputParser accepts only a character vector or a string object.
    %
    % Based on Andrew Janke's code.
    %

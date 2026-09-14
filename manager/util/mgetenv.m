@@ -4,7 +4,12 @@ function value = mgetenv(name)
    %  VALUE = MGETENV(NAME) returns getenv(NAME) when it is nonempty.
    %  When it is empty, mgetenv calls mconfig, which recomputes the
    %  path family from $HOME/MATLAB and exports every member, then
-   %  returns the recomputed value for NAME.
+   %  returns the recomputed value for NAME. That mconfig call also adds
+   %  the missing folders under MATLAB_FUNCTION_PATH to the end of the
+   %  path. It skips dot folders and, under Octave, the folders
+   %  octaveignorepaths lists. It raises
+   %  matfunclib:manager:mconfig:missingFunctionPath when that folder does
+   %  not exist.
    %
    % Description
    %

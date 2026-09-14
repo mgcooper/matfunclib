@@ -315,9 +315,9 @@ function [projectPath, ignoreFolder, localSourcePath, ...
    % in the main function depends on the current working folder. Path resolution
    % does not change the working folder: canonicalfolder reads a folder's
    % canonical spelling through cd and restores the caller's folder afterwards.
-   % A relative path resolves against the caller's folder, and a relative
-   % projectPath is the one case that makes the project folder current while it
-   % is canonicalized.
+   % A relative path resolves against the caller's folder. canonicalfolder makes
+   % each existing folder current while it reads the spelling, and that includes
+   % the project folder.
 
    % Retrieve the Github user name for a remote install.
    if strlength(kwargs.GitHubUserName) == 0 && kwargs.source == "remote"

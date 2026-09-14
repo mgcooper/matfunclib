@@ -1,10 +1,10 @@
 classdef testManagerBoot < matlab.unittest.TestCase
    %TESTMANAGERBOOT Boot-order acceptance for manager (matfunclib-juq.41).
    %
-   % manager vendors no matfunclib file. mconfig adds MATLAB_FUNCTION_PATH
-   % to the path as its first act, so the matfunclib helpers resolve. These
-   % tests prove that in a session that holds manager and MATLAB and
-   % nothing else.
+   % manager vendors no matfunclib file. mconfig exports the path family
+   % and then adds MATLAB_FUNCTION_PATH to the path, before manager calls
+   % any matfunclib helper, so those helpers resolve. These tests prove that
+   % in a session that holds manager and MATLAB and nothing else.
    %
    % Each test runs a fresh headless MATLAB, because the check needs
    % restoredefaultpath and a redirected HOME, and neither is safe inside

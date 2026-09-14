@@ -7,7 +7,8 @@ classdef testInstallerDrift < matlab.unittest.TestCase
    % projectpath()/toolboxpath() default resolution and the docstring
    % sentences that describe it. The private helpers undersource.m and
    % foldscase.m stamped beside the template must equal their functools
-   % originals byte for byte.
+   % originals byte for byte. The private withcd.m must equal
+   % libsys/withcd.m byte for byte.
    %
    % The suite compares the stamped consumer copies (activelayer, grace,
    % groupstats, hydrobasins, icemodel, merra2, nid) the same way and
@@ -25,8 +26,8 @@ classdef testInstallerDrift < matlab.unittest.TestCase
    properties (Constant)
       % The carve-out, as ordered pairs of canonical lines and the template
       % lines that stand in for them. Every pair is a contiguous block, so
-      % the substitution matches whole blocks. Redesign DesignSpec
-      % acceptance lines 662-670 name this carve-out.
+      % the substitution matches whole blocks. Redesign DesignSpec settled
+      % decision 33 names this carve-out.
       CarveOut = { ...
          [ ...
          "   %  REQUIREMENTSFILE when one is supplied; otherwise PROJECTPATH becomes"; ...
