@@ -124,18 +124,22 @@ function [abfit, error, yfit, yconf] = computeTrends(t, y, method, alpha, qtl)
                   abfit(n, :) = olsfit(t, y(:, n));
                else
 
-                  % Compute fitted line and CIs
-                  if isoctave
-                     [~, stats] = fitlm(t, y(:, n), "display", "off");
-                     % coeff = [lmmdl{2:3, 2}]; % this might work in matlab too
-                     coeff = stats.coeffs(:, 1);
-                     confi = stats.coeffs(:, 3:4);
-                     [yfit, yconf] = predictlm(stats, t);
-                  else
+                  % Compute fitted line and CIs. fitlm returns a
+                  % LinearModel in MATLAB and in Octave statistics 1.9.1.
+                  % An Octave statistics package without the LinearModel
+                  % class returns a regression struct as the second fitlm
+                  % output, and predictlm accepts that struct.
+                  if exist('LinearModel', 'class') == 8
                      mdl = fitlm(t, y(:,n));
                      coeff = mdl.Coefficients.Estimate;
                      confi = coefCI(mdl, alpha);
                      [yfit, yconf] = predict(mdl, t, 'alpha', alpha);
+                  else
+                     [~, stats] = fitlm(t, y(:,n), 'display', 'off', ...
+                        'alpha', alpha);
+                     coeff = stats.coeffs(:, 1);
+                     confi = stats.coeffs(:, 3:4);
+                     [yfit, yconf] = predictlm(stats, t, alpha);
                   end
 
                   abfit(n,:) = coeff;
