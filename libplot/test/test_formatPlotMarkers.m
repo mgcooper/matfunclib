@@ -144,3 +144,62 @@ function testSpecificLine(testCase)
 
    close(fig);
 end
+
+function testEmptyAxes(testCase)
+   % Test that an axes with no children returns an empty result
+   fig = figure;
+   ax = axes;
+
+   formattedHandles = formatPlotMarkers("suppliedaxes", ax);
+
+   testCase.verifyEmpty(formattedHandles)
+
+   close(fig);
+end
+
+function testScatterPlot(testCase)
+   % Test that a scatter object gets its marker area and face color from
+   % the Type 'scatter' branch
+   fig = figure;
+   ax = axes;
+   hs = scatter(ax, 1:10, rand(1, 10));
+
+   formatPlotMarkers("suppliedaxes", ax);
+
+   expectedMarkerSize = 10;
+   testCase.verifyEqual(hs.SizeData, expectedMarkerSize^2);
+   testCase.verifyEqual(hs.MarkerFaceColor, hs.CData);
+
+   close(fig);
+end
+
+function testSparseFill(testCase)
+   % Test that sparsefill draws ten markers spread over the whole line
+   fig = figure;
+   ax = axes;
+   numPoints = 100;
+   line1 = plot(ax, 1:numPoints, rand(1, numPoints), '-o');
+
+   formatPlotMarkers("suppliedaxes", ax, "sparsefill", true);
+
+   expected = round(linspace(1, numPoints, 10));
+   testCase.verifyEqual(line1.MarkerIndices, expected);
+
+   close(fig);
+end
+
+function testStemPlot(testCase)
+   % Test that an object without a 'MarkerIndices' property, such as a
+   % stem, is formatted without an error
+   fig = figure;
+   ax = axes;
+   hstem = stem(ax, 1:10, rand(1, 10));
+
+   formatPlotMarkers("suppliedaxes", ax);
+
+   expectedMarkerSize = 10;
+   testCase.verifyFalse(isprop(hstem, 'MarkerIndices'));
+   testCase.verifyEqual(hstem.MarkerSize, expectedMarkerSize);
+
+   close(fig);
+end
