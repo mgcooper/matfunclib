@@ -6,13 +6,14 @@ function [RL,istart,istop] = runlength(M)
    %
    %  RL is an array the size of M. Each element of RL holds the length of the
    %  run of consecutive equal values that contains it, computed down each
-   %  column of M. M must be a column vector or a matrix of column series;
-   %  pass a row vector as M(:).
+   %  column of M. M is a vector or a matrix of column series. A row vector
+   %  gives the run lengths of its column form, returned as a row.
    %
    %  ISTART and ISTOP are linear indices into a padded array with
-   %  size(M,1)+1 rows, so ISTOP - ISTART is the length of each run. For a
-   %  column vector M, ISTART is the first row of each run and ISTOP - 1 is
-   %  its last row.
+   %  size(M,1)+1 rows, or numel(M)+1 rows for a row vector M, so
+   %  ISTOP - ISTART is the length of each run. For a vector M, ISTART is
+   %  the first element of each run and ISTOP - 1 is its last element, and
+   %  ISTART and ISTOP are column vectors.
    %
    %  NaN never equals NaN, so each NaN is a run of length 1. ISTART and
    %  ISTOP hold one entry per NaN. For example, for M = [1;1;NaN;NaN;NaN;2;2],
@@ -26,6 +27,13 @@ function [RL,istart,istop] = runlength(M)
    % See also: isminlength
 
    % work along columns, so that you can use linear indexing
+
+   % Count a row vector as a column. diff would otherwise work along the
+   % row, and the column-wise indexing below needs one series per column.
+   sz = size(M);
+   if isrow(M)
+      M = M(:);
+   end
 
    % find locations where items change along column
    jumps = diff(M) ~= 0;
@@ -57,4 +65,7 @@ function [RL,istart,istop] = runlength(M)
 
    % remove last row and 'integrate' to get runlength
    RL = cumsum(dRL(1:end-1,:));
+
+   % return a row for a row vector input
+   RL = reshape(RL, sz);
 end

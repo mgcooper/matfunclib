@@ -6,16 +6,21 @@ classdef testRunlength < matlab.unittest.TestCase
    % so these tests keep a cleanup from merging consecutive NaNs.
    %
    % ISTART and ISTOP are linear indices into a padded array with
-   % size(M,1)+1 rows, so ISTOP - ISTART is the length of each run.
+   % size(M,1)+1 rows, or numel(M)+1 rows for a row vector M, so
+   % ISTOP - ISTART is the length of each run.
 
    properties (TestParameter)
       % Each case holds an input M and its expected RL, ISTART, and ISTOP.
       % The vector case has three consecutive NaNs, which give three runs.
       % The matrix case counts each column on its own: the 5-row padded
-      % array puts column 2 at linear indices 6 to 10.
+      % array puts column 2 at linear indices 6 to 10. The row vector case
+      % gives the run lengths of the vector case as a row, with the same
+      % column vectors of start and stop indices.
       runcase = struct( ...
          'nanRuns', {{[1; 1; NaN; NaN; NaN; 2; 2], ...
          [2; 2; 1; 1; 1; 2; 2], [1; 3; 4; 5; 6], [3; 4; 5; 6; 8]}}, ...
+         'rowVector', {{[1, 1, NaN, NaN, NaN, 2, 2], ...
+         [2, 2, 1, 1, 1, 2, 2], [1; 3; 4; 5; 6], [3; 4; 5; 6; 8]}}, ...
          'columns', {{[1, 5; 1, 5; NaN, 5; NaN, 6], ...
          [2, 3; 2, 3; 1, 3; 1, 1], [1; 3; 4; 6; 9], [3; 4; 5; 9; 10]}})
    end
