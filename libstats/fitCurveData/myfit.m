@@ -1,3 +1,35 @@
+% MYFIT is unfinished, not abandoned. Every line below is commented out
+% because the function was never completed, not because it was retired. Do not
+% delete it. Bead matfunclib-2td.8 lists what is missing and holds the open
+% question of whether myfit becomes a demo or a library function.
+%
+% Keep the column alignment in setupModel. Each term of the model function F
+% sits directly above its own column of the design matrix A:
+%
+%    F  = @(b, x) b(1)*x.^2 + b(2)*x.^1 + b(3)*x.^0;
+%    A  =             [x.^2        x.^1        x.^0];
+%
+% That alignment is the point of the file. It shows that building A is just
+% stripping the coefficients off F. It overruns 80 columns in the 'right' and
+% 'general2nd' cases, and it must stay that way.
+%
+% Source and credit
+%
+% The structure and the worked models come from PrattWiki, "MATLAB:Fitting",
+% Duke University Pratt School of Engineering. That page names no author. It
+% is a MediaWiki page, last edited 27 September 2017, and it serves the Duke
+% courses EGR 103, BME 153 and EGR 224. Cite this permanent revision:
+%
+%    https://pundit.pratt.duke.edu/piki/index.php?title=MATLAB:Fitting&oldid=23115
+%
+% That page in turn credits Steven C. Chapra, "Applied Numerical Methods with
+% MATLAB for Engineers and Scientists", 2nd edition, for the fSSR pattern used
+% in nonLinearFitter below, from its Section 14.5. Carry both credits into
+% whatever myfit becomes.
+%
+% The commented example data is the page's Cantilever.dat: applied mass in kg
+% against beam-end displacement in inches, from EGR 103.
+
 % function Fit = myfit(x,y,varargin)
 %    %MYFIT fit response y to data in x
 %    %
