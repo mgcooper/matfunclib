@@ -1,0 +1,21 @@
+{
+   "_comment": "Copyright 2019-2026 Matt Cooper.",
+
+   "yorkfit":
+   {
+      "inputs":
+      [
+         {"name":"X", "kind":"required", "type":["numeric","vector"]},
+         {"name":"Y", "kind":"required", "type":["numeric","vector"]},
+         {"name":"sigX", "kind":"required", "type":["numeric","vector"]},
+         {"name":"sigY", "kind":"required", "type":["numeric","vector"]},
+         {"name":"rxy", "kind":"ordered", "type":["numeric","vector"]},
+         {"name":"alpha", "kind":"ordered", "type":["numeric","scalar",">0","<1"]}
+      ],
+      "outputs":
+      [
+         {"name":"ab"},
+         {"name":"stats"}
+      ]
+   }
+}
