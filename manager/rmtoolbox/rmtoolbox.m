@@ -22,6 +22,10 @@ function varargout = rmtoolbox(tbname,varargin)
    % Confirm the toolbox exists
    tbname = validatetoolbox(tbname, mfilename, 'TBNAME', 1);
 
+   % readtbdirectory errors when neither the CSV nor a backup can be read
+   % and never returns an empty table, so the write-back below cannot
+   % erase a good registry with an empty table (matfunclib-b7u item 2).
+   % writetbdirectory refuses an empty table too.
    % Read in the toolbox directory and find the entry for this toolbox
    toolboxes = readtbdirectory(gettbdirectorypath());
    tbindx = findtbentry(toolboxes, tbname);

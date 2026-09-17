@@ -54,8 +54,8 @@ function varargout = formatPlotMarkers(varargin)
 
          thisChild = childrenWithMarkers(n);
 
-         numPoints = numel(thisChild.XData);
-         [~, markerIdx] = setMarkerSize(numPoints, sparsefill, fillspacing);
+         numPoints = numel(get(thisChild, 'XData'));
+         markerIdx = setMarkerIndices(numPoints, sparsefill, fillspacing);
 
          [markerColor, markerFaceColor, markerEdgeColor] = setMarkerColor(...
             thisChild, keepEdgeColor, keepFaceColor);
@@ -80,37 +80,43 @@ function childrenWithMarkers = findChildrenWithMarkers(thisaxes, suppliedline, .
       Children = suppliedline;
    end
 
-   % Loop through Children and find ones with markers.
-   for n = numel(Children):-1:1
+   % Loop through Children and find ones with markers. Use get instead of
+   % dot indexing, because Octave graphics handles are numeric. Preallocate,
+   % so an axes with no children returns an empty handle array.
+   childrenWithMarkers = false(size(Children));
+   for n = 1:numel(Children)
       child = Children(n);
+      childType = get(child, 'Type');
 
-      if ismember(child.Type, ignoreMarkersTypeList)
+      if ismember(childType, ignoreMarkersTypeList)
          continue
       end
 
       childrenWithMarkers(n) = isprop(child, 'Marker') ...
-         && ~ismember('none', {child.Marker}) ...
-         || ismember(child.Type, createMarkersTypeList);
+         && ~ismember('none', cellstr(get(child, 'Marker'))) ...
+         || ismember(childType, createMarkersTypeList);
    end
 
    childrenWithMarkers = Children(childrenWithMarkers);
 end
 
-function [msize, midx] = setMarkerSize(numPoints, sparsefill, fillspacing)
+function midx = setMarkerIndices(numPoints, sparsefill, fillspacing)
+   %SETMARKERINDICES Return the indices of the points that get a marker.
+   %
+   % The 'markersize' option sets the marker size for both branches.
 
    if sparsefill
-      % Only fill some points, and use a larger symbol size.
+      % Only fill some points.
 
       if isnan(fillspacing)
          % Set fillspacing such that 10 points are filled.
          fillspacing = max(1, numPoints/10); % if <10 points fill them all
       end
       numfill = fix(numPoints / fillspacing);
-      midx = round(linspace(1, numPoints, numfill), 0);
+      midx = round(linspace(1, numPoints, numfill));
    else
-      % Fill all points, use smaller symbol size.
+      % Fill all points.
       midx = 1:numPoints;
-      msize = 6;
    end
 end
 
@@ -126,13 +132,13 @@ function [markerColor, markerFaceColor, markerEdgeColor] = setMarkerColor(...
    % scatter has 'CData' instead of 'Color', but does have 'MarkerFaceColor' and
    % 'MarkerEdgeColor', and 'CData' could be mapped to data which has not been
    % tested.
-   if isa(thisChild, 'matlab.graphics.chart.primitive.Scatter')
-      markerColor = thisChild.CData;
+   if isscatter(thisChild)
+      markerColor = get(thisChild, 'CData');
    else
-      markerColor = thisChild.Color;
+      markerColor = get(thisChild, 'Color');
    end
    if keepEdgeColor
-      markerEdgeColor = thisChild.MarkerEdgeColor;
+      markerEdgeColor = get(thisChild, 'MarkerEdgeColor');
       if ~isnumeric(markerEdgeColor) ...
             && ismember(markerEdgeColor, {'none', 'auto'})
          % Undocumented method to set preferred default markerEdgeColor
@@ -145,7 +151,7 @@ function [markerColor, markerFaceColor, markerEdgeColor] = setMarkerColor(...
       markerEdgeColor = 'none';
    end
    if keepFaceColor
-      markerFaceColor = thisChild.MarkerFaceColor;
+      markerFaceColor = get(thisChild, 'MarkerFaceColor');
    else
       markerFaceColor = markerColor;
    end
@@ -168,7 +174,7 @@ function applyFormatting(thisChild, markerSize, markerColor, markerIdx, ...
          'CapSize',              6,                ...
          args{:}                              );
 
-   elseif isa(thisChild, 'matlab.graphics.chart.primitive.Scatter')
+   elseif isscatter(thisChild)
 
       set(thisChild,                               ...
          'SizeData',             markerSize^2,     ...
@@ -178,14 +184,26 @@ function applyFormatting(thisChild, markerSize, markerColor, markerIdx, ...
          args{:}                              );
    else
 
+      % Octave line objects have no 'MarkerIndices' property, so Octave
+      % formats every marker.
+      if isprop(thisChild, 'MarkerIndices')
+         args = [{'MarkerIndices', markerIdx}, args];
+      end
       set(thisChild,                               ...
-         'MarkerIndices',        markerIdx,        ...
          'MarkerSize',           markerSize,       ...
          'LineWidth',            1,                ...
          'MarkerEdgeColor',      markerEdgeColor,  ...
          'MarkerFaceColor',      markerFaceColor,  ...
          args{:}                              );
    end
+end
+
+function tf = isscatter(h)
+   %ISSCATTER Return true if graphics object h is a scatter object.
+   %
+   % Compare the Type string, because MATLAB and Octave scatter objects have
+   % different classes but the same 'scatter' Type.
+   tf = strcmp(get(h, 'Type'), 'scatter');
 end
 
 function [fillspacing, sparsefill, markersize, suppliedaxes, suppliedline, ...

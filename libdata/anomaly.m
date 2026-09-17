@@ -1,19 +1,33 @@
 function [anoms, norms, pctdif, pctanom] = anomaly(data, norms, timedim)
-   %ANOMALY Compute climatological anomalies and normals of column-wise data
+   %ANOMALY Compute climatological anomalies and normals of column-wise data.
    %
    %  [anoms, norms, pctdif, pctanom] = anomaly(data, norms, timedim)
    %
+   %  anomaly subtracts the normals NORMS from DATA to compute the anomalies
+   %  ANOMS. Without NORMS, or with empty NORMS, anomaly uses the mean of DATA
+   %  along the time dimension, omitting nans. For vector DATA, TIMEDIM 1
+   %  gives column outputs and TIMEDIM 2 gives row outputs.
+   %
    % Inputs
-   %    DATA - A vector or array of data. If DIM is not provided, it is assumed
-   %    that DATA is organized columnwise i.e. with time down the first
-   %    dimension.
+   %    DATA - A vector or array of data. If TIMEDIM is not provided, it is
+   %    assumed that DATA is organized columnwise i.e. with time down the
+   %    first dimension.
    %
    %    NORMS - A vector of "normals" - the reference period averages to be
    %    subtracted from DATA. If not supplied, the average over the time
    %    dimension is used to convert DATA to anomalies.
    %
    %    TIMEDIM - the time dimension along which normals are computed. The
-   %    default value is DIM=1.
+   %    default value is TIMEDIM=1.
+   %
+   % Outputs
+   %    ANOMS - The anomalies, DATA minus NORMS.
+   %
+   %    NORMS - The normals subtracted from DATA.
+   %
+   %    PCTDIF - The anomaly as a percent of the normal, 100*ANOMS./NORMS.
+   %
+   %    PCTANOM - DATA as a percent of the normal, 100 + PCTDIF.
    %
    % Matt Cooper, 2022, https://github.com/mgcooper
    %

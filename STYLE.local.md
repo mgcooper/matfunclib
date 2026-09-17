@@ -1,7 +1,6 @@
 # Project-specific code style — matfunclib
 
-Conventions specific to matfunclib, extending the canonical `STYLE.md` (general +
-MATLAB). This file is project-owned — `--update` never overwrites it.
+Conventions specific to matfunclib, extending `STYLE.md` (general + MATLAB).
 
 ## Naming
 

@@ -1,8 +1,9 @@
-function writetbdirectory(toolboxes, tbDirectoryPath)
+function writetbdirectory(toolboxes, tbDirectoryPath, backuppath)
    %WRITETBDIRECTORY Write toolbox directory to canonical CSV.
    %
    % writetbdirectory(toolboxes)
    % writetbdirectory(toolboxes, tbDirectoryPath)
+   % writetbdirectory(toolboxes, tbDirectoryPath, backuppath)
    %
    % Invariants enforced:
    %
@@ -18,8 +19,12 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
    %   in MATLAB_DIRECTORY_PATH before every successful write. This mirrors the
    %   backup behavior in writeprjdirectory and allows readtbdirectory to
    %   fall back to the most recent backup if the CSV becomes corrupted.
+   %   backupdirectoryfile makes the backup with the CSV-to-MAT conversion
+   %   below. BACKUPPATH overrides the tbd_*.mat destination so a test can
+   %   drive the backup-failure branch.
    %
-   % See also: readtbdirectory, buildtoolboxdirectory, gettbbackuppath
+   % See also: readtbdirectory, buildtoolboxdirectory, gettbbackuppath,
+   %   backupdirectoryfile
 
    if nargin < 2
       tbDirectoryPath = gettbdirectorypath();
@@ -50,32 +55,30 @@ function writetbdirectory(toolboxes, tbDirectoryPath)
    % Only back up if the existing file is non-empty (no point keeping a
    % zero-byte or header-only file as a restore target).
    % Non-fatal: backup failure is warned about but does not block the write.
-   if isfile(tbDirectoryPath)
-      try
-         info = dir(tbDirectoryPath);
-         if info.bytes > 0
-            toolboxes_backup = readtable(tbDirectoryPath, ...
-               'Delimiter', ',', 'ReadVariableNames', true);
-            if height(toolboxes_backup) > 0
-               backuppath = gettbbackuppath();
-               save(backuppath, 'toolboxes_backup');
-            end
-         end
-      catch backupErr
-         % A missing helper (gettbbackuppath) is a code or path defect,
-         % not a copy failure; surface it before the canonical file is
-         % overwritten with no backup made.
-         if strcmp(backupErr.identifier, 'MATLAB:UndefinedFunction')
-            rethrow(backupErr)
-         end
-         warning('matfunclib:writetbdirectory:backupFailed', ...
-            'writetbdirectory: could not create backup before writing (%s).', ...
-            backupErr.message);
-      end
+   % gettbbackuppath runs outside backupdirectoryfile's try, so a missing
+   % helper raises its own error before the write overwrites the canonical
+   % file with no backup made.
+   if nargin < 3
+      backuppath = gettbbackuppath();
    end
+   backupdirectoryfile(tbDirectoryPath, backuppath, mfilename, @csvtomat);
 
    writetable(toolboxes, tbDirectoryPath);
 
    % Rotate the backup pool (toolbox backups use the tbd_*.mat prefix).
    prunedirectorybackups(fileparts(tbDirectoryPath), "tbd_*.mat");
+end
+
+function csvtomat(csvpath, matpath)
+   %CSVTOMAT Save the CSV's rows as toolboxes_backup in a MAT file.
+   %
+   % readtbdirectory's fallback loads the variable toolboxes_backup from
+   % the newest tbd_*.mat file, so the backup keeps that format. A
+   % header-only CSV is no restore target, so the function writes no file
+   % for it.
+   toolboxes_backup = readtable(csvpath, ...
+      'Delimiter', ',', 'ReadVariableNames', true);
+   if height(toolboxes_backup) > 0
+      save(matpath, 'toolboxes_backup');
+   end
 end

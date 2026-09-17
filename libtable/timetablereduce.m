@@ -4,7 +4,7 @@ function NewData = timetablereduce(Data, varargin)
    % NewData = timetablereduce(Data,'keeptime',true) keeps the time column in
    % the case of single vector input and returns the vector with new header 'mu'
    %
-   % See also: stderror
+   % See also: stderr
 
    % Parse inputs
    [Data, dim, alpha, keeptime] = parseinputs(Data, mfilename, varargin{:});
@@ -13,6 +13,8 @@ function NewData = timetablereduce(Data, varargin)
    % with aggannualdata function to allow return of min, max in addition to the
    % aggfunc's here.
 
+   % the code below reads the row times as Data.Time, but the input time
+   % dimension can have any name (for example 'Date'), so rename it first
    Data = renametimetabletimevar(Data);
    Time = Data.Time;
 
@@ -93,20 +95,6 @@ function NewData = reduceOneTable(Data, Time, alpha, dim)
    elseif dim == 1
       NewData = table(mu, sigma, SE, CIL, CIH, PM, ...
          'RowNames', Data.Properties.VariableNames);
-   end
-end
-
-function T = renametimetabletimevar(T)
-   %RENAMETIMETABLETIMEVAR rename the time variable in table T to 'Time'
-   %
-   %  T = renametimetabletimevar(T)
-   %
-   % See also:
-
-   dims = T.Properties.DimensionNames;
-
-   if string(dims{1}) ~= "Time"
-      T.Properties.DimensionNames{1} = 'Time';
    end
 end
 

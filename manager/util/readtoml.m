@@ -96,38 +96,74 @@ end
 function data = ensuresection(data, section)
    % Create nested empty structs down the section path. The broadcast
    % struct() call builds the whole subscript-reference array at once.
-   ref = struct('type', '.', 'subs', section);
-   try
-      existing = subsref(data, ref);
-      % A section reopening a scalar key is a collision, not a table.
+   % When SECTION already exists as a struct, the function returns data
+   % unchanged. A scalar key anywhere on the path (a = 1 then [a.b], or
+   % [a] b = 1 then [a.b]) is a collision, not a table. The walk uses
+   % isfield and isstruct, so it needs no error identifier; those differ
+   % between MATLAB and Octave (audit LOW 51).
+   [present, existing] = fieldpath(data, section);
+   if present
       if ~isstruct(existing)
          error('matfunclib:readtoml:nameCollision', ...
             'Section [%s] collides with an existing key.', ...
             strjoin(section, '.'));
       end
-   catch sectionErr
-      if strcmp(sectionErr.identifier, 'matfunclib:readtoml:nameCollision')
-         rethrow(sectionErr)
-      end
-      data = subsasgn(data, ref, struct());
+      return
    end
+   if blockedpath(data, section)
+      error('matfunclib:readtoml:nameCollision', ...
+         'Section [%s] collides with an existing key.', ...
+         strjoin(section, '.'));
+   end
+   ref = struct('type', '.', 'subs', section);
+   data = subsasgn(data, ref, struct());
 end
 
 function data = setfieldpath(data, path, value)
-   ref = struct('type', '.', 'subs', path);
    % A key overwriting an existing table would drop the table without a
-   % message; fail fast instead.
-   try
-      existing = subsref(data, ref);
-      collides = isstruct(existing);
-   catch
-      collides = false;
-   end
+   % message, and a key under a scalar key has nowhere to go; both raise
+   % an error here (audit LOW 52). The walk uses isfield and isstruct for
+   % the same reason as ensuresection.
+   [present, existing] = fieldpath(data, path);
+   collides = (present && isstruct(existing)) || blockedpath(data, path);
    if collides
       error('matfunclib:readtoml:nameCollision', ...
          'Key %s collides with an existing section.', strjoin(path, '.'));
    end
+   ref = struct('type', '.', 'subs', path);
    data = subsasgn(data, ref, value);
+end
+
+function [present, value] = fieldpath(data, path)
+   % Walk PATH through nested structs. PRESENT is true when every segment
+   % is a field of a struct along the way; VALUE is then the leaf.
+   value = data;
+   present = true;
+   for k = 1:numel(path)
+      if ~(isstruct(value) && isfield(value, path{k}))
+         present = false;
+         value = [];
+         return
+      end
+      value = value.(path{k});
+   end
+end
+
+function tf = blockedpath(data, path)
+   % True when a proper prefix of PATH names a value that is not a
+   % struct, so no assignment can go below it.
+   value = data;
+   tf = false;
+   for k = 1:numel(path) - 1
+      if ~(isstruct(value) && isfield(value, path{k}))
+         return
+      end
+      value = value.(path{k});
+      if ~isstruct(value)
+         tf = true;
+         return
+      end
+   end
 end
 
 function value = parsevalue(raw, lineno, rawline)

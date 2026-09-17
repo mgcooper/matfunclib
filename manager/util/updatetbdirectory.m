@@ -6,13 +6,18 @@ function varargout = updatetbdirectory(option, varargin)
    %   If the path is found at a different location (toolbox was moved), both
    %   source and library are updated in the returned table. Entries whose
    %   source cannot be found anywhere under MATLAB_TOOLBOX_PATH are marked
-   %   'missing' in the returned table but are not removed unless dryrun=false.
+   %   'missing' in the returned table. A write keeps their recorded row.
    %
    % TOOLBOXES = UPDATETBDIRECTORY('paths', 'dryrun', true)  [default]
    %   Returns the updated table without writing to disk.
    %
    % TOOLBOXES = UPDATETBDIRECTORY('paths', 'dryrun', false)
-   %   Writes the updated table to the canonical CSV (removing missing entries).
+   %   Writes the updated table to the canonical CSV. Entries whose source
+   %   cannot be found keep their recorded source, and a warning lists
+   %   them. The function never removes them. A folder that this session
+   %   cannot reach (an unmounted volume, an unset MATLAB_TOOLBOX_PATH) is
+   %   not a folder that is gone. Use rmtoolbox to remove an entry on
+   %   purpose (audit MEDIUM 34).
    %
    % Filesystem layout assumed:
    %   MATLAB_TOOLBOX_PATH/
@@ -42,6 +47,7 @@ function varargout = updatetbdirectory(option, varargin)
    libroot = fullfile(tbroot, 'libraries'); % MATLAB_TOOLBOX_PATH/libraries
 
    allnames = string(toolboxes.name).';
+   recorded = toolboxes(:, {'source', 'library'});
 
    for tbname = allnames
 
@@ -55,9 +61,20 @@ function varargout = updatetbdirectory(option, varargin)
       toolboxes.source{allnames == tbname}  = newpath;
    end
 
-   % Remove missing entries and write if not a dry run.
+   % Write if not a dry run. Missing entries keep their recorded source
+   % and library (resolveToolboxPath resets the library to the toolbox
+   % name when it cannot find the folder). A folder this session cannot
+   % reach is not gone, and rmtoolbox is the deliberate removal.
    if ~opts.dryrun
-      toolboxes(strcmp(toolboxes.source, 'missing'), :) = [];
+      missing = strcmp(toolboxes.source, 'missing');
+      if any(missing)
+         warning('matfunclib:updatetbdirectory:unreachable', ...
+            ['updatetbdirectory: %d entries could not be found under %s ' ...
+            'and keep their recorded source and library: %s'], ...
+            nnz(missing), tbroot, strjoin(allnames(missing), ', '));
+         toolboxes.source(missing) = recorded.source(missing);
+         toolboxes.library(missing) = recorded.library(missing);
+      end
       writetbdirectory(toolboxes);
    end
 

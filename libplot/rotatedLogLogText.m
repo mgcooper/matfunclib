@@ -3,7 +3,15 @@ function rotatedLogLogText(xtxt,ytxt,txt,slope,axpos,varargin)
    %
    % rotatedLogLogText(xtxt,ytxt,txt,slope,axpos,textopts)
    %
-   % See also:
+   %  rotatedLogLogText(xtxt, ytxt, txt, slope, axpos) places the latex
+   %  string txt at data coordinates (xtxt, ytxt) on the current axes. It
+   %  rotates the text by slope*atand(yfactor/xfactor) degrees, where
+   %  xfactor = axpos(1)/(decades in xlim) and
+   %  yfactor = axpos(2)/(decades in ylim). slope is an empirical rotation
+   %  factor tuned per figure layout. Trailing arguments textopts pass
+   %  through to the text function and override the default text options.
+   %
+   % See also: text
 
    % https://stackoverflow.com/questions/52928360/rotating-text-onto-a-line-on-a-log-scale-in-matplotlib
 

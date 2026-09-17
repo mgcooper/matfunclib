@@ -43,6 +43,14 @@ classdef testManifest < matlab.unittest.TestCase
          testCase.verifyEmpty(returned.file)
       end
 
+      function testMissingFolderErrors(testCase)
+         % A folder that does not exist is a caller defect, not a project
+         % with no manifest (audit LOW 49).
+         testCase.verifyError( ...
+            @() readmanifest(fullfile(testCase.projDir, "nope")), ...
+            'matfunclib:readmanifest:noSuchFolder')
+      end
+
       function testFullSchema(testCase)
          testCase.writeManifest([ ...
             "[project]"; ...

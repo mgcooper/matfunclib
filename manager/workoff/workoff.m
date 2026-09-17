@@ -16,8 +16,10 @@ function workoff(varargin)
    %    WORKOFF(_,'UPDATEFILES', FALSE) Does not update the activefiles list
    %    associated with MYPROJECT to the current open files. Default is true,
    %    the current open files are saved to the activefiles property for
-   %    MYPROJECT. This syntax also works if PROJECTNAME is not provided as
-   %    described above.
+   %    MYPROJECT. If the editor holds none of the stored files,
+   %    setprojectfiles keeps the stored list and warns, because that
+   %    session never reopened them. This syntax also works if PROJECTNAME
+   %    is not provided as described above.
    %
    % See also: workon, manager, addproject
 
@@ -77,8 +79,17 @@ function workoff(varargin)
    end
 
    % Deactivate exactly the dependencies this project's workon resolution
-   % activated (ledger-tracked; manual activations are untouched).
-   teardownprojectdeps(projname);
+   % activated (ledger-tracked; manual activations are untouched). On a
+   % code defect in the teardown (a missing deactivate), the catch unsets
+   % the active project and then rethrows. The files are closed and the
+   % paths removed by this point, so the registry and environment must
+   % not keep naming the project as active.
+   try
+      teardownprojectdeps(projname);
+   catch teardownErr
+      setprojectactive('default');
+      rethrow(teardownErr)
+   end
 
    % unset the active project
    setprojectactive('default');

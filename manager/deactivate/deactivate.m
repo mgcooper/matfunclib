@@ -34,6 +34,10 @@ function deactivate(tbname, varargin)
    withwarnoff({'MATFUNCLIB:manager:toolboxAlreadyActive', ...
       'MATLAB:dispatcher:nameConflict', 'MATLAB:rmpath:DirNotFound'});
 
+   % readtbdirectory errors when neither the CSV nor a backup can be read
+   % and never returns an empty table, so the write-back below cannot
+   % erase a good registry with an empty table (matfunclib-b7u item 2).
+   % writetbdirectory refuses an empty table too.
    % Deactive the toolbox.
    toolboxes = readtbdirectory(gettbdirectorypath());
    if strcmp('all', tbname)

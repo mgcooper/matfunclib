@@ -46,10 +46,11 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
       return
 
    catch readErr
-      % Loading an existing file never throws UndefinedFunction; that
-      % identifier means a code or path problem, and a backup fallback
-      % would mask it behind stale data.
-      if strcmp(readErr.identifier, 'MATLAB:UndefinedFunction')
+      % Loading an existing file never throws UndefinedFunction, and a
+      % MAT file the writer produced always holds the variable. Either
+      % class is a code or schema defect, and a backup fallback would hide
+      % it behind stale data (isreaderdefect lists the classes).
+      if isreaderdefect(readErr)
          rethrow(readErr)
       end
       warning('matfunclib:readprjdirectory:canonicalFailed', ...
@@ -75,9 +76,10 @@ function [projectlist, source] = readprjdirectory(projectdirectorypath)
             '(canonical file left in place):\n  %s'], bkfile);
          return
       catch bkErr
-         % A missing helper is a code or path defect, not a bad backup
-         % file; surface it instead of falling through to the error.
-         if strcmp(bkErr.identifier, 'MATLAB:UndefinedFunction')
+         % A missing helper or a schema defect is a code or path defect,
+         % not a bad backup file. Rethrow it rather than fall through to
+         % the error (the same classes the canonical catch rethrows).
+         if isreaderdefect(bkErr)
             rethrow(bkErr)
          end
          warning('matfunclib:readprjdirectory:backupFailed', ...

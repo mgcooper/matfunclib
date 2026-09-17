@@ -7,6 +7,12 @@ function varargout = renametoolbox(oldtbname,newtbname,varargin)
    %  TOOLBOXES = RENAMETOOLBOX(OLDTBNAME, NEWTBNAME, 'MOVESOURCE', TRUE)
    %  TOOLBOXES = RENAMETOOLBOX(OLDTBNAME, NEWTBNAME, 'FORCE', TRUE)
    %
+   %  With 'RENAMESOURCE', TRUE, renametoolbox moves the source folder
+   %  (after a prompt unless 'FORCE', TRUE) and rewrites the registry row
+   %  only when the move completes. A declined prompt leaves the folder
+   %  and the row unchanged and warns matfunclib:renametoolbox:moveDeclined.
+   %  A failed move raises matfunclib:renametbsourcedir:moveFailed.
+   %
    % See also: rmtoolbox, addtoolbox
 
    % UPDATES
@@ -27,6 +33,10 @@ function varargout = renametoolbox(oldtbname,newtbname,varargin)
    % confirm the toolbox exists
    oldtbname = validatetoolbox(oldtbname, mfilename, 'OLDTBNAME', 1);
 
+   % readtbdirectory errors when neither the CSV nor a backup can be read
+   % and never returns an empty table, so the write-back below cannot
+   % erase a good registry with an empty table (matfunclib-b7u item 2).
+   % writetbdirectory refuses an empty table too.
    % read the toolbox directory into memory
    toolboxes = readtbdirectory(gettbdirectorypath());
 
@@ -47,16 +57,19 @@ function varargout = renametoolbox(oldtbname,newtbname,varargin)
    if not(dryrun)
 
       % rename the source directory if requested
-      success = false;
-      try
-         renametbsourcedir(renamesource, oldtbpath, newtbpath, force)
-         success = true;
-      catch e
-         rethrow(e)
-      end
+      moved = renametbsourcedir(renamesource, oldtbpath, newtbpath, force);
 
-      % only update the toolbox if the rename (and/or move) is successful
-      if success
+      % When the user declines a requested move, the folder stays where
+      % it is, so the registry row must not point at a path that does
+      % not exist (audit MEDIUM 17). The output below still returns the
+      % unchanged table. A failed move errors inside renametbsourcedir
+      % and never reaches this line.
+      if renamesource && ~moved
+         warning('matfunclib:renametoolbox:moveDeclined', ...
+            'renametoolbox: source move declined; %s left unchanged.', ...
+            oldtbname);
+      else
+         % only update the toolbox if the rename (and/or move) is successful
          job = onCleanup(@() updateToolboxDirectory( ...
             toolboxes, tbidx, newtbname, newtbpath, libraryname));
       end

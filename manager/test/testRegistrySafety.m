@@ -262,16 +262,101 @@ classdef testRegistrySafety < matlab.unittest.TestCase
          setprojectactive('default')
          setprojectactive('alpha')
          expectedFolder = char(fullfile(testCase.regDir, "alpha"));
-         testCase.verifyEqual(getenv('MATLAB_ACTIVE_PROJECT'), 'alpha')
-         testCase.verifyEqual( ...
-            getenv('MATLAB_ACTIVE_PROJECT_PATH'), expectedFolder)
-         testCase.verifyEqual( ...
-            getenv('MATLAB_ACTIVE_PROJECT_DATA_PATH'), ...
-            fullfile(expectedFolder, 'data'))
+         returned = getenv('MATLAB_ACTIVE_PROJECT');
+         expected = 'alpha';
+         testCase.verifyEqual(returned, expected)
+         returned = getenv('MATLAB_ACTIVE_PROJECT_PATH');
+         expected = expectedFolder;
+         testCase.verifyEqual(returned, expected)
+         returned = getenv('MATLAB_ACTIVE_PROJECT_DATA_PATH');
+         expected = fullfile(expectedFolder, 'data');
+         testCase.verifyEqual(returned, expected)
          % The removed _TESTBED_PATH variant must no longer be written.
          setenv('MATLAB_ACTIVE_PROJECT_TESTBED_PATH', '')
          setprojectactive('alpha')
-         testCase.verifyEmpty(getenv('MATLAB_ACTIVE_PROJECT_TESTBED_PATH'))
+         returned = getenv('MATLAB_ACTIVE_PROJECT_TESTBED_PATH');
+         testCase.verifyEmpty(returned)
+      end
+
+      function testTbMissingFieldsRejected(testCase)
+         % Like testPrjMissingFieldsRejected: writetbdirectory refuses a
+         % table without the required columns.
+         bad = table({'tb1'}, {'/src'}, VariableNames={'name', 'source'});
+         testCase.verifyError(@() writetbdirectory(bad), ...
+            'matfunclib:writetbdirectory:missingFields')
+      end
+
+      function testPrjBackupCopyFailureWarnsAndWrites(testCase)
+         % A backup destination under a missing parent makes the copy
+         % fail. writeprjdirectory warns and still writes the canonical
+         % file (matfunclib-juq.25).
+         projectlist = testCase.fixtureProjectList();
+         writeprjdirectory(projectlist)
+         projectlist.name{1} = 'alpha2';
+         projectlist.activeproject(:) = false;
+         badbackup = fullfile(testCase.regDir, "nowhere", "tp_backup.mat");
+         testCase.verifyWarning( ...
+            @() writeprjdirectory(projectlist, badbackup), ...
+            'matfunclib:writeprjdirectory:backupFailed')
+         returned = readprjdirectory().name;
+         expected = projectlist.name;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testTbBackupCopyFailureWarnsAndWrites(testCase)
+         % The same failure branch through writetbdirectory: the
+         % CSV-to-MAT backup cannot be saved under a missing parent, so
+         % the writer warns and still writes the CSV.
+         toolboxes = table({'tb1'}, {'/src'}, true, "lib1", ...
+            VariableNames={'name', 'source', 'active', 'library'});
+         canonical = char(fullfile(testCase.regDir, "toolboxdirectory.csv"));
+         writetbdirectory(toolboxes, canonical)
+         toolboxes.name{1} = 'tb2';
+         badbackup = fullfile(testCase.regDir, "nowhere", "tbd_backup.mat");
+         testCase.verifyWarning( ...
+            @() writetbdirectory(toolboxes, canonical, badbackup), ...
+            'matfunclib:writetbdirectory:backupFailed')
+         returned = readtbdirectory(canonical).name;
+         expected = toolboxes.name;
+         testCase.verifyEqual(returned, expected)
+      end
+
+      function testBackupHelperBranches(testCase)
+         % backupdirectoryfile skips a missing or zero-byte canonical
+         % file, copies a good one, warns on a failed copy, and rethrows
+         % an UndefinedFunction from the backup maker.
+         canonical = fullfile(testCase.regDir, "registry.dat");
+         backup = fullfile(testCase.regDir, "registry.bak");
+         returned = backupdirectoryfile(canonical, backup, "unit");
+         expected = false;
+         testCase.verifyEqual(returned, expected)
+
+         fid = fopen(canonical, 'w');
+         fclose(fid);
+         returned = backupdirectoryfile(canonical, backup, "unit");
+         testCase.verifyEqual(returned, expected)
+         returned = isfile(backup);
+         testCase.verifyEqual(returned, expected)
+
+         writelines("payload", canonical)
+         returned = testCase.verifyWarningFree( ...
+            @() backupdirectoryfile(canonical, backup, "unit"));
+         expected = true;
+         testCase.verifyEqual(returned, expected)
+         returned = isfile(backup);
+         testCase.verifyEqual(returned, expected)
+
+         badbackup = fullfile(testCase.regDir, "nowhere", "registry.bak");
+         returned = testCase.verifyWarning( ...
+            @() backupdirectoryfile(canonical, badbackup, "unit"), ...
+            'matfunclib:unit:backupFailed');
+         expected = false;
+         testCase.verifyEqual(returned, expected)
+
+         undefined = @(varargin) error('MATLAB:UndefinedFunction', 'gone');
+         testCase.verifyError( ...
+            @() backupdirectoryfile(canonical, backup, "unit", undefined), ...
+            'MATLAB:UndefinedFunction')
       end
 
       function testTbWriteBacksUpAndPrunes(testCase)

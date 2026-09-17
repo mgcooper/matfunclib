@@ -46,6 +46,10 @@ function varargout = addtoolbox(tbname,varargin)
    % PARSE INPUTS
    kwargs = parseinputs(tbname, mfilename, varargin{:});
 
+   % readtbdirectory errors when neither the CSV nor a backup can be read
+   % and never returns an empty table, so the write-back below cannot
+   % erase a good registry with an empty table (matfunclib-b7u item 2).
+   % writetbdirectory refuses an empty table too.
    % Read the toolbox directory into memory
    toolboxes = readtbdirectory(gettbdirectorypath());
 
@@ -124,7 +128,9 @@ function kwargs = parseinputs(tbname, funcname, varargin)
    parser.parse(tbname, varargin{:});
    kwargs = parser.Results;
 
-   tbname = char(tbname);
+   % Callers read kwargs.tbname, not the tbname input, so the char
+   % conversion applies to kwargs.tbname.
+   kwargs.tbname = char(kwargs.tbname);
    kwargs.library = char(kwargs.library);
    kwargs.posthook = char(kwargs.posthook);
 

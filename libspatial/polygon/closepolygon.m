@@ -16,8 +16,10 @@ function [Xclosed, Yclosed] = closepolygon(X, Y)
    lastindnan = isnan(X(end));
    wascolumns = iscolumn(X);
 
-   % First, identify if there are multiple parts separated by nan's.
-   [S, E, L] = nonnansegments({X, Y});
+   % First, identify if there are multiple parts separated by nan's. Pass
+   % the vertices as vectors so nonnansegments returns one set of linear
+   % indices for each coordinate array, including matrix-shaped input.
+   [S, E, L] = nonnansegments({X(:), Y(:)});
 
    % Require X and Y have identical nan-delimited segments.
    assert(all(cellfun(@(s) isequal(S{1}, s), S)))

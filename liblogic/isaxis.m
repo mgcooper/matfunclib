@@ -6,7 +6,9 @@ function tf = isaxis(varargin)
    %  tf = isaxis(ax1, ax2)
    %
    % This function checks if the provided input arguments are axes objects.
-   % Compatible with Octave and MATLAB.
+   % tf is a logical row vector with one element for each input. Compatible
+   % with Octave and MATLAB. In Octave, ishandle and the 'type' property do
+   % the test.
    %
    % See also: isfig
 

@@ -35,6 +35,8 @@ function varargout = buildtoolboxdirectory(varargin)
    %  'rebuild' — Before finalizing, read the current toolbox directory (via
    %              readtbdirectory, which falls back to MAT backups if the CSV
    %              is corrupted) and copy the active state for matching names.
+   %              This is the one caller that opts in to readtbdirectory's
+   %              empty result, so a first run with no registry still writes.
    %
    % CANONICAL SOURCE: $MATLAB_DIRECTORY_PATH/toolboxdirectory.csv
    % REBUILD SOURCE:   $MATLAB_TOOLBOX_PATH filesystem scan
@@ -185,18 +187,28 @@ function newlist = preserveActiveState(newlist)
    % corrupted. Only the active column is transferred; source paths are
    % taken from the fresh filesystem scan.
 
+   % This is the one opt-in to readtbdirectory's empty result. A first
+   % run on a machine has no registry to preserve, and the rebuild must
+   % still write one. Every other reader gets the error (matfunclib-b7u).
    try
-      [oldlist, oldsource] = readtbdirectory();
-   catch
-      warning(['matfunclib:buildtoolboxdirectory:rebuildReadFailed', ...
-         'Could not read existing toolbox directory to preserve active state. ' ...
-         'All entries will be inactive.']);
+      [oldlist, oldsource] = readtbdirectory([], true);
+   catch readErr
+      % A code or schema defect in the reader is not "nothing to
+      % preserve". A rebuild on it would write every entry inactive over
+      % a registry that a fixed reader could still read, so the catch
+      % rethrows it.
+      if isreaderdefect(readErr)
+         rethrow(readErr)
+      end
+      warning('matfunclib:buildtoolboxdirectory:rebuildReadFailed', ...
+         ['Could not read existing toolbox directory to preserve active ' ...
+         'state (%s). All entries will be inactive.'], readErr.message);
       return
    end
 
    if strcmp(oldsource, 'empty') || height(oldlist) == 0
-      warning(['matfunclib:buildtoolboxdirectory:rebuildEmptyOld', ...
-         'Existing toolbox directory is empty; active state cannot be preserved.']);
+      warning('matfunclib:buildtoolboxdirectory:rebuildEmptyOld', ...
+         'Existing toolbox directory is empty; active state cannot be preserved.');
       return
    end
 

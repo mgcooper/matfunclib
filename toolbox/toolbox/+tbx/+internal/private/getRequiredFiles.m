@@ -246,8 +246,11 @@ function [targetFiles, referenceFiles, ignoreFiles] = prepareFileLists(...
    targetFiles = setdiff(targetFiles, ignoreFiles);
 
    % Add the target to the the reference list, so it isn't included in the
-   % missing requirements.
-   referenceFiles = vertcat(referenceFiles, targetFiles);
+   % missing requirements. Both lists are reshaped to columns first.
+   % fileListFromFolderList returns an Nx1 column, the arguments block
+   % makes a caller's file list a row, and vertcat needs both as columns
+   % to accept a list of several files.
+   referenceFiles = vertcat(referenceFiles(:), targetFiles(:));
 
    % filenames to ignore - not implemented
    % ignore = {'readme','test','temp'};
@@ -264,11 +267,10 @@ function fileList = fileListFromFolderList(folderList)
    end
    fileList = cell(numel(folderList), 1);
    for n = 1:numel(folderList)
-      % Normalize each folder's listing to a column string array so one
-      % vertcat yields the mx1 string array prepareFileLists needs for
-      % setdiff. The previous flow applied vertcat(fileList{:}) twice; the
-      % second call curly-indexed a string array, extracting raw char rows,
-      % and errored whenever two file names differed in length.
+      % Each folder's listing is an mx1 string array, so one vertcat of
+      % the cell's contents yields the mx1 string array prepareFileLists
+      % needs for setdiff (a second vertcat over a string array would
+      % index its char rows, which differ in length).
       fileList{n} = reshape(string(listfiles(folderList(n), ...
          "subfolders", true, "mfiles", true, "matfiles", true, ...
          "aslist", true, "fullpath", true, "asstring", true)), [], 1);

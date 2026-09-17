@@ -35,6 +35,14 @@ function manifest = readmanifest(projectfolder)
    manifest = struct('name', '', 'projects', {{}}, 'toolboxes', {{}}, ...
       'file', '');
 
+   % A folder that does not exist is a caller defect (a stale registry
+   % folder, a wrong root), not a project without a manifest. The empty
+   % manifest is only for a folder that exists with no mproject.toml
+   % (audit LOW 49).
+   if ~isfolder(projectfolder)
+      error('matfunclib:readmanifest:noSuchFolder', ...
+         'readmanifest: project folder does not exist: %s', projectfolder);
+   end
    tomlfile = fullfile(projectfolder, 'mproject.toml');
    if exist(tomlfile, 'file') ~= 2
       return

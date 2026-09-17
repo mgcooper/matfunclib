@@ -1,8 +1,8 @@
 function y = nanmedian(varargin)
    %NANMEDIAN Compute the sample median, ignoring NaNs.
    %
-   % This function is a wrapper for built-in function median with flag 'omitnan'
-   % i.e., mean(varargin{:}, 'omitnan').
+   % This function wraps the built-in function median with the 'omitnan' flag,
+   % i.e., median(varargin{:}, 'omitnan').
    %
    % Y = NANMEDIAN(X) returns the sample median of X ignoring NaNs.
    %

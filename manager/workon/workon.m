@@ -12,6 +12,8 @@ function workon(varargin)
    %    to the project root directory, adds project paths to the matlab path,
    %    opens the project files, calls CONFIGUREPROJECT to source config and/or
    %    setup hooks, and rewrites the project directory after creating a backup.
+   %    If the project folder does not exist, WORKON warns and returns before it
+   %    changes the active project.
    %
    %    WORKON(PROJECTNAME, 'UPDATEFILES', FALSE) does not update the active
    %    files list when calling WORKOFF to deactivate the current active project
@@ -25,11 +27,12 @@ function workon(varargin)
    %    default option is TRUE.
    %
    %    Note: The default behavior UPDATEFILES=TRUE enables efficient switching
-   %    between projects during an active matlab session. However, if workon is
-   %    called during startup, there will be no files open and the activefiles
-   %    list for the active project will be set empty. To prevent this, use
-   %    UPDATEFILES=FALSE in the call to workon from startup.m or any other case
-   %    where workon is called and no files are currently open.
+   %    between projects during an active matlab session. If startup.m calls
+   %    workon, no files are open. setprojectfiles then keeps the stored
+   %    activefiles list and warns, because an editor that holds none of
+   %    the stored files means the session never reopened them. Use
+   %    UPDATEFILES=FALSE when startup.m calls workon, or whenever no files
+   %    are open, so workon skips the write.
    %
    %  See also: workoff, manager, addproject
    %
@@ -61,7 +64,8 @@ function workon(varargin)
    % Parse inputs.
    [projname, updatefiles] = parseinputs(mfilename, varargin{:});
 
-   % Check if the project exists, or add a new project to the directory.
+   % Check if the project and its folder exist, or add a new project to the
+   % directory. This comes before workoff so a failed check changes no state.
    if ~verifyproject(projname)
       return
    end
@@ -108,11 +112,8 @@ function workon(varargin)
       rethrow(resolveErr)
    end
 
-   % cd to the activated tb if requested
-   try
-      cd(projpath)
-   catch
-   end
+   % cd to the activated project. verifyproject has confirmed the folder exists.
+   cd(projpath)
 
    % Open project files
    openprojectfiles(projname);
@@ -136,7 +137,11 @@ function [projname, updatefiles, force] = parseinputs(funcname, varargin)
 
    parser = inputParser;
    parser.FunctionName = funcname;
-   parser.addOptional('projectname', getactiveproject(), @validateProjectName);
+   % validateProjectName raises unless the name is a folder in
+   % MATLAB_PROJECT_PATH. A registered name passes first, so a stale entry
+   % whose folder was deleted reaches verifyproject, which reports it.
+   parser.addOptional('projectname', getactiveproject(), @(name) ...
+      isscalartext(name) && (isproject(name) || validateProjectName(name)));
    parser.addParameter('updatefiles', true, @islogicalscalar);
    parser.addParameter('force', false, @islogicalscalar);
    parser.parse(varargin{:});

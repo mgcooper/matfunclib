@@ -1,140 +1,126 @@
 function [S, E, L] = nonnansegments(x, nmin, option)
    %NONNANSEGMENTS Find start and end indices of complete non-nan segments.
    %
-   % [S, E, L] = nonnansegments(x, nmin, option)
+   %  [S, E, L] = nonnansegments(x) returns the start indices S, end indices
+   %  E, and lengths L of the non-nan segments of x as column vectors.
+   %
+   %  [S, E, L] = nonnansegments(x, nmin) returns only segments of length
+   %  nmin or more. nmin defaults to 1.
+   %
+   %  [S, E, L] = nonnansegments(x, nmin, option) sets how a matrix x, or
+   %  each matrix element of a cell array x, is segmented. option has no
+   %  effect on a vector x or on a vector element of a cell array x.
    %
    %  Inputs
-   %     X - data. If X is a vector, S, E, L are returned as numeric arrays.
-   %     If X is a matrix with >1 column, the algorithm operates on each column
-   %     of X and returns S, E, L as cell arrays. If X is a cell array, the
-   %     algorithm operates on each element, but currently assumes each element
-   %     is a vector.
+   %     X - data. If X is a vector, S, E, L are numeric column vectors. If X
+   %     is a matrix that is not a vector, OPTION sets the output. If X is a
+   %     cell array, the algorithm segments each element as a vector or as a
+   %     matrix and returns S, E, L as cell arrays the size of X. Each cell of
+   %     S, E, L holds the output for that element of X. For example, a
+   %     matrix element with OPTION 'each' gives a cell that holds
+   %     per-column cell arrays. Leading and trailing nans are allowed.
    %
    %     NMIN - minimum number of non-nan values to be returned as a valid
-   %     segment (option not currently implemented - don't supply a value)
+   %     segment; segments shorter than nmin are removed (default 1)
    %
-   %     OPTION - 'any', 'each', 'all' (option not currently implemented  -
-   %     don't supply a value)
+   %     OPTION - segmentation of a matrix X (default 'each'). For a cell
+   %     array X, these rules apply to each matrix element of X:
+   %        'each' - segment each column of X on its own and return S, E, L
+   %                 as 1-by-size(X, 2) cell arrays.
+   %        'all'  - return numeric S, E, L of the row segments where every
+   %                 column of X is non-nan.
+   %        'any'  - return numeric S, E, L of the row segments where at
+   %                 least one column of X is non-nan.
+   %
+   %  Example
+   %     % Segments where x, y, and both rows of a 2-by-N err are non-nan:
+   %     [S, E] = nonnansegments([x(:), y(:), err.'], 1, 'all');
    %
    % See also:
 
+   % Set defaults. The 'each' default keeps per-column cell output for a
+   % matrix. validatestring rejects an unknown option before any branch.
    if nargin < 3
-      option = 'any'; % each?
+      option = 'each';
    end
    if nargin < 2
       nmin = 1;
    end
+   option = validatestring(option, {'each', 'all', 'any'}, mfilename);
 
-   if iscell(x)
-      % This case assumes each element of x is a vector.
-      [S, E, L] = cellfun(@(x) processOneVector(x, nmin), x, 'Uniform', 0);
-   else
-      if isvector(x)
-         [S, E, L] = processOneVector(x, nmin);
-
-      elseif ismatrix(x)
-
-         [S, E, L] = arrayfun(@(col) processOneVector(x(:, col), nmin), ...
-            1:size(x, 2), 'Uniform', 0);
-
-         % Identically:
-         % for n = size(x, 2):-1:1
-         %    [S{n}, E{n}, L{n}] = processOneVector(x(:, n), nmin);
-         % end
-      end
+   % Cast non-cell input to a one-element cell. Then one algorithm segments
+   % a vector, a matrix, and each element of a cell array in the same way.
+   wascell = iscell(x);
+   if ~wascell
+      x = {x};
    end
+   [S, E, L] = cellfun(@(v) processOneElement(v, nmin, option), x, ...
+      'Uniform', 0);
 
-   % TODO: if multiple vectors are passed in, return S, E where all vectors are
-   % non-nan. Would also be good to allow multi-dimensional input e.g. in
-   % fillplot, x and y are 1xN, but err is 2xN and I want S, E where all of them
-   % are non-nan.
-   switch option
-      case 'all'
-         % This is not right - need to know S and E for each all-nan segment.
-         % Instead deal with this in the calling function.
-         % S = unique(S);
-         % E = unique(E);
-      otherwise
+   % Return non-cell input in its own form: numeric S, E, L for a vector or
+   % for 'all' and 'any', and per-column cell arrays for 'each'.
+   if ~wascell
+      S = S{1};
+      E = E{1};
+      L = L{1};
    end
-
-   % Notes on matrix-wise. First, the easiest way to reconcile the methods
-   % above and support non-vector cell elements is to cast non-cell input to
-   % cell and call cellfun for every case, and the subfuction it calls would
-   % be processOneElement and would become the if else-if vector/matrix logic.
-
-   % however, while adding vector/matrix logic, I tried two methods which need
-   % to be documented here. First, if no distinction is made, then
-   % processOneVector works fine with matrices, but it returns the linear
-   % indices of all non-nansegments in a linear sense. Those can be converted
-   % to row/col using ind2sub, or dealt with in the calling function. That will
-   % create problems when the columns are independent samples and do not contain
-   % identical start/stop ends because processOneVector will treat the entire
-   % matrix in a linear sense thus "wrapping around" columns.
-
-   % Second, initially to deal with that I looped over columns of X and did not
-   % have an if-else, which works for both vectors and matrices but iff the
-   % NUMBER OF start/stops are the same in each column.
-   %
-   % Thus finally I added the if-else and for matrix-wise I assign S, E to cell
-   % arrays.
-
-   % This is another way to deal with matrix-wise X, if no loop is used.
-   % [row, col] = ind2sub(size(x), S)
-
 end
 
-function [S, E, L] = processOneVector(x, ~)
+function [S, E, L] = processOneElement(x, nmin, option)
+   %PROCESSONEELEMENT Segment one vector or matrix under the option rule.
+   %
+   %  X is a vector or a matrix, not a cell array. A vector returns numeric
+   %  column vectors S, E, L for every option. A matrix returns per-column
+   %  cell arrays for 'each', and numeric column vectors of the row segments
+   %  for 'all' and 'any'. processOneVector does the segmentation.
 
-   % Remove leading and trailing nan's.
-   x = rmtrailingnans(x(:));
-   [x, si] = rmleadingnans(x(:));
+   % A vector has one nan mask, so every option gives the same result.
+   if isvector(x)
+      [S, E, L] = processOneVector(isnan(x), nmin);
+      return
+   end
 
-   % Find start and stop indices of non-nan segments.
-   n = isnan(x(:));
-   S = [1; find(diff(n) == -1) + 1];         % start non-nan segments
-   E = [find(diff(n) == 1); numel(x)];       % end non-nan segments
+   % Note: segment a matrix by rows or by columns, never as x(:). The linear
+   % indices of x(:) let a segment wrap from the end of one column into the
+   % next.
+   switch option
+      case 'each'
+         % Columns are independent samples with different numbers of
+         % segments, so return one cell per column.
+         [S, E, L] = arrayfun( ...
+            @(col) processOneVector(isnan(x(:, col)), nmin), ...
+            1:size(x, 2), 'Uniform', 0);
+      case 'all'
+         % A row is missing when any column is nan.
+         [S, E, L] = processOneVector(any(isnan(x), 2), nmin);
+      case 'any'
+         % A row is missing only when every column is nan.
+         [S, E, L] = processOneVector(all(isnan(x), 2), nmin);
+   end
+end
+
+function [S, E, L] = processOneVector(n, nmin)
+   %PROCESSONEVECTOR Segment one nan mask vector and filter by minimum length.
+   %
+   %  N is a logical vector that is true where the data is nan. S, E, and L
+   %  are column vectors. An all-nan mask returns zeros(0, 1) for all three.
+
+   % Find start and stop indices of non-nan segments. A segment starts at a
+   % non-nan value after a nan or at the first element, and ends at a non-nan
+   % value before a nan or at the last element. The padding handles leading
+   % and trailing nans without trimming them.
+   n = n(:);
+   S = find(~n & [true; n(1:end-1)]);        % start non-nan segments
+   E = find(~n & [n(2:end); true]);          % end non-nan segments
+
+   % find returns 0-by-0 for a scalar nan mask. Reshape S and E so that
+   % all-nan input of any length returns zeros(0, 1).
+   S = reshape(S, [], 1);
+   E = reshape(E, [], 1);
    L = E - S + 1;                            % segment lengths
 
-   % Adjust for the removal of leading nan's
-   S = S + si - 1;
-   E = E + si - 1;
-
-   % Remove segments shorter than the minimum (option not implemented)
-   % S = S(L >= nmin);
-   % E = E(L >= nmin);
-   % L = L(L >= nmin);
-
-   % % I think this replaces the logic above and might be clearer, but it won't
-   % capture leading/trailing nans either
-   % ok = ~isnan(x);
-   % S = find(diff([0, ok]) == 1);
-   % E = find(diff([ok, 0]) == -1);
-
-   % I think this works with leading and trailing nans
-   % S = find(diff([NaN, x]) ~= 0 & ~isnan(x));
-   % E = find(diff([x, NaN]) ~= 0 & ~isnan(x));
-
+   % Remove segments shorter than nmin (the bfra eventfinder depends on this).
+   S = S(L >= nmin);
+   E = E(L >= nmin);
+   L = L(L >= nmin);
 end
-
-function [x, ei] = rmtrailingnans(x)
-   %RMTRAILINGNANS Remove trailing nans.
-   tf = flipud(logical(cumprod(isnan(flipud(x))))); % trailing nans
-   ei = find(tf == false, 1, 'last'); % last non-nan indici
-   x(tf) = [];
-end
-
-function [x, si] = rmleadingnans(x)
-   %RMLEADINGNANS Remove leading nans.
-   tf = logical(cumprod(isnan(x)));    % consecutive leading nans true
-   si = find(tf==false, 1, 'first');   % first non-nan indici
-   x(tf) = [];
-end
-
-% function [s, e] = startendnonnan(x)
-%    n = isnan(x(:));
-%    s = find(~n & [true; n(1:end-1)]);
-%    e = find(~n & [n(2:end); true]);
-%
-%    % [x(:) ~n [true; n(1:end-1)]] % starts
-%    % [x(:) ~n [n(2:end); true]] % ends
-% end
